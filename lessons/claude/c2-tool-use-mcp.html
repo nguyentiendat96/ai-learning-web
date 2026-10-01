@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C2 · Tool use &amp; MCP — Track Claude</title>
+<link rel="stylesheet" href="../../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Track Claude · C2 — Tool use &amp; MCP</div>
+    <h1>Tool use &amp; MCP trên Claude platform</h1>
+    <p class="subtitle">Từ một tool definition đúng chuẩn, qua vòng lặp <code>tool_use</code> → <code>tool_result</code>, tới built-in tools của Anthropic và một MCP server tối giản — toàn bộ bằng cú pháp thật lấy từ docs.</p>
+    <p class="lesson-meta"><span>~40 phút</span><span>6 câu hỏi tương tác</span><span>Nguồn: platform.claude.com · code.claude.com · modelcontextprotocol.io</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#tool-use">Tool use trên Claude API — hai loại tool</a></li>
+      <li><a href="#vong-lap">Vòng lặp: tools → tool_use → tool_result</a></li>
+      <li><a href="#viet-tool">Viết một tool đúng chuẩn</a></li>
+      <li><a href="#chon-tool">Description &amp; selection — làm sao để model chọn đúng</a></li>
+      <li><a href="#so-luong">Bao nhiêu tool là quá nhiều?</a></li>
+      <li><a href="#loi">Khi tool thất bại — <code>is_error</code></a></li>
+      <li><a href="#builtin">Built-in tools: web search &amp; code execution</a></li>
+      <li><a href="#mcp">MCP là gì — host, client, server</a></li>
+      <li><a href="#viet-mcp-server">Viết MCP server tối giản &amp; nối vào Claude Code</a></li>
+      <li><a href="#mcp-hay-tool">MCP hay tool trực tiếp?</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#luyen-them">Luyện thêm với nguồn chính thức</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bạn đã nắm nền tảng agent (9 bài đầu) nhưng mới với Claude platform — nên bài này đi theo đúng thứ tự thực tế khi làm: <strong>khai báo tool → chạy vòng lặp → xử lý lỗi → chuyển sang built-in tool → đóng gói bằng MCP</strong>.</p>
+    <p>Mọi tên tham số, tên block, cú pháp trong bài đều lấy nguyên từ docs Anthropic / MCP. Chỗ nào là con số hay phiên bản dễ đổi, tôi ghi rõ <em>(xem docs mới nhất)</em> — bạn đừng học thuộc lòng chuỗi version, hãy nhớ <strong>hình dạng</strong> của vấn đề.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="tool-use">
+    <h2>Tool use trên Claude API — hai loại tool</h2>
+    <p>Tool use (còn gọi là function calling) cho phép Claude gọi những hàm mà <em>bạn</em> định nghĩa, hoặc những hàm do Anthropic cung cấp. Claude quyết định gọi tool nào dựa trên yêu cầu của người dùng và <strong>description của tool</strong>. Kết quả trả về là một lời gọi có cấu trúc — lời gọi đó do app của bạn chạy, hoặc do hạ tầng Anthropic chạy.</p>
+
+    <p>Cách phân loại duy nhất bạn cần nhớ: <strong>code chạy ở đâu</strong>.</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Client tool</th><th>Server tool</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Code chạy ở đâu</td><td>Ứng dụng của bạn</td><td>Hạ tầng của Anthropic</td></tr>
+        <tr><td>Ví dụ</td><td><code>get_weather</code> bạn tự viết; các tool Anthropic định nghĩa sẵn schema như <code>bash</code>, <code>text_editor</code></td><td><code>web_search</code>, <code>web_fetch</code>, <code>code_execution</code>, <code>tool_search</code></td></tr>
+        <tr><td>Claude trả về gì</td><td><code>stop_reason: "tool_use"</code> + một hoặc nhiều block <code>tool_use</code></td><td>Claude nhận kết quả trực tiếp trong cùng response</td></tr>
+        <tr><td>Bạn phải làm gì</td><td>Chạy hàm thật, gửi lại block <code>tool_result</code></td><td>Không viết handler — chỉ đọc kết quả</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Khác biệt với các API "kiểu cũ"</div>
+      <p>Nhiều API tách tool thành role riêng (<code>tool</code>, <code>function</code>). Claude API thì không: tool nằm thẳng trong cấu trúc <code>user</code> / <code>assistant</code>.</p>
+      <ul>
+        <li>Message <code>assistant</code> chứa <span class="badge">tool_use</span></li>
+        <li>Message <code>user</code> chứa <span class="badge">tool_result</span> (cùng với nội dung người dùng)</li>
+      </ul>
+      <p>Nắm được điều này là bạn đọc được mọi ví dụ trong docs mà không bị rối.</p>
+    </div>
+
+    <h3>Khi nào Claude gọi tool — và khi nào không</h3>
+    <p>Với giá trị mặc định <code>"tool_choice": {"type": "auto"}</code>, Claude tự quyết định mỗi lượt: gọi tool hay trả lời thẳng.</p>
+    <ul>
+      <li><strong>Gọi tool</strong> khi yêu cầu khớp với khả năng được mô tả của tool, và câu trả lời <em>chưa</em> nằm trong context.</li>
+      <li><strong>Trả lời thẳng</strong> với kiến thức ổn định, việc sáng tạo, và các lượt trò chuyện thông thường.</li>
+    </ul>
+    <p>Ranh giới này lái được bằng system prompt — nhẹ thì <code>"Use the tools to investigate before responding."</code>, mạnh hơn thì <code>"Always call a tool first before responding."</code>, còn muốn giữ thận trọng thì <code>"Use your judgment about whether to call a tool or respond directly."</code> Muốn cứng thì dùng <code>tool_choice</code> (mục sau).</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="vong-lap">
+    <h2>Vòng lặp: tools → tool_use → tool_result</h2>
+    <p>Đây là phần xương sống của cả bài. Một lượt gọi client tool gồm đúng năm bước:</p>
+
+    <ol class="steps">
+      <li><strong>Gửi request</strong> — <code>messages</code> kèm tham số <code>tools</code> ở cấp cao nhất, mỗi tool là <code>name</code> + <code>description</code> + <code>input_schema</code>.</li>
+      <li><strong>Claude trả về lời gọi</strong> — response có <code>stop_reason: "tool_use"</code> và block <code>tool_use</code> chứa <code>id</code>, <code>name</code>, <code>input</code>.</li>
+      <li><strong>Bạn chạy tool thật</strong> — tra tên tool trong code của bạn, truyền <code>input</code> vào.</li>
+      <li><strong>Gửi kết quả về</strong> — message <code>user</code> mới chứa block <code>tool_result</code> với <code>tool_use_id</code> (chính là <code>id</code> ở bước 2) và <code>content</code>.</li>
+      <li><strong>Claude trả lời cuối</strong> — lần này dùng kết quả tool để hoàn thành câu trả lời cho người dùng.</li>
+    </ol>
+
+    <p>Đây là hình dạng response ở bước 2 (lấy từ docs):</p>
+    <pre><code>{
+  "id": "msg_01Aq9w938a90dw8q",
+  "model": "claude-opus-5-5",
+  "stop_reason": "tool_use",
+  "role": "assistant",
+  "content": [
+    { "type": "text", "text": "I'll check the current weather in San Francisco for you." },
+    {
+      "type": "tool_use",
+      "id": "toolu_01A09q90qw90lq917835lq9",
+      "name": "get_weather",
+      "input": { "location": "San Francisco, CA", "unit": "celsius" }
+    }
+  ]
+}</code></pre>
+
+    <p>Và đây là toàn bộ vòng lặp bằng Python (rút gọn từ ví dụ chính thức):</p>
+    <pre><code>tools = [{
+    "name": "get_weather",
+    "description": "Get the current weather for a given location.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "location": {"type": "string",
+                         "description": "City and state, e.g. San Francisco, CA"}
+        },
+        "required": ["location"]
+    }
+}]
+messages = [{"role": "user", "content": "What's the weather in San Francisco?"}]
+
+# 1) Claude trả về tool_use
+response = client.messages.create(
+    model="claude-opus-5-5", max_tokens=1024,
+    tools=tools, messages=messages,
+)
+tool_use = next(b for b in response.content if b.type == "tool_use")
+# response.stop_reason  == "tool_use"
+# tool_use.name         == "get_weather"
+# tool_use.input        == {"location": "San Francisco, CA"}
+
+# 2) Bạn chạy tool thật
+weather = "15 degrees Celsius, partly cloudy"
+
+# 3) Gửi kết quả về, giữ nguyên assistant message ở giữa
+messages += [
+    {"role": "assistant", "content": response.content},
+    {"role": "user", "content": [
+        {"type": "tool_result", "tool_use_id": tool_use.id, "content": weather}
+    ]},
+]
+
+# 4) Claude trả lời cuối
+followup = client.messages.create(
+    model="claude-opus-5-5", max_tokens=1024,
+    tools=tools, messages=messages,
+)</code></pre>
+
+    <div class="callout">
+      <div class="callout-title">Ba lỗi format khiến request bị 400</div>
+      <ol>
+        <li><strong>Chèn message vào giữa</strong> — block <code>tool_result</code> phải nằm <em>ngay sau</em> block <code>tool_use</code> tương ứng, không có message nào xen vào.</li>
+        <li><strong>Đặt text trước tool_result</strong> — trong message <code>user</code> chứa kết quả, các block <code>tool_result</code> phải đứng <em>đầu</em> mảng <code>content</code>; text (nếu có) đứng sau.</li>
+        <li><strong>Quên <code>tool_use_id</code></strong> — mỗi kết quả phải mang đúng <code>id</code> của lời gọi. Khi Claude gọi song song nhiều tool, đây là thứ giữ cho kết quả không bị gán nhầm.</li>
+      </ol>
+      <p>Gặp lỗi kiểu "tool_use ids were found without tool_result blocks immediately after" thì kiểm tra đúng ba điều trên.</p>
+    </div>
+
+    <h3>Điều khiển việc gọi tool bằng <code>tool_choice</code></h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Giá trị</th><th>Nghĩa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>auto</code></td><td>Claude tự quyết định gọi hay không. <strong>Mặc định</strong> khi có <code>tools</code>.</td></tr>
+        <tr><td><code>any</code></td><td>Bắt buộc dùng một trong các tool đã khai báo, nhưng không ép tool nào cụ thể.</td></tr>
+        <tr><td><code>tool</code></td><td>Ép dùng đúng một tool: <code>{"type": "tool", "name": "get_weather"}</code>.</td></tr>
+        <tr><td><code>none</code></td><td>Không cho dùng tool. Mặc định khi <em>không</em> có <code>tools</code>.</td></tr>
+      </tbody>
+    </table>
+    <p>Trong <code>auto</code> còn có <code>disable_parallel_tool_use: true</code> để giới hạn mỗi lượt chỉ một lời gọi tool.</p>
+
+    <div class="callout">
+      <div class="callout-title">Ép buộc không phải lúc nào cũng chạy được</div>
+      <p>Không phải model nào cũng hỗ trợ forced tool use. Trên một số model mới (ví dụ dòng Opus 5.5, Sonnet 5.5 — <em>xem docs mới nhất</em>), <code>any</code> và <code>tool</code> trả về <strong>lỗi 400</strong>; <code>auto</code> và <code>none</code> vẫn chạy. Cách thay thế được docs khuyến nghị: giữ <code>auto</code> và bật <code>strict: true</code> trên tool definition để đảm bảo input luôn khớp schema. Với extended thinking bật thủ công, <code>any</code>/<code>tool</code> cũng bị chặn.</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">Đỡ việc tay: Tool Runner</div>
+      <p>Nếu bạn không muốn tự viết vòng lặp trên, SDK có <strong>Tool Runner</strong>: nó chạy tool của bạn và tự gửi <code>tool_result</code> về. Dùng khi bạn cần kiểm soát tùy biến thì mới tự viết tay — xem <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-runner">Tool Runner</a>.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="viet-tool">
+    <h2>Viết một tool đúng chuẩn</h2>
+    <p>Một tool do bạn định nghĩa có bốn field (một field là tùy chọn):</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Field</th><th>Bắt buộc?</th><th>Nội dung</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>name</code></td><td>Có</td><td>Tên tool. Phải khớp regex <code>^[a-zA-Z0-9_-]{1,128}$</code>.</td></tr>
+        <tr><td><code>description</code></td><td>Có</td><td>Mô tả bằng văn xuôi: tool làm gì, <em>khi nào nên dùng</em>, hành vi ra sao.</td></tr>
+        <tr><td><code>input_schema</code></td><td>Có</td><td>Một object <a href="https://json-schema.org/">JSON Schema</a> mô tả tham số.</td></tr>
+        <tr><td><code>input_examples</code></td><td>Không</td><td>Mảng ví dụ input hợp lệ — hữu ích với tool có input phức tạp, object lồng nhau, hay tham số nhạy cảm format.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Ví dụ đầy đủ, đúng chuẩn Anthropic:</p>
+    <pre><code>{
+  "name": "get_weather",
+  "description": "Get the current weather in a given location",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "location": {
+        "type": "string",
+        "description": "The city and state, e.g. San Francisco, CA"
+      },
+      "unit": {
+        "type": "string",
+        "enum": ["celsius", "fahrenheit"],
+        "description": "The unit of temperature, either 'celsius' or 'fahrenheit'"
+      }
+    },
+    "required": ["location"]
+  }
+}</code></pre>
+    <p>Tool này tên <code>get_weather</code>, cần một object có <code>location</code> (bắt buộc) và <code>unit</code> (tùy chọn, chỉ nhận hai giá trị). Để ý: mỗi tham số có <code>description</code> riêng — đó là chỗ dạy model cách điền giá trị đúng.</p>
+
+    <h3>Description tốt vs description kém</h3>
+    <p>Docs nói thẳng: <strong>description chi tiết là yếu tố quan trọng nhất</strong> quyết định hiệu năng tool. So sánh hai phiên bản cùng tên tool:</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Kém</div>
+        <h3>"Gets the stock price for a ticker."</h3>
+        <p>Một câu ngắn, không nói khi nào dùng, trả về gì, giới hạn ra sao. Claude phải đoán — và đoán sai.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Tốt</div>
+        <h3>"Retrieves the current stock price for a given ticker symbol…"</h3>
+        <p>Nói rõ: ticker phải là mã hợp lệ trên NYSE/NASDAQ; trả về giá giao dịch mới nhất bằng USD; <strong>dùng khi</strong> người dùng hỏi giá hiện tại/mới nhất của một mã cụ thể; <strong>không</strong> cung cấp thông tin nào khác về công ty.</p>
+      </div>
+    </div>
+
+    <p>Checklist cho description (theo docs):</p>
+    <ul>
+      <li>Tool <strong>làm gì</strong>.</li>
+      <li><strong>Khi nào dùng</strong> — và khi nào <em>không</em>.</li>
+      <li>Mỗi tham số <strong>nghĩa là gì</strong> và ảnh hưởng thế nào tới hành vi tool.</li>
+      <li>Các <strong>cảnh báo / giới hạn</strong>: tool không trả về cái gì.</li>
+      <li>Độ dài: docs gợi ý <strong>ít nhất 3–4 câu</strong> cho mỗi tool, dài hơn nếu tool phức tạp.</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">Chi phí ẩn của <code>tools</code></div>
+      <p>Khi bạn truyền <code>tools</code>, API tự dựng thêm một system prompt riêng cho tool use, và mọi thứ trong <code>tools</code> (tên, description, schema) đều tính là input token. Docs có bảng token riêng cho từng model — ví dụ Claude Opus 5.5 tốn 286 token cho phần system prompt này khi <code>tool_choice</code> là <code>auto</code>/<code>none</code> (<em>con số thay đổi theo model — xem docs mới nhất</em>). Client tool không phụ phí gì thêm; server tool thì có thể tính phí theo lượt dùng.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="chon-tool">
+    <h2>Description &amp; selection — làm sao để model chọn đúng</h2>
+    <p>Claude chọn tool dựa trên <em>yêu cầu + description</em>. Nghĩa là phần lớn lỗi "gọi sai tool" thực ra là lỗi thiết kế description, không phải lỗi model.</p>
+
+    <h3>Tách hay gộp tool?</h3>
+    <p>Docs khuyến nghị rõ: <strong>gộp các thao tác liên quan vào một tool ít hơn</strong>. Thay vì ba tool riêng:</p>
+    <pre><code>create_pr   /   review_pr   /   merge_pr      ❌ ba tool gần giống nhau</code></pre>
+    <p>hãy dùng một tool với tham số hành động:</p>
+    <pre><code>github_pr(action: "create" | "review" | "merge", ...)   ✅ ít nhập nhằng hơn</code></pre>
+    <p>Lý do: ít lựa chọn hơn ⇒ ít nhập nhằng hơn ⇒ bề mặt tool dễ điều hướng hơn. Nhưng đừng gộp tới mức một tool ôm cả chục việc không liên quan — gộp theo <em>cùng một đối tượng nghiệp vụ</em> (cùng là "pull request", cùng là "đơn hàng").</p>
+
+    <h3>Đặt tên có namespace</h3>
+    <p>Khi tool trải trên nhiều dịch vụ, hãy prefix theo dịch vụ: <code>github_list_prs</code>, <code>slack_send_message</code>. Điều này giữ cho việc chọn tool không nhập nhằng khi thư viện tool lớn dần — và càng quan trọng khi bạn dùng tool search (mục sau).</p>
+
+    <h3>Trả về thông tin "tín hiệu cao"</h3>
+    <p>Kết quả tool nên trả về định danh ngữ nghĩa, ổn định (slug, UUID) thay vì tham chiếu nội bộ khó hiểu, và chỉ gồm những field Claude cần để nghĩ bước tiếp. Response phình to vừa tốn context, vừa làm model khó rút ra điều quan trọng.</p>
+
+    <div class="callout">
+      <div class="callout-title">Thiếu tham số: Opus hỏi lại, Sonnet có thể đoán</div>
+      <p>Nếu prompt không đủ thông tin để điền hết tham số bắt buộc, Claude Opus có xu hướng <strong>nhận ra là thiếu và hỏi lại</strong>. Sonnet có thể hỏi — nhất là khi được nhắc suy nghĩ trước — nhưng cũng có thể <strong>tự suy ra một giá trị hợp lý</strong>. Ví dụ với tool cần <code>location</code> mà bạn chỉ hỏi "What's the weather?", model có thể trả về <code>{"location": "New York, NY", "unit": "fahrenheit"}</code>. Hành vi này không được đảm bảo, và càng mơ hồ thì càng dễ xảy ra.</p>
+      <p>⇒ Cách chống: ghi rõ trong description rằng tham số nào là bắt buộc phải có từ người dùng, đừng đoán.</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">Đảm bảo hình dạng input: <code>strict: true</code></div>
+      <p>Thêm <code>"strict": true</code> vào tool definition để lời gọi của Claude <strong>luôn khớp chính xác schema</strong> — hết cảnh thiếu tham số hay sai kiểu. Đây là lựa chọn tùy chọn (optional) trên từng tool definition.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="so-luong">
+    <h2>Bao nhiêu tool là quá nhiều?</h2>
+    <p>Trực giác "càng nhiều tool càng mạnh" sai ở đây. Docs nêu hai vấn đề khi thư viện tool lớn dần:</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Vấn đề 1 — Context</div>
+        <h3>Phình context</h3>
+        <p>Một setup đa server điển hình (GitHub, Slack, Sentry, Grafana, Splunk) có thể ngốn <strong>~55k token</strong> chỉ cho định nghĩa tool — trước khi Claude làm được việc gì.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Vấn đề 2 — Accuracy</div>
+        <h3>Chọn sai tăng</h3>
+        <p>Khả năng chọn đúng tool của Claude <strong>bắt đầu giảm khi vượt 30–50 tool</strong>. Đây là ngưỡng thực nghiệm, không phải giới hạn cứng của API.</p>
+      </div>
+    </div>
+
+    <h3>Cách xử lý — tool search</h3>
+    <p>Thay vì nạp hết định nghĩa tool vào context, Anthropic có <strong>tool search tool</strong>: Claude tìm trong catalog tool của bạn rồi chỉ nạp những tool cần dùng.</p>
+    <ol class="steps">
+      <li>Bạn khai báo một tool search tool trong <code>tools</code> — hai biến thể: <code>tool_search_tool_regex_20251119</code> (Claude tự dựng regex) hoặc <code>tool_search_tool_bm25_20251119</code> (Claude dùng truy vấn ngôn ngữ tự nhiên).</li>
+      <li>Bạn vẫn gửi <em>toàn bộ</em> định nghĩa tool trong <code>tools</code>, nhưng đặt <code>defer_loading: true</code> trên những tool không cần nạp trước. Ít nhất một tool — thường là chính tool search — phải để không defer.</li>
+      <li>Ban đầu context chỉ có tool search + các tool không defer.</li>
+      <li>Khi cần, Claude tìm; API trả về các <code>tool_reference</code> block (mặc định tối đa 5) và tự mở rộng thành định nghĩa đầy đủ.</li>
+      <li>Claude chọn trong số tool vừa tìm được và gọi.</li>
+    </ol>
+    <p>Docs nêu kết quả điển hình: tool search giảm <strong>hơn 85%</strong> token định nghĩa, chỉ nạp 3–5 tool cần cho mỗi yêu cầu — và giữ độ chính xác chọn tool cao kể cả với hàng nghìn tool.</p>
+
+    <div class="callout">
+      <div class="callout-title">Trong Claude Code thì sao?</div>
+      <p>Claude Code cũng dùng tool search để defer định nghĩa tool: <strong>chỉ tên tool và server instructions được nạp lúc bắt đầu session</strong>, nên thêm nhiều MCP server ít ảnh hưởng tới context. Claude Code không đặt trần cứng số tool mỗi server — giới hạn thực tế là ngân sách context của bạn.</p>
+    </div>
+
+    <p><strong>Ba cách giảm số tool, xếp theo thứ tự nên thử:</strong></p>
+    <ol>
+      <li><strong>Bỏ tool không dùng</strong> — đơn giản nhất, hiệu quả nhất.</li>
+      <li><strong>Gộp tool cùng nghiệp vụ</strong> — như mục trước.</li>
+      <li><strong>Bật tool search</strong> — khi bạn thật sự cần cả trăm/nghìn tool.</li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="loi">
+    <h2>Khi tool thất bại — <code>is_error</code></h2>
+    <p>Lỗi tool <em>không phải</em> là chuyện hiếm gặp cần giấu. Nó là một phần của giao thức: bạn báo lỗi cho Claude bằng chính block <code>tool_result</code>, với cờ <code>is_error: true</code>.</p>
+
+    <pre><code>{
+  "role": "user",
+  "content": [
+    {
+      "type": "tool_result",
+      "tool_use_id": "toolu_01A09q90qw90lq917835lq9",
+      "content": "ConnectionError: the weather service API is not available (HTTP 500)",
+      "is_error": true
+    }
+  ]
+}</code></pre>
+
+    <p>Claude sẽ đưa lỗi đó vào câu trả lời — kiểu: <em>"I'm sorry, I was unable to retrieve the current weather because the weather service API is not available. Please try again later."</em></p>
+
+    <div class="callout">
+      <div class="callout-title">Viết thông điệp lỗi có ích, đừng viết "failed"</div>
+      <p>Docs khuyến nghị thẳng: thay vì lỗi chung chung, hãy nói <strong>cái gì hỏng</strong> và <strong>Claude nên thử gì tiếp</strong>. Ví dụ: <code>"Rate limit exceeded. Retry after 60 seconds."</code> — Claude có đủ ngữ cảnh để tự điều chỉnh thay vì đoán mò.</p>
+    </div>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Tình huống</th><th>Cách xử lý</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Tool chạy nhưng gặp lỗi (API 500, timeout, rate limit)</td><td>Gửi <code>tool_result</code> với <code>is_error: true</code> + mô tả lỗi <em>và</em> gợi ý bước tiếp.</td></tr>
+        <tr><td>Lời gọi thiếu tham số / tham số sai</td><td>Gửi <code>is_error: true</code> kèm lỗi cụ thể (ví dụ <code>"Error: Missing required 'location' parameter"</code>). Nếu Claude gọi tool sai, nó thường <strong>thử lại 2–3 lần</strong> với chỉnh sửa trước khi xin lỗi người dùng.</td></tr>
+        <tr><td>Lặp lại lỗi nhiều lần</td><td>Vấn đề nằm ở <code>description</code>. Sửa mô tả chi tiết hơn là cách chữa gốc — hoặc dùng <code>strict: true</code> để lời gọi luôn khớp schema.</td></tr>
+        <tr><td>Server tool lỗi (web search, code execution)</td><td>Bạn <strong>không</strong> phải xử lý. Claude tự xử lý và đưa ra câu trả lời thay thế.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Bảo mật: <code>tool_result</code> là dữ liệu không tin cậy</div>
+      <p>Kết quả tool thường mang nội dung từ bên ngoài: trang web, email, file người dùng upload, API bên thứ ba. Hãy coi đó là <strong>không đáng tin</strong> — kẻ tấn công có thể nhúng chỉ thị để lái Claude (indirect prompt injection). Giữ nội dung không tin cậy <em>trong</em> block <code>tool_result</code>, đừng đưa nó vào system prompt hay block text thường của người dùng.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="builtin">
+    <h2>Built-in tools: web search &amp; code execution</h2>
+    <p>Có những việc gần như mọi ứng dụng đều cần, và Anthropic đã làm sẵn dưới dạng <strong>server tool</strong> — code chạy trên hạ tầng Anthropic, bạn không viết handler, chỉ đọc kết quả.</p>
+
+    <h3>Web search</h3>
+    <p>Cho Claude truy cập nội dung web theo thời gian thực, trả lời được câu hỏi vượt ngoài knowledge cutoff, <strong>kèm citation nguồn</strong>.</p>
+
+    <p>Cách khai báo tối giản — chỉ hai field:</p>
+    <pre><code>tools: [{ "type": "web_search_20250305", "name": "web_search" }]</code></pre>
+    <p>Có ba phiên bản tool, mỗi bản thêm một năng lực (<em>chuỗi version thay đổi theo thời gian — xem docs mới nhất</em>):</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Version</th><th>Thêm gì</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>web_search_20250305</code></td><td>Web search cơ bản.</td></tr>
+        <tr><td><code>web_search_20260209</code></td><td>Thêm <strong>dynamic filtering</strong>: Claude tự viết và chạy code để lọc kết quả tìm kiếm <em>trước khi</em> chúng vào context window — giảm token cho các request tìm nhiều.</td></tr>
+        <tr><td><code>web_search_20260318</code></td><td>Thêm điều khiển <code>response_inclusion</code> cho luồng agentic.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Tham số tùy chọn đáng nhớ:</p>
+    <ul>
+      <li><code>max_uses</code> — chặn trần số lần search mỗi request. Vượt trần thì kết quả là lỗi với mã <code>max_uses_exceeded</code>. Truy vấn đơn giản thường dùng 1–3 lần; nghiên cứu so sánh nhiều đối tượng có thể tới 10+.</li>
+      <li><code>allowed_domains</code> <em>hoặc</em> <code>blocked_domains</code> — lọc domain (dùng cả hai thì API trả 400). Ghi domain trần, ví dụ <code>example.com</code> hoặc <code>example.com/blog</code>, không kèm scheme.</li>
+      <li><code>user_location</code> — bản địa hóa kết quả: <code>{ "type": "approximate", "city": …, "region": …, "country": "US", "timezone": "America/Los_Angeles" }</code>.</li>
+    </ul>
+
+    <p>Response trả về theo ba loại block nối tiếp nhau: <code>server_tool_use</code> (Claude quyết định search, kèm <code>query</code>), <code>web_search_tool_result</code> (danh sách kết quả có <code>url</code>, <code>title</code>, <code>page_age</code>, <code>encrypted_content</code>), rồi text trả lời có <code>citations</code>.</p>
+
+    <div class="callout">
+      <div class="callout-title">Hai điều dễ làm sai với web search</div>
+      <ul>
+        <li><strong>Phải gửi lại <code>encrypted_content</code> trong hội thoại nhiều lượt.</strong> Gửi lại nguyên xi các content block như bạn nhận được; nếu field này mất hoặc bị sửa, request lỗi 400.</li>
+        <li><strong>Lỗi search không làm request fail.</strong> API vẫn trả HTTP 200; lỗi nằm trong <code>content</code> dưới dạng object có <code>error_code</code>: <code>too_many_requests</code>, <code>invalid_tool_input</code>, <code>max_uses_exceeded</code>, <code>query_too_long</code>, <code>request_too_large</code>, <code>unavailable</code>. Tìm không ra kết quả thì <code>content</code> là mảng rỗng — đó <em>không</em> phải lỗi.</li>
+      </ul>
+      <p>Giá: <strong>$10 / 1.000 lần search</strong> cộng token thông thường. Mỗi lần search tính là một lượt, bất kể trả về bao nhiêu kết quả; search gặp lỗi không bị tính tiền.</p>
+    </div>
+
+    <h3>Code execution</h3>
+    <p>Cho Claude chạy Bash và thao tác file trong sandbox — hoặc chạy Python để phân tích dữ liệu, tính toán, tạo biểu đồ. Công cụ mạnh nhất trong nhóm built-in khi cần xử lý dữ liệu.</p>
+
+    <pre><code>tools: [{ "type": "code_execution_20250825", "name": "code_execution" }]</code></pre>
+    <p>Hai field này <strong>cố định</strong>: <code>type</code> chọn phiên bản, <code>name</code> bắt buộc là <code>code_execution</code>. Khi khai báo, Claude tự có hai sub-tool: <code>bash_code_execution</code> (chạy shell) và <code>text_editor_code_execution</code> (xem/tạo/sửa file).</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Đặc điểm sandbox</th><th>Giá trị (theo docs)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Môi trường</td><td>Container Linux, Python 3.11, kiến trúc x86_64</td></tr>
+        <tr><td>Tài nguyên</td><td>1 CPU · 5 GiB RAM · 5 GiB dung lượng workspace</td></tr>
+        <tr><td>Internet</td><td><strong>Tắt hoàn toàn</strong> — không tải/cài thêm package lúc chạy</td></tr>
+        <tr><td>Truy cập file</td><td>Chỉ trong workspace; cô lập hoàn toàn với máy host</td></tr>
+        <tr><td>Thư viện có sẵn</td><td>pandas, numpy, scipy, scikit-learn, statsmodels, matplotlib, seaborn, pyarrow, openpyxl, pillow, python-pptx, python-docx, pypdf, pdfplumber, reportlab, sympy… và CLI như unzip, rg, fd, sqlite</td></tr>
+        <tr><td>Vòng đời container</td><td>Hết hạn sau 30 ngày; sau ~5 phút không dùng thì checkpoint, gửi lại <code>container</code> id để khôi phục</td></tr>
+      </tbody>
+    </table>
+
+    <p>Khi Claude chạy code, response có thêm object <code>container</code> ở cấp cao nhất với <code>id</code> và <code>expires_at</code>. Bạn có thể gửi lại <code>id</code> đó ở tham số <code>container</code> để <strong>dùng lại container</strong> — file tạo ra được giữ nguyên giữa các request.</p>
+
+    <p>Lỗi của code execution trả về <code>error_code</code>: <code>unavailable</code>, <code>execution_time_exceeded</code>, <code>invalid_tool_input</code>, <code>too_many_requests</code> (mọi tool); thêm <code>output_file_too_large</code> với bash và <code>file_not_found</code> với text editor. Response cũng có thể mang <code>stop_reason: "pause_turn"</code> khi lượt chạy quá dài — gửi lại message assistant đó nguyên trạng để Claude chạy tiếp.</p>
+
+    <div class="callout">
+      <div class="callout-title">Code execution miễn phí khi đi kèm web search / web fetch</div>
+      <p>Khi trong request có <code>web_search_20260209</code>, <code>web_fetch_20260209</code> hoặc mới hơn, <strong>không có phụ phí</strong> cho code execution trong request đó ngoài tiền token (bao gồm cả code chạy sau dynamic filtering). Không có các tool đó thì tính giá code execution tiêu chuẩn.</p>
+      <p>Điểm dễ nhầm: dynamic filtering của web search chạy <em>bên trong</em> code execution, nhưng API tự cấp phát code execution cho request — bạn <strong>không</strong> phải tự thêm tool này vào <code>tools</code>.</p>
+    </div>
+
+    <h3>Chọn tool nào?</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Bạn cần</th><th>Dùng gì</th><th>Vì sao không tự viết</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Thông tin mới, ngoài cutoff, có nguồn trích dẫn</td><td><code>web_search</code></td><td>Bạn không phải tự crawl, tự chống lỗi, tự gắn citation</td></tr>
+        <tr><td>Đọc trọn nội dung một URL / PDF cụ thể</td><td><code>web_fetch</code></td><td>Cùng lý do</td></tr>
+        <tr><td>Tính toán chính xác, xử lý dữ liệu, tạo file/biểu đồ</td><td><code>code_execution</code></td><td>Sandbox + thư viện sẵn; model tính nhẩm vẫn có thể sai</td></tr>
+        <tr><td>Tìm tool trong catalog khổng lồ</td><td><code>tool_search</code></td><td>Giữ context và độ chính xác chọn tool</td></tr>
+        <tr><td>Truy vấn dữ liệu <em>riêng</em> của bạn</td><td>Tool của bạn (hoặc MCP server)</td><td>Built-in tool không biết hệ thống của bạn</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="mcp">
+    <h2>MCP là gì — host, client, server</h2>
+    <p>MCP (Model Context Protocol) là một <strong>chuẩn mở để nối ứng dụng AI với các hệ thống bên ngoài</strong>: nguồn dữ liệu, công cụ, và workflow. Cách ví von chính thức trong docs: <em>MCP giống như cổng USB-C cho ứng dụng AI</em> — USB-C chuẩn hóa cách nối thiết bị điện tử, MCP chuẩn hóa cách nối ứng dụng AI với hệ thống ngoài.</p>
+
+    <p><strong>Vì sao cần chuẩn hóa?</strong> Không có MCP, mỗi ứng dụng AI phải tự viết cách nối cho từng dịch vụ (Jira, Sentry, Figma, database…) — nhân số tích hợp lên. Có MCP, mỗi dịch vụ viết <em>một</em> MCP server, và mọi client hỗ trợ MCP dùng được ngay. Docs gọi đó là "build once and integrate everywhere".</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">MCP Host</div>
+        <h3>Ứng dụng AI</h3>
+        <p>Thứ điều phối và quản lý một hoặc nhiều client. Ví dụ: <strong>Claude Code</strong>, Claude Desktop, VS Code.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">MCP Client</div>
+        <h3>Cầu nối tới một server</h3>
+        <p>Host tạo <strong>một client cho mỗi server</strong>. Mỗi client giữ một kết nối riêng, chuyên trách với server của nó.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">MCP Server</div>
+        <h3>Chương trình cấp context</h3>
+        <p>Cung cấp tool/dữ liệu. Có thể chạy local hoặc remote — "server" không nói tới nơi chạy.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Ví dụ</div>
+        <h3>VS Code + Sentry</h3>
+        <p>VS Code là host. Nó tạo một MCP client để nối tới Sentry MCP server. Nối thêm filesystem server thì tạo thêm một client nữa.</p>
+      </div>
+    </div>
+
+    <h3>Hai tầng của MCP</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Tầng</th><th>Nội dung</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Data layer</strong></td><td>Giao thức trao đổi dựa trên <strong>JSON-RPC 2.0</strong>: discovery (phiên bản + capabilities), và các primitive tools / resources / prompts / notifications.</td></tr>
+        <tr><td><strong>Transport layer</strong></td><td>Cơ chế truyền: <strong>stdio</strong> (tiến trình local nói chuyện qua stdin/stdout, không độ trễ mạng) và <strong>Streamable HTTP</strong> (cho server remote, hỗ trợ bearer token, API key, custom header — docs khuyến nghị OAuth để lấy token).</td></tr>
+      </tbody>
+    </table>
+    <p>Tầng transport che đi chi tiết truyền thông, nên <em>cùng một</em> format JSON-RPC 2.0 dùng được cho cả hai kiểu transport.</p>
+
+    <h3>Ba primitive — đừng nhầm lẫn</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Primitive</th><th>Là gì</th><th>Ví dụ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Tools</strong></td><td>Hàm có thể gọi để <em>hành động</em> (có phê duyệt của người dùng)</td><td>truy vấn database, gọi API, thao tác file</td></tr>
+        <tr><td><strong>Resources</strong></td><td>Nguồn dữ liệu để <em>đọc</em>, cấp context</td><td>nội dung file, bản ghi database, response API</td></tr>
+        <tr><td><strong>Prompts</strong></td><td>Template tái sử dụng để cấu trúc tương tác</td><td>system prompt mẫu, few-shot example</td></tr>
+      </tbody>
+    </table>
+    <p>Mỗi loại có method discovery (<code>*/list</code>) và retrieval (<code>*/get</code>), riêng tool có thêm <code>tools/call</code> để thực thi. Ví dụ một MCP server về database có thể vừa có tool để query, vừa có resource chứa schema, vừa có prompt chứa few-shot example. Danh sách này là <em>động</em> — client hỏi lúc chạy, không phải đọc file cấu hình cứng.</p>
+
+    <div class="callout">
+      <div class="callout-title">Local hay remote — chỉ khác transport</div>
+      <p><strong>Local</strong> (thường dùng stdio): host khởi chạy server như một tiến trình con trên máy bạn. Phù hợp với thứ cần chạm tài nguyên máy — filesystem, browser, socket database. Thường phục vụ một client.</p>
+      <p><strong>Remote</strong> (Streamable HTTP): server chạy trên nền tảng của nhà cung cấp, thường phục vụ nhiều client. Ví dụ Sentry MCP server.</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">Cảnh báo bảo mật — đọc trước khi nối bất cứ server nào</div>
+      <p>Docs của Claude Code nói rõ: hãy <strong>kiểm tra độ tin cậy của server trước khi nối</strong>. Server lấy nội dung từ bên ngoài có thể khiến bạn gặp rủi ro prompt injection. Một MCP server là mã chạy trên máy bạn (stdio) hoặc một bên thứ ba nhận dữ liệu của bạn (HTTP) — đối xử với nó như đối xử với một dependency.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="viet-mcp-server">
+    <h2>Viết MCP server tối giản &amp; nối vào Claude Code</h2>
+    <p>Phần này dùng đúng cú pháp từ quickstart của MCP. Bạn sẽ thấy viết một MCP server <em>không</em> khó hơn viết vài hàm Python.</p>
+
+    <h3>Chuẩn bị</h3>
+    <ul>
+      <li>Python 3.10 trở lên, và <strong>MCP Python SDK 2.0.0+</strong>.</li>
+      <li><code>uv</code> để tạo project và chạy. Trên Windows: <code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code> rồi mở lại terminal.</li>
+    </ul>
+    <pre><code>uv init weather
+cd weather
+uv venv
+.venv\Scripts\activate        # macOS/Linux: source .venv/bin/activate
+uv add mcp[cli]
+new-item weather.py           # macOS/Linux: touch weather.py</code></pre>
+
+    <h3>Server tối giản</h3>
+    <p>Ý tưởng cốt lõi: tạo một instance <code>MCPServer</code>, rồi decorate hàm của bạn bằng <code>@mcp.tool()</code>. SDK dùng <strong>type hints và docstring</strong> để tự sinh tool definition — bạn không phải viết JSON schema tay.</p>
+    <pre><code>from mcp.server import MCPServer
+
+mcp = MCPServer("tickets")
+
+@mcp.tool()
+async def get_ticket(ticket_id: str) -> str:
+    """Get a support ticket by its ID.
+
+    Args:
+        ticket_id: Ticket ID, e.g. SUP-1042
+    """
+    return lookup_ticket(ticket_id)
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")</code></pre>
+    <p>Chạy thử: <code>uv run weather.py</code> — server sẽ lắng nghe message từ MCP host.</p>
+
+    <div class="callout">
+      <div class="callout-title">Quy tắc số một với server stdio: đừng in ra stdout</div>
+      <p>Với server dùng transport stdio, <strong>tuyệt đối không viết ra stdout</strong> — <code>print()</code> trong Python mặc định ghi vào stdout và sẽ làm hỏng các message JSON-RPC, khiến server chết. Dùng module <code>logging</code> chuẩn (ghi vào stderr):</p>
+      <pre><code>import logging
+logger = logging.getLogger(__name__)
+
+# ❌ Bad (STDIO)
+print("Processing request")
+
+# ✅ Good (STDIO)
+logger.info("Processing request")   # ghi vào stderr</code></pre>
+      <p>Với server HTTP thì log ra stdout không sao, vì nó không can thiệp vào HTTP response.</p>
+    </div>
+
+    <p>Ví dụ đầy đủ trong quickstart còn có một server thời tiết với hai tool <code>get_alerts(state)</code> và <code>get_forecast(latitude, longitude)</code>, gọi API của National Weather Service — đáng đọc để thấy cách xử lý lỗi và format kết quả trả về cho model.</p>
+
+    <h3>Nối vào một host: ví dụ Claude Desktop</h3>
+    <p>Host đọc danh sách server trong key <code>mcpServers</code> của file cấu hình. Trên Windows, file đó ở <code>$env:AppData\Claude\claude_desktop_config.json</code>:</p>
+    <pre><code>{
+  "mcpServers": {
+    "weather": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:\\ABSOLUTE\\PATH\\TO\\PARENT\\FOLDER\\weather",
+        "run",
+        "weather.py"
+      ]
+    }
+  }
+}</code></pre>
+    <p>Lưu ý: đường dẫn phải là <strong>đường dẫn tuyệt đối</strong>; trên Windows dùng <code>\\</code> hoặc <code>/</code> trong JSON. Có thể cần ghi full path tới <code>uv</code> (tìm bằng <code>where uv</code>).</p>
+
+    <h3>Nối vào Claude Code</h3>
+    <p>Claude Code có CLI riêng để quản lý MCP server. Ví dụ chính thức — nối server docs của Claude Code (hosted, không cần auth):</p>
+    <pre><code># 1. Thêm server (chạy trong terminal, KHÔNG phải trong phiên claude)
+claude mcp add --transport http claude-code-docs https://code.claude.com/docs/mcp
+
+# 2. Kiểm tra kết nối
+claude mcp list
+
+# 3. Dùng trong phiên
+claude
+&gt; Use the claude-code-docs server to look up what MCP_TIMEOUT does
+
+# 4. Gỡ khi không dùng nữa
+claude mcp remove claude-code-docs</code></pre>
+
+    <p>Các phần của lệnh <code>claude mcp add</code>:</p>
+    <ul>
+      <li><code>claude mcp add</code> — đăng ký server với Claude Code.</li>
+      <li><code>--transport http</code> — server hosted ở một URL, không chạy local. (Với server local, không cần flag này: transport mặc định là <code>stdio</code>.)</li>
+      <li><code>claude-code-docs</code> — tên bạn tự đặt; dùng để gắn nhãn tool và để tham chiếu trong các lệnh khác.</li>
+      <li>URL — nơi server được host.</li>
+    </ul>
+
+    <p>Thêm một server local bằng stdio — chú ý dấu <code>--</code> phân tách option của Claude Code với lệnh chạy server:</p>
+    <pre><code>claude mcp add playwright -- npx -y @playwright/mcp@latest</code></pre>
+    <p>Mọi thứ sau <code>--</code> được truyền nguyên vẹn cho server. Nếu không có <code>--</code>, Claude Code sẽ cố parse các flag của server (như <code>--port</code>) thành option của chính nó.</p>
+
+    <h3>Scope — server sống ở đâu</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Scope</th><th>File</th><th>Ai dùng được</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>local</code> (mặc định)</td><td><code>~/.claude.json</code>, trong entry của project này</td><td>Chỉ bạn, chỉ project này</td></tr>
+        <tr><td><code>project</code></td><td><code>.mcp.json</code> ở gốc project</td><td>Mọi người clone project (commit file này)</td></tr>
+        <tr><td><code>user</code></td><td><code>~/.claude.json</code>, key <code>mcpServers</code> cấp cao nhất</td><td>Chỉ bạn, mọi project</td></tr>
+      </tbody>
+    </table>
+    <p>Đổi scope = gỡ entry rồi thêm lại ở scope mới, ví dụ <code>claude mcp add --scope user --transport http claude-code-docs https://code.claude.com/docs/mcp</code>. Trong phiên làm việc, gõ <code>/mcp</code> để xem và quản lý server đã thêm.</p>
+
+    <div class="callout">
+      <div class="callout-title">Hai con số vận hành cần nhớ</div>
+      <ul>
+        <li><strong>Mỗi server nối vào đều chiếm context</strong>, vì tên tool và server instructions được nạp vào mọi session. Gỡ server không dùng là cách giữ context sạch.</li>
+        <li><strong>Output của tool MCP bị giới hạn.</strong> Claude Code cảnh báo khi output vượt 10.000 token và mặc định cắt ở 25.000 token. Muốn nâng: đặt biến môi trường <code>MAX_MCP_OUTPUT_TOKENS</code> (ví dụ <code>50000</code>), hoặc server tự khai báo annotation <code>anthropic/maxResultSizeChars</code>.</li>
+      </ul>
+      <p>Với server stdio, Claude Code còn set biến <code>CLAUDE_PROJECT_DIR</code> trong môi trường của server để nó resolve đường dẫn theo project mà không phụ thuộc thư mục làm việc.</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">Tên tool khi đã nối</div>
+      <p>Tool từ MCP server xuất hiện với tên dạng <code>mcp__&lt;server&gt;__&lt;tool&gt;</code> — ví dụ <code>mcp__github__list_prs</code>. Nếu server được đóng gói trong một plugin, tên dài hơn: <code>mcp__plugin_&lt;plugin&gt;_&lt;server&gt;__&lt;tool&gt;</code>. Bạn dùng tên đầy đủ này khi viết permission rule, hook matcher, hay khai báo tool cho subagent.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="mcp-hay-tool">
+    <h2>MCP hay tool trực tiếp?</h2>
+    <p>Cả hai cuối cùng đều thành tool trong <code>tools</code> của request — model không phân biệt. Khác biệt nằm ở <strong>ai viết, ai bảo trì, và ai dùng lại được</strong>.</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Tiêu chí</th><th>Tool trực tiếp (tự khai báo)</th><th>MCP server</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ai viết</td><td>Bạn, trong app của bạn</td><td>Bạn hoặc bên thứ ba, chạy tách riêng</td></tr>
+        <tr><td>Dùng lại ở đâu</td><td>Chỉ app đó</td><td>Mọi host hỗ trợ MCP (Claude Code, Claude Desktop, VS Code, Cursor…)</td></tr>
+        <tr><td>Discovery</td><td>Hard-code trong code / cấu hình</td><td>Client hỏi server lúc chạy qua <code>tools/list</code></td></tr>
+        <tr><td>Bí mật / auth</td><td>Nằm trong app của bạn</td><td>Nằm trong server; host chỉ cầm credential của kết nối MCP</td></tr>
+        <tr><td>Chi phí context</td><td>Chỉ tool bạn khai báo</td><td>Tên tool + instructions của server; giảm mạnh nhờ tool search trong Claude Code</td></tr>
+        <tr><td>Phù hợp khi</td><td>Vài tool đặc thù cho một app; logic nằm cùng codebase</td><td>Cần chia sẻ cho nhiều client/team; hệ thống ngoài có vòng đời riêng</td></tr>
+      </tbody>
+    </table>
+
+    <p>Một lựa chọn thứ ba đáng biết: <strong>MCP connector</strong> của Claude API cho phép nối tới các MCP server remote ngay từ Messages API, không cần tự viết MCP client — hữu ích khi bạn muốn dùng server có sẵn mà không muốn dựng hạ tầng client.</p>
+
+    <div class="callout">
+      <div class="callout-title">Quy tắc chọn nhanh</div>
+      <ol>
+        <li><strong>Một app, vài tool, không ai khác dùng</strong> → tool trực tiếp. Ít bộ phận chuyển động hơn.</li>
+        <li><strong>Nhiều client hoặc nhiều team cùng cần</strong> → MCP server. Viết một lần, dùng ở nhiều host.</li>
+        <li><strong>Cần chạm tài nguyên máy</strong> (filesystem, browser, DB socket) → MCP server local qua stdio.</li>
+        <li><strong>Cần thông tin web có citation, hoặc tính toán trong sandbox</strong> → đừng viết gì cả, dùng built-in tool.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+    <ol>
+      <li><strong>"Khai báo tool xong là Claude tự chạy tool."</strong> — Không, với client tool. Claude chỉ <em>đề nghị</em>: nó trả về block <code>tool_use</code> và dừng với <code>stop_reason: "tool_use"</code>. App của bạn phải chạy hàm thật rồi gửi <code>tool_result</code>. Không gửi thì hội thoại đứng yên. Chỉ <em>server tool</em> mới do hạ tầng Anthropic chạy.</li>
+      <li><strong>"<code>description</code> chỉ là chú thích cho người đọc."</strong> — Đây là field ảnh hưởng lớn nhất tới hiệu năng tool. Claude quyết định gọi tool nào dựa trên yêu cầu người dùng và description; một câu mơ hồ kiểu "Gets the stock price for a ticker." khiến model đoán mò. Docs khuyến nghị 3–4 câu mỗi tool, nói rõ cả <em>khi nào không</em> nên dùng.</li>
+      <li><strong>"Càng nhiều tool càng tốt."</strong> — Sai theo hai hướng: định nghĩa tool tốn input token (một setup 5 server có thể ngốn ~55k token), và độ chính xác chọn tool <em>giảm</em> khi vượt 30–50 tool. Cách chữa: bỏ tool thừa, gộp tool cùng nghiệp vụ, hoặc bật tool search.</li>
+      <li><strong>"Tool trả lỗi là hỏng cả phiên."</strong> — Không. Lỗi là một phần của giao thức: gửi <code>tool_result</code> với <code>is_error: true</code> kèm mô tả có ích ("Rate limit exceeded. Retry after 60 seconds.") để Claude tự điều chỉnh. Với lỗi tham số, Claude còn thử lại 2–3 lần trước khi bỏ cuộc.</li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+    <p>Làm ra nháp trước rồi mới mở đáp án. Đáp án là gợi ý về <em>cách lập luận</em> — không cần khớp từng chữ.</p>
+
+    <div class="exercise">
+      <h3>A1 · Viết definition cho tool <code>refund_order</code></h3>
+      <p>Bối cảnh: bạn làm app CSKH. Cần một tool để hoàn tiền cho <strong>một</strong> đơn hàng cụ thể. Viết đầy đủ <code>name</code>, <code>description</code>, <code>input_schema</code>.</p>
+      <p>Ràng buộc để tự kiểm:</p>
+      <ul>
+        <li>Tên tool khớp regex <code>^[a-zA-Z0-9_-]{1,128}$</code>.</li>
+        <li>Description nói rõ: làm gì, <strong>khi nào dùng</strong>, <strong>khi nào KHÔNG</strong> (gợi ý: khách chỉ hỏi <em>chính sách</em> hoàn tiền thì không gọi tool này), tham số nghĩa là gì, giới hạn.</li>
+        <li>Tham số: <code>order_id</code> (bắt buộc), <code>reason</code> (tùy chọn, chỉ nhận vài giá trị), <code>amount</code> (tùy chọn, hoàn một phần).</li>
+        <li>Có <code>additionalProperties: false</code> và (tuỳ chọn) <code>strict: true</code>.</li>
+      </ul>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <pre><code>{
+  "name": "refund_order",
+  "description": "Refunds a customer order, in full or in part. Use this when the customer explicitly asks to refund a specific order and the order ID is known. Do not use it when the customer only asks about the refund policy, the refund window, or how refunds work — answer those in prose instead. The tool returns the refund confirmation ID and the refunded amount in the store currency. It cannot change the payment method, and it cannot refund an order that has already been fully refunded.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "order_id": {
+        "type": "string",
+        "description": "The order identifier, e.g. ORD-20481"
+      },
+      "reason": {
+        "type": "string",
+        "enum": ["customer_request", "damaged", "not_delivered", "duplicate"],
+        "description": "Why the refund is issued; defaults to customer_request"
+      },
+      "amount": {
+        "type": "number",
+        "description": "Partial refund amount in store currency. Omit to refund the full order."
+      }
+    },
+    "required": ["order_id"],
+    "additionalProperties": false
+  },
+  "strict": true
+}</code></pre>
+        <p><strong>Checklist tự kiểm:</strong> tên đúng regex? description ≥ 3 câu và có cả "khi nào không"? tham số có enum thay vì chuỗi tự do? <code>required</code> chỉ gồm những gì thật sự bắt buộc? Có mô tả giới hạn (không đổi phương thức thanh toán, không refund hai lần) để Claude không hứa quá với khách?</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>A2 · Viết message tiếp theo cho hai tình huống</h3>
+      <p>Bạn gửi request với <code>tools</code> gồm <code>get_weather</code>. Claude trả về:</p>
+      <pre><code>{
+  "stop_reason": "tool_use",
+  "content": [
+    { "type": "text", "text": "Let me check that for you." },
+    { "type": "tool_use",
+      "id": "toolu_01A09q90qw90lq917835lq9",
+      "name": "get_weather",
+      "input": { "location": "Ha Noi, VN" } }
+  ]
+}</code></pre>
+      <p><strong>2a.</strong> Tool chạy thành công, trả về "31°C, mưa rào". Viết message bạn gửi tiếp theo.</p>
+      <p><strong>2b.</strong> Tool bị timeout. Viết message bạn gửi tiếp theo — và viết sao cho Claude biết nên làm gì.</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p><strong>2a — luôn giữ assistant message ở giữa:</strong></p>
+        <pre><code>{
+  "role": "user",
+  "content": [
+    { "type": "tool_result",
+      "tool_use_id": "toolu_01A09q90qw90lq917835lq9",
+      "content": "31 degrees Celsius, heavy showers" }
+  ]
+}</code></pre>
+        <p><strong>2b — lỗi là một kết quả hợp lệ, nhưng phải hữu ích:</strong></p>
+        <pre><code>{
+  "role": "user",
+  "content": [
+    { "type": "tool_result",
+      "tool_use_id": "toolu_01A09q90qw90lq917835lq9",
+      "content": "TimeoutError: weather provider did not respond within 10s. Retrying immediately is unlikely to help; suggest the user try again in a few minutes.",
+      "is_error": true }
+  ]
+}</code></pre>
+        <p><strong>Tự kiểm:</strong> block <code>tool_result</code> có đứng <em>đầu</em> mảng <code>content</code> không? <code>tool_use_id</code> có khớp <code>id</code> không? Có chèn text <em>trước</em> tool_result không (sai)? Và ở 2b — thông điệp lỗi có nói <em>nên làm gì tiếp</em> chưa, hay chỉ "failed"?</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>A3 · Năm quyết định thiết kế</h3>
+      <p>Với mỗi tình huống, chọn phương án và giải thích một câu:</p>
+      <ol>
+        <li>Bạn có 5 tool: <code>create_pr</code>, <code>review_pr</code>, <code>merge_pr</code>, <code>list_prs</code>, <code>get_pr</code>. Nên giữ nguyên hay gộp?</li>
+        <li>Request của bạn đang có 60 tool và Claude bắt đầu gọi nhầm. Ba cách xử lý, xếp theo thứ tự nên thử?</li>
+        <li>Bạn cần một tool đọc file log trên máy dev của từng lập trình viên trong team. Dùng tool trực tiếp trong app, hay MCP server? Kiểu transport nào?</li>
+        <li>Bạn cần "giá cổ phiếu mới nhất kèm nguồn" trong một web app. Tự viết tool gọi API chứng khoán, hay dùng built-in tool nào?</li>
+        <li>Tool <code>get_weather</code> của bạn cần <code>location</code>, nhưng người dùng chỉ hỏi "What's the weather?". Model có thể làm gì — và bạn phòng thế nào?</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ol>
+          <li><strong>Gộp ba tool hành động</strong> thành một (ví dụ <code>github_pr(action: "create" | "review" | "merge", …)</code>), vì chúng cùng một đối tượng nghiệp vụ và dễ gây nhập nhằng. Có thể giữ <code>list_prs</code>/<code>get_pr</code> riêng vì đó là thao tác đọc, khác hẳn về mục đích — nhưng tên nên có namespace dịch vụ (<code>github_…</code>).</li>
+          <li><strong>(1) Bỏ tool không dùng</strong> → <strong>(2) gộp tool cùng nghiệp vụ</strong> → <strong>(3) bật tool search</strong> với <code>defer_loading: true</code> cho phần lớn tool. Ngưỡng cần nhớ: chọn tool bắt đầu kém chính xác khi vượt 30–50 tool; tool search giảm >85% token định nghĩa và chỉ nạp 3–5 tool mỗi request.</li>
+          <li><strong>MCP server local, transport stdio</strong> — nó cần chạm filesystem của từng máy, và host khởi chạy nó như tiến trình con. MCP cũng cho dùng lại ở nhiều host (Claude Code, Desktop…).</li>
+          <li>Dùng <strong>web search</strong> nếu cần thông tin mới kèm citation (giá $10/1.000 lần search + token); nếu chỉ cần đọc một URL cụ thể thì <strong>web fetch</strong>. Tự viết tool chỉ hợp lý khi bạn có nguồn dữ liệu riêng hoặc cần logic đặc thù.</li>
+          <li>Docs nói: Opus có xu hướng <strong>nhận ra thiếu tham số và hỏi lại</strong>; Sonnet có thể hỏi, nhưng cũng có thể <strong>tự suy ra giá trị</strong> (ví dụ <code>"New York, NY"</code>). Phòng bằng cách ghi rõ trong description rằng <code>location</code> phải do người dùng cung cấp, và/hoặc bật <code>strict: true</code>.</li>
+        </ol>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu — làm nhanh để chắc mình nắm cốt lõi.</p>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">1. Trong vòng lặp tool use với client tool, sau khi Claude trả về block <code>tool_use</code>, bước tiếp theo là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Claude tự chạy tool trên hạ tầng Anthropic</button>
+        <button class="quiz-opt" data-key="b">App của bạn chạy tool thật, rồi gửi <code>tool_result</code> kèm <code>tool_use_id</code></button>
+        <button class="quiz-opt" data-key="c">Gửi lại y nguyên request ban đầu</button>
+        <button class="quiz-opt" data-key="d">Chờ Claude hỏi lại cho chắc</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: ai là bên thực thi — model hay chương trình của bạn?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Với client tool, Claude chỉ đề xuất: response có <code>stop_reason: "tool_use"</code>. App của bạn chạy hàm tương ứng rồi gửi message <code>user</code> chứa <code>tool_result</code> với <code>tool_use_id</code> khớp <code>id</code> của lời gọi. Chỉ server tool mới do Anthropic chạy.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">2. Với <code>tool_choice</code> mặc định là <code>auto</code>, Claude dựa vào đâu để quyết định gọi một tool?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Thứ tự khai báo tool trong mảng <code>tools</code></button>
+        <button class="quiz-opt" data-key="b">Số lượng tham số của tool</button>
+        <button class="quiz-opt" data-key="c">Nhiệt độ (temperature) của request</button>
+        <button class="quiz-opt" data-key="d">Yêu cầu của người dùng và <code>description</code> của tool</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: docs nói yếu tố quan trọng nhất là phần mô tả tool.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Claude quyết định khi nào gọi tool dựa trên yêu cầu người dùng và mô tả tool — và nó gọi khi yêu cầu khớp với khả năng được mô tả, còn câu trả lời chưa có trong context. Đây là lý do description chi tiết là "yếu tố quan trọng nhất" theo docs.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">3. Tool chạy nhưng gặp lỗi. Block <code>tool_result</code> nên trông thế nào?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Có <code>is_error: true</code> và nội dung nói rõ lỗi gì, nên thử gì tiếp</button>
+        <button class="quiz-opt" data-key="b">Không gửi gì cả, để Claude tự nhận ra</button>
+        <button class="quiz-opt" data-key="c">Nhét thông báo lỗi vào system prompt</button>
+        <button class="quiz-opt" data-key="d">Gửi <code>tool_result</code> rỗng, bỏ <code>tool_use_id</code></button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: lỗi là một phần của giao thức, và docs có khuyến nghị về cách viết thông điệp lỗi.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Lỗi được báo bằng <code>tool_result</code> với cờ <code>is_error: true</code>. Docs khuyến nghị viết thông điệp có ích — ví dụ <code>"Rate limit exceeded. Retry after 60 seconds."</code> — thay vì lỗi chung chung kiểu "failed". Bỏ <code>tool_use_id</code> là sai format và sẽ gây lỗi 400.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">4. Vì sao không nên khai báo 60 tool nhỏ trong một request?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Vì API chặn cứng ở 20 tool mỗi request</button>
+        <button class="quiz-opt" data-key="b">Vì model không đọc được tool nào cả</button>
+        <button class="quiz-opt" data-key="c">Vì chọn tool bắt đầu sai khi vượt 30–50 tool, và định nghĩa tool tốn context</button>
+        <button class="quiz-opt" data-key="d">Vì mỗi tool bị tính phí gấp đôi</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: docs nêu hai vấn đề — một về context, một về độ chính xác.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Hai vấn đề tách biệt: <em>context bloat</em> (một setup 5 server có thể ngốn ~55k token chỉ cho định nghĩa) và <em>độ chính xác</em> (khả năng chọn đúng tool giảm khi vượt 30–50 tool). 30–50 là ngưỡng thực nghiệm từ docs, không phải giới hạn cứng của API.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">5. Phát biểu nào đúng về MCP host / client / server?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">MCP server là một phần tử trong mảng <code>tools</code> của request</button>
+        <button class="quiz-opt" data-key="b">Host tạo một client cho mỗi server, mỗi client giữ một kết nối riêng</button>
+        <button class="quiz-opt" data-key="c">Host và server là hai tên gọi của cùng một thứ</button>
+        <button class="quiz-opt" data-key="d">Client là chương trình cung cấp dữ liệu cho AI</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: kiến trúc MCP có host là ứng dụng AI, và mỗi server một client.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Host là ứng dụng AI (Claude Code, VS Code…), điều phối một hoặc nhiều client; host tạo <em>một client cho mỗi server</em>, mỗi client giữ kết nối chuyên trách của nó. Server là chương trình cung cấp context (tool, resource, prompt) — có thể chạy local hoặc remote.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question">6. Điền giá trị còn thiếu: khi Claude muốn gọi một client tool, response có <code>stop_reason</code> là gì?</p>
+      <p class="fib-sentence"><code>"stop_reason": "</code><span class="fib" data-answer="tool_use" data-placeholder="?"></span><code>"</code></p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <!-- ================================================== -->
+  <section id="luyen-them">
+    <h2>Luyện thêm với nguồn chính thức</h2>
+    <p>Ba nguồn dưới đây đều là repo chính thức của Anthropic / MCP — mở trực tiếp, đọc và chạy, không qua trung gian:</p>
+    <ul>
+      <li><a href="https://github.com/anthropics/courses/tree/master/tool_use"><strong>anthropics/courses → tool_use</strong></a> — <strong>6 notebook chính thức, làm lần lượt</strong>: <code>01_tool_use_overview</code> → <code>02_your_first_simple_tool</code> → <code>03_structured_outputs</code> → <code>04_complete_workflow</code> → <code>05_tool_choice</code> → <code>06_chatbot_with_multiple_tools</code>.</li>
+      <li><a href="https://github.com/anthropics/claude-cookbooks"><strong>anthropics/claude-cookbooks</strong></a> — các recipe về tool use: chạy thử từng notebook để thấy cách nối tool vào một workflow thật, rồi đối chiếu với mục 2 và mục 6 của bài này.</li>
+      <li><a href="https://github.com/modelcontextprotocol/servers"><strong>modelcontextprotocol/servers</strong></a> — kho MCP server thật để đọc code tham khảo: chọn một server gần với use case của bạn nhất, rồi đọc phần khai báo tool trước tiên.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Client tool</td><td>Tool do bạn định nghĩa, chạy trong app của bạn; Claude trả <code>tool_use</code>, bạn trả <code>tool_result</code>.</td></tr>
+        <tr><td>Server tool</td><td>Tool chạy trên hạ tầng Anthropic (<code>web_search</code>, <code>web_fetch</code>, <code>code_execution</code>, <code>tool_search</code>); bạn không viết handler.</td></tr>
+        <tr><td><code>tool_use</code></td><td>Block trong response của Claude: <code>id</code>, <code>name</code>, <code>input</code>. Đi kèm <code>stop_reason: "tool_use"</code>.</td></tr>
+        <tr><td><code>tool_result</code></td><td>Block trong message <code>user</code> gửi kết quả về: <code>tool_use_id</code>, <code>content</code>, và tùy chọn <code>is_error</code>. Phải đứng đầu mảng <code>content</code>.</td></tr>
+        <tr><td><code>input_schema</code></td><td>JSON Schema mô tả tham số của tool.</td></tr>
+        <tr><td><code>input_examples</code></td><td>Mảng ví dụ input hợp lệ, giúp model hiểu tool có input phức tạp.</td></tr>
+        <tr><td><code>is_error</code></td><td>Cờ báo tool chạy lỗi — kèm thông điệp có ích để Claude tự điều chỉnh.</td></tr>
+        <tr><td><code>tool_choice</code></td><td><code>auto</code> (mặc định) / <code>any</code> / <code>tool</code> / <code>none</code> — mức độ ép buộc gọi tool.</td></tr>
+        <tr><td><code>strict</code></td><td>Thuộc tính tool definition đảm bảo input của Claude luôn khớp schema chính xác.</td></tr>
+        <tr><td>Tool search</td><td>Cơ chế tìm tool theo nhu cầu với <code>defer_loading: true</code>, giữ context nhỏ và độ chính xác cao.</td></tr>
+        <tr><td>Dynamic filtering</td><td>Web search (từ <code>web_search_20260209</code>) tự viết code lọc kết quả trước khi vào context.</td></tr>
+        <tr><td>MCP</td><td>Chuẩn mở nối ứng dụng AI với hệ thống ngoài; giao thức JSON-RPC 2.0 trên hai transport stdio / Streamable HTTP.</td></tr>
+        <tr><td>MCP host / client / server</td><td>Host = ứng dụng AI; mỗi server có một client riêng giữ kết nối; server = chương trình cung cấp tool/resource/prompt.</td></tr>
+        <tr><td>Resources / Prompts</td><td>Hai primitive còn lại của MCP: dữ liệu để đọc, và template tái sử dụng — khác với Tools là hàm để gọi.</td></tr>
+        <tr><td><code>mcp__server__tool</code></td><td>Tên gọi đầy đủ của tool MCP trong Claude Code (kèm biến thể <code>mcp__plugin_…</code>).</td></tr>
+        <tr><td><code>MAX_MCP_OUTPUT_TOKENS</code></td><td>Biến môi trường nâng trần output tool MCP (mặc định cắt ở 25.000 token).</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li>Claude Docs — <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview">Tool use with Claude</a> (client tool vs server tool, vòng lặp, pricing, khi nào Claude gọi tool).</li>
+      <li>Claude Docs — <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools">Define tools</a> (<code>name</code>/<code>description</code>/<code>input_schema</code>/<code>input_examples</code>, best practices, <code>tool_choice</code>, description tốt vs kém).</li>
+      <li>Claude Docs — <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls">Handle tool calls</a> (<code>tool_use</code>/<code>tool_result</code>, format bắt buộc, <code>is_error</code>, retry 2–3 lần).</li>
+      <li>Claude Docs — <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool">Web search tool</a> (các version, <code>max_uses</code>, domain filtering, <code>user_location</code>, dynamic filtering, citation, error codes, giá).</li>
+      <li>Claude Docs — <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/code-execution-tool">Code execution tool</a> (các version, sub-tool, sandbox, container reuse, error codes).</li>
+      <li>Claude Docs — <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool">Tool search tool</a> (ngưỡng 30–50 tool, ~55k token, <code>defer_loading</code>).</li>
+      <li>Claude Docs — <a href="https://platform.claude.com/docs/en/agents-and-tools/mcp-connector">MCP connector</a> (nối MCP server remote từ Messages API).</li>
+      <li>Claude Code Docs — <a href="https://code.claude.com/docs/en/mcp-quickstart">Connect to MCP servers</a> (thêm server, <code>claude mcp list</code>, scope, troubleshooting).</li>
+      <li>Claude Code Docs — <a href="https://code.claude.com/docs/en/mcp">Connect Claude Code to tools via MCP</a> (4 kiểu transport, <code>--</code>, tool naming, output limits, tool search).</li>
+      <li>Model Context Protocol — <a href="https://modelcontextprotocol.io/">What is MCP?</a> (định nghĩa, lợi ích, hệ sinh thái).</li>
+      <li>Model Context Protocol — <a href="https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture">Architecture overview</a> (host/client/server, data layer &amp; transport layer, primitives).</li>
+      <li>Model Context Protocol — <a href="https://modelcontextprotocol.io/docs/2026-07-28/develop/build-server">Build an MCP server</a> (quickstart Python: <code>MCPServer</code>, <code>@mcp.tool()</code>, <code>mcp.run(transport="stdio")</code>, logging rule).</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài trước:</strong> C1 — Claude platform: nền tảng &amp; mô hình. <strong>Bài sau:</strong> C3 — tiếp theo trong Track Claude (Claude platform).</p>
+    <p>Chỗ nào chưa rõ — nhất là các chuỗi version tool và tên model — hãy mở docs mới nhất rồi ghi lại câu hỏi cho giáo viên.</p>
+  </footer>
+
+</main>
+
+<script src="../../assets/lang.js"></script>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>

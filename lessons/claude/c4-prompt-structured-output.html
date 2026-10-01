@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C4 · Prompt engineering &amp; structured output — Track Claude</title>
+<link rel="stylesheet" href="../../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Track Claude · C4 — Prompt &amp; Structured Output</div>
+    <h1>Prompt engineering &amp; structured output</h1>
+    <p class="subtitle">Biến yêu cầu mơ hồ thành tiêu chí rõ, ép Claude trả JSON đúng schema, và kiểm chứng kết quả — đúng theo tài liệu Anthropic. Đây là domain 20% của CCAR-F và 11% của CCDV-F.</p>
+    <p class="lesson-meta"><span>~35 phút</span><span>6 câu hỏi tương tác</span><span>Thực hành có đáp án tự kiểm</span><span>Nguồn: platform.claude.com docs</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#khi-nao">Prompt engineering: bắt đầu từ đâu, khi nào đáng làm</a></li>
+      <li><a href="#nguyen-tac">Bốn nguyên tắc nền — và cách đặt câu hỏi dài</a></li>
+      <li><a href="#few-shot">Few-shot: dạy bằng ví dụ</a></li>
+      <li><a href="#suy-nghi">Suy nghĩ, tự kiểm — và cú đổi thay của prefill</a></li>
+      <li><a href="#tieu-chi">Tiêu chí &amp; luật rõ ràng: từ mơ hồ đến đo được</a></li>
+      <li><a href="#structured">Structured output: ép JSON đúng schema</a></li>
+      <li><a href="#kiem-chung">Kiểm chứng &amp; retry: schema chưa đủ</a></li>
+      <li><a href="#output-batch">Xử lý output &amp; Batch API</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#luyen-them">Luyện thêm với nguồn chính thức</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">🎯 Vì sao bài này quan trọng</div>
+    <p>Trong blueprint thi: <strong>CCAR-F</strong> có domain "Prompt Engineering &amp; Structured Output" chiếm <strong>20%</strong> — lớn nhất cùng domain Claude Code; <strong>CCDV-F</strong> có "Prompt and Context Engineering" chiếm <strong>11%</strong>. Bảng đối chiếu đầy đủ ở <a href="../../reference/cert-roadmap.html">cert-roadmap</a>.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bài có nhiều thuật ngữ mới và vài cú pháp API. Đọc tuần tự — mục 6 (structured output) là phần nặng nhất, đọc chậm. Mục 10 có bài tập tự kiểm, mục 11 là quiz. Không cần thuộc lòng cú pháp: cần nhớ <em>khi nào dùng cái gì</em> và <em>giới hạn của nó</em>.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="khi-nao">
+    <h2>Prompt engineering: bắt đầu từ đâu, khi nào đáng làm</h2>
+    <p>Nhiều người hình dung prompt engineering là khéo tay thêm vài câu "thần chú" vào prompt. Tài liệu Anthropic mô tả nó như một <strong>quy trình kỹ thuật</strong> — và điều thú vị là phần quan trọng nhất lại không phải viết prompt.<sup><a href="#src-overview">[1]</a></sup></p>
+
+    <h3>Ba thứ phải có trước khi viết prompt</h3>
+    <p>Trang overview của Anthropic nói thẳng: hướng dẫn prompt engineering giả định bạn đã có ba thứ sau. Chưa có thì dành thời gian làm trước đã.</p>
+    <ol class="steps">
+      <li><strong>Định nghĩa rõ success criteria</strong> — thành công nghĩa là gì, đo bằng gì.</li>
+      <li><strong>Cách kiểm chứng bằng thực nghiệm</strong> — bộ eval để chạy prompt và chấm điểm.</li>
+      <li><strong>Một prompt nháp</strong> để bắt đầu cải thiện.</li>
+    </ol>
+
+    <p>Và một lưu ý tỉnh táo: <em>không phải eval fail nào cũng nên sửa bằng prompt</em>. Docs nói có trường hợp bạn cải thiện latency và chi phí dễ hơn bằng cách <strong>đổi model</strong> — prompt engineering không phải cây búa vạn năng.</p>
+
+    <h3>Success criteria "tốt" trông như thế nào</h3>
+    <p>Docs đưa bốn tính chất: <strong>Specific</strong> (cụ thể), <strong>Measurable</strong> (đo được), <strong>Achievable</strong> (khả thi), <strong>Relevant</strong> (liên quan tới mục đích sản phẩm). Ví dụ kinh điển từ trang develop-tests:<sup><a href="#src-evals">[4]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Tiêu chí cảm xúc (sentiment)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge">Kém</span></td><td>"Model phân loại cảm xúc tốt" — không đo được gì.</td></tr>
+        <tr><td><span class="badge due">Tốt</span></td><td>"Đạt F1 ≥ 0,85 trên tập held-out 10.000 tweet đa dạng; cao hơn baseline hiện tại 5%" — cụ thể, đo được, khả thi, liên quan.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Một use case thường cần đánh giá <strong>nhiều chiều</strong> cùng lúc: task fidelity, consistency, relevance &amp; coherence, tone &amp; style, privacy, mức dùng ngữ cảnh, latency, price. Bạn không cần cả tám — chọn chiều nào quan trọng với sản phẩm của mình.</p>
+
+    <h3>Vòng lặp prompt engineering</h3>
+    <p>Docs mô tả chu trình: <strong>test cases → prompt nháp → kiểm thử &amp; tinh chỉnh lặp → validation cuối → ship</strong>. Ba nguyên tắc thiết kế eval đi kèm:</p>
+    <ul>
+      <li><strong>Task-specific:</strong> eval phải phản ánh phân bố input thật, gồm cả edge case (dữ liệu thiếu, input quá dài, câu hỏi mơ hồ).</li>
+      <li><strong>Automate khi có thể:</strong> cấu trúc câu hỏi cho máy chấm — multiple-choice, so khớp chuỗi, chấm bằng code, hoặc LLM chấm.</li>
+      <li><strong>Ưu tiên số lượng hơn chất lượng:</strong> nhiều câu với tín hiệu hơi thấp nhưng chấm tự động, tốt hơn ít câu chấm tay.</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">Điểm thi hay hỏi</div>
+      <p>Câu hỏi kiểu "bước đầu tiên khi cải thiện một prompt" thường có đáp án là <em>định nghĩa tiêu chí thành công và dựng eval</em> — không phải "thêm ví dụ" hay "thêm chữ MUST". Tương tự: <em>"eval fail thì có nên sửa prompt không?"</em> — không hẳn, có thể đổi model.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="nguyen-tac">
+    <h2>Bốn nguyên tắc nền — và cách đặt câu hỏi dài</h2>
+    <p>Đây là bốn kỹ thuật Anthropic xếp vào nhóm "nguyên tắc chung", áp dụng cho mọi model hiện hành.<sup><a href="#src-best">[2]</a></sup></p>
+
+    <h3>1 · Rõ ràng và trực tiếp</h3>
+    <p>Claude phản hồi tốt với chỉ dẫn rõ ràng, tường minh. Docs đưa cách hình dung dễ nhớ: <em>coi Claude như một nhân viên cực giỏi nhưng mới vào công ty — không biết chuẩn mực và quy trình của bạn.</em></p>
+    <blockquote>
+      <p>"Show your prompt to a colleague with minimal context on the task and ask them to follow it. If they'd be confused, Claude will be too."</p>
+      <cite>— Prompting best practices, "Be clear and direct"</cite>
+    </blockquote>
+    <p>Nếu bạn muốn hành vi "vượt xa mức cơ bản", hãy <em>nói thẳng ra</em> thay vì hy vọng model suy ra từ prompt mơ hồ. Ví dụ trong docs:</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Kém hiệu quả</div>
+        <h3>Chung chung</h3>
+        <pre><code>Create an analytics dashboard</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-label">Hiệu quả hơn</div>
+        <h3>Cụ thể</h3>
+        <pre><code>Create an analytics dashboard. Include as many
+relevant features and interactions as possible.
+Go beyond the basics to create a fully-featured
+implementation.</code></pre>
+      </div>
+    </div>
+    <p>Hai lưu ý kèm theo: nói rõ <strong>định dạng output mong muốn</strong> và <strong>các ràng buộc</strong>; khi thứ tự hoặc tính đầy đủ của các bước quan trọng, hãy viết thành danh sách đánh số.</p>
+
+    <h3>2 · Thêm ngữ cảnh — nói cả "vì sao"</h3>
+    <p>Giải thích mục đích đằng sau chỉ dẫn giúp Claude hiểu mục tiêu và cho câu trả lời đúng hướng hơn. Claude đủ thông minh để khái quát từ lời giải thích:</p>
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Ràng buộc</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge">Kém</span></td><td><code>NEVER use ellipses</code></td></tr>
+        <tr><td><span class="badge due">Tốt</span></td><td><code>Your response will be read aloud by a text-to-speech engine, so never use ellipses since the text-to-speech engine will not know how to pronounce them.</code></td></tr>
+      </tbody>
+    </table>
+    <p>Ở ví dụ thứ hai, Claude không chỉ tránh dấu ba chấm — nó <em>hiểu vì sao</em>, nên biết cách xử lý các trường hợp tương tự (ví dụ ký hiệu khó đọc khác) mà bạn không cần liệt kê.</p>
+
+    <h3>3 · Cho Claude một vai trò (system prompt)</h3>
+    <p>Đặt vai trò trong <code>system</code> hướng hành vi và giọng điệu cho cả phiên. Docs nói ngay cả <strong>một câu</strong> cũng tạo khác biệt. Đây là request body từ ví dụ chính thức:</p>
+    <pre><code>{
+  "model": "claude-opus-5-5",
+  "max_tokens": 1024,
+  "system": "You are a helpful coding assistant specializing in Python.",
+  "messages": [
+    {"role": "user", "content": "How do I sort a list of dictionaries by key?"}
+  ]
+}</code></pre>
+    <p>Lưu ý thực chiến: các model Claude mới phản hồi với system prompt <em>mạnh hơn</em> các thế hệ trước. Nếu prompt cũ của bạn dùng ngôn ngữ gắt kiểu "CRITICAL: You MUST use this tool when..." để chống undertrigger, model mới có thể <strong>overtrigger</strong> — docs khuyên hạ giọng về mức bình thường ("Use this tool when...").</p>
+
+    <h3>4 · Cấu trúc prompt bằng XML tags</h3>
+    <p>Khi prompt trộn nhiều loại nội dung — chỉ dẫn, ngữ cảnh, ví dụ, dữ liệu đầu vào — XML tags giúp Claude tách bạch chúng, giảm hiểu sai. Dùng tên tag nhất quán, có nghĩa, và lồng nhau khi nội dung có cấu trúc phân cấp (nhiều document trong <code>&lt;documents&gt;</code>, mỗi cái trong <code>&lt;document index="n"&gt;</code>).</p>
+    <pre><code>&lt;instructions&gt;
+  Tóm tắt tài liệu dưới đây thành 3 gạch đầu dòng.
+&lt;/instructions&gt;
+
+&lt;context&gt;
+  Người đọc là quản lý không chuyên kỹ thuật.
+&lt;/context&gt;
+
+&lt;document&gt;
+  {{NOI_DUNG}}
+&lt;/document&gt;</code></pre>
+    <p>Docs nêu các tag gợi ý như <code>&lt;instructions&gt;</code>, <code>&lt;context&gt;</code>, <code>&lt;input&gt;</code> — quan trọng là tên <strong>nhất quán và mô tả đúng</strong> nội dung, không phải tên cụ thể nào.</p>
+
+    <h3>Bonus: khi ngữ cảnh dài (20k+ token)</h3>
+    <ul>
+      <li><strong>Dữ liệu dài đặt lên trên</strong>, câu hỏi/chỉ dẫn đặt gần cuối prompt. Docs ghi nhận: câu hỏi ở cuối có thể cải thiện chất lượng tới <strong>30%</strong> trong test, nhất là với input nhiều tài liệu phức tạp.</li>
+      <li><strong>Bọc từng tài liệu</strong> trong <code>&lt;document&gt;</code> với các tag con <code>&lt;document_content&gt;</code> và <code>&lt;source&gt;</code>.</li>
+      <li><strong>Ground bằng trích dẫn:</strong> yêu cầu Claude trích các phần liên quan trước (ví dụ bỏ vào <code>&lt;quotes&gt;</code>), rồi mới trả lời (ví dụ trong <code>&lt;info&gt;</code>). Cách này giúp model tập trung vào nội dung đúng và bỏ qua phần còn lại.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="few-shot">
+    <h2>Few-shot: dạy bằng ví dụ</h2>
+    <p>Ví dụ là một trong những cách đáng tin cậy nhất để điều hướng <em>định dạng, giọng điệu và cấu trúc</em> output. Kỹ thuật này tên là <strong>few-shot</strong> (một vài ví dụ) hay <strong>multishot prompting</strong>.<sup><a href="#src-best">[2]</a></sup></p>
+
+    <h3>Ba phẩm chất của một ví dụ tốt</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Phẩm chất</th><th>Nghĩa là gì</th><th>Lỗi hay gặp</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Relevant</strong> — sát thực tế</td><td>Phản chiếu đúng use case thật của bạn</td><td>Lấy ví dụ đẹp trên mạng, không giống dữ liệu thật</td></tr>
+        <tr><td><strong>Diverse</strong> — đa dạng</td><td>Bao được edge case; khác nhau đủ để model không "học vẹt" một khuôn ngoài ý muốn</td><td>Cả 3 ví dụ cùng một dạng câu</td></tr>
+        <tr><td><strong>Structured</strong> — có cấu trúc</td><td>Bọc từng ví dụ trong <code>&lt;example&gt;</code>, cả cụm trong <code>&lt;examples&gt;</code></td><td>Dán ví dụ lẫn vào chỉ dẫn, model không phân biệt được đâu là luật</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Bao nhiêu ví dụ?</strong> Docs khuyến nghị <strong>3–5 ví dụ</strong> cho kết quả tốt nhất. Đây là điểm cân bằng: đủ để model bắt pattern, chưa đến mức prompt phình to và tốn token vô ích.</p>
+
+    <p>Một mẹo hay từ docs: bạn có thể <em>nhờ chính Claude</em> đánh giá bộ ví dụ của mình về độ liên quan và đa dạng, hoặc sinh thêm ví dụ từ bộ ban đầu.</p>
+
+    <h3>Ví dụ có cấu trúc — bài toán phân loại</h3>
+    <p>Yêu cầu phân loại email CSKH thành 3 nhãn. Để ý ví dụ thứ ba — nó cố tình mơ hồ, dạy model rằng "không rõ thì đừng đoán":</p>
+    <pre><code>&lt;examples&gt;
+  &lt;example&gt;
+    &lt;input&gt;Đơn hàng #1234 giao trễ 3 ngày rồi, tôi muốn hủy.&lt;/input&gt;
+    &lt;output&gt;{"loai": "huy_don", "ly_do": "giao_tre"}&lt;/output&gt;
+  &lt;/example&gt;
+  &lt;example&gt;
+    &lt;input&gt;Sản phẩm bị lỗi, tôi đổi sang màu khác được không?&lt;/input&gt;
+    &lt;output&gt;{"loai": "doi_tra", "ly_do": "loi_san_pham"}&lt;/output&gt;
+  &lt;/example&gt;
+  &lt;example&gt;
+    &lt;input&gt;Ừ thì cũng được, để tôi xem lại đã.&lt;/input&gt;
+    &lt;output&gt;{"loai": "khac", "ly_do": "khong_ro"}&lt;/output&gt;
+  &lt;/example&gt;
+&lt;/examples&gt;</code></pre>
+
+    <div class="callout">
+      <div class="callout-title">Calibration — chọn ví dụ "sát phân bố"</div>
+      <p>Tư duy đúng: ví dụ của bạn nên là <strong>mẫu đại diện cho phân bố input thật</strong>, không phải bộ sưu tập các case hoàn hảo. Nếu thực tế 30% email mơ hồ, bộ ví dụ cũng nên có case mơ hồ — nếu không, model sẽ đoán bừa thay vì trả "khong_ro". Và nhớ: ví dụ quá giống nhau dạy model một pattern hẹp hơn bạn tưởng.</p>
+    </div>
+
+    <p>Khi làm việc với các model có thinking, một mẹo bổ sung trong docs: đặt <code>&lt;thinking&gt;</code> ngay trong ví dụ để chỉ cho Claude <em>kiểu suy luận</em> — model sẽ khái quát phong cách đó cho các block thinking của chính nó.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="suy-nghi">
+    <h2>Suy nghĩ, tự kiểm — và cú đổi thay của prefill</h2>
+    <p>Với bài toán cần suy luận nhiều bước, cho Claude "chỗ để nghĩ" thường quan trọng hơn thêm vài lời nhắc. Các model Claude hiện hành hỗ trợ <strong>thinking</strong> (adaptive thinking trên các model mới — Claude tự quyết định khi nào và nghĩ bao nhiêu); mức <code>effort</code> điều chỉnh cường độ suy nghĩ. Phần cấu hình chi tiết thuộc các bài về API/context — ở đây cần nhớ ba mẹo viết prompt.</p>
+
+    <h3>Chỉ dẫn chung thường tốt hơn "kịch bản từng bước"</h3>
+    <blockquote>
+      <p>"Prefer general instructions over prescriptive steps. A prompt like 'think thoroughly' often produces better reasoning than a hand-written step-by-step plan."</p>
+      <cite>— Prompting best practices, "Leverage thinking"</cite>
+    </blockquote>
+    <p>Lý do docs đưa ra: suy luận của Claude thường vượt xa kịch bản mà con người nghĩ trước. Viết "hãy suy nghĩ kỹ" thường tốt hơn bắt model đi đúng 5 bước bạn tự nghĩ ra.</p>
+
+    <h3>CoT viết tay — phương án dự phòng</h3>
+    <p>Khi thinking tắt, bạn vẫn có thể khuyến khích suy luận từng bước bằng cách yêu cầu Claude nghĩ qua vấn đề. Docs khuyên tách phần suy luận khỏi phần trả lời bằng tag, ví dụ thúc Claude dùng <code>&lt;thinking&gt;</code> cho lý luận và <code>&lt;answer&gt;</code> cho kết quả — nhờ vậy bạn parse được kết quả sạch.</p>
+
+    <h3>Yêu cầu Claude tự kiểm</h3>
+    <p>Mẫu trong docs: thêm vào cuối prompt câu kiểu <em>"Before you finish, verify your answer against [test criteria]."</em> — nêu rõ <strong>tiêu chí kiểm</strong>, không phải chỉ nói "kiểm tra lại". Cách này bắt lỗi khá chắc, đặc biệt với code và toán.</p>
+    <p>Lưu ý phiên bản: một số model mới nhất tự verify tốt mà không cần nhắc, và các câu "hãy verify" mang từ prompt cũ sang có thể gây <em>over-verification</em> (thừa token, chậm). Nếu đang dùng model mới nhất, thử <strong>bỏ</strong> lời nhắc này trước khi thêm — chi tiết xem trang prompting của model đó (xem docs mới nhất).</p>
+
+    <h3>Prefill — kỹ thuật cũ đã đổi luật chơi</h3>
+    <p><strong>Prefill</strong> (prefilled response) là cách gửi kèm một phần câu trả lời của <code>assistant</code> để Claude viết tiếp. Nó từng được dùng cho 4 việc: ép format JSON/YAML/phân loại, bỏ preamble ("Here is the requested summary:"), né refusal không cần thiết, và nối tiếp câu trả lời bị ngắt.</p>
+    <p><strong>Luật mới:</strong> bắt đầu từ các model Claude 4.6 (và Claude Mythos Preview), prefill ở <em>lượt assistant cuối cùng</em> <strong>không còn được hỗ trợ</strong> — request dùng prefill kiểu này trả về lỗi <strong>400</strong>. Docs nói khả năng của model đã tiến bộ tới mức phần lớn use case cũ không cần prefill nữa. Việc thêm message assistant ở vị trí khác trong hội thoại thì không bị ảnh hưởng.</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Mục đích cũ của prefill</th><th>Cách thay thế theo docs</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ép format JSON / phân loại</td><td>Dùng <strong>structured outputs</strong>; phân loại thì tools với enum hoặc structured outputs</td></tr>
+        <tr><td>Bỏ preamble</td><td>Chỉ dẫn trực tiếp trong system: "Respond directly without preamble..."; hoặc XML tags / structured outputs / tool use; sót thì cắt ở post-processing</td></tr>
+        <tr><td>Né refusal không cần thiết</td><td>Prompt rõ ràng trong user message là đủ</td></tr>
+        <tr><td>Nối tiếp câu trả lời bị ngắt</td><td>Chuyển sang user message kèm phần cuối của câu trả lời cũ, yêu cầu tiếp tục từ đó; hoặc retry</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Bẫy thi cử</div>
+      <p>"Prefill là cách chuẩn để buộc JSON" là câu trả lời <em>sai</em> với các model mới — vừa trả 400, vừa có thứ đúng hơn là structured outputs. Nhớ cặp đôi: <strong>prefill last-turn → 400</strong>, thay bằng <strong>output_config.format</strong>.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tieu-chi">
+    <h2>Tiêu chí &amp; luật rõ ràng: từ mơ hồ đến đo được</h2>
+    <p>Đây là kỹ năng lõi của domain "specific criteria &amp; rules": biến một yêu cầu mơ hồ thành danh sách tiêu chí mà <em>người khác đọc vào cũng kiểm được</em>. Mục 1 đã nói về success criteria cho cả dự án; mục này nói về tiêu chí ngay trong từng prompt.</p>
+
+    <h3>Ví dụ trước / sau</h3>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Trước — mơ hồ</div>
+        <h3>Xử lý giúp tôi</h3>
+        <pre><code>Đọc email này rồi xử lý giúp tôi.</code></pre>
+        <p>"Xử lý" là gì? Phân loại? Trả lời? Chuyển ai? Không đoán được — Claude sẽ tự chọn một nghĩa.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Sau — rõ</div>
+        <h3>Có vai trò, luật, hợp đồng output</h3>
+        <pre><code>Bạn là trợ lý CSKH của một công ty
+SaaS B2B.
+
+&lt;email&gt;{{EMAIL}}&lt;/email&gt;
+
+&lt;task&gt;
+Phân loại yêu cầu khách hàng và tóm tắt.
+&lt;/task&gt;
+
+&lt;rules&gt;
+1. Chỉ dùng thông tin có trong &lt;email&gt;.
+2. Không xác định được loại -> chọn "khac",
+   không đoán.
+3. Nhiều yêu cầu -> ưu tiên yêu cầu ở câu đầu.
+&lt;/rules&gt;
+
+&lt;output_contract&gt;
+Trả về đúng 4 dòng:
+loai_yeu_cau: [hoan_tien | huy_don |
+  loi_ky_thuat | hoi_gia | khac]
+do_khan: [cao | trung_binh | thap]
+tom_tat: tối đa 25 từ, tiếng Việt
+can_nguoi_xu_ly: true hoặc false
+&lt;/output_contract&gt;</code></pre>
+      </div>
+    </div>
+
+    <p>Bản "sau" làm được 5 việc mà bản "trước" không có: (1) <strong>vai trò</strong> định hướng giọng điệu; (2) <strong>dữ liệu tách khỏi chỉ dẫn</strong> bằng XML; (3) <strong>luật đánh số</strong>, kể cả luật chống đoán bừa; (4) <strong>hợp đồng output</strong> với tập giá trị đóng; (5) <strong>độ dài và ngôn ngữ</strong> nói rõ. Với pipeline code, bạn còn thay được cả <code>&lt;output_contract&gt;</code> bằng structured outputs — mục 6.</p>
+
+    <h3>Quy tắc khi viết tiêu chí</h3>
+    <ol class="steps">
+      <li><strong>Nói việc cần làm, thay vì việc cấm.</strong> Docs: thay vì "Do not use markdown", viết "Your response should be composed of smoothly flowing prose paragraphs." Chỉ dẫn khẳng định luôn dễ theo hơn danh sách cấm.</li>
+      <li><strong>Nói cả "vì sao" khi ràng buộc quan trọng.</strong> Nhớ lại ví dụ text-to-speech ở mục 2 — lý do giúp model khái quát đúng.</li>
+      <li><strong>Mỗi tiêu chí phải kiểm được.</strong> Nếu bạn không nghĩ ra cách kiểm, nó chưa phải tiêu chí — nó là mong muốn.</li>
+      <li><strong>Luật phải phủ cả trường hợp xấu.</strong> "Nếu thiếu dữ liệu → trả khong_ro" tốt hơn hy vọng model tự biết dừng.</li>
+      <li><strong>Đừng gào.</strong> Với model mới, "CRITICAL: You MUST..." có thể gây overtrigger; viết ở giọng bình thường.</li>
+    </ol>
+
+    <h3>Bảng dịch: mơ hồ → đo được</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Câu mơ hồ</th><th>Tiêu chí thay thế</th><th>Kiểm bằng gì?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>"Tóm tắt ngắn gọn"</td><td>"Tóm tắt ≤ 150 từ"</td><td>Đếm từ</td></tr>
+        <tr><td>"Giọng thân thiện"</td><td>"Xưng 'mình', gọi khách là 'bạn', không dùng thuật ngữ chuyên môn"</td><td>Checklist</td></tr>
+        <tr><td>"Viết tự nhiên"</td><td>"Đoạn văn liền mạch, không gạch đầu dòng"</td><td>Đọc / regex</td></tr>
+        <tr><td>"Nêu điểm quan trọng nhất"</td><td>"Điểm quan trọng nhất nằm ở câu đầu tiên"</td><td>Đọc</td></tr>
+        <tr><td>"Xử lý mọi trường hợp"</td><td>"Nếu thiếu dữ liệu → trả 'khong_ro', không suy đoán"</td><td>Test case riêng</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="structured">
+    <h2>Structured output: ép JSON đúng schema</h2>
+    <p>Đây là phần nặng nhất của bài. Trước hết, vì sao "hãy trả JSON" không đủ? Docs liệt kê những gì bạn gặp khi không có structured outputs: lỗi parse vì JSON hỏng cú pháp, thiếu field bắt buộc, sai kiểu dữ liệu, vi phạm schema — kéo theo error handling và retry.<sup><a href="#src-structured">[3]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Cách làm</th><th>Bản chất</th><th>Đảm bảo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>"Hãy trả về JSON theo mẫu..."</td><td>Lời đề nghị trong prompt</td><td>Không đảm bảo gì — model có thể lệch format</td></tr>
+        <tr><td><code>output_config.format</code> (JSON outputs)</td><td>Constrained decoding: schema được biên dịch thành grammar chặn token sai</td><td>JSON hợp lệ, đúng schema — "always valid, type safe"</td></tr>
+        <tr><td><code>strict: true</code> (strict tool use)</td><td>Constrained decoding cho tham số tool</td><td>Tên tool và input đúng schema</td></tr>
+      </tbody>
+    </table>
+
+    <p>Structured outputs có <strong>hai tính năng bổ trợ nhau</strong>, dùng độc lập hoặc cùng lúc:</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Feature 1</div>
+        <h3>JSON outputs</h3>
+        <p><code>output_config.format</code> — kiểm soát <em>Claude trả lời cái gì</em>. Dùng cho trích xuất dữ liệu, báo cáo có cấu trúc, format API response.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Feature 2</div>
+        <h3>Strict tool use</h3>
+        <p><code>strict: true</code> — đảm bảo <em>Claude gọi hàm của bạn với tham số hợp lệ</em>. Dùng khi schema sai gây hậu quả thật.</p>
+      </div>
+    </div>
+
+    <h3>Cú pháp thật — JSON outputs</h3>
+    <p>Schema là JSON Schema (có một số giới hạn, xem bên dưới) và được gửi trong <code>output_config.format</code> với <code>type: "json_schema"</code>. Đây là body request từ ví dụ chính thức (trích xuất thông tin từ email):</p>
+    <pre><code>{
+  "model": "claude-opus-5-5",
+  "max_tokens": 1024,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Extract the key information from this email: John Smith (john@example.com) is interested in our Enterprise plan and wants to schedule a demo for next Tuesday at 2pm."
+    }
+  ],
+  "output_config": {
+    "format": {
+      "type": "json_schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "email": {"type": "string"},
+          "plan_interest": {"type": "string"},
+          "demo_requested": {"type": "boolean"}
+        },
+        "required": ["name", "email", "plan_interest", "demo_requested"],
+        "additionalProperties": false
+      }
+    }
+  }
+}</code></pre>
+
+    <p>Claude trả về JSON hợp lệ <strong>trong text content block</strong> của response:</p>
+    <pre><code>{
+  "name": "John Smith",
+  "email": "john@example.com",
+  "plan_interest": "Enterprise",
+  "demo_requested": true
+}</code></pre>
+
+    <p>Với SDK, bạn không phải tự viết JSON Schema. Ví dụ Python dùng Pydantic — docs gọi <code>client.messages.parse()</code> là <strong>phương pháp khuyến nghị</strong>:</p>
+    <pre><code>from pydantic import BaseModel
+
+class ContactInfo(BaseModel):
+    name: str
+    email: str
+    plan_interest: str
+    demo_requested: bool
+
+response = client.messages.parse(
+    model="claude-opus-5-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Extract the key information from this email: ..."}],
+    output_format=ContactInfo,
+)
+
+print(response.parsed_output)</code></pre>
+    <p>SDK tự chuyển class thành schema, gửi qua <code>output_config.format</code>, validate response và trả về object đã parse trong <code>parsed_output</code>. TypeScript có helper tương tự với Zod (<code>zodOutputFormat</code>).</p>
+
+    <h3>Cú pháp thật — strict tool use</h3>
+    <p>Với tool, thêm <code>"strict": true</code> vào định nghĩa và đảm bảo schema tuân giới hạn (nhớ <code>additionalProperties: false</code>):</p>
+    <pre><code>{
+  "tools": [
+    {
+      "name": "search_flights",
+      "strict": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "destination": {"type": "string"},
+          "date": {"type": "string", "format": "date"}
+        },
+        "required": ["destination", "date"],
+        "additionalProperties": false
+      }
+    }
+  ]
+}</code></pre>
+    <p>Hai tính năng dùng <em>cùng lúc</em> được: JSON outputs kiểm format câu trả lời, strict tool use kiểm tham số tool — hữu ích cho agent vừa gọi hàm tin cậy vừa trả kết quả có cấu trúc.</p>
+
+    <h3>Giới hạn của JSON Schema — phần dễ ra thi</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Được hỗ trợ</th><th>KHÔNG hỗ trợ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Kiểu cơ bản: object, array, string, integer, number, boolean, null</td><td>Schema đệ quy (recursive)</td></tr>
+        <tr><td><code>enum</code> (string/số/bool/null — không có kiểu phức tạp), <code>const</code></td><td><code>$ref</code> ra ngoài (external)</td></tr>
+        <tr><td><code>anyOf</code>, <code>allOf</code> (có giới hạn; <code>allOf</code> với <code>$ref</code> không được)</td><td>Ràng buộc số: <code>minimum</code>, <code>maximum</code>, <code>multipleOf</code></td></tr>
+        <tr><td><code>$ref</code>, <code>$defs</code>, <code>definitions</code> (nội bộ), <code>default</code></td><td>Ràng buộc chuỗi: <code>minLength</code>, <code>maxLength</code></td></tr>
+        <tr><td>String formats: <code>date-time</code>, <code>time</code>, <code>date</code>, <code>duration</code>, <code>email</code>, <code>hostname</code>, <code>uri</code>, <code>ipv4</code>, <code>ipv6</code>, <code>uuid</code></td><td>Ràng buộc array ngoài <code>minItems</code> = 0 hoặc 1</td></tr>
+        <tr><td><code>required</code>, <code>additionalProperties</code> (bắt buộc đặt <code>false</code> cho object)</td><td><code>additionalProperties</code> khác <code>false</code></td></tr>
+      </tbody>
+    </table>
+    <p>Dùng tính năng không hỗ trợ → <strong>lỗi 400</strong> kèm chi tiết. Regex cũng chỉ hỗ trợ tập con: có quantifier, character class, group; <em>không</em> có backreference, lookahead/lookbehind, <code>\b</code>.</p>
+
+    <div class="callout">
+      <div class="callout-title">Hệ quả thiết kế rất thực tế</div>
+      <p>Vì schema không có <code>minimum</code>/<code>maximum</code>, không có <code>minLength</code> — nghĩa là <strong>các ràng buộc giá trị phải kiểm ở code</strong>, không thể giao hết cho schema. Đây chính là cầu nối sang mục 7 (kiểm chứng ngữ nghĩa).</p>
+    </div>
+
+    <h3>Vận hành: compile, cache, chi phí, thứ tự</h3>
+    <ul>
+      <li><strong>Compile grammar:</strong> lần đầu dùng một schema sẽ tốn thêm độ trễ để biên dịch. Grammar được cache <strong>24 giờ</strong> kể từ lần dùng cuối — request sau nhanh hơn nhiều.</li>
+      <li><strong>Cache bị vô hiệu hóa</strong> khi: cấu trúc JSON schema đổi, hoặc tập tool trong request đổi (khi dùng kèm tool use). Đổi mỗi <code>name</code>/<code>description</code> thì <em>không</em> làm mất cache.</li>
+      <li><strong>Tốn token hơn một chút:</strong> Claude nhận thêm một system prompt mô tả format output; đổi <code>output_config.format</code> cũng làm mất prompt cache của luồng hội thoại đó.</li>
+      <li><strong>Thứ tự property:</strong> required trước, optional sau, theo thứ tự trong schema. Nếu thứ tự quan trọng với ứng dụng của bạn, hãy đánh dấu <em>tất cả</em> property là required.</li>
+      <li><strong>Giới hạn độ phức tạp:</strong> tối đa 20 strict tool mỗi request, 24 tham số optional, 16 tham số dùng union type (tính gộp trên mọi schema strict của request). Vượt giới hạn ẩn có thể bị "Schema is too complex for compilation." (lỗi 400); có timeout biên dịch 180 giây. Cách hạ độ phức tạp: chỉ đánh dấu strict cho tool thật quan trọng; giảm tham số optional (chuyển thành required khi có thể).</li>
+    </ul>
+
+    <h3>Ba trường hợp output vẫn có thể không khớp schema</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Trường hợp</th><th>Dấu hiệu</th><th>Xử lý</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Refusal vì an toàn</td><td><code>stop_reason: "refusal"</code>, HTTP 200, vẫn bị tính phí; nội dung refusal thắng ràng buộc schema</td><td>Xử lý như một nhánh riêng — không parse như kết quả thường</td></tr>
+        <tr><td>Chạm trần token</td><td><code>stop_reason: "max_tokens"</code>, output có thể dở dang</td><td>Retry với <code>max_tokens</code> cao hơn</td></tr>
+        <tr><td>Enum sai hoa/thường</td><td>Ví dụ schema có "Conversation Topic 3" nhưng trả "Conversation topic 3" — không lỗi, không stop_reason đặc biệt</td><td>So sánh enum <em>không phân biệt hoa thường</em>; tránh định nghĩa các enum chỉ khác nhau hoa/thường</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Câu thần chú của mục này</div>
+      <p>Structured outputs đảm bảo <strong>hình thức</strong> — schema hợp lệ, đúng kiểu. Nó <em>không</em> đảm bảo <strong>sự thật</strong> (email có thật không), <em>không</em> đảm bảo phân loại đúng, <em>không</em> đảm bảo nghiệp vụ đúng. Giống hệt bài học "constraints ensure form, not truth" ở Bài 03 — nhưng lần này áp cho output thay vì tool call.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="kiem-chung">
+    <h2>Kiểm chứng &amp; retry: schema chưa đủ</h2>
+    <p>Đây là phần nhiều người bỏ qua khi làm pipeline thật. Ba tầng kiểm, đi từ rẻ đến đắt:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Tầng</th><th>Kiểm gì</th><th>Bằng gì</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>1. Hình thức</strong></td><td>JSON parse được, đủ field, đúng kiểu; <code>stop_reason</code> bình thường</td><td>Structured outputs + SDK parse; kiểm refusal / max_tokens</td></tr>
+        <tr><td><strong>2. Ngữ nghĩa</strong></td><td>Giá trị hợp lệ và nhất quán: enum đúng (so không phân biệt hoa thường), số nằm trong khoảng, các field khớp nhau (tổng = tổng các dòng), ngày không ở tương lai...</td><td><strong>Code của bạn</strong> — vì schema không diễn đạt được <code>minimum</code>/<code>maxLength</code> (mục 6)</td></tr>
+        <tr><td><strong>3. Chất lượng</strong></td><td>Câu trả lời có thật sự đúng/đủ tốt theo tiêu chí không</td><td>LLM-as-a-judge có rubric, hoặc người chấm cho case hiếm</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Retry với feedback — pattern ghép từ hai thứ docs mô tả</h3>
+    <p>Docs nói structured outputs loại bỏ phần lớn retry do vi phạm schema, nhưng vẫn khuyến nghị "implemented with retries" cho các trường hợp khó, và mô tả <strong>self-correction chain</strong> như pattern chaining phổ biến nhất. Ghép lại thành quy trình:</p>
+    <ol class="steps">
+      <li>Gọi API với <code>output_config.format</code> (hoặc tool <code>strict</code>).</li>
+      <li>Kiểm tra <code>stop_reason</code> + parse + chạy các rule ngữ nghĩa của bạn.</li>
+      <li>Nếu lỗi hình thức: gửi lại kèm <strong>mô tả lỗi cụ thể</strong> và yêu cầu sửa — tối đa N lần (N nhỏ, ví dụ 1–2).</li>
+      <li>Nếu lỗi ngữ nghĩa: nói rõ field nào sai, vì sao sai (ví dụ "total_amount phải bằng tổng các dòng") — đừng chỉ nói "sai".</li>
+      <li>Hết lượt retry mà vẫn lỗi: đánh dấu case vào hàng đợi người kiểm thay vì lặp vô hạn.</li>
+    </ol>
+    <p>Chi tiết quan trọng: retry chỉ đáng làm khi input <em>có thể</em> cho ra kết quả đúng. Nếu model không xác định được thông tin, feedback cũng không tạo ra thông tin đó — hàng đợi người kiểm mới là đích đúng.</p>
+
+    <h3>Multi-pass review cho output quan trọng</h3>
+    <blockquote>
+      <p>"Generate a draft → have Claude review it against criteria → have Claude refine based on the review. Each step is a separate API call so you can log, evaluate, or branch at any point."</p>
+      <cite>— Prompting best practices, "Chain complex prompts"</cite>
+    </blockquote>
+    <p>Vì sao tách thành nhiều lượt gọi API thay vì một prompt dài? Vì bạn <strong>nhìn thấy được từng bước</strong>: log lại bản nháp, chấm điểm review, rẽ nhánh nếu cần. Với output quan trọng — hợp đồng, báo cáo, dữ liệu tài chính — hãy thiết kế tối thiểu 2 lượt: một lượt sinh, một lượt review theo tiêu chí, rồi refine.</p>
+
+    <h3>Chấm bằng LLM (LLM-as-a-judge)</h3>
+    <p>Docs xếp thứ tự ưu tiên phương pháp chấm: <strong>code-based</strong> (nhanh, ổn định, mở rộng tốt nhất) → <strong>người chấm</strong> (linh hoạt nhưng chậm, đắt — tránh nếu được) → <strong>LLM chấm</strong> (nhanh, linh hoạt — nhưng phải kiểm độ tin cậy trước khi mở rộng).<sup><a href="#src-evals">[4]</a></sup> Ba mẹo cho LLM chấm:</p>
+    <ul>
+      <li><strong>Rubric chi tiết, rõ ràng:</strong> kèm luật bác bỏ, ví dụ "câu trả lời phải nhắc 'Acme Inc.' trong câu đầu tiên; nếu không, chấm thẳng là 'incorrect'."</li>
+      <li><strong>Kết quả dứt khoát:</strong> bắt output 'correct'/'incorrect' hoặc thang 1–5 — đừng để chấm kiểu định tính.</li>
+      <li><strong>Khuyến khích suy luận trước khi chấm:</strong> cho grader nghĩ trong <code>&lt;thinking&gt;</code>, rồi mới trả kết quả trong <code>&lt;result&gt;</code> — và bỏ phần suy luận khi lấy điểm.</li>
+    </ul>
+    <pre><code>Grade this answer based on the rubric:
+&lt;rubric&gt;{{RUBRIC}}&lt;/rubric&gt;
+&lt;answer&gt;{{ANSWER}}&lt;/answer&gt;
+Think through your reasoning in &lt;thinking&gt; tags,
+then output 'correct' or 'incorrect' in &lt;result&gt; tags.</code></pre>
+    <p>Với bộ eval lớn, nhớ nguyên tắc ở mục 1: <strong>ưu tiên số lượng hơn chất lượng</strong> — nhiều case chấm tự động tốt hơn ít case chấm tay; và thiết kế case theo phân bố thật, gồm cả edge case.</p>
+
+    <div class="callout">
+      <div class="callout-title">Mẹo áp dụng vào Claude Code (skills)</div>
+      <p>Skill trong Claude Code cũng là prompt có cấu trúc: <code>SKILL.md</code> gồm frontmatter <code>description</code> (Claude dùng để quyết định khi nào load skill) + phần hướng dẫn markdown chỉ nạp khi skill được dùng.<sup><a href="#src-skills">[5]</a></sup> Hai điểm đáng nhớ khi viết skill: (1) <code>description</code> nên chứa <strong>từ khóa/trigger phrase và ví dụ yêu cầu</strong> mà người dùng thật sẽ gõ — có trường <code>when_to_use</code> để thêm các ví dụ này; (2) muốn biết skill có hoạt động, đừng chỉ xem nó "có trigger" — hãy so sánh <strong>có skill vs tắt skill</strong> trên vài prompt thật, và đo riêng: có được gọi đúng lúc không, output có đúng ý không. (Chi tiết: docs Claude Code Skills — xem docs mới nhất.)</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="output-batch">
+    <h2>Xử lý output &amp; Batch API</h2>
+    <h3>Xử lý output sau khi gọi</h3>
+    <ul>
+      <li><strong>Parse bằng schema, đừng bằng regex cảm tính.</strong> Với structured outputs, output nằm trong text content block và khớp schema — dùng SDK parse nếu có, hoặc JSON parser + validate theo schema đã gửi.</li>
+      <li><strong>Luôn đọc <code>stop_reason</code> trước khi dùng kết quả:</strong> <code>refusal</code> và <code>max_tokens</code> là hai cửa ngõ dẫn tới output không khớp schema (mục 6).</li>
+      <li><strong>Log raw output</strong> cho các case fail — không có raw output thì không debug được retry.</li>
+      <li><strong>Transform ngay sau validate:</strong> đổi tên field, tính derived value, ghi vào DB... chỉ sau khi output qua cả 3 tầng kiểm.</li>
+    </ul>
+
+    <h3>Batch API — chạy prompt ở quy mô lớn</h3>
+    <p>Message Batches API là cách xử lý số lượng lớn request Messages <strong>bất đồng bộ</strong>: gửi cả lô đi, chờ xử lý, rồi tải kết quả về.<sup><a href="#src-batch">[6]</a></sup> Đây là công cụ chuẩn cho <em>large-scale evaluations</em> — chạy một prompt trên hàng nghìn input để chấm điểm, đúng vòng lặp prompt engineering ở mục 1.</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Tiêu chí</th><th>Con số / hành vi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Giá</td><td><strong>50%</strong> giá API tiêu chuẩn</td></tr>
+        <tr><td>Thời gian xử lý</td><td>Phần lớn batch xong trong <strong>vòng 1 giờ</strong></td></tr>
+        <tr><td>Kích thước tối đa</td><td><strong>100.000 request</strong> hoặc <strong>256 MB</strong> — cái nào chạm trước</td></tr>
+        <tr><td>Hết hạn</td><td>Batch chưa xong trong <strong>24 giờ</strong> thì expire</td></tr>
+        <tr><td>Kết quả</td><td>Lưu <strong>29 ngày</strong> sau khi tạo batch</td></tr>
+        <tr><td><code>custom_id</code></td><td>1–64 ký tự, chỉ chữ/số/gạch ngang/gạch dưới (<code>^[a-zA-Z0-9_-]{1,64}$</code>)</td></tr>
+        <tr><td>Không hỗ trợ trong batch</td><td><code>stream: true</code>, <code>speed</code> (fast mode), <code>max_tokens: 0</code></td></tr>
+      </tbody>
+    </table>
+
+    <p>Một batch là danh sách request, mỗi request có <code>custom_id</code> và <code>params</code> (chính là các tham số Messages API thường):</p>
+    <pre><code>{
+  "requests": [
+    {
+      "custom_id": "eval-case-001",
+      "params": {
+        "model": "claude-opus-5-5",
+        "max_tokens": 1024,
+        "messages": [
+          {"role": "user", "content": "Hello, world"}
+        ]
+      }
+    }
+  ]
+}</code></pre>
+
+    <h3>Đọc kết quả — 4 loại và một cái bẫy</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Loại kết quả</th><th>Nghĩa</th><th>Xử lý</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>succeeded</code></td><td>Thành công, có message kết quả</td><td>Dùng bình thường</td></tr>
+        <tr><td><code>errored</code></td><td>Lỗi — <code>invalid_request_error</code> thì phải sửa body trước khi gửi lại; lỗi server thì retry trực tiếp được</td><td>Không bị tính phí</td></tr>
+        <tr><td><code>canceled</code></td><td>Batch bị hủy trước khi request được gửi tới model</td><td>Không bị tính phí</td></tr>
+        <tr><td><code>expired</code></td><td>Batch chạm hạn 24 giờ trước khi request được xử lý</td><td>Không bị tính phí</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Cái bẫy:</strong> kết quả trả về dạng <code>.jsonl</code> nhưng <em>thứ tự không khớp thứ tự request gửi đi</em>. Docs nhấn mạnh: luôn khớp bằng <code>custom_id</code>, không bao giờ bằng vị trí dòng hay số thứ tự. Và một request fail <em>không</em> ảnh hưởng tới các request khác trong batch.</p>
+
+    <p>Bốn best practice từ docs: (1) <strong>dry-run một request đơn lẻ bằng Messages API thường</strong> trước khi đưa vào batch — tránh lỗi validation hàng loạt; (2) dùng <code>custom_id</code> có nghĩa; (3) chia dataset quá lớn thành nhiều batch cho dễ quản; (4) theo dõi trạng thái và có retry logic cho request fail. Batch có thể hủy giữa chừng và dữ liệu batch lưu tối đa 29 ngày — thiết kế pipeline đừng phụ thuộc vào việc kết quả còn mãi.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+    <ol>
+      <li><strong>"Thêm chữ MUST / CRITICAL là prompt mạnh hơn."</strong> — Các model Claude mới phản hồi với system prompt mạnh hơn thế hệ trước; ngôn ngữ gắt có thể gây <em>overtrigger</em>. Docs khuyên hạ về giọng thường: "Use this tool when..." thay vì "You MUST use this tool". Sức mạnh nằm ở tiêu chí rõ và ví dụ tốt, không nằm ở chữ in hoa.</li>
+      <li><strong>"Chỉ cần bảo 'hãy trả JSON' là pipeline ổn."</strong> — Đó là lời đề nghị, không phải ràng buộc. JSON có thể hỏng cú pháp, thiếu field, sai kiểu — kéo theo retry. Structured outputs (<code>output_config.format</code>) và strict tool use mới là cách ép schema bằng constrained decoding.</li>
+      <li><strong>"Structured outputs đảm bảo output luôn đúng."</strong> — Docs nói "schema compliance in most cases". Ba ngoại lệ: refusal, chạm <code>max_tokens</code>, và enum lệch hoa/thường. Và trên hết: schema không kiểm được ngữ nghĩa — giá trị hợp lệ về kiểu vẫn có thể vô nghĩa hoặc sai nghiệp vụ.</li>
+      <li><strong>"Prefill vẫn là cách chuẩn để ép format."</strong> — Với model Claude 4.6 trở lên, prefill ở lượt assistant cuối trả về lỗi <strong>400</strong>. Cách thay thế đúng: structured outputs cho JSON/phân loại, chỉ dẫn trực tiếp cho việc bỏ preamble.</li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+    <p class="exercise-note">Làm ra nháp trước, rồi mới mở đáp án. Đáp án là gợi ý — điều quan trọng là cách lập luận.</p>
+
+    <div class="exercise">
+      <h3>A1 · Viết lại prompt mơ hồ</h3>
+      <p>Prompt gốc: <em>"Viết cho tôi một email trả lời khách hàng đang tức giận vì giao hàng chậm."</em></p>
+      <p>Hãy viết lại thành một prompt rõ ràng, dùng ít nhất 4 trong 5 thứ: vai trò (system), ngữ cảnh kèm "vì sao", tiêu chí đo được, hợp đồng output, XML tags. Nêu rõ bạn chọn giọng điệu và độ dài thế nào, và vì sao.</p>
+      <details>
+        <summary>Xem gợi ý &amp; checklist tự kiểm</summary>
+        <p>Một bản gợi ý (rút gọn):</p>
+        <pre><code>System: Bạn là nhân viên CSKH của một sàn thương mại
+điện tử. Khách đang tức giận — mục tiêu của email là giữ
+khách, không phải giành phần đúng; không hứa những gì
+công ty không làm được.
+
+User:
+&lt;context&gt;
+Khách phàn nàn đơn hàng giao chậm 4 ngày. Công ty có
+chính sách: đền voucher 10% cho đơn giao trễ trên 3 ngày.
+&lt;/context&gt;
+
+&lt;rules&gt;
+1. Xin lỗi một lần, không lặp lại nhiều lần.
+2. Nêu voucher 10% như một bù đắp, kèm cách nhận.
+3. Không hứa ngày giao mới (không có dữ liệu).
+&lt;/rules&gt;
+
+&lt;output_contract&gt;
+- Email tiếng Việt, tối đa 120 từ
+- Không dùng từ chuyên môn; xưng "chúng tôi", gọi "anh/chị"
+- Kết bằng một câu hỏi để khách phản hồi
+&lt;/output_contract&gt;</code></pre>
+        <p><strong>Checklist tự kiểm:</strong></p>
+        <ul>
+          <li>Vai trò có nêu <em>mục tiêu</em>, không chỉ chức danh? ("giữ khách, không giành phần đúng" mạnh hơn "nhân viên CSKH").</li>
+          <li>Ràng buộc khó (không hứa ngày giao mới) có kèm lý do không?</li>
+          <li>Tiêu chí có đo được không? (≤ 120 từ, kết bằng câu hỏi — kiểm được; "giọng chân thành" — không.)</li>
+          <li>Có ít nhất một luật chống hành vi xấu (không hứa bừa) không?</li>
+          <li>Nếu bạn định nói "đừng viết dài dòng" — thử đổi thành chỉ dẫn khẳng định ("tối đa 120 từ") xem có rõ hơn không?</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>A2 · Thiết kế schema structured output</h3>
+      <p>Tác vụ: trích xuất đơn hàng từ email khách gửi. Các field cần có: <code>ma_don</code> (string), <code>ngay_dat</code> (ngày), <code>tong_tien</code> (số), <code>trang_thai</code> (một trong 4 trạng thái), <code>danh_sach_mon</code> (mảng các object gồm tên, số lượng, đơn giá).</p>
+      <p>Viết JSON Schema gửi trong <code>output_config.format</code>. Sau đó trả lời: (a) schema có bắt được <code>so_luong ≥ 1</code> không? (b) có bắt được "tổng tiền = tổng các dòng" không? (c) enum cần lưu ý gì?</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p>Giá trị đặt vào <code>output_config.format</code>:</p>
+        <pre><code>{
+  "type": "json_schema",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "ma_don": {"type": "string"},
+      "ngay_dat": {"type": "string", "format": "date"},
+      "tong_tien": {"type": "number"},
+      "trang_thai": {
+        "type": "string",
+        "enum": ["cho_xac_nhan", "dang_giao", "da_giao", "huy"]
+      },
+      "danh_sach_mon": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "ten": {"type": "string"},
+            "so_luong": {"type": "integer"},
+            "don_gia": {"type": "number"}
+          },
+          "required": ["ten", "so_luong", "don_gia"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["ma_don", "ngay_dat", "tong_tien", "trang_thai", "danh_sach_mon"],
+    "additionalProperties": false
+  }
+}</code></pre>
+        <ul>
+          <li>(a) <strong>Không.</strong> Schema không hỗ trợ <code>minimum</code> — <code>so_luong ≥ 1</code> phải kiểm ở code.</li>
+          <li>(b) <strong>Không.</strong> Đây là ràng buộc ngữ nghĩa giữa các field — schema không diễn đạt được; kiểm ở tầng 2.</li>
+          <li>(c) <strong>Enum:</strong> giá trị có thể lệch hoa/thường, nên so sánh không phân biệt hoa thường và tránh đặt các giá trị chỉ khác nhau hoa/thường.</li>
+          <li>Kiểm thêm: <code>additionalProperties: false</code> có ở <em>mọi</em> object chưa? <code>required</code> đã đủ chưa? Có dùng tính năng không hỗ trợ (minLength, lookahead...) không?</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>A3 · Chẩn đoán &amp; chọn đường</h3>
+      <p>Với mỗi tình huống, nói: lỗi ở tầng nào (hình thức / ngữ nghĩa / chất lượng), và xử lý thế nào — retry, sửa schema, hay chuyển người kiểm? Riêng (d): chọn Batch hay API thường, vì sao?</p>
+      <ol>
+        <li>Response có đủ field, đúng kiểu, nhưng <code>tong_tien</code> không bằng tổng <code>don_gia × so_luong</code>.</li>
+        <li><code>stop_reason: "max_tokens"</code>, JSON bị cụt giữa chừng.</li>
+        <li>Một số case email mơ hồ, model chọn bừa một loại yêu cầu thay vì "khac" — trong khi bộ eval cho thấy pattern này lặp lại.</li>
+        <li>Bạn cần chấm 8.000 bài luận bằng cùng một rubric, kết quả dùng để so sánh 2 phiên bản prompt; không cần kết quả trong ngày.</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>1 — Ngữ nghĩa.</strong> Schema không bắt được quan hệ giữa các field. Thêm rule kiểm ở code; retry với feedback cụ thể ("total_amount phải bằng tổng các dòng") 1–2 lần, sau đó chuyển người kiểm.</li>
+          <li><strong>2 — Hình thức (bị cắt).</strong> Không parse được vì output dở dang. Retry với <code>max_tokens</code> cao hơn — đúng hướng dẫn của docs cho trường hợp này.</li>
+          <li><strong>3 — Chất lượng + thiết kế prompt.</strong> Lỗi lặp lại có hệ thống: xem lại few-shot (thiếu ví dụ mơ hồ) và luật "không đoán". Đây là việc sửa prompt/dữ liệu, không phải retry từng case — nhưng vẫn đo lại bằng eval trước/sau (so sánh có sửa vs không sửa).</li>
+          <li><strong>4 — Batch.</strong> Khối lượng lớn, không cần kết quả ngay, chạy eval quy mô lớn — đúng use case của Message Batches API, lại rẻ 50%. Nhớ: dry-run một request trước, dùng <code>custom_id</code> để khớp kết quả, và tính tới hạn 24 giờ / lưu kết quả 29 ngày.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu — làm nhanh để chắc mình nắm cốt lõi.</p>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">1. Theo tài liệu Anthropic, việc <em>đầu tiên</em> trước khi prompt engineer là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Thêm "You are an expert..." vào system prompt</button>
+        <button class="quiz-opt" data-key="b">Chuyển sang model mạnh nhất có thể</button>
+        <button class="quiz-opt" data-key="c">Định nghĩa tiêu chí thành công, cách đo bằng eval, và có prompt nháp</button>
+        <button class="quiz-opt" data-key="d">Viết thật nhiều ví dụ few-shot</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: trang overview liệt kê ba thứ "phải có trước".</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Docs yêu cầu ba thứ trước khi prompt engineer: (1) định nghĩa rõ success criteria, (2) cách kiểm chứng bằng thực nghiệm, (3) prompt nháp. Và đừng quên mặt trái: không phải eval fail nào cũng nên sửa bằng prompt — đôi khi đổi model rẻ hơn.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">2. Điều nào đúng về few-shot theo docs?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">3–5 ví dụ là tốt nhất; ví dụ phải relevant, diverse, structured trong <code>&lt;example&gt;</code>/<code>&lt;examples&gt;</code></button>
+        <button class="quiz-opt" data-key="b">Càng nhiều ví dụ càng tốt, không có giới hạn</button>
+        <button class="quiz-opt" data-key="c">Chỉ cần một ví dụ duy nhất, lặp lại nhiều lần</button>
+        <button class="quiz-opt" data-key="d">Các ví dụ nên giống hệt nhau để model bắt pattern chắc hơn</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: có một con số cụ thể trong phần "Use examples effectively".</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Docs: "Include 3–5 examples for best results", và ví dụ cần <em>relevant</em> (sát use case thật), <em>diverse</em> (phủ edge case, tránh pattern ngoài ý muốn), <em>structured</em> (bọc tag để tách khỏi chỉ dẫn). Ví dụ giống hệt nhau dạy model một khuôn hẹp hơn bạn tưởng.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">3. Prefill ở lượt assistant cuối với các model Claude 4.6 trở lên thì thế nào?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Vẫn hoạt động và là cách khuyến nghị để ép JSON</button>
+        <button class="quiz-opt" data-key="b">Chỉ hoạt động khi bật thinking</button>
+        <button class="quiz-opt" data-key="c">Bị bỏ nhưng không báo lỗi, model tự bỏ qua</button>
+        <button class="quiz-opt" data-key="d">Không còn được hỗ trợ — request trả lỗi 400; thay bằng structured outputs / chỉ dẫn trực tiếp</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nhớ cặp đôi "prefill last-turn → ?"</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Từ Claude 4.6 (và Mythos Preview), prefill ở lượt assistant cuối trả về lỗi 400. Cách thay: structured outputs cho JSON/phân loại, chỉ dẫn trực tiếp để bỏ preamble, prompt rõ ràng cho refusal, và chuyển phần nối tiếp sang user message. Thêm assistant message ở vị trí khác trong hội thoại thì không bị ảnh hưởng.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">4. Câu nào đúng về structured outputs?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Đảm bảo output luôn đúng ngữ nghĩa, không cần kiểm gì thêm</button>
+        <button class="quiz-opt" data-key="b">Ép schema hợp lệ bằng constrained decoding, nhưng refusal / max_tokens / enum lệch hoa-thường vẫn có thể không khớp schema</button>
+        <button class="quiz-opt" data-key="c">Chỉ dùng được kèm tool use, không dùng được cho JSON output thường</button>
+        <button class="quiz-opt" data-key="d">Là phiên bản mạnh hơn của câu "hãy trả JSON" trong prompt</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: mục "Invalid outputs" trong docs structured outputs.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Hai tính năng độc lập — JSON outputs (<code>output_config.format</code>) và strict tool use (<code>strict: true</code>) — có thể dùng riêng hoặc cùng lúc. Constrained decoding đảm bảo hình thức trong phần lớn trường hợp, nhưng refusal, chạm <code>max_tokens</code>, và enum lệch hoa/thường là các ngoại lệ; ngữ nghĩa vẫn phải kiểm ở tầng code/đánh giá.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">5. Batch API: làm sao khớp kết quả với request đã gửi?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Theo thứ tự dòng trong file kết quả</button>
+        <button class="quiz-opt" data-key="b">Theo số thứ tự request lúc tạo batch</button>
+        <button class="quiz-opt" data-key="c">Theo <code>custom_id</code> — thứ tự kết quả không đảm bảo</button>
+        <button class="quiz-opt" data-key="d">Theo timestamp của từng request</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: docs nhấn mạnh "results may not match input order".</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Kết quả batch là file <code>.jsonl</code> và có thể về theo <em>bất kỳ thứ tự nào</em>. Luôn khớp bằng <code>custom_id</code> — vì vậy hãy đặt <code>custom_id</code> có nghĩa ngay từ đầu. Nhớ thêm: batch tối đa 100.000 request / 256 MB, phần lớn xong trong 1 giờ, hết hạn sau 24 giờ, kết quả lưu 29 ngày.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question">6. Điền vào chỗ trống:</p>
+      <p class="fib-sentence">Với JSON outputs, schema được gửi trong trường <span class="fib" data-answer="output_config.format" data-placeholder="?"></span> với <code>type: "json_schema"</code>.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="luyen-them">
+    <h2>Luyện thêm với nguồn chính thức</h2>
+    <ul>
+      <li><a href="https://github.com/anthropics/prompt-eng-interactive-tutorial">anthropics/prompt-eng-interactive-tutorial</a> — tutorial prompt engineering tương tác chính thức; làm hết các chương (bản "Anthropic 1P").</li>
+      <li><a href="https://github.com/anthropics/courses/tree/master/real_world_prompting">anthropics/courses → real_world_prompting</a> — 5 notebook tình huống thật (medical prompt, call summarizer, customer support…); chạy từng notebook và đối chiếu cách họ viết prompt.</li>
+      <li><a href="https://github.com/anthropics/courses/tree/master/prompt_evaluations">anthropics/courses → prompt_evaluations</a> — 9 chương eval (nối tiếp sang C6); dùng để dựng bộ eval đầu tiên cho prompt của bạn.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Success criteria</td><td>Định nghĩa đo được của "thành công" — specific, measurable, achievable, relevant. Là điểm bắt đầu của prompt engineering.</td></tr>
+        <tr><td>Evaluation (eval)</td><td>Bộ test + cách chấm để đo prompt/model một cách thực nghiệm; ưu tiên chấm tự động, số lượng hơn chất lượng.</td></tr>
+        <tr><td>System prompt</td><td>Chỉ dẫn nền tảng (vai trò, giọng điệu, quy tắc) — một câu cũng tạo khác biệt.</td></tr>
+        <tr><td>XML tags</td><td>Cách tách instruction / context / input / examples trong prompt để model không hiểu lẫn.</td></tr>
+        <tr><td>Few-shot / multishot</td><td>Đưa 3–5 ví dụ mẫu (relevant, diverse, structured) để điều hướng output.</td></tr>
+        <tr><td>Prefill</td><td>Gửi kèm phần đầu câu trả lời của assistant — không còn hỗ trợ ở lượt assistant cuối với model 4.6+ (lỗi 400).</td></tr>
+        <tr><td>Structured outputs</td><td>Ép output theo JSON Schema bằng constrained decoding, qua <code>output_config.format</code>.</td></tr>
+        <tr><td>Strict tool use</td><td><code>strict: true</code> trong định nghĩa tool — đảm bảo tên tool và tham số đúng schema.</td></tr>
+        <tr><td>Constrained decoding</td><td>Cơ chế chặn token không hợp lệ ngay khi sinh, để output luôn khớp grammar/schema.</td></tr>
+        <tr><td>Kiểm chứng ngữ nghĩa</td><td>Kiểm giá trị và quan hệ giữa các field bằng code — vì schema không có <code>minimum</code>, <code>minLength</code>, quan hệ liên field.</td></tr>
+        <tr><td>Retry với feedback</td><td>Gửi lại mô tả lỗi cụ thể để model sửa — có giới hạn số lần, sau đó chuyển người kiểm.</td></tr>
+        <tr><td>Self-correction chain</td><td>Pattern chaining: sinh nháp → review theo tiêu chí → refine, mỗi bước một API call riêng để log/chấm/rẽ nhánh.</td></tr>
+        <tr><td>LLM-as-a-judge</td><td>Dùng LLM chấm điểm theo rubric (kèm suy luận trong <code>&lt;thinking&gt;</code>, kết quả trong <code>&lt;result&gt;</code>).</td></tr>
+        <tr><td>Message Batches API</td><td>Xử lý bất đồng bộ khối lượng lớn (100k request / 256 MB), rẻ 50%, khớp kết quả bằng <code>custom_id</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li id="src-overview">Anthropic — <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview">Prompt engineering overview</a>. "Before prompt engineering" và lưu ý không phải lỗi nào cũng sửa bằng prompt.</li>
+      <li id="src-best">Anthropic — <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices">Prompting best practices</a>. Nguồn của mục 2–5: clarity, context, few-shot, XML tags, system role, long context, thinking, self-check, prefill migration, chain complex prompts.</li>
+      <li id="src-structured">Anthropic — <a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs">Structured outputs</a>. Cú pháp, ví dụ, giới hạn JSON Schema, property ordering, invalid outputs, complexity limits.</li>
+      <li id="src-strict">Anthropic — <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use">Strict tool use</a>. Chi tiết riêng cho <code>strict: true</code>.</li>
+      <li id="src-batch">Anthropic — <a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing">Batch processing</a>. Giới hạn 100k/256 MB, giá 50%, 4 loại kết quả, best practices.</li>
+      <li id="src-evals">Anthropic — <a href="https://platform.claude.com/docs/en/test-and-evaluate/develop-tests">Define success criteria and build evaluations</a>. Tiêu chí SMART, nguyên tắc thiết kế eval, LLM-based grading và rubric.</li>
+      <li id="src-skills">Claude Code — <a href="https://code.claude.com/docs/en/skills">Extend Claude with skills</a>. Frontmatter <code>description</code>/<code>when_to_use</code> và cách đánh giá skill có/không.</li>
+      <li>Thực hành thêm: <a href="https://github.com/anthropics/prompt-eng-interactive-tutorial">Anthropic Prompt Engineering Interactive Tutorial</a> (GitHub) và <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview">prompt generator notebook</a> trong Claude Cookbook.</li>
+    </ol>
+    <p class="exercise-note">Cú pháp và hành vi trong bài lấy từ docs tại thời điểm soạn; các model/docs cập nhật liên tục — trước khi làm thật, kiểm tra lại trang tương ứng (xem docs mới nhất).</p>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài trước:</strong> C3 · Claude Code chuyên sâu — config, hooks, permissions, CI.</p>
+    <p><strong>Bài sau:</strong> C5 · Agent SDK &amp; orchestration — dựng agent nhiều bước bằng SDK.</p>
+    <p>Có chỗ nào chưa rõ? Ghi lại câu hỏi và nhắn cho giáo viên.</p>
+  </footer>
+
+</main>
+
+<script src="../../assets/lang.js"></script>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>
