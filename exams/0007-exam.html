@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam 07 · Coding Agents — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Exam 07</div>
+    <h1><span class="lang-vi">Exam — Coding Agents</span><span class="lang-en">Exam — Coding Agents</span></h1>
+    <p class="subtitle"><span class="lang-vi">16 câu + 2 bài tập code. Làm lại được nhiều lần — mục tiêu: đúng ≥ 85%.</span><span class="lang-en">16 questions + 2 coding exercises. Retake as many times as you like — target: ≥ 85% correct.</span></p>
+    <p class="lesson-meta"><span>~40 phút / ~40 min</span><span><a href="../lessons/0007-coding-agents.html"><span class="lang-vi">← Ôn lại Bài 07</span><span class="lang-en">← Review Lesson 07</span></a></span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="exam-bar">
+    <span class="exam-progress">Đúng 0 / 13 câu tương tác</span>
+    <button class="exam-reset" type="button">Làm lại từ đầu</button>
+  </div>
+
+  <p><span class="lang-vi"><strong>Cách làm:</strong> phần A–B chấm điểm tự động; phần C–D tự kiểm bằng đáp án. Mục tiêu: <strong>≥ 85%</strong>.</span><span class="lang-en"><strong>How to use:</strong> sections A–B are scored automatically; sections C–D are self-checked by revealing the answers. Target: <strong>≥ 85%</strong>.</span></p>
+
+  <!-- ================================================== -->
+  <section id="trac-nghiem">
+    <h2><span class="lang-vi">Phần A — Trắc nghiệm (10 câu)</span><span class="lang-en">Part A — Multiple choice (10 questions)</span></h2>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A1. Đâu là lý do sâu xa nhất khiến code là domain mà agent tiến bộ nhanh nhất?</span><span class="lang-en">A1. What is the deepest reason code is the domain where agents improve fastest?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì code viết bằng tiếng Anh nên model dễ đọc</span><span class="lang-en">Because code is written in English, so models read it easily</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì file code luôn nhỏ và dễ sửa</span><span class="lang-en">Because code files are always small and easy to edit</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì chạy test cho tín hiệu đúng/sai khách quan — agent tự kiểm được mình ngay trong vòng lặp</span><span class="lang-en">Because running tests gives objective right/wrong signals — the agent can verify itself right inside the loop</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì lập trình viên dễ chấp nhận sản phẩm chưa hoàn thiện</span><span class="lang-en">Because developers readily accept unfinished products</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Mục 1: code là "bài tập có đáp án ở cuối sách" — test và build trả lời đúng/sai ngay, không cần con người phán. Nhờ đó vòng lặp localize → edit → verify có điểm dừng khách quan, và RL bằng phần thưởng thực thi (slide 28) hoạt động đặc biệt tốt trong domain code.</span><span class="lang-en">Section 1: code is "a problem set with the answers at the back of the book" — tests and builds answer right/wrong immediately, with no human needed to judge. That gives the localize → edit → verify loop an objective stopping point, and RL with execution rewards (slide 28) works especially well in the code domain.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A2. RL post-training khác pre-training và mid-training ở điểm cốt lõi nào?</span><span class="lang-en">A2. What is the core difference between RL post-training and pre-training/mid-training?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Phần thưởng lấy từ việc chạy code — model học suy luận hướng tới lời giải, không chỉ học cú pháp</span><span class="lang-en">The reward comes from running code — the model learns to reason toward solutions, not just syntax</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Chỉ dùng source code, bỏ hoàn toàn văn bản và toán</span><span class="lang-en">It uses source code only, dropping text and math entirely</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Không cần dữ liệu — model tự sinh đề rồi tự chấm</span><span class="lang-en">It needs no data — the model generates its own problems and grades itself</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Chỉ nhằm tăng số ngôn ngữ lập trình mà model biết</span><span class="lang-en">It only aims to increase the number of programming languages the model knows</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 6 và 28: chặng RL luyện bằng phần thưởng lấy từ thực thi — lời giải chạy pass được thưởng. Ví dụ slide 29: công thức <code>n * (n + 1) // 2</code> được thưởng; bản chép nhầm <code>n * (n - 1) // 2</code> bị loại ngay từ n = 1.</span><span class="lang-en">Slides 6 and 28: the RL stage trains with rewards taken from execution — solutions that pass are rewarded. Slide 29's example: the formula <code>n * (n + 1) // 2</code> gets rewarded; the mis-transcribed <code>n * (n - 1) // 2</code> is eliminated as early as n = 1.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A3. Với dòng <code>if·ready:↵····return·value↵</code>, vì sao bốn dấu cách thụt lề không bị cắt thành bốn token riêng?</span><span class="lang-en">A3. For the line <code>if·ready:↵····return·value↵</code>, why aren't the four indent spaces cut into four separate tokens?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì tokenizer xóa toàn bộ thụt lề trước khi cắt</span><span class="lang-en">Because the tokenizer deletes all indentation before tokenizing</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì cụm khoảng trắng hay gặp được gộp thành một token (ví dụ <code>↵···</code>), giúp tiết kiệm token mà thụt lề vẫn được giữ</span><span class="lang-en">Because common whitespace runs are merged into a single token (e.g. <code>↵···</code>), saving tokens while the indentation is still preserved</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì mỗi dấu cách vẫn là một token, chỉ là không được đếm</span><span class="lang-en">Because each space is still one token, it just isn't counted</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì thụt lề được đổi thành ký tự tab trước khi tokenize</span><span class="lang-en">Because indentation is converted to tab characters before tokenizing</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 9: ví dụ trên tốn 7 token thay vì 13. Token thứ tư là <code>↵···</code> (xuống dòng + ba dấu cách); dấu cách thứ tư dính vào chữ tiếp theo thành <code>·return</code>. Thụt lề vẫn là token mang cú pháp — model vẫn "thấy" được cấu trúc khối.</span><span class="lang-en">Slide 9: the example costs 7 tokens instead of 13. The fourth token is <code>↵···</code> (newline + three spaces); the fourth space sticks to the next word as <code>·return</code>. Indentation is still a syntax-carrying token — the model still "sees" block structure.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A4. Vì sao kỹ năng infilling (điền vào giữa, đọc cả prefix lẫn suffix) đặc biệt quan trọng với coding agent?</span><span class="lang-en">A4. Why is infilling (reading both prefix and suffix) especially important for a coding agent?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì nó giúp model chạy code nhanh hơn</span><span class="lang-en">Because it helps the model run code faster</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì nó thay thế được bước chạy test khi kiểm chứng</span><span class="lang-en">Because it can replace running tests for verification</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì nó giúp model nhớ cú pháp của nhiều ngôn ngữ hơn</span><span class="lang-en">Because it helps the model remember the syntax of more languages</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì sửa code chính là một bài infilling — thay đoạn giữa file phải tôn trọng cả phần trên lẫn phần dưới</span><span class="lang-en">Because editing code is an infilling task — replacing a middle span must respect both what comes before and what comes after</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 14–18: luyện với sentinel token kiểu <code>[M0]</code> để model dùng cả suffix khi sinh. Số liệu slide 16: đoán một chiều 48.2% → infilling 69.0% (một dòng); 24.9% → 38.6% (nhiều dòng). Và học infilling không làm hỏng khả năng viết code thường (slide 17).</span><span class="lang-en">Slides 14–18: training with sentinel tokens like <code>[M0]</code> so the model uses the suffix too when generating. Slide 16 data: one-direction prediction 48.2% → infilling 69.0% (single line); 24.9% → 38.6% (multi-line). And learning infilling doesn't hurt regular code writing (slide 17).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A5. Vì sao mid-training không dồn 100% cho code mà trộn thêm text và toán?</span><span class="lang-en">A5. Why doesn't mid-training go 100% code but mixes in text and math?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì dữ liệu code không đủ để luyện tiếp</span><span class="lang-en">Because there isn't enough code data to keep training</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì toán luôn khó hơn code nên phải luyện nhiều hơn</span><span class="lang-en">Because math is always harder than code, so it needs more training</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì bớt chút code gần như không giảm điểm code, còn điểm toán và kiến thức chung tăng mạnh — agent vẫn phải đọc issue và tài liệu</span><span class="lang-en">Because a little less code barely dents code scores while math and general knowledge rise sharply — and the agent still has to read issues and docs</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì text giúp model sinh code nhanh hơn khi chạy</span><span class="lang-en">Because text helps the model generate code faster at runtime</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Bảng Qwen2.5-Coder (slide 12): 100/0/0 → code 49.8, MATH 10.3, MMLU 23.8; đổi sang 70/20/10 → code 48.3, MATH 33.2, MMLU 62.9. Một model chỉ giỏi cú pháp mà không đọc hiểu sẽ sửa sai yêu cầu.</span><span class="lang-en">The Qwen2.5-Coder table (slide 12): 100/0/0 → code 49.8, MATH 10.3, MMLU 23.8; switching to 70/20/10 → code 48.3, MATH 33.2, MMLU 62.9. A model that is only good at syntax without reading comprehension will edit the wrong thing.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A6. Vì sao "sửa một dòng" thường khó hơn "viết cả hàm mới"?</span><span class="lang-en">A6. Why is "editing one line" often harder than "writing a whole new function"?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì code cũ luôn dài hơn code mới</span><span class="lang-en">Because old code is always longer than new code</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì model bị cấm dùng tool trong lúc sửa file</span><span class="lang-en">Because the model is barred from using tools while editing files</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì sửa file không cần bước kiểm chứng</span><span class="lang-en">Because editing a file needs no verification step</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì phải định vị đúng chỗ, khớp chính xác văn bản xung quanh, không phá hành vi cũ và tái tạo đúng khoảng trắng</span><span class="lang-en">Because it must locate the right spot, match the surrounding text exactly, avoid breaking old behavior, and reproduce whitespace correctly</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 5: "editing — condition on both sides". Năm khó khăn của mục 5: định vị chỗ sửa; khớp từng ký tự văn bản xung quanh (kể cả khoảng trắng); không phá code khác; đích có thể mơ hồ; tái tạo đúng style và thụt lề.</span><span class="lang-en">Slide 5: "editing — condition on both sides". The five difficulties from section 5: locating the edit site; matching the surrounding text character by character (whitespace included); not breaking other code; the target may be ambiguous; reproducing the original style and indentation.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A7. Nguyên tắc sắt khi tạo task luyện kiểu SWE-smith là gì?</span><span class="lang-en">A7. What is the iron rule when generating training tasks SWE-smith style?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Sửa code, không sửa test — chỉ giữ những ca mà test bắt đầu fail</span><span class="lang-en">Edit the code, not the tests — keep only the cases where the tests start failing</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Sửa test cho khớp với code sai để bộ test xanh trở lại</span><span class="lang-en">Edit the tests to match the wrong code so the suite goes green again</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Xóa bớt test để agent làm được task dễ hơn</span><span class="lang-en">Delete some tests so the agent can solve the task more easily</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Tiêm bug vào chính file test</span><span class="lang-en">Inject the bug into the test file itself</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 51–52: test là nguồn sự thật của task; bẻ test cho khớp code sai là dạy agent "làm hài lòng đề bài hỏng". Bằng chứng ba trạng thái: 4 pass (baseline) → 3 pass + 1 fail (sau tiêm bug) → 4 pass (khôi phục).</span><span class="lang-en">Slides 51–52: the tests are the task's source of truth; bending tests to match wrong code teaches the agent to "please a broken problem statement". Three-state evidence: 4 passing (baseline) → 3 passing + 1 failing (after bug injection) → 4 passing (restored).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A8. Vì sao test chấm điểm của SWE-bench bị ẩn khỏi agent?</span><span class="lang-en">A8. Why are SWE-bench's grading tests hidden from the agent?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Để tiết kiệm ngân sách ngữ cảnh cho repository</span><span class="lang-en">To save context budget for the repository</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Để agent không thể "học tủ" theo test — nó phải giải bài toán thật thay vì đoán đáp án</span><span class="lang-en">So the agent can't "cram" for the tests — it must solve the real problem instead of guessing answers</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì test được viết sau khi agent nộp patch</span><span class="lang-en">Because the tests are written after the agent submits its patch</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì ở thời điểm đó repository chưa có test nào</span><span class="lang-en">Because the repository had no tests at that point</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Một trong năm lý do SWE-bench khó (mục 6). Bốn lý do còn lại: định vị trong repository lớn, không được phá hành vi cũ, issue viết mơ hồ, và môi trường phải chạy được.</span><span class="lang-en">One of the five reasons SWE-bench is hard (section 6). The other four: locating things in a large repository, not breaking existing behavior, vaguely written issues, and a working environment.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A9. Một world model đoán đoạn code sau cho <code>result = 1</code>. Nó sai ở đâu?<br><code>items = [1]</code> · <code>alias = items</code> · <code>alias.append(2)</code> · <code>result = len(items)</code></span><span class="lang-en">A9. A world model predicts the snippet below gives <code>result = 1</code>. Where is it wrong?<br><code>items = [1]</code> · <code>alias = items</code> · <code>alias.append(2)</code> · <code>result = len(items)</code></span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Không sai — items ban đầu chỉ có một phần tử nên result = 1</span><span class="lang-en">Nothing wrong — items starts with one element, so result = 1</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Sai vì <code>alias.append(2)</code> là cú pháp không hợp lệ</span><span class="lang-en">Wrong, because <code>alias.append(2)</code> is invalid syntax</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Không sai — Python luôn sao chép danh sách khi gán biến</span><span class="lang-en">Nothing wrong — Python always copies a list when assigned to a variable</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Sai — <code>alias</code> và <code>items</code> trỏ vào cùng một danh sách, nên <code>result = 2</code>; model tưởng <code>alias</code> là bản sao riêng</span><span class="lang-en">Wrong — <code>alias</code> and <code>items</code> point to the same list, so <code>result = 2</code>; the model thought <code>alias</code> was its own copy</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 75: gán là aliasing, không phải copy. Thực tế <code>items = [1, 2]</code> và <code>result = 2</code>. Slide 76: chỉ cần world model sai một lần là có thể chọn nhầm patch (vứt bản sửa đúng A để chọn bản sai B) — nên chạy thật vẫn là thước đo cuối cùng.</span><span class="lang-en">Slide 75: assignment is aliasing, not copying. In reality <code>items = [1, 2]</code> and <code>result = 2</code>. Slide 76: a world model only has to be wrong once to pick the wrong patch (discarding the correct fix A in favor of the wrong one B) — so actually running things remains the final measure.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A10. Theo slide 54, harness của một coding agent gồm bốn thành phần nào?</span><span class="lang-en">A10. According to slide 54, what are the four components of a coding agent's harness?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Model · dữ liệu luyện · GPU · API</span><span class="lang-en">Model · training data · GPU · API</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Issue · repository · patch · test</span><span class="lang-en">Issue · repository · patch · test</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Prompts · tools · agent loop · context management</span><span class="lang-en">Prompts · tools · agent loop · context management</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Pre-training · mid-training · RL · evaluation</span><span class="lang-en">Pre-training · mid-training · RL · evaluation</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 54: harness = prompts + tools + agent loop + context management — bốn thứ của bài 02–04 ghép lại. Vì harness và model là hai nửa của một năng lực, người ta còn luyện model qua nhiều harness (multi-harness training: Nemotron 3 Ultra, Polar).</span><span class="lang-en">Slide 54: harness = prompts + tools + agent loop + context management — the four things from lessons 02–04 stitched together. Because the harness and the model are two halves of one capability, labs even train models across many harnesses (multi-harness training: Nemotron 3 Ultra, Polar).</span></p></div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="dien-khuyet">
+    <h2><span class="lang-vi">Phần B — Điền khuyết (3 câu)</span><span class="lang-en">Part B — Fill in the blank (3 questions)</span></h2>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B1. Khi luyện infilling, file bị cắt thành ba phần nào?</span><span class="lang-en">B1. When training infilling, the file is cut into which three parts?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">File được cắt thành <code>prefix</code> / <code>span</code> / </span><span class="lang-en">The file is split into <code>prefix</code> / <code>span</code> / </span><span class="fib" data-answer="suffix" data-placeholder="?"></span><span class="lang-vi">, rồi xếp lại quanh sentinel token <code>[M0]</code> để model học điền vào giữa.</span><span class="lang-en">, then reassembled around the sentinel token <code>[M0]</code> so the model learns infilling.</span></p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B2. Trong Python, các giá trị như 0, "", [], None, False được gọi là gì?</span><span class="lang-en">B2. In Python, values like 0, "", [], None, False are called what?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Chúng là các giá trị </span><span class="lang-en">They are </span><span class="fib" data-answer="falsy|falsey" data-placeholder="?"></span><span class="lang-vi"> — nên <code>x or y</code> biến số 0 hợp lệ thành giá trị mặc định, và đó là gốc của bug "retries = 0 thành 3".</span><span class="lang-en"> values — so <code>x or y</code> turns a valid 0 into the default, which is the root of the "retries = 0 becomes 3" bug.</span></p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B3. Phần thưởng chỉ có ở cuối chuỗi hành động thì gây ra bài toán gì?</span><span class="lang-en">B3. When rewards exist only at the end of an action sequence, what problem does that create?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Một thất bại ở cuối không chỉ ra quyết định nào ở giữa đã sai — trong học tăng cường, đây là bài toán credit </span><span class="lang-en">A failure at the end does not show which middle decision was wrong — in reinforcement learning this is the credit </span><span class="fib" data-answer="assignment|phân bổ công lỗi|phan bo cong loi" data-placeholder="?"></span><span class="lang-vi">.</span><span class="lang-en"> problem.</span></p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tinh-huong">
+    <h2><span class="lang-vi">Phần C — Tình huống &amp; phân tích (3 câu)</span><span class="lang-en">Part C — Scenarios &amp; analysis (3 questions)</span></h2>
+
+    <p><strong>C1.</strong> <span class="lang-vi">Một đồng nghiệp kết luận: "Agent fail là do model yếu — đổi sang model mạnh hơn là xong." Dùng ít nhất ba bằng chứng trong bài giảng để phản biện.</span><span class="lang-en">A colleague concludes: "An agent fails because the model is weak — switch to a stronger model and you're done." Use at least three pieces of evidence from the lecture to push back.</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi"><strong>Aider, 89 bài refactoring:</strong> cùng GPT-4 Turbo, chỉ đổi cách diễn đạt bản sửa — SEARCH/REPLACE 20% → simplified unified diff 61% (slide 43). Không đổi model, kết quả gấp ba.</span><span class="lang-en"><strong>Aider, 89 refactoring tasks:</strong> same GPT-4 Turbo, only the wording of the edits changed — SEARCH/REPLACE 20% → simplified unified diff 61% (slide 43). Same model, triple the result.</span></li>
+        <li><span class="lang-vi"><strong>mini-SWE-agent:</strong> harness chỉ có một giao diện shell (mỗi lệnh trả về output, exit status, timeout) vẫn mạnh (slide 39).</span><span class="lang-en"><strong>mini-SWE-agent:</strong> a harness with just one shell interface (each command returns output, exit status, timeout) is still strong (slide 39).</span></li>
+        <li><span class="lang-vi"><strong>Agentless:</strong> workflow cố định localize → edit → verify vẫn cạnh tranh với vòng lặp tự do (slide 37).</span><span class="lang-en"><strong>Agentless:</strong> a fixed localize → edit → verify workflow still competes with a free-running loop (slide 37).</span></li>
+        <li><span class="lang-vi"><strong>Multi-harness training:</strong> chính các nhóm luyện model chạy cùng một model qua nhiều harness — Nemotron 3 Ultra yêu cầu ít nhất 2 harness cho mỗi phân bố task — họ coi harness là biến số phải luyện cùng (slide 54).</span><span class="lang-en"><strong>Multi-harness training:</strong> the labs themselves train a single model across many harnesses — Nemotron 3 Ultra requires at least 2 harnesses per task distribution — they treat the harness as a variable that must be trained along with the model (slide 54).</span></li>
+      </ul>
+      <p><span class="lang-vi">Kết luận: đánh giá agent là đánh giá <strong>model + harness</strong> như một thể thống nhất. Khi fail, kiểm tra edit format, tool và quản lý ngữ cảnh trước khi kết luận "model kém".</span><span class="lang-en">Conclusion: evaluating an agent means evaluating <strong>model + harness</strong> as one unit. When it fails, check the edit format, tools, and context management before concluding "the model is weak".</span></p>
+    </details>
+
+    <p><strong>C2.</strong> <span class="lang-vi">Một agent nộp patch cho issue SWE-bench. Chạy bộ test: <em>2 test fail → pass</em>, <em>1 test pass → pass trở thành fail</em>, <em>3 test pass → pass vẫn pass</em>. Patch này có được tính là giải quyết issue không? Nêu tên hai nhóm test và giải thích.</span><span class="lang-en">An agent submits a patch for a SWE-bench issue. Running the test suite: <em>2 tests fail → pass</em>, <em>1 test pass → pass becomes fail</em>, <em>3 tests pass → pass stays pass</em>. Does this patch count as resolving the issue? Name the two test groups and explain.</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <p><span class="lang-vi"><strong>Không.</strong> Cách chấm của SWE-bench gồm hai phần (slide 47):</span><span class="lang-en"><strong>No.</strong> SWE-bench grading has two parts (slide 47):</span></p>
+      <ul>
+        <li><span class="lang-vi"><strong>Fail → pass</strong> — yêu cầu sửa đã được đáp ứng: ở đây 2 test đạt, tốt.</span><span class="lang-en"><strong>Fail → pass</strong> — the requested fix has been delivered: here 2 tests pass, good.</span></li>
+        <li><span class="lang-vi"><strong>Pass → pass</strong> — hành vi cũ phải được giữ nguyên: 1 test vốn xanh nay đỏ, tức patch đã gây <em>regression</em>.</span><span class="lang-en"><strong>Pass → pass</strong> — existing behavior must be preserved: 1 test that used to be green is now red, meaning the patch caused a <em>regression</em>.</span></li>
+      </ul>
+      <p><span class="lang-vi">Patch chỉ được tính giải quyết khi vượt qua <em>cả hai</em>: sửa được cái cần sửa <strong>và</strong> không phá gì. Sửa đúng chỗ nhưng làm hỏng chỗ khác thì vẫn fail — đúng như ví dụ retries phải chạy đủ 4 ca, không chỉ ca zero.</span><span class="lang-en">A patch only counts as resolving when it clears <em>both</em>: fixes what needs fixing <strong>and</strong> breaks nothing. Fixing the right spot while breaking another still fails — just like the retries example must pass all 4 cases, not only the zero case.</span></p>
+    </details>
+
+    <p><strong>C3.</strong> <span class="lang-vi">CI của repository đỏ, log ghi <code>npm ci: EBADENGINE</code> — package yêu cầu <code>node &gt;= 18</code> nhưng runner đang chạy Node 16. Trả lời: (a) trước khi chọn lệnh build/test, bạn cần kiểm tra gì? (b) bản sửa nằm ở đâu, và kiểm chứng bằng cách nào?</span><span class="lang-en">The repository's CI is red, and the log says <code>npm ci: EBADENGINE</code> — a package requires <code>node &gt;= 18</code> but the runner is on Node 16. Answer: (a) before choosing a build/test command, what should you check? (b) where is the fix, and how do you verify it?</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi"><strong>(a)</strong> Đọc cấu hình dự án trước khi chọn lệnh — đừng đoán (slide 53). Python: <code>pyproject.toml</code> + <code>pytest</code>; TypeScript: <code>package.json</code> + <code>npm test</code>; Rust: <code>Cargo.toml</code> + <code>cargo test</code>. Ở đây log đã chỉ thẳng vấn đề phiên bản runtime.</span><span class="lang-en"><strong>(a)</strong> Read the project config before choosing commands — don't guess (slide 53). Python: <code>pyproject.toml</code> + <code>pytest</code>; TypeScript: <code>package.json</code> + <code>npm test</code>; Rust: <code>Cargo.toml</code> + <code>cargo test</code>. Here the log already points straight at the runtime version problem.</span></li>
+        <li><span class="lang-vi"><strong>(b)</strong> Đây không phải bug trong code ứng dụng: sửa cấu hình workflow — <code>setup-node</code> thành <code>node-version: '20'</code> (slide 69). Đừng "sửa" bằng cách xóa test hay hạ yêu cầu engine cho build xanh.</span><span class="lang-en"><strong>(b)</strong> This is not a bug in the application code: fix the workflow config — <code>setup-node</code> to <code>node-version: '20'</code> (slide 69). Do not "fix" it by deleting tests or lowering the engine requirement to make the build green.</span></li>
+        <li><span class="lang-vi"><strong>Kiểm chứng:</strong> chạy lại workflow CI và xem các check bắt buộc chuyển xanh — artifact của task sửa CI là code/cấu hình, chấm bằng chính workflow (slide 63).</span><span class="lang-en"><strong>Verification:</strong> re-run the CI workflow and watch the required checks turn green — the artifact of a CI-fix task is code/config, graded by the workflow itself (slide 63).</span></li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="code">
+    <h2><span class="lang-vi">Phần D — Bài tập code (2 bài)</span><span class="lang-en">Part D — Coding exercises (2 drills)</span></h2>
+
+    <h3><span class="lang-vi">D1 · <code>apply_edit(text, edit)</code> — mô phỏng edit format "tìm &amp; thay"</span><span class="lang-en">D1 · <code>apply_edit(text, edit)</code> — simulating the "search &amp; replace" edit format</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam07_d1.py</code>, viết phần <code>TODO</code>, rồi chạy <code>python exam07_d1.py</code> để thấy <code>OK!</code>. Đây chính là cơ chế đứng sau edit format search/replace mà bài giảng nói tới: đoạn <code>find</code> phải khớp, nếu không thì thao tác thất bại chứ không được "đoán ý".</span><span class="lang-en">Copy it into <code>exam07_d1.py</code>, fill in the <code>TODO</code>, then run <code>python exam07_d1.py</code> to see <code>OK!</code>. This is the mechanism behind the search/replace edit format the lecture talks about: the <code>find</code> block must match, otherwise the operation fails rather than "guessing what you meant".</span></p>
+    <div class="lang-vi">
+    <pre><code>def apply_edit(text, edit):
+    """Thay đoạn edit["find"] ĐẦU TIÊN trong text bằng edit["replace"].
+
+    Quy tắc:
+      - Trả về văn bản MỚI; không sửa text gốc.
+      - edit["find"] rỗng → raise ValueError.
+      - Không tìm thấy edit["find"] trong text → raise ValueError.
+    """
+    # TODO
+    pass
+
+
+# ---------- Tự kiểm ----------
+config = "RETRIES = 3\nTIMEOUT = 30\n"
+
+assert apply_edit(config, {"find": "RETRIES = 3", "replace": "RETRIES = 5"}) == "RETRIES = 5\nTIMEOUT = 30\n"
+assert config == "RETRIES = 3\nTIMEOUT = 30\n"          # text gốc phải giữ nguyên
+
+dup = "x = 1\nx = 1\n"
+assert apply_edit(dup, {"find": "x = 1", "replace": "x = 2"}) == "x = 2\nx = 1\n"
+
+for bad in [
+    {"find": "RETRIES = 9", "replace": "RETRIES = 5"},   # không tìm thấy find
+    {"find": "", "replace": "X"},                        # find rỗng
+]:
+    try:
+        apply_edit(config, bad)
+        raise AssertionError(f"Đáng lẽ phải raise ValueError: {bad}")
+    except ValueError:
+        pass
+
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def apply_edit(text, edit):
+    """Replace the FIRST occurrence of edit["find"] in text with edit["replace"].
+
+    Rules:
+      - Return the NEW text; do not modify the original text.
+      - edit["find"] empty → raise ValueError.
+      - edit["find"] not found in text → raise ValueError.
+    """
+    # TODO
+    pass
+
+
+# ---------- Self-check ----------
+config = "RETRIES = 3\nTIMEOUT = 30\n"
+
+assert apply_edit(config, {"find": "RETRIES = 3", "replace": "RETRIES = 5"}) == "RETRIES = 5\nTIMEOUT = 30\n"
+assert config == "RETRIES = 3\nTIMEOUT = 30\n"          # the original text must stay unchanged
+
+dup = "x = 1\nx = 1\n"
+assert apply_edit(dup, {"find": "x = 1", "replace": "x = 2"}) == "x = 2\nx = 1\n"
+
+for bad in [
+    {"find": "RETRIES = 9", "replace": "RETRIES = 5"},   # find not found
+    {"find": "", "replace": "X"},                        # empty find
+]:
+    try:
+        apply_edit(config, bad)
+        raise AssertionError(f"Đáng lẽ phải raise ValueError: {bad}")
+    except ValueError:
+        pass
+
+print("OK!")</code></pre>
+    </div>
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <div class="lang-vi">
+      <pre><code>def apply_edit(text, edit):
+    find = edit["find"]
+    replace = edit["replace"]
+    if not find:
+        raise ValueError("Đoạn find rỗng — không có gì để thay")
+    index = text.find(find)
+    if index == -1:
+        raise ValueError(f"Không tìm thấy đoạn cần thay: {find!r}")
+    return text[:index] + replace + text[index + len(find):]</code></pre>
+      </div>
+      <div class="lang-en">
+      <pre><code>def apply_edit(text, edit):
+    find = edit["find"]
+    replace = edit["replace"]
+    if not find:
+        raise ValueError("Empty find block — nothing to replace")
+    index = text.find(find)
+    if index == -1:
+        raise ValueError(f"Couldn't find the block to replace: {find!r}")
+    return text[:index] + replace + text[index + len(find):]</code></pre>
+      </div>
+      <p><span class="lang-vi">Viết bằng slicing hay bằng <code>text.replace(find, replace, 1)</code> đều đúng — slicing làm rõ "lần xuất hiện đầu tiên". Hai điểm đáng chú ý:</span><span class="lang-en">Either slicing or <code>text.replace(find, replace, 1)</code> is correct — slicing makes "the first occurrence" explicit. Two things worth noting:</span></p>
+      <ul>
+        <li><span class="lang-vi"><strong>Thất bại phải "ồn ào".</strong> <code>ValueError</code> kèm nội dung <code>find</code> để harness đưa lỗi lại cho model trong vòng lặp — im lặng trả về văn bản không đổi là kiểu lỗi tệ nhất.</span><span class="lang-en"><strong>Failure must be loud.</strong> A <code>ValueError</code> carrying the <code>find</code> content lets the harness feed the error back to the model in the loop — silently returning unchanged text is the worst kind of bug.</span></li>
+        <li><span class="lang-vi"><strong>Thực tế còn khắt khe hơn.</strong> Công cụ search/replace thật (OpenHands, Pi, OpenCode <code>edit</code>) thường yêu cầu đoạn <code>find</code> khớp <em>duy nhất</em>: nếu nó xuất hiện nhiều chỗ, tool không biết thay chỗ nào (mục 5 — "đích có thể mơ hồ"). Bản của bạn thay lần đầu tiên theo đề bài; hãy hình dung rủi ro khi <code>find</code> chỉ là <code>return x</code> xuất hiện ba lần.</span><span class="lang-en"><strong>Reality is stricter still.</strong> Real search/replace tools (OpenHands, Pi, OpenCode's <code>edit</code>) usually require the <code>find</code> block to match <em>uniquely</em>: if it appears in several places, the tool can't tell where to edit (section 5 — "the target may be ambiguous"). Your version replaces the first occurrence per the spec; imagine the risk when <code>find</code> is just <code>return x</code> appearing three times.</span></li>
+      </ul>
+    </details>
+
+    <h3><span class="lang-vi">D2 · Đọc unified diff — đếm dòng bỏ / dòng thêm (bonus)</span><span class="lang-en">D2 · Reading a unified diff — counting removed / added lines (bonus)</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam07_d2.py</code> và chạy <code>python exam07_d2.py</code>. Bài này luyện đúng định dạng patch ở mục 5: dấu <code>-</code> là dòng bị bỏ, dấu <code>+</code> là dòng được thêm, dòng không dấu là ngữ cảnh giữ nguyên.</span><span class="lang-en">Copy it into <code>exam07_d2.py</code> and run <code>python exam07_d2.py</code>. This drill trains exactly the patch format from section 5: <code>-</code> marks a removed line, <code>+</code> an added line, and an unsigned line is context that stays.</span></p>
+    <div class="lang-vi">
+    <pre><code>def count_changes(hunk):
+    """Đếm số dòng bị bỏ và số dòng được thêm trong một đoạn unified diff.
+
+    - Dòng "--- ..." và "+++ ..." là header tên file → bỏ qua.
+    - Dòng bắt đầu bằng "-" → removed += 1.
+    - Dòng bắt đầu bằng "+" → added += 1.
+    - Dòng khác (thường bắt đầu bằng dấu cách) là ngữ cảnh → bỏ qua.
+    Trả về tuple (removed, added).
+    """
+    # TODO
+    pass
+
+
+# ---------- Tự kiểm ----------
+patch = """--- a/settings.py
++++ b/settings.py
+@@ -1,2 +1,2 @@
+-RETRIES = 3
++RETRIES = 5
+ TIMEOUT = 30
+"""
+assert count_changes(patch) == (1, 1)
+
+patch2 = """@@ -10,3 +10,5 @@
+ context line
+-old line
++new line A
++new line B
+ context line
+"""
+assert count_changes(patch2) == (1, 2)
+
+patch3 = """@@ -3,2 +3,0 @@
+-a
+-b
+"""
+assert count_changes(patch3) == (2, 0)
+
+assert count_changes("@@ -1,1 +1,1 @@\n TIMEOUT = 30\n") == (0, 0)
+
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def count_changes(hunk):
+    """Count removed lines and added lines in a unified diff hunk.
+
+    - Lines starting with "--- ..." and "+++ ..." are file-name headers → skip.
+    - A line starting with "-" → removed += 1.
+    - A line starting with "+" → added += 1.
+    - Anything else (usually starting with a space) is context → skip.
+    Return the tuple (removed, added).
+    """
+    # TODO
+    pass
+
+
+# ---------- Self-check ----------
+patch = """--- a/settings.py
++++ b/settings.py
+@@ -1,2 +1,2 @@
+-RETRIES = 3
++RETRIES = 5
+ TIMEOUT = 30
+"""
+assert count_changes(patch) == (1, 1)
+
+patch2 = """@@ -10,3 +10,5 @@
+ context line
+-old line
++new line A
++new line B
+ context line
+"""
+assert count_changes(patch2) == (1, 2)
+
+patch3 = """@@ -3,2 +3,0 @@
+-a
+-b
+"""
+assert count_changes(patch3) == (2, 0)
+
+assert count_changes("@@ -1,1 +1,1 @@\n TIMEOUT = 30\n") == (0, 0)
+
+print("OK!")</code></pre>
+    </div>
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <div class="lang-vi">
+      <pre><code>def count_changes(hunk):
+    removed = 0
+    added = 0
+    for line in hunk.splitlines():
+        if line.startswith("---") or line.startswith("+++"):
+            continue                      # header tên file, không phải dòng thay đổi
+        if line.startswith("-"):
+            removed += 1
+        elif line.startswith("+"):
+            added += 1
+        # dòng ngữ cảnh và header "@@": bỏ qua
+    return removed, added</code></pre>
+      </div>
+      <div class="lang-en">
+      <pre><code>def count_changes(hunk):
+    removed = 0
+    added = 0
+    for line in hunk.splitlines():
+        if line.startswith("---") or line.startswith("+++"):
+            continue                      # file-name header, not a change line
+        if line.startswith("-"):
+            removed += 1
+        elif line.startswith("+"):
+            added += 1
+        # context lines and "@@" headers: skip
+    return removed, added</code></pre>
+      </div>
+      <p><span class="lang-vi">Vài ghi chú:</span><span class="lang-en">A few notes:</span></p>
+      <ul>
+        <li><span class="lang-vi">Kiểm tra header <em>trước</em> dấu <code>-</code>/<code>+</code>, nếu không <code>--- a/settings.py</code> sẽ bị đếm nhầm thành một dòng bỏ.</span><span class="lang-en">Check the headers <em>before</em> the <code>-</code>/<code>+</code> prefixes, otherwise <code>--- a/settings.py</code> gets miscounted as a removed line.</span></li>
+        <li><span class="lang-vi">Đây là bản đơn giản: nội dung một dòng bị bỏ mà tự nó bắt đầu bằng <code>--</code> sẽ bị bỏ sót — diff thật phân biệt nhờ vị trí trong hunk. Hiểu giới hạn này là hiểu vì sao cần parser thật cho patch.</span><span class="lang-en">This is the simple version: a removed line whose content itself starts with <code>--</code> will be missed — real diffs distinguish them by position in the hunk. Understanding this limitation is understanding why a real patch parser is needed.</span></li>
+        <li><span class="lang-vi">Đếm kiểu này chính là cách ước lượng "độ lớn" một bản sửa. Nhớ lại mục 5: Aider dùng unified diff rút gọn (bỏ số dòng hunk), còn Codex dùng file-operation patch có ngữ cảnh mà không cần đếm dòng.</span><span class="lang-en">Counting this way is exactly how you estimate the "size" of a fix. Recall section 5: Aider uses a condensed unified diff (dropping hunk line counts), while Codex uses a file-operation patch with context and no line counting.</span></li>
+      </ul>
+    </details>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><a href="../exams/0006-exam.html">← Exam 06</a> · <a href="../lessons/0007-coding-agents.html"><span class="lang-vi">Ôn lại Bài 07</span><span class="lang-en">Review Lesson 07</span></a> · <a href="../exams/0008-exam.html"><span class="lang-vi">Exam 08 — Computer Use Agents →</span><span class="lang-en">Exam 08 — Computer Use Agents →</span></a></p>
+    <p><span class="lang-vi">Chưa đạt 85%? Làm lại từ đầu — mỗi lần làm lại là một lần nhớ sâu hơn.</span><span class="lang-en">Below 85%? Start over — every retake deepens the memory.</span></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

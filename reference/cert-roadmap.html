@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lộ trình chứng chỉ AI/agentic — từ cơ bản đến nâng cao</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Học tập · Tài liệu tham chiếu</div>
+    <h1>Lộ trình chứng chỉ AI/agentic</h1>
+    <p class="subtitle">Từ cơ bản nhất đến nâng cao — kèm phân tích bài học hiện có đáp ứng được gì và phần nào cần bổ sung. Kiểm tra thông tin chính thức ngày 23/09/2026.</p>
+    <p class="lesson-meta"><span>Nguồn: trang chính thức các nhà cung cấp</span><span>Cập nhật khi có thay đổi</span></p>
+  </div>
+</header>
+
+<main>
+
+  <section id="nguyen-tac">
+    <h2>Cách mình đi lộ trình này</h2>
+    <ul>
+      <li><strong>Leo thang từng bậc</strong> — mỗi bậc là một chứng chỉ vừa sức, lấy được rồi mới lên bậc tiếp. Bậc đầu cố ý dễ để làm quen phòng thi.</li>
+      <li><strong>Học nền agentic song song</strong> bằng khóa 11-768 (các bài học trong workspace) — đây là phần lõi của mọi chứng chỉ agentic.</li>
+      <li><strong>Luyện đến ~85–90%</strong> trên bộ câu hỏi mô phỏng trước khi đăng ký thi thật.</li>
+      <li><strong>Đề thi thật không công khai.</strong> Luyện bằng: official practice test (một số miễn phí) + bộ câu hỏi do giáo viên tự soạn theo blueprint + bộ câu hỏi của bên thứ ba (tùy chọn, trả phí).</li>
+    </ul>
+  </section>
+
+  <section id="thang">
+    <h2>Thang chứng chỉ (4 bậc + tùy chọn)</h2>
+    <table class="schedule">
+      <thead>
+        <tr><th>Bậc</th><th>Chứng chỉ</th><th>Chi tiết</th><th>Ghi chú</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1</strong><br>Nền tảng AI</td>
+          <td>Google Cloud <strong>Generative AI Leader</strong></td>
+          <td>$99 · 90 phút · 50–60 câu · không yêu cầu nền</td>
+          <td>Dễ nhất — nội dung non-technical (30% fundamentals, 35% dịch vụ Google, 20% cải thiện output, 15% chiến lược).</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>AWS <strong>AI Practitioner (AIF-C01)</strong></td>
+          <td>~$100 · 90 phút · 65 câu</td>
+          <td>Thay thế: nền tảng kỹ thuật vừa phải (AI/ML + GenAI + dịch vụ AWS).</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>NVIDIA <strong>NCA-GENL</strong></td>
+          <td>$125 · 60 phút · 50–60 câu</td>
+          <td>Thay thế: kỹ thuật hơn (30% ML căn bản, 24% software dev, 22% experimentation, 14% data, 10% trustworthy AI).</td>
+        </tr>
+        <tr class="off">
+          <td><strong>2</strong><br>Agentic developer</td>
+          <td>GitHub <strong>Agentic AI Developer (GH-600)</strong></td>
+          <td>120 phút · proctored</td>
+          <td>Tool use 20–25% · orchestration 15–20% · eval 15–20% · memory 10–15% · guardrails 10–15%. Cần quen GitHub/SDLC.</td>
+        </tr>
+        <tr class="off">
+          <td></td>
+          <td><em>Tùy chọn:</em> NVIDIA <strong>NCP-GENL</strong></td>
+          <td>$200 · 2 giờ</td>
+          <td>Professional GenAI LLMs — thêm chiều sâu LLM nếu muốn.</td>
+        </tr>
+        <tr class="current">
+          <td><strong>3</strong><br>Agentic professional</td>
+          <td>NVIDIA <strong>NCP-AAI</strong> (Agentic AI LLMs)</td>
+          <td>$200 · 120 phút · 60–70 câu</td>
+          <td><strong>Mục tiêu chính.</strong> Blueprint: Architecture 15% · Development 15% · Eval &amp; Tuning 13% · Deployment 13% · Cognition/Planning/Memory 10% · Knowledge Integration 10% · NVIDIA Platform 7% · Run/Monitor 5% · Safety 5% · Human-AI 5%.</td>
+        </tr>
+        <tr>
+          <td><strong>4</strong><br>Architect</td>
+          <td>Google Cloud <strong>Professional Agentic Architect</strong></td>
+          <td>$200 · MCQ (3 giờ) + hands-on labs</td>
+          <td>Beta 9/2026 → GA ~11/2026. Khó nhất — cần thực hành cloud thật.</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><em>Hoặc:</em> ADaSci <strong>CAASA</strong></td>
+          <td>Khóa 30 giờ + thi</td>
+          <td>Vendor-neutral; multi-agent/orchestration/governance.</td>
+        </tr>
+        <tr>
+          <td><strong>2–4</strong><br>Nhánh Claude</td>
+          <td>Anthropic <strong>Claude Certification</strong> (4 chứng chỉ)</td>
+          <td>$125 / chứng chỉ · thi giám sát</td>
+          <td>Associate → Developer (CCD-F) → Architect Foundations (CCA-F) → Architect Professional. Xem mục “Nhánh Claude” bên dưới.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Lưu ý quan trọng:</strong> Microsoft <strong>AI-900 đã bị khai tử (retired) từ 30/06/2026</strong>. Hướng Microsoft hiện có <a href="https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-apps-and-agents-developer-associate/">AI-103 — Azure AI Apps and Agents Developer Associate (beta)</a> (intermediate, 120 phút) — có thể thay GH-600 ở Bậc 2 nếu bạn theo hệ Microsoft/Azure.</p>
+  </section>
+
+  <section id="claude">
+    <h2>Nhánh Claude (Anthropic) — mới 2026, rất khớp khóa học</h2>
+    <p>Anthropic có chương trình <strong>Claude Certification</strong> chính thức (ra mắt 03/2026, mở rộng 07/2026) — 4 chứng chỉ theo vai trò. Thi <strong>giám sát + xác minh danh tính</strong>, phí <strong>USD 125/chứng chỉ</strong>, khóa học chuẩn bị miễn phí trên Anthropic Partner Academy. Hơn 36.000 chuyên gia đã được cấp chứng chỉ từ 03/2026.</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Chứng chỉ</th><th>Dành cho</th><th>Nội dung chính</th><th>Vị trí</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Claude Certified Associate: Foundations</td><td>Mọi vai trò dùng Claude hằng ngày</td><td>Sử dụng Claude thực tế trong công việc</td><td>Bậc 1–2</td></tr>
+        <tr><td>Claude Certified Developer: Foundations (CCD-F)</td><td>Kỹ sư xây ứng dụng với Claude</td><td><strong>Claude API · tool use · agent development</strong></td><td>Bậc 2 — khớp trực tiếp Bài 02–03</td></tr>
+        <tr><td>Claude Certified Architect: Foundations (CCA-F)</td><td>Solution architect thiết kế hệ agent</td><td>Kiến trúc, quyết định thiết kế, trade-offs</td><td>Bậc 3 — khớp Bài 01, 06</td></tr>
+        <tr><td>Claude Certified Architect: Professional</td><td>Chuyên gia cấp cao</td><td>Integration architecture, governance, evaluation</td><td>Bậc 4</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <div class="callout-title">Điều kiện đăng ký — đọc kỹ trước khi mơ</div>
+      <p>Anthropic hiện <strong>chỉ nhận đăng ký thi từ email thuộc tổ chức đối tác</strong> (Claude Partner Network). Nếu bạn không thuộc công ty đối tác, có một lối vào cộng đồng: <a href="https://claudecode.sg/resources/claude-certifications-open">Claude Singapore Community</a> (thành viên Partner Network) mở pathway cho mọi người — cấp email @claudecode.sg và ký thỏa thuận freelance theo điều khoản đối tác. Đây là kênh do <em>cộng đồng vận hành</em>, không phải kênh tự đăng ký chính thức của Anthropic — cân nhắc kỹ trước khi tham gia.</p>
+      <p>Điểm cộng lớn: <strong>khóa học chuẩn bị nằm trên Anthropic Partner Academy</strong> — có thể học trước, kể cả khi chưa đủ điều kiện thi.</p>
+    </div>
+    <p><strong>Luyện đề:</strong> có một trang cộng đồng luyện đề cho đúng 4 chứng chỉ này — <a href="https://hoangduong92.github.io/exam-prep-web/">exam-prep-web</a>: ~534 câu song ngữ EN–VI cho CCAO-F / CCDV-F / CCAR-F / CCAR-P + labs theo exam guide, chạy offline trên iPhone. Câu hỏi do AI soạn theo Exam Guide công khai — <em>không phải đề thật</em>; nhớ đối chiếu chéo với tài liệu gốc.</p>
+  </section>
+
+  <section id="do-phu">
+    <h2>Bài học hiện có đáp ứng được gì?</h2>
+    <p><strong>Trả lời ngắn: chưa đủ chứng chỉ nào cả.</strong> 6 bài hiện tại (01–06) phủ phần <em>lõi agentic</em> — mạnh nhất với NCP-AAI và GH-600 (khoảng một nửa), gần như chưa chạm tới các chứng chỉ nền tảng (cần ML căn bản + dịch vụ cloud). Chi tiết:</p>
+
+    <h3>NVIDIA NCP-AAI — độ phủ ~55%</h3>
+    <table class="mapping">
+      <thead><tr><th>Domain</th><th>%</th><th>Bài học phủ</th><th>Trạng thái</th></tr></thead>
+      <tbody>
+        <tr><td>Agent Architecture and Design</td><td>15%</td><td>Bài 01, 02</td><td>✓ phần lớn</td></tr>
+        <tr><td>Agent Development</td><td>15%</td><td>Bài 03, 05, 06 (+07, 08 sắp có)</td><td>◐ một phần</td></tr>
+        <tr><td>Evaluation and Tuning</td><td>13%</td><td>chỉ có mục 8 của Bài 03</td><td>✗ thiếu — cần module M1</td></tr>
+        <tr><td>Deployment and Scaling</td><td>13%</td><td>—</td><td>✗ thiếu — cần module M3</td></tr>
+        <tr><td>Cognition, Planning, and Memory</td><td>10%</td><td>Bài 04, 05, 06</td><td>✓ phần lớn</td></tr>
+        <tr><td>Knowledge Integration and Data Handling</td><td>10%</td><td>—</td><td>✗ thiếu — cần module M4</td></tr>
+        <tr><td>NVIDIA Platform Implementation</td><td>7%</td><td>—</td><td>✗ thiếu — module riêng khi ôn</td></tr>
+        <tr><td>Run, Monitor, and Maintain</td><td>5%</td><td>—</td><td>✗ thiếu — gộp vào M3</td></tr>
+        <tr><td>Safety, Ethics, and Compliance</td><td>5%</td><td>—</td><td>✗ thiếu — cần module M2</td></tr>
+        <tr><td>Human-AI Interaction and Oversight</td><td>5%</td><td>—</td><td>✗ thiếu — cần module M5</td></tr>
+      </tbody>
+    </table>
+
+    <h3>GitHub GH-600 — độ phủ ~45%</h3>
+    <table class="mapping">
+      <thead><tr><th>Domain</th><th>%</th><th>Bài học phủ</th><th>Trạng thái</th></tr></thead>
+      <tbody>
+        <tr><td>Prepare agent architecture and SDLC</td><td>15–20%</td><td>Bài 01, 02, 06 (+07)</td><td>◐ một phần (thiếu phần GitHub/SDLC cụ thể)</td></tr>
+        <tr><td>Tool Use and Environment Interaction</td><td>20–25%</td><td>Bài 03</td><td>✓ phần lớn</td></tr>
+        <tr><td>Memory, State, and Execution</td><td>10–15%</td><td>Bài 04, 05</td><td>✓ phần lớn</td></tr>
+        <tr><td>Evaluation, Error Analysis, Tuning</td><td>15–20%</td><td>—</td><td>✗ thiếu — cần module M1</td></tr>
+        <tr><td>Multi-Agent Coordination</td><td>15–20%</td><td>Bài 06</td><td>◐ một phần</td></tr>
+        <tr><td>Guardrails and Accountability</td><td>10–15%</td><td>—</td><td>✗ thiếu — cần module M2</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Google Professional Agentic Architect — độ phủ ~30%</h3>
+    <p>Build agents (◐ — Bài 01–06), coding agents (◐ — Bài 07 sắp có), evaluate/deploy (✗ — M1, M3), secure/govern (✗ — M2). Ngoài ra chứng chỉ này yêu cầu <strong>hands-on labs trên Google Cloud</strong> — cần module thực hành riêng khi tới bậc đó.</p>
+
+    <h3>Nhánh Claude (CCD-F / CCA-F) — độ phủ ~50%</h3>
+    <p>CCD-F (Claude API, tool use, agent development) khớp trực tiếp Bài 02–03; CCA-F (architecture, design trade-offs) khớp Bài 01, 06. Còn thiếu: evaluation/governance (sẽ có ở M1, M2) + đặc thù Claude Platform (học qua khóa chuẩn bị của Anthropic).</p>
+
+    <h3>Chứng chỉ nền tảng (Bậc 1: GenAI Leader / AIF-C01 / NCA-GENL) — độ phủ ~10%</h3>
+    <p>Các chứng chỉ này thiên về <strong>ML/AI căn bản + prompt engineering + dịch vụ cloud</strong> — khóa 11-768 hầu như không dạy phần này (khóa tập trung vào agent). Cần <strong>module M6 — AI/ML căn bản + dịch vụ cloud</strong> (nội dung cụ thể tùy chứng chỉ bạn chốt ở Bậc 1).</p>
+  </section>
+
+  <section id="bo-sung">
+    <h2>Kế hoạch bổ sung giáo trình</h2>
+
+    <h3>Phase 1 — tiếp khóa CMU (slide chính thức đã có)</h3>
+    <ul>
+      <li><strong>Bài 07 — Coding Agents</strong> ↔ buổi 3b (đang soạn)</li>
+      <li><strong>Bài 08 — Computer Use Agents</strong> ↔ buổi 4a (đang soạn)</li>
+      <li><strong>Bài 09 — Training: SFT</strong> ↔ buổi 4b (đang soạn)</li>
+      <li><strong>Bài 10 — Training: RL Basics</strong> ↔ buổi 5a</li>
+      <li>… các buổi sau (deep research, safety, frameworks, observability…) khi slide được công bố.</li>
+    </ul>
+
+    <h3>Phase 2 — module cho chứng chỉ (tự soạn, không thuộc khóa CMU)</h3>
+    <ul>
+      <li><strong>M1 — Đánh giá agent</strong> (Evaluation &amp; benchmarking): selection/arguments/trajectory/task, BFCL, SWE-bench, error analysis, tuning. <em>Ưu tiên cao nhất — 13–20% ở cả NCP-AAI lẫn GH-600.</em></li>
+      <li><strong>M2 — An toàn &amp; guardrails</strong>: sandbox, quản lý credential, phân quyền, chính sách, monitoring. <em>Ưu tiên cao — 10–15% GH-600.</em></li>
+      <li><strong>M3 — Triển khai &amp; vận hành</strong>: deployment, scaling, observability (traces/metrics/cost).</li>
+      <li><strong>M4 — Knowledge integration</strong>: RAG, dữ liệu ngoài, xử lý dữ liệu cho agent.</li>
+      <li><strong>M5 — Human-AI interaction</strong>: con người giám sát agent, giao tiếp, phê duyệt.</li>
+      <li><strong>M6 — AI/ML căn bản + dịch vụ cloud</strong> (cho Bậc 1–2): ML concepts, GenAI, prompt engineering, dịch vụ của nhà cung cấp bạn chọn.</li>
+    </ul>
+
+    <h3>Phase 3 — luyện thi theo từng bậc</h3>
+    <ul>
+      <li>Tải <strong>exam guide chính thức</strong> → lập bảng đối chiếu với bài học → chỉ học phần còn thiếu.</li>
+      <li>Bộ câu hỏi luyện tập do giáo viên soạn theo blueprint + official practice test + exam sandbox (Microsoft/Google có bản demo miễn phí).</li>
+      <li>Mốc: luyện đạt ~85–90% liên tục 2 lần → đăng ký thi thật.</li>
+    </ul>
+  </section>
+
+  <section id="nguon">
+    <h2>Nguồn &amp; lưu ý</h2>
+    <ol class="sources">
+      <li>Google Cloud — <a href="https://cloud.google.com/learn/certification/generative-ai-leader">Generative AI Leader</a> · <a href="https://support.google.com/cloud-certification/answer/18080541?hl=en">Professional Agentic Architect (FAQ beta)</a>.</li>
+      <li>AWS — <a href="https://aws.amazon.com/certification/certified-ai-practitioner/">Certified AI Practitioner (AIF-C01)</a>.</li>
+      <li>NVIDIA — <a href="https://www.nvidia.com/en-us/learn/certification/">Certification Programs</a> · <a href="https://www.nvidia.com/en-us/learn/certification/generative-ai-llm-associate/">NCA-GENL</a> · <a href="https://www.nvidia.com/en-us/learn/certification/agentic-ai-professional/">NCP-AAI</a>.</li>
+      <li>Microsoft — <a href="https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-apps-and-agents-developer-associate/">AI-103 (Azure AI Apps and Agents Developer Associate, beta)</a>. AI-900 retired 30/06/2026.</li>
+      <li>GitHub — <a href="https://learn.microsoft.com/en-us/credentials/certifications/agentic-ai-developer/">Agentic AI Developer (GH-600)</a> · ADaSci — <a href="https://www.adasci.org/certifications/certified-agentic-ai-system-architect-caasa">CAASA</a>.</li>
+    </ol>
+    <p><strong>Lưu ý:</strong> giá và lịch thi thay đổi theo khu vực/thời điểm — luôn kiểm tra trang chính thức trước khi đăng ký. Giá trên là giá niêm yết USD (chưa gồm thuế).</p>
+  </section>
+
+  <footer class="lesson-footer">
+    <p>Tài liệu tham chiếu — cập nhật khi có thay đổi từ nhà cung cấp hoặc khi chốt bậc tiếp theo.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+</body>
+</html>

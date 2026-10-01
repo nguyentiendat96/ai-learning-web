@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam 02 · Model trong một vòng lặp — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Exam 02</div>
+    <h1><span class="lang-vi">Exam — Model trong một vòng lặp</span><span class="lang-en">Exam — Model in a Loop</span></h1>
+    <p class="subtitle"><span class="lang-vi">16 câu + 2 bài tập code. Làm lại được nhiều lần — mục tiêu: đúng ≥ 85%.</span><span class="lang-en">16 questions + 2 coding exercises. Retake as many times as you like — target: ≥ 85% correct.</span></p>
+    <p class="lesson-meta"><span>~40 phút / ~40 min</span><span><a href="../lessons/0002-model-trong-mot-vong-lap.html"><span class="lang-vi">← Ôn lại Bài 02</span><span class="lang-en">← Review Lesson 02</span></a></span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="exam-bar">
+    <span class="exam-progress">Đúng 0 / 13 câu tương tác</span>
+    <button class="exam-reset" type="button">Làm lại từ đầu</button>
+  </div>
+
+  <p><span class="lang-vi"><strong>Cách làm:</strong> phần A–B chấm điểm tự động; phần C–D tự kiểm bằng đáp án. Mục tiêu: <strong>≥ 85%</strong>.</span><span class="lang-en"><strong>How to use:</strong> sections A–B are scored automatically; sections C–D are self-checked by revealing the answers. Target: <strong>≥ 85%</strong>.</span></p>
+
+  <!-- ================================================== -->
+  <section id="trac-nghiem">
+    <h2><span class="lang-vi">Phần A — Trắc nghiệm (10 câu)</span><span class="lang-en">Part A — Multiple choice (10 questions)</span></h2>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A1. Điều duy nhất một LLM làm là gì?</span><span class="lang-en">A1. What is the only thing an LLM does?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Hiểu ý nghĩa của cả câu cùng lúc</span><span class="lang-en">Understand the meaning of a whole sentence at once</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Dự đoán token tiếp theo trong chuỗi</span><span class="lang-en">Predict the next token in a sequence</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Viết toàn bộ câu trả lời trong một lần</span><span class="lang-en">Write the entire answer in one pass</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Đọc cảm xúc của người dùng</span><span class="lang-en">Read the user's emotions</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Dự đoán token → nối vào chuỗi → dự đoán tiếp. Mọi thứ khác đều xây trên vòng lặp cơ bản này.</span><span class="lang-en">Predict a token → append it to the sequence → predict again. Everything else is built on this basic loop.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A2. Chain of thought (chuỗi suy luận) là gì?</span><span class="lang-en">A2. What is chain of thought?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Model trả lời không cần suy nghĩ</span><span class="lang-en">The model answers without thinking</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Model chạy song song trên nhiều máy chủ</span><span class="lang-en">The model runs in parallel on many servers</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Model sinh token suy luận trung gian trước câu trả lời</span><span class="lang-en">The model generates intermediate reasoning tokens before the answer</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Model gọi nhiều tool trong một lượt</span><span class="lang-en">The model calls several tools in one turn</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Các token suy luận trở thành ngữ cảnh cho dự đoán sau — giúp model "tính" được việc khó hơn.</span><span class="lang-en">The reasoning tokens become context for the next prediction — letting the model "compute" harder things.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A3. Một tool definition gồm những gì?</span><span class="lang-en">A3. What does a tool definition consist of?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Name, description và JSON schema của tham số</span><span class="lang-en">A name, a description, and the JSON schema of the parameters</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Một đoạn code Python hoàn chỉnh</span><span class="lang-en">A complete piece of Python code</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Một URL kèm tài khoản đăng nhập</span><span class="lang-en">A URL together with a login account</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Một prompt riêng cho từng tool</span><span class="lang-en">A separate prompt for each tool</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Ba phần đó được chat template render thành text và đưa vào prompt.</span><span class="lang-en">Those three parts are rendered into text by the chat template and placed in the prompt.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A4. Khi "gọi tool", model thực chất làm gì?</span><span class="lang-en">A4. When it "calls a tool", what does the model actually do?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Chạy chương trình ngay lập tức</span><span class="lang-en">Runs the program immediately</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Sinh một chuỗi token mô tả lời gọi</span><span class="lang-en">Generates a string of tokens describing the call</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Gửi HTTP request trực tiếp</span><span class="lang-en">Sends an HTTP request directly</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Hỏi người dùng xác nhận</span><span class="lang-en">Asks the user for confirmation</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Tool call chỉ là token — việc biến nó thành hành động thật là của harness.</span><span class="lang-en">A tool call is just tokens — turning it into a real action is the harness's job.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A5. Ai là bên thực thi tool call?</span><span class="lang-en">A5. Who executes the tool call?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Harness — phần mềm bọc quanh model</span><span class="lang-en">The harness — the software wrapped around the model</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Model tự chạy trong lúc sinh token</span><span class="lang-en">The model itself, while generating tokens</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Người dùng xác nhận từng lời gọi</span><span class="lang-en">The user, confirming each call</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Không ai — tool call chỉ là gợi ý suông</span><span class="lang-en">Nobody — a tool call is just an empty suggestion</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">"The model proposes; external software decides whether and how to execute."</span><span class="lang-en">"The model proposes; external software decides whether and how to execute."</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A6. Model "thấy" danh sách tool bằng cách nào?</span><span class="lang-en">A6. How does the model "see" the list of tools?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Nó nằm sẵn trong tham số của model</span><span class="lang-en">It is baked into the model's parameters</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Qua một API riêng chỉ model truy cập được</span><span class="lang-en">Through a private API only the model can access</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Qua file cấu hình trên máy chủ</span><span class="lang-en">Through a config file on the server</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Qua text trong prompt — chat template render định nghĩa tool thành text</span><span class="lang-en">Through text in the prompt — the chat template renders tool definitions as text</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Với model, danh sách tool chỉ là một đoạn văn bản trong ngữ cảnh — nó "biết" vì đọc được mô tả.</span><span class="lang-en">To the model, the tool list is just a passage of text in context — it "knows" because it can read the descriptions.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A7. Kết quả tool quay về với model dưới dạng nào?</span><span class="lang-en">A7. In what form does a tool result come back to the model?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Biến mất sau khi model đọc xong</span><span class="lang-en">It disappears once the model has read it</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Một observation mới được thêm vào ngữ cảnh</span><span class="lang-en">A new observation added to the context</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Trọng số mới của model</span><span class="lang-en">New weights in the model</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Một reward chấm sẵn</span><span class="lang-en">A pre-scored reward</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Kết quả trở thành quan sát mới trong lịch sử — để model quyết định bước tiếp theo.</span><span class="lang-en">The result becomes a new observation in the history — so the model can decide the next step.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A8. Call ID dùng để làm gì?</span><span class="lang-en">A8. What is a call ID for?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Đặt tên cho tool</span><span class="lang-en">Naming the tool</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Mã hóa tham số cho an toàn</span><span class="lang-en">Encrypting parameters for safety</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Khớp kết quả với đúng lời gọi tương ứng</span><span class="lang-en">Matching each result with the right call</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Tính tiền gọi API</span><span class="lang-en">Billing for API calls</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Như "số vé" — đặc biệt quan trọng khi nhiều lời gọi chạy song song.</span><span class="lang-en">Like a ticket number — especially important when many calls run in parallel.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A9. Vòng lặp ReAct có dạng nào?</span><span class="lang-en">A9. What is the shape of the ReAct loop?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Hỏi → đáp → kết thúc</span><span class="lang-en">Ask → answer → done</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Quan sát → hành động → quan sát → …</span><span class="lang-en">Observe → act → observe → …</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Train → test → deploy</span><span class="lang-en">Train → test → deploy</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Đọc → ghi → xóa</span><span class="lang-en">Read → write → delete</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Hành động thay đổi môi trường; kết quả quay về thành quan sát mới; lặp đến khi xong.</span><span class="lang-en">Actions change the environment; results come back as new observations; repeat until done.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A10. Điều nào model <strong>KHÔNG</strong> làm được?</span><span class="lang-en">A10. Which of these can the model <strong>NOT</strong> do?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Sinh token</span><span class="lang-en">Generate tokens</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Viết chuỗi mô tả tool call</span><span class="lang-en">Write a string describing a tool call</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Đọc tool definition trong prompt</span><span class="lang-en">Read tool definitions in the prompt</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Tự thực thi chương trình của tool</span><span class="lang-en">Execute the tool's program itself</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Thực thi là việc của harness — model chỉ đề nghị.</span><span class="lang-en">Execution is the harness's job — the model only proposes.</span></p></div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="dien-khuyet">
+    <h2><span class="lang-vi">Phần B — Điền khuyết (3 câu)</span><span class="lang-en">Part B — Fill in the blank (3 questions)</span></h2>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B1. Câu thần chú:</span><span class="lang-en">B1. The mantra:</span></p>
+      <p class="fib-sentence">"An agent is a model in a <span class="fib" data-answer="loop" data-placeholder="?"></span>."</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B2. Ai đề nghị — ai quyết định?</span><span class="lang-en">B2. Who proposes — who decides?</span></p>
+      <p class="fib-sentence">"The model <span class="fib" data-answer="proposes|propose" data-placeholder="?"></span>; external software decides whether and how to execute."</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B3. Kết quả tool được khớp với lời gọi bằng…</span><span class="lang-en">B3. Tool results are matched to their calls by…</span></p>
+      <p class="fib-sentence"><span class="lang-vi">… bằng </span><span class="lang-en">… by </span><span class="fib" data-answer="call id|call_id|callid" data-placeholder="?"></span>.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tinh-huong">
+    <h2><span class="lang-vi">Phần C — Tình huống &amp; phân tích (3 câu)</span><span class="lang-en">Part C — Scenarios &amp; analysis (3 questions)</span></h2>
+
+    <p><strong>C1.</strong> <span class="lang-vi">Trace của agent thời tiết:</span><span class="lang-en">Trace of a weather agent:</span></p>
+    <ol>
+      <li><span class="lang-vi">Người dùng hỏi: "Thời tiết Hà Nội hôm nay?"</span><span class="lang-en">The user asks: "What's the weather in Hanoi today?"</span></li>
+      <li><span class="lang-vi">Model sinh: <code>{"name": "get_weather", "arguments": {"city": "Hanoi"}}</code></span><span class="lang-en">The model emits: <code>{"name": "get_weather", "arguments": {"city": "Hanoi"}}</code></span></li>
+      <li><span class="lang-vi">Harness gọi API và nhận: <code>"30°C, nắng"</code></span><span class="lang-en">The harness calls the API and gets: <code>"30°C, sunny"</code></span></li>
+      <li><span class="lang-vi">Model viết: "Hà Nội hôm nay 30°C và nắng."</span><span class="lang-en">The model writes: "Hanoi is 30°C and sunny today."</span></li>
+    </ol>
+    <p><span class="lang-vi">Câu hỏi: bước nào là <em>token do model sinh ra</em>, bước nào <em>do harness thực hiện</em>?</span><span class="lang-en">Question: which steps are <em>tokens generated by the model</em>, and which are <em>done by the harness</em>?</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi">Model sinh: bước 2 (chuỗi mô tả tool call) và bước 4 (câu trả lời cuối).</span><span class="lang-en">Model-generated: step 2 (the string describing the tool call) and step 4 (the final answer).</span></li>
+        <li><span class="lang-vi">Harness thực hiện: bước 3 (gọi API thật, nhận kết quả và đưa về cho model).</span><span class="lang-en">Harness: step 3 (it really calls the API, receives the result, and feeds it back to the model).</span></li>
+        <li><span class="lang-vi">Bước 1 là input từ người dùng (một observation đầu vào).</span><span class="lang-en">Step 1 is input from the user (an input observation).</span></li>
+      </ul>
+    </details>
+
+    <p><strong>C2.</strong> <span class="lang-vi">Giải thích bằng lời của bạn (3–4 câu): vì sao model chỉ biết sinh token mà vẫn gọi được tool và hành động lên thế giới bên ngoài?</span><span class="lang-en">Explain in your own words (3–4 sentences): why can a model that only knows how to generate tokens still call tools and act on the outside world?</span></p>
+    <details>
+      <summary><span class="lang-vi">Checklist tự kiểm</span><span class="lang-en">Self-check checklist</span></summary>
+      <p><span class="lang-vi">Câu trả lời tốt cần đủ 3 ý: (1) tool call chỉ là một chuỗi token model viết ra — định nghĩa tool được chat template nhét vào prompt như text; (2) harness đọc chuỗi đó, validate và thực thi thật; (3) kết quả được đưa trở lại ngữ cảnh như một observation mới, để model quyết định bước tiếp.</span><span class="lang-en">A good answer needs all three points: (1) a tool call is just a string of tokens the model writes — the tool definition is stuffed into the prompt as text by the chat template; (2) the harness reads that string, validates it, and actually executes it; (3) the result is fed back into the context as a new observation, so the model can decide the next step.</span></p>
+    </details>
+
+    <p><strong>C3.</strong> <span class="lang-vi">Tìm lỗi: "Tool call là model tự chạy chương trình." — Sai ở đâu? Sửa lại cho đúng.</span><span class="lang-en">Find the mistake: "A tool call is the model running the program itself." — What is wrong? Fix it.</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <p><span class="lang-vi">Sai: model không chạy chương trình — nó chỉ <strong>đề nghị</strong> (sinh chuỗi token). Phần mềm bên ngoài (harness) mới là bên quyết định và thực thi. Sửa: <em>"Tool call là model đề nghị gọi tool; harness kiểm tra rồi thực thi và trả kết quả về."</em></span><span class="lang-en">Wrong: the model does not run the program — it only <strong>proposes</strong> (it generates a string of tokens). The external software (the harness) is the one that decides and executes. Fixed: <em>"A tool call is the model proposing to call a tool; the harness checks it, executes it, and returns the result."</em></span></p>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="code">
+    <h2><span class="lang-vi">Phần D — Bài tập code (2 bài)</span><span class="lang-en">Part D — Coding exercises (2 exercises)</span></h2>
+
+    <h3><span class="lang-vi">D1 · Parse một tool call</span><span class="lang-en">D1 · Parse a tool call</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam02_d1.py</code>, viết <code>TODO</code>, chạy để thấy <code>OK!</code>.</span><span class="lang-en">Copy into <code>exam02_d1.py</code>, write the <code>TODO</code>, run it to see <code>OK!</code>.</span></p>
+    <div class="lang-vi">
+    <pre><code>import json
+import re
+
+def parse_tool_call(text):
+    """Tách lời gọi tool từ chuỗi dạng:
+       &lt;tool_call&gt;{"name": "read_file", "arguments": {"path": "test.py"}}&lt;/tool_call&gt;
+       Trả về dict {"name": ..., "arguments": ...}.
+       Nếu chuỗi không chứa tool call, trả về None.
+    """
+    # TODO: gợi ý — dùng re.search với pattern &lt;tool_call&gt;(.*?)&lt;/tool_call&gt; rồi json.loads
+    pass
+
+# ---------- Tự kiểm ----------
+raw = '&lt;tool_call&gt;{"name": "read_file", "arguments": {"path": "test.py"}}&lt;/tool_call&gt;'
+assert parse_tool_call(raw) == {"name": "read_file", "arguments": {"path": "test.py"}}
+assert parse_tool_call("không có gì ở đây") is None
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>import json
+import re
+
+def parse_tool_call(text):
+    """Extract a tool call from a string like:
+       &lt;tool_call&gt;{"name": "read_file", "arguments": {"path": "test.py"}}&lt;/tool_call&gt;
+       Return the dict {"name": ..., "arguments": ...}.
+       If the string contains no tool call, return None.
+    """
+    # TODO: hint — use re.search with the pattern &lt;tool_call&gt;(.*?)&lt;/tool_call&gt; then json.loads
+    pass
+
+# ---------- Self-check ----------
+raw = '&lt;tool_call&gt;{"name": "read_file", "arguments": {"path": "test.py"}}&lt;/tool_call&gt;'
+assert parse_tool_call(raw) == {"name": "read_file", "arguments": {"path": "test.py"}}
+assert parse_tool_call("không có gì ở đây") is None
+print("OK!")</code></pre>
+    </div>
+
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <pre><code>def parse_tool_call(text):
+    m = re.search(r"&lt;tool_call&gt;(.*?)&lt;/tool_call&gt;", text, re.DOTALL)
+    if not m:
+        return None
+    return json.loads(m.group(1))</code></pre>
+    </details>
+
+    <h3><span class="lang-vi">D2 · Vòng lặp agent thu nhỏ</span><span class="lang-en">D2 · A miniature agent loop</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam02_d2.py</code>, viết <code>TODO</code>, chạy để thấy <code>OK!</code>. Đây chính là vòng lặp ReAct ở dạng đơn giản nhất.</span><span class="lang-en">Copy into <code>exam02_d2.py</code>, write the <code>TODO</code>, run it to see <code>OK!</code>. This is the ReAct loop in its simplest form.</span></p>
+    <div class="lang-vi">
+    <pre><code>def run_agent(model_outputs, tools):
+    """Mô phỏng vòng lặp agent.
+
+    - model_outputs: list các dict {"name": ..., "arguments": {...}} —
+      coi như "đầu ra" của model theo kịch bản có sẵn.
+    - tools: dict tên → hàm nhận **kwargs và trả về string kết quả.
+      Riêng "finish" là control action (không nằm trong tools).
+
+    Với mỗi output, theo thứ tự:
+      1. Ghi {"role": "assistant", "tool_call": output}
+      2. Nếu name == "finish": ghi thêm {"role": "assistant", "content": arguments["text"]}
+         rồi DỪNG.
+      3. Ngược lại: chạy tool tương ứng, ghi {"role": "tool", "content": kết quả}
+    Trả về danh sách messages.
+    """
+    # TODO
+    pass
+
+# ---------- Tự kiểm ----------
+def read_file(path):
+    return "def add(a, b): ..."
+
+outputs = [
+    {"name": "read_file", "arguments": {"path": "test.py"}},
+    {"name": "finish", "arguments": {"text": "test.py định nghĩa add(a, b)."}},
+]
+msgs = run_agent(outputs, {"read_file": read_file})
+assert msgs == [
+    {"role": "assistant", "tool_call": outputs[0]},
+    {"role": "tool", "content": "def add(a, b): ..."},
+    {"role": "assistant", "tool_call": outputs[1]},
+    {"role": "assistant", "content": "test.py định nghĩa add(a, b)."},
+]
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def run_agent(model_outputs, tools):
+    """Simulate the agent loop.
+
+    - model_outputs: a list of dicts {"name": ..., "arguments": {...}} —
+      treated as the model's "output" according to a fixed script.
+    - tools: a dict name → function taking **kwargs and returning a result string.
+      "finish" itself is a control action (it is not in tools).
+
+    For each output, in order:
+      1. Record {"role": "assistant", "tool_call": output}
+      2. If name == "finish": also record {"role": "assistant", "content": arguments["text"]}
+         then STOP.
+      3. Otherwise: run the matching tool, record {"role": "tool", "content": result}
+    Return the list of messages.
+    """
+    # TODO
+    pass
+
+# ---------- Self-check ----------
+def read_file(path):
+    return "def add(a, b): ..."
+
+outputs = [
+    {"name": "read_file", "arguments": {"path": "test.py"}},
+    {"name": "finish", "arguments": {"text": "test.py định nghĩa add(a, b)."}},
+]
+msgs = run_agent(outputs, {"read_file": read_file})
+assert msgs == [
+    {"role": "assistant", "tool_call": outputs[0]},
+    {"role": "tool", "content": "def add(a, b): ..."},
+    {"role": "assistant", "tool_call": outputs[1]},
+    {"role": "assistant", "content": "test.py định nghĩa add(a, b)."},
+]
+print("OK!")</code></pre>
+    </div>
+
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <pre><code>def run_agent(model_outputs, tools):
+    messages = []
+    for output in model_outputs:
+        messages.append({"role": "assistant", "tool_call": output})
+        if output["name"] == "finish":
+            messages.append({"role": "assistant", "content": output["arguments"]["text"]})
+            break
+        result = tools[output["name"]](**output["arguments"])
+        messages.append({"role": "tool", "content": result})
+    return messages</code></pre>
+      <p><span class="lang-vi">Đối chiếu với slide 15 của lecture: <code>query()</code> = lấy output của model, <code>execute_actions()</code> = chạy tool + ghi kết quả, <code>while True</code> = vòng lặp. Bạn vừa viết đúng phiên bản thu nhỏ của mini-swe-agent.</span><span class="lang-en">Compare with slide 15 of the lecture: <code>query()</code> = fetch the model's output, <code>execute_actions()</code> = run the tools + record the results, <code>while True</code> = the loop. You have just written the miniature version of mini-swe-agent.</span></p>
+    </details>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><a href="../exams/0001-exam.html"><span class="lang-vi">← Exam 01</span><span class="lang-en">← Exam 01</span></a> · <a href="../lessons/0002-model-trong-mot-vong-lap.html"><span class="lang-vi">Ôn lại Bài 02</span><span class="lang-en">Review Lesson 02</span></a> · <a href="../exams/0003-exam.html"><span class="lang-vi">Exam 03 — Tool Use →</span><span class="lang-en">Exam 03 — Tool Use →</span></a></p>
+    <p><span class="lang-vi">Chưa đạt 85%? Làm lại từ đầu — mỗi lần làm lại là một lần nhớ sâu hơn.</span><span class="lang-en">Below 85%? Start over — every retake deepens the memory.</span></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

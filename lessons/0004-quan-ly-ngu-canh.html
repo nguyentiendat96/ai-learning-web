@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 04 · Quản lý ngữ cảnh — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Bài 04</div>
+    <h1>Quản lý ngữ cảnh</h1>
+    <p class="subtitle">Vì sao lịch sử của agent phình ra theo từng bước, cái giá phải trả, và bốn chiến lược giữ cho agent chạy được lâu — qua ví dụ một coding agent làm việc 2 tiếng.</p>
+    <p class="lesson-meta"><span>~25 phút</span><span>6 câu hỏi tương tác</span><span>3 bài thực hành có đáp án tự kiểm</span><span>Nguồn: lecture-03 (buổi 2a)</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#ngu-canh">Ngữ cảnh của agent gồm những gì</a></li>
+      <li><a href="#phinh">Vì sao ngữ cảnh phình nhanh</a></li>
+      <li><a href="#cai-gia">Cái giá của ngữ cảnh dài</a></li>
+      <li><a href="#cache">Chiến lược 1 · Prompt caching</a></li>
+      <li><a href="#nen">Chiến lược 2 · Nén lịch sử (compaction)</a></li>
+      <li><a href="#truy-hoi">Chiến lược 3 &amp; 4 · Bộ nhớ ngoài và sub-agent</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">📝 Exam của bài này</div>
+    <p>Làm <a href="../exams/0004-exam.html"><strong>Exam 04</strong></a> để nhớ chắc — nhiều câu hỏi + bài tập code có test tự chạy, làm lại được nhiều lần. Mục tiêu: đúng ≥ 85%.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bài này xoay quanh <strong>một câu chuyện duy nhất</strong>: một coding agent chạy 2 tiếng để sửa một bug. Bạn sẽ thấy lịch sử của nó phình ra từng bước, rồi từng chiến lược trong bài lần lượt xuất hiện để cứu nó.</p>
+    <p>Cứ đọc tuần tự từ đầu. Đến mục 8, bạn tự làm bài rồi <strong>mở đáp án để tự kiểm</strong> — không phải nộp cho ai cả.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="ngu-canh">
+    <h2>Ngữ cảnh của agent gồm những gì</h2>
+    <p>Ở Bài 02, bạn đã biết mỗi lần model trả lời là một lần nó <em>dự đoán token tiếp theo</em> dựa trên những gì nó đọc được. Bài này bắt đầu từ một sự thật đơn giản nhưng quyết định mọi thứ:</p>
+
+    <div class="callout">
+      <div class="callout-title">Sự thật gốc của cả bài</div>
+      <p>Model <strong>không nhớ gì</strong> giữa các lần gọi. Nó không có trí nhớ. Mỗi lần gọi, nó chỉ biết đúng đoạn text mà harness gửi cho nó lúc đó.</p>
+      <p>Đoạn text đó gọi là <strong>context</strong> (ngữ cảnh) — và nó chính là "trí nhớ làm việc" của agent.</p>
+    </div>
+
+    <p>Hãy tưởng tượng một chuyên gia rất giỏi nhưng bị mất trí nhớ tạm thời. Mỗi lần bạn hỏi, bạn phải đưa lại <strong>toàn bộ hồ sơ</strong> từ đầu — không thì họ không biết bạn đang nói về chuyện gì.</p>
+    <p>Mọi thứ bạn thấy agent "nhớ" — tên file, lỗi đã sửa, quyết định ở bước 3 — thực chất là harness đã gửi lại chúng trong prompt của lần gọi hiện tại. Không có gì được lưu trong model cả.</p>
+
+    <h3>Bốn loại nội dung trong ngữ cảnh</h3>
+    <p>Lecture 03 (slide 4) đo thành phần ngữ cảnh của các session OpenHands thật — tức là các session agent đang làm việc, không phải chat thông thường:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Thành phần</th><th>Là gì</th><th>~% token</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>System + tools</strong></td><td>Hướng dẫn hệ thống + định nghĩa tool — gần như không đổi suốt session</td><td>~23%</td></tr>
+        <tr><td><strong>Tool results</strong></td><td>Kết quả tool trả về: log, nội dung file, output lệnh</td><td>~37%</td></tr>
+        <tr><td><strong>Tool calls</strong></td><td>Những lời gọi tool do agent sinh ra</td><td>~20%</td></tr>
+        <tr><td><strong>User</strong></td><td>Tin nhắn của người dùng</td><td>~9%</td></tr>
+        <tr><td><strong>Reasoning</strong></td><td>Suy luận của model, và vài mục nhỏ khác</td><td>phần còn lại</td></tr>
+      </tbody>
+    </table>
+
+    <p>Trung bình một session: <strong>77.922 token</strong>, đo trên 1.500 session OpenHands (slide 4). Các tỉ lệ trên được làm tròn.</p>
+    <p>Điểm đáng chú ý: phần do con người viết (user) chỉ chiếm ~9%. <strong>Hơn hai phần ba ngữ cảnh là do máy sinh ra.</strong> Nghĩa là nếu không ai quản lý, ngữ cảnh tự phình — chứ không phải vì bạn nhắn nhiều.<sup><a href="#src-growth">[1]</a></sup></p>
+
+    <h3>Token và context window</h3>
+    <p><strong>Token</strong> là mảnh chữ nhỏ — có thể là một từ, một phần của từ, hoặc một dấu câu. Model đếm bằng token, không đếm bằng từ.</p>
+    <p><strong>Context window</strong> (cửa sổ ngữ cảnh) là số token tối đa model có thể xử lý trong <em>một</em> lần gọi — tính chung cho cả phần gửi vào lẫn phần model viết ra. Vượt cửa sổ, API trả lỗi.</p>
+    <p>Hình dung dễ nhất: cửa sổ ngữ cảnh là <strong>cái bàn làm việc</strong>. Bạn chỉ bày lên bàn được chừng đó giấy. Muốn bày thêm thì phải cất bớt thứ khác xuống — và đã cất xuống thì model không còn thấy nó nữa.</p>
+    <p>Vì phần model viết ra cũng tính vào cửa sổ, thực tế bạn phải <strong>chừa một khoảng trống</strong> cho câu trả lời tiếp theo. Nhớ chi tiết này — nó sẽ quay lại ở phần compaction.</p>
+    <p>Một lưu ý cho người Việt: cùng một ý, tiếng Việt thường bị cắt thành nhiều token hơn tiếng Anh. Đừng lấy số từ chia cho số token rồi áp thẳng; cần con số chính xác thì phải đo bằng tokenizer.</p>
+
+    <h3>Model không nhớ — harness nhớ hộ</h3>
+    <p>Khi bạn chat với một app AI, bạn thấy nó "nhớ" câu chuyện từ đầu cuộc trò chuyện. Thực ra không có gì được nhớ trong model: mỗi lần bạn gửi tin, app <strong>gửi lại toàn bộ cuộc trò chuyện từ đầu</strong>, rồi mới hỏi tiếp.</p>
+    <p>Đó là lý do quản lý ngữ cảnh là chuyện của <strong>harness</strong> — phần mềm chạy vòng lặp — chứ không phải của model. Harness là bên quyết định: đưa gì vào prompt, bỏ gì ra, khi nào nén lại.</p>
+    <p>Và vì "trí nhớ" đó nằm trong một cái bàn có giới hạn, nó phải được quản lý như mọi tài nguyên khác.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="phinh">
+    <h2>Vì sao ngữ cảnh phình nhanh</h2>
+    <p>Nhắc lại vòng lặp ở Bài 02: mỗi vòng, agent sinh ra suy luận và lời gọi tool, harness chạy tool rồi nối kết quả vào lịch sử. Lần gọi sau gửi lại <em>toàn bộ</em> lịch sử đó.</p>
+    <p>Nghĩa là mỗi bước chỉ thêm một chút, nhưng phần đã thêm <strong>không bao giờ bị bỏ đi</strong>:</p>
+
+    <pre><code>Lần gọi 1   [system+tools][task][call1][kq1]                            6K
+Lần gọi 2   [system+tools][task][call1][kq1][call2][kq2]               11K
+Lần gọi 3   [system+tools][task][call1][kq1][call2][kq2][call3][kq3]   16K
+            └── prefix không đổi ──┘   └── lịch sử chỉ dài thêm ──┘</code></pre>
+
+    <p>Đây chính là bảng số của slide 3 — mỗi lần gọi thêm khoảng 5K token:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Lần gọi</th><th>Input của lần này</th><th>Cộng dồn đã gửi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>6K</td><td>6K</td></tr>
+        <tr><td>2</td><td>11K</td><td>17K</td></tr>
+        <tr><td>3</td><td>16K</td><td>33K</td></tr>
+        <tr><td>4</td><td>21K</td><td>54K</td></tr>
+        <tr><td>5</td><td>26K</td><td>80K</td></tr>
+      </tbody>
+    </table>
+
+    <p>Nhìn hai cột mà xem: cột đầu tăng đều đặn (mỗi lần +5K), cột sau tăng ngày càng nhanh. Đó là ý của slide 3 — <em>"quadratic input from linear history growth"</em>: lịch sử tăng theo đường thẳng, nhưng lượng token phải gửi cộng dồn tăng theo <strong>bậc hai</strong>.</p>
+
+    <h3>Ví dụ xuyên suốt: coding agent chạy 2 tiếng</h3>
+    <p>Từ đây, ta theo dõi một coding agent (kiểu Claude Code) nhận task: <em>"Test đang fail ở <code>auth.py</code>, sửa giúp tôi."</em> Nó chạy khoảng 2 tiếng, mỗi bước vài phút (tính cả thời gian chạy test). Mỗi bước thêm khoảng 5K token — một lời gọi tool, một kết quả trả về, vài dòng suy luận.</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Bước</th><th>Input của lần này</th><th>Cộng dồn đã gửi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>6K</td><td>6K</td></tr>
+        <tr><td>5</td><td>26K</td><td>80K</td></tr>
+        <tr><td>10</td><td>51K</td><td>285K</td></tr>
+        <tr><td>20</td><td>101K</td><td>~1,07M</td></tr>
+        <tr><td>40</td><td>201K</td><td>~4,14M</td></tr>
+      </tbody>
+    </table>
+
+    <p>Các dòng 1 và 5 lấy từ slide 3; các dòng 10, 20, 40 là phần mở rộng theo đúng quy luật đó (ví dụ minh họa, không phải số đo thật).</p>
+    <p>Ở bước 40, input đã là <strong>201K token</strong> — vượt cửa sổ 200K của phần lớn model hiện nay. Và tổng lượng token đã gửi qua lại là <strong>khoảng 4,1 triệu</strong>.</p>
+
+    <div class="callout">
+      <div class="callout-title">Cái bẫy số học</div>
+      <p>Phần <em>mới</em> qua 40 bước chỉ có 200K token. Phần <em>gửi lại</em> gần 3,9 triệu token. Cái đắt không phải là agent làm nhiều, mà là nó phải <strong>kể lại toàn bộ câu chuyện ở mỗi bước</strong>.</p>
+    </div>
+
+    <p>Câu hỏi tự nhiên: <em>tại sao không chỉ gửi phần mới?</em> Vì model không có trí nhớ (mục 1). Nếu chỉ gửi dòng mới nhất, nó sẽ không biết gì về 39 bước trước đó. Muốn nó biết, phải gửi lại — và đó chính là cái giá.</p>
+    <p>Cả phần còn lại của bài xoay quanh một câu hỏi: <strong>làm sao để agent vẫn biết đủ thứ cần biết, mà không phải mang theo cả 4 triệu token?</strong></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="cai-gia">
+    <h2>Cái giá của ngữ cảnh dài</h2>
+    <p>Slide 5 của lecture chia vấn đề thành hai câu hỏi. Rất đáng để nhớ:</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Capacity</div>
+        <h3>Model có dùng được bằng chứng không?</h3>
+        <p>Nhét 200K token vào, model có thực sự tìm thấy thông tin cần thiết và dùng đúng nó không? Kiến trúc model, cách mã hoá vị trí và cách huấn luyện quyết định "ngữ cảnh dùng được" thực sự là bao nhiêu.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Efficiency</div>
+        <h3>Hệ thống có kham nổi không?</h3>
+        <p>Chạy ngữ cảnh dài tốn bao nhiêu tiền, chậm bao nhiêu? Attention, bộ nhớ KV, caching và compaction quyết định chi phí và độ trễ.</p>
+      </div>
+    </div>
+    <p>Bốn cái giá cụ thể dưới đây: hai cái thuộc về efficiency, một cái thuộc về capacity, một cái thuộc về hạ tầng.<sup><a href="#src-two-challenges">[2]</a></sup></p>
+
+    <h3>Cái giá 1 — Tiền</h3>
+    <p>Token input bị tính phí. Và vì mỗi bước phải gửi lại lịch sử, bạn trả tiền cho <em>cùng một đoạn text</em> rất nhiều lần.</p>
+    <p>Slide 40 liệt kê giá công bố của một số model (USD cho mỗi 1 triệu token, kiểm tra ngày 30/8/2026):</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Model</th><th>Input đọc từ cache</th><th>Input thường</th><th>Output</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>DeepSeek V4 Flash</td><td>$0,007–0,014</td><td>$0,22–0,44</td><td>$0,66–1,32</td></tr>
+        <tr><td>GLM-5.2</td><td>$0,26</td><td>$1,40</td><td>$4,40</td></tr>
+        <tr><td>Kimi K3</td><td>$0,30</td><td>$3,00</td><td>$15,00</td></tr>
+        <tr><td>GPT-5.6 Luna</td><td>$0,02</td><td>$0,20</td><td>$1,20</td></tr>
+        <tr><td>GPT-5.6 Sol</td><td>$0,40</td><td>$4,00</td><td>$20,00</td></tr>
+        <tr><td>Claude Opus 5</td><td>$0,50</td><td>$5,00</td><td>$25,00</td></tr>
+      </tbody>
+    </table>
+
+    <p>Hai điều rút ra: (1) output đắt hơn input nhiều lần; (2) đọc lại phần đã cache thường rẻ hơn input thường khoảng 5–30 lần. Lưu ý: "cached" ở đây nghĩa là <em>đọc trúng cache</em>; lần đầu tạo cache có thể bị tính phí riêng.</p>
+    <p>Áp vào ví dụ 2 tiếng: 4,1 triệu token input. Nếu tất cả đều tính giá thường của GPT-5.6 Sol ($4,00/1M) thì khoảng <strong>$16</strong> cho một task. Cùng lượng đó đọc từ cache ($0,40/1M) thì khoảng <strong>$1,6</strong>. (Phép tính minh họa trên bảng giá ở trên — giá có thể thay đổi.)</p>
+
+    <h3>Cái giá 2 — Độ trễ</h3>
+    <p>Một lần gọi model diễn ra thành hai pha (slide 8):</p>
+    <ol class="steps">
+      <li><strong>Prefill</strong> — model đọc toàn bộ prompt và tính trạng thái cho từng vị trí. Nặng tính toán; prompt càng dài càng lâu.</li>
+      <li><strong>Decode</strong> — model sinh từng token một, mỗi bước phải đọc lại trạng thái đã lưu. Nặng về băng thông bộ nhớ, và diễn ra tuần tự.</li>
+    </ol>
+    <p>Vì thế có hai chỉ số đo độ trễ (slide 9):</p>
+    <ul>
+      <li><strong>TTFT</strong> (time to first token) — từ lúc gửi request đến token đầu tiên. Phụ thuộc chủ yếu vào prefill, tức là vào độ dài prompt.</li>
+      <li><strong>TPOT</strong> (time per output token) — khoảng cách giữa các token output. Phụ thuộc vào decode.</li>
+    </ul>
+    <p>Hình dung: prefill là <em>đọc hết 200 trang hồ sơ trước khi trả lời</em>; decode là <em>nói từng câu</em>. Lịch sử càng dài, thời gian đọc hồ sơ càng lâu — và agent phải đọc lại hồ sơ ở <em>mỗi</em> bước.<sup><a href="#src-inference">[3]</a></sup></p>
+
+    <h3>Cái giá 3 — Chất lượng giảm dần</h3>
+    <p>Đây là phần ít trực giác nhất. Cửa sổ ngữ cảnh <strong>quảng cáo</strong> (advertised context) không bằng ngữ cảnh <strong>dùng được thật</strong> (effective context).</p>
+    <p>Slide 11 dẫn bài kiểm tra <strong>needle in a haystack</strong> (kim trong đống cỏ) trên GPT-4 (Kamradt, 2023): nhét một câu bí mật vào giữa một tài liệu rất dài, rồi hỏi model câu bí mật đó. Tài liệu càng dài, model càng dễ tìm hụt — dù câu trả lời vẫn nằm trong cửa sổ cho phép.<sup><a href="#src-niah">[4]</a></sup></p>
+    <p>Nói cách khác: <em>"đọc được" không đồng nghĩa với "dùng được"</em>. Ba hiệu ứng thực tế cần nhớ:</p>
+    <ul>
+      <li><strong>Kim chôn giữa đống cỏ.</strong> Bằng chứng quan trọng nằm giữa hàng trăm nghìn token dễ bị bỏ sót hơn là nằm ở đầu hoặc cuối.</li>
+      <li><strong>Hướng dẫn cũ bị loãng.</strong> Một ràng buộc bạn dặn ở đầu session có thể bị hàng nghìn token phía sau làm cho "nhạt" dần.</li>
+      <li><strong>Nhiễu lấn át tín hiệu.</strong> Thêm tài liệu không liên quan không làm agent giỏi hơn — nó chỉ thêm chỗ để lạc.</li>
+    </ul>
+    <p>Một kết quả thực nghiệm nổi tiếng (ngoài slide) cho thấy điều tương tự: model thường dùng thông tin ở <em>đầu</em> và <em>cuối</em> ngữ cảnh tốt hơn thông tin ở <em>giữa</em> — hiện tượng gọi là "lost in the middle" (Liu và cộng sự, 2023).<sup><a href="#src-lost-middle">[5]</a></sup></p>
+
+    <h3>Cái giá 4 — Hạ tầng, và vì sao các model được thiết kế lại</h3>
+    <p>Phía sau API là GPU. Mỗi token trong ngữ cảnh đều chiếm chỗ trong bộ nhớ dưới dạng <strong>KV cache</strong> — trạng thái model giữ lại để không phải tính lại từ đầu. Ngữ cảnh càng dài, bộ nhớ càng tốn, và mỗi token mới phải "so" với rất nhiều token trước đó.</p>
+    <p>Đó là lý do các model ngữ cảnh dài không dùng attention "nhìn toàn bộ" một cách ngây thơ. Slide 17 liệt kê bốn cơ chế lặp đi lặp lại:</p>
+    <ul>
+      <li><strong>Sliding-window attention</strong> — mỗi token chỉ nhìn lại một cửa sổ w token gần nhất, thay vì toàn bộ lịch sử (slide 18).</li>
+      <li><strong>Linear attention / recurrent models</strong> — nén lịch sử vào một "trạng thái" kích thước cố định, cập nhật dần (slide 20–23).</li>
+      <li><strong>Sparse attention</strong> — chỉ so với một tập token được chọn, thay vì tất cả (slide 24).</li>
+      <li><strong>KV compression</strong> — lưu trạng thái ở dạng nén rồi dựng lại khi cần (slide 25).</li>
+    </ul>
+    <p>Và các model còn được <strong>huấn luyện dần lên</strong>: học ngữ cảnh ngắn trước (4K–8K), rồi mở rộng lên 32K–128K, rồi 128K+ (slide 27). Có cả những thủ thuật mã hoá vị trí để model không bị "lạ" khi gặp chuỗi dài hơn lúc huấn luyện (slide 29–32).</p>
+    <p>Bạn không cần hiểu phần này để dùng agent. Nhưng nó giải thích vì sao "ngữ cảnh dài" là cả một ngành kỹ thuật — và vì sao đừng trông vào việc "model sẽ tự đọc hết".<sup><a href="#src-arch">[6]</a></sup><sup><a href="#src-train">[7]</a></sup></p>
+
+    <div class="callout">
+      <div class="callout-title">Từ đây, bốn câu trả lời</div>
+      <p>Câu hỏi lớn: làm sao để agent vẫn biết đủ thứ cần biết — mà không phải gửi lại 4 triệu token mỗi lần, không bị ngợp, và không bị chậm?</p>
+      <p>Bốn chiến lược tiếp theo là bốn câu trả lời khác nhau. Không cái nào thay thế được cái nào.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="cache">
+    <h2>Chiến lược 1 · Prompt caching — thứ không đổi thì đừng tính lại</h2>
+    <p>Nhìn lại sơ đồ ở mục 2: phần <code>[system+tools]</code> giống hệt nhau ở mọi lần gọi. Vậy tại sao lần nào cũng phải xử lý lại từ đầu?</p>
+    <p>Thực ra model không "đọc lại" theo nghĩa đọc chữ — nhưng nó phải <strong>tính lại trạng thái</strong> (KV) cho toàn bộ prompt. Đó là phần việc nặng nhất của prefill. <strong>Prompt caching</strong> là kỹ thuật lưu lại trạng thái đó cho phần đầu không đổi (gọi là <em>prefix</em>), để lần sau chỉ cần tính phần mới thêm.</p>
+    <p>Giống như một thợ may đã có sẵn rập theo số đo của bạn: lần sau chỉ cần cắt vải mới, không phải đo lại từ đầu.</p>
+
+    <p>Slide 38 mô tả vòng đời của cache qua ba lần gọi:</p>
+    <ol class="steps">
+      <li><strong>Lần gọi 1</strong> — model tạo KV cho prompt và sinh output. Output mới cũng được nối vào KV trong lúc decode.</li>
+      <li><strong>Lần gọi 2</strong> — phần cũ (prefix) được tái dùng; chỉ phần mới phải prefill đầy đủ.</li>
+      <li><strong>Lần gọi 3</strong> — kết quả tool quay về như input mới; sau khi prefill, nó nhập vào "prefix tái dùng được", và prefix cứ thế dài ra.</li>
+    </ol>
+
+    <h3>Điều kiện để cache có tác dụng: prefix phải "y hệt"</h3>
+    <p>Máy chủ so khớp từ token đầu tiên. Khớp được đến đâu thì tái dùng đến đó. Nhưng chỉ cần một chữ khác ở đầu, mọi thứ phía sau coi như mới.</p>
+    <p>Vì thế thứ tự trong prompt rất quan trọng:</p>
+
+    <pre><code>[ PREFIX ỔN ĐỊNH — được cache ]
+  1. system prompt
+  2. định nghĩa tool (đúng thứ tự, đúng chữ)
+  3. ví dụ mẫu (few-shot)
+--- ranh giới cache ---
+  4. yêu cầu người dùng          &lt;- thay đổi mỗi lần
+  5. lịch sử tool call + kết quả &lt;- chỉ nối thêm ở cuối
+  6. chỗ trống cho output tiếp theo</code></pre>
+
+    <div class="callout">
+      <div class="callout-title">Lỗi rất thường gặp</div>
+      <p>Đặt dòng <code>Bây giờ là 14:32:07 ngày 23/09/2026</code> ở đầu prompt. Mỗi lần gọi, dòng này khác → prefix khác → cache vô hiệu → bạn trả giá đầy đủ cho toàn bộ lịch sử.</p>
+      <p>Lỗi tương tự: mỗi lần serialize danh sách tool lại đổi thứ tự; chèn ghi chú ngẫu nhiên vào phần đầu.</p>
+    </div>
+
+    <p>Slide 44 tóm thành bốn việc:</p>
+    <ol class="steps">
+      <li><strong>Ổn định prefix</strong> — hướng dẫn, định nghĩa tool, ví dụ mẫu: đặt đầu, giữ nguyên.</li>
+      <li><strong>Nối phần thay đổi vào cuối</strong> — lượt nói mới của người dùng, quan sát mới.</li>
+      <li><strong>Tránh thay đổi vô ích</strong> — timestamp, đổi thứ tự schema.</li>
+      <li><strong>Đo mức tái dùng</strong> — số token đọc từ cache, TTFT, tần suất cache bị đuổi.</li>
+    </ol>
+
+    <h3>Cache không làm gì</h3>
+    <div class="callout">
+      <div class="callout-title">Đừng nhầm lẫn</div>
+      <p>Cache <strong>không làm giảm lịch sử mà model nhìn thấy</strong>, và không cải thiện chất lượng suy luận. Slide 53 nói gọn: cache giúp tránh prefill lặp lại, nhưng không thu nhỏ ngữ cảnh hiển thị.</p>
+      <p>Nói cách khác: caching chữa bệnh <em>tiền và độ trễ</em>. Bệnh <em>quá nhiều chữ</em> phải chữa bằng cách khác.</p>
+    </div>
+
+    <p>Vài chi tiết hạ tầng, biết để hiểu thôi: cache không tồn tại mãi — nó bị đuổi theo kiểu LRU (ít dùng gần đây nhất thì bị bỏ), có kỹ thuật chia sẻ prefix theo cây (RadixAttention), và có cả router biết cache nằm ở máy nào để gửi request tới đúng chỗ (slide 41–43).</p>
+    <p>Áp vào ví dụ 2 tiếng: phần prefix và lịch sử đã có trước đó được đọc từ cache, chỉ ~5K token mới phải prefill đầy đủ. Nhờ vậy TTFT không phình theo độ dài lịch sử, và phần gửi lại rẻ đi nhiều lần.<sup><a href="#src-cache">[8]</a></sup></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="nen">
+    <h2>Chiến lược 2 · Nén lịch sử (compaction)</h2>
+    <p>Prompt caching giải quyết chuyện <em>tính lại</em>, nhưng không giải quyết chuyện <em>quá nhiều chữ</em>. Muốn agent không bị ngợp và không chạm trần, phải làm ngữ cảnh <strong>ngắn lại</strong>. Cách phổ biến nhất: <strong>compaction</strong> — thay lịch sử dài bằng một bản "trạng thái làm việc" ngắn, có cấu trúc.</p>
+
+    <p>Ví dụ đời thường: <strong>bàn giao ca trực ở bệnh viện</strong>. Y tá ca sau không đọc lại toàn bộ bệnh án ba tháng của bệnh nhân. Họ đọc một bảng bàn giao: bệnh nhân là ai, đang điều trị gì, dị ứng gì, diễn biến gần nhất, cần làm gì tiếp. Bảng bàn giao ngắn — nhưng nếu thiếu dòng "dị ứng penicillin" thì hậu quả rất nặng. Đó chính xác là compaction: ngắn, có cấu trúc, và tuyệt đối không được bỏ sót thứ quan trọng.</p>
+
+    <h3>Ví dụ của lecture: nén một log CI</h3>
+    <p>Agent đang sửa lỗi CI. Trước khi nén, lịch sử là một chuỗi hành động và quan sát:</p>
+
+    <pre><code>OBSERVATION  CI job times out after 30 minutes.
+ACTION       Inspect the job log.
+OBSERVATION  24K-line log; repeated "address already in use."
+ACTION       Set --workers=1 and rerun.
+OBSERVATION  Suite passes; log saved at /tmp/ci.log.</code></pre>
+
+    <p>Sau khi nén, cả câu chuyện còn lại năm dòng — nhưng đủ để làm tiếp:</p>
+
+    <pre><code>Goal:        fix CI timeout.
+Cause:       port collision.
+Verified:    --workers=1 passes.
+Evidence:    /tmp/ci.log.
+NEXT ACTION: Open the PR with the tested worker setting.</code></pre>
+
+    <p>Để ý: bản nén không kể lại <em>quá trình</em> ("đã đọc log", "đã đặt cờ"). Nó ghi lại <strong>trạng thái</strong>: mục tiêu, nguyên nhân, điều đã kiểm chứng, bằng chứng ở đâu, việc tiếp theo.<sup><a href="#src-compact">[9]</a></sup></p>
+
+    <h3>Vì sao nén không phải là "mất thông tin liều lĩnh"</h3>
+    <p>Slide 47 mô tả compaction như một bài toán <strong>ước lượng trạng thái</strong> (state estimation): gọi H là toàn bộ lịch sử, C là bộ nén, ŝ là bản trạng thái sau khi nén. Điều lecture muốn nói:</p>
+
+    <blockquote>
+      <p>Hành động ở các bước sau gần như chỉ phụ thuộc vào <em>trạng thái làm việc</em>, chứ không phụ thuộc vào toàn bộ nhật ký.</p>
+      <cite>— Ý của slide 47: p(hành động tương lai | toàn bộ lịch sử) ≈ p(hành động tương lai | bản nén), với bản nén bị chặn trong ngân sách token<sup><a href="#src-compact">[9]</a></sup></cite>
+    </blockquote>
+
+    <p>Ba phẩm chất của một bản nén tốt (slide 47):</p>
+    <ul>
+      <li><strong>Giữ đúng hành vi</strong> — agent làm tiếp gần như khi chưa nén.</li>
+      <li><strong>Kích thước có chặn</strong> — bản nén nằm trong ngân sách token định trước.</li>
+      <li><strong>Có đường quay lại</strong> — luôn còn cách truy về bằng chứng gốc khi cần kiểm tra.</li>
+    </ul>
+
+    <h3>Thứ gì sống sót qua compaction</h3>
+    <p>Slide 48 chia rõ năm nhóm. Đây là bảng đáng đọc kỹ nhất của bài:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Xử lý</th><th>Giữ gì</th><th>Ví dụ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge">Giữ nguyên văn</span></td><td>Anchors — mục tiêu và ràng buộc</td><td>"Không được đổi schema API"; "dùng CUDA 12.4"</td></tr>
+        <tr><td><span class="badge">Mã hoá lại</span></td><td>Checkpoint — quyết định, tiến độ, ID</td><td>"đã chọn cách X; commit a1b2c3d; còn 2 test chưa xong"</td></tr>
+        <tr><td><span class="badge">Giữ nguyên văn</span></td><td>Đuôi gần nhất — lần thử đang làm, kết quả mới nhất</td><td>đang sửa file nào, vừa nhận kết quả gì</td></tr>
+        <tr><td><span class="badge">Đưa ra ngoài</span></td><td>Evidence store — đường dẫn tới bằng chứng gốc</td><td>log 24K dòng → "3 lỗi chính + lệnh đã chạy + /tmp/ci.log"</td></tr>
+        <tr><td><span class="badge">Bỏ</span></td><td>Trùng lặp, những lần thử đã bị thay thế</td><td>lần sửa đầu tiên đã bị bỏ vì sai hướng</td></tr>
+      </tbody>
+    </table>
+
+    <p>Hai chỗ "giữ nguyên văn" là cố ý: <strong>anchor</strong> (như ràng buộc, số version, tên file) không được diễn giải lại — vì diễn giải là chỗ thông tin hay bị bóp méo. Giống như số điện thoại: bạn không "tóm tắt" nó, bạn chép nguyên.</p>
+
+    <h3>Bốn quyết định khi nén (slide 49)</h3>
+    <ol class="steps">
+      <li><strong>Trigger</strong> — khi nào nén? Theo ngưỡng token, khi nhà cung cấp báo tràn cửa sổ, hoặc theo yêu cầu thủ công. Nhớ chừa chỗ cho câu trả lời tiếp theo.</li>
+      <li><strong>Select</strong> — nén phần nào? Bảo vệ phần đầu, nén vùng cũ hơn, giữ đuôi gần nhất, và <em>cắt ở ranh giới hợp lệ</em> (hết một lượt, hết một tool call).</li>
+      <li><strong>Replace</strong> — thay bằng gì? Bản tóm tắt dễ đọc, checkpoint có cấu trúc, hay một "item" do nhà cung cấp tạo.</li>
+      <li><strong>Recover</strong> — khi nén hỏng thì sao? Giữ lịch sử còn tra cứu được, thử lại, hoặc reset — phải định trước.</li>
+    </ol>
+
+    <p>Điểm "cắt ở ranh giới hợp lệ" nghe nhỏ nhưng quan trọng: cắt giữa một tool call thì phần còn lại vô nghĩa — như xé một cuốn sách đúng giữa câu, trang sau bắt đầu bằng "và vì thế nó…" mà bạn không biết "nó" là gì.</p>
+    <p>Compaction không phải chuyện lý thuyết: các harness thật như Codex, OpenCode, OpenHands đều có cơ chế này (slide 49). Nếu bạn từng thấy agent "quên" một chi tiết sau khi chạy lâu, rất có thể compaction đang làm việc.</p>
+
+    <h3>Cạm bẫy: nén nhiều lần thì thông tin trôi dần</h3>
+    <p>Lecture dành hẳn slide 50 để cảnh báo điều này. Xem ví dụ:</p>
+
+    <pre><code>Tóm tắt lần 1:  "Use CUDA 12.4"
+Tóm tắt lần 2:  "Use CUDA 12.x"
+Tóm tắt lần 3:  "Use recent CUDA"
+                 └─ ràng buộc "12.4" đã biến mất</code></pre>
+
+    <p>Vì sao? Vì mỗi bản tóm tắt mới được viết <em>từ bản tóm tắt cũ</em> cộng thêm phần mới — không phải từ lịch sử gốc. Giống như photocopy của bản photocopy: mỗi lần mờ đi một chút, đến lần thứ ba thì chữ nhỏ không còn đọc được.</p>
+    <p>Cách chống (slide 50): <strong>chép nguyên văn anchors</strong> · <strong>giữ đuôi gần nhất</strong> · <strong>giữ đường dẫn về bằng chứng gốc</strong> để khi cần thì tra lại. Ba việc nhỏ, nhưng cứu được cả task.<sup><a href="#src-drift">[10]</a></sup></p>
+
+    <h3>Làm sao biết nén tốt hay không? — đánh giá bằng "làm tiếp"</h3>
+    <p>Không thể chấm một bản tóm tắt bằng cách đọc xem nó "có vẻ hay" hay không. Slide 51 đề xuất cách đánh giá <strong>continuation-based</strong>: gieo vào lịch sử một số trạng thái (ràng buộc, quyết định, artifact) → nén bằng đúng chính sách đang dùng → cho agent <em>làm tiếp</em> → đo xem các quyết định về sau có đúng không.</p>
+    <ol class="steps">
+      <li><strong>State recall</strong> — ràng buộc và định danh (ID, version) có còn được nhớ?</li>
+      <li><strong>Task success</strong> — agent có làm tiếp đúng việc?</li>
+      <li><strong>Efficiency</strong> — token, độ trễ, chi phí sau khi nén.</li>
+      <li><strong>Stability</strong> — nén lặp nhiều lần có hỏng không?</li>
+    </ol>
+    <p>Hình dung lại chuyện bàn giao ca: bạn không chấm bảng bàn giao bằng cách xem nó viết đẹp hay không — bạn xem ca sau có làm đúng việc hay không.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="truy-hoi">
+    <h2>Chiến lược 3 &amp; 4 · Bộ nhớ ngoài và sub-agent</h2>
+    <p>Compaction xử lý lịch sử <em>đã có</em>. Còn hai chiến lược nữa để ngăn ngữ cảnh phình ngay từ đầu: đừng mang chi tiết lớn vào, và đừng làm việc bẩn trong ngữ cảnh chính.</p>
+
+    <h3>Chiến lược 3 — Đưa ra ngoài (externalize) và kéo vào khi cần (retrieval)</h3>
+    <p>Trong ví dụ CI log: agent cần đọc 24K dòng log để tìm nguyên nhân. Nhưng sau khi tìm xong, <strong>không có lý do gì giữ 24K dòng đó trong ngữ cảnh</strong> cho 30 bước tiếp theo.</p>
+    <p>Cách làm (slide 48 gọi là externalize): giữ lại một <em>con trỏ</em> — đường dẫn tới log, vài dòng lỗi chính, lệnh đã chạy. Khi nào cần chi tiết, agent quay lại đọc đúng phần đó (retrieval).</p>
+
+    <blockquote>
+      <p>"24K-line log → 3 failures + command + artifact path"</p>
+      <cite>— slide 48: nội dung lớn được đưa ra ngoài, chỉ giữ kết luận và đường dẫn<sup><a href="#src-compact">[9]</a></sup></cite>
+    </blockquote>
+
+    <p>Ví dụ đời thường: bạn không mang cả tủ hồ sơ về nhà. Bạn ghi lại <em>số hồ sơ</em> — khi cần thì xuống kho lấy đúng tập đó ra. Lecture dẫn hai công trình đi theo hướng này: MemGPT (đưa ra ngoài rồi truy hồi) và LongLLMLingua (nén có chọn lọc).</p>
+    <p>Điều kiện để nó hiệu quả: agent phải biết <strong>tìm ở đâu, tìm gì</strong>. Nếu không, "kho" biến thành nơi chôn thông tin.</p>
+
+    <h3>Chiến lược 4 — Giao việc cho sub-agent</h3>
+    <p>Ý tưởng: một agent con có <strong>ngữ cảnh riêng, sạch</strong>. Giao cho nó việc đọc 24K dòng log, nó trả về năm dòng kết luận. Ngữ cảnh chính của agent mẹ không bao giờ phình vì đống log đó.</p>
+    <p>Ví dụ đời thường: bạn giao cho một thực tập sinh đọc hết chồng tài liệu và viết cho bạn một trang tóm tắt. Bạn chỉ đọc một trang — nhưng bạn phải tin (và kiểm tra) rằng thực tập sinh đọc đúng.</p>
+    <p>Cái giá: thêm một agent và thêm lượt gọi model, chất lượng phụ thuộc vào <em>brief</em> bạn viết, và kết quả trả về vẫn cần được kiểm chứng. Đây là kỹ thuật <strong>không có trong slide buổi 2a</strong> — nó thuộc nhóm phối hợp nhiều agent, bạn sẽ gặp lại ở bài về Planning &amp; đa agent.</p>
+
+    <h3>Bốn chiến lược nhìn cạnh nhau</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Chiến lược</th><th>Giúp gì</th><th>Không giúp gì / cái giá</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Prompt caching</strong></td>
+          <td>Phần prefix không đổi được tái dùng: rẻ hơn nhiều lần và TTFT ổn định thay vì phình theo lịch sử.</td>
+          <td>Không làm giảm lịch sử model nhìn thấy; không cải thiện chất lượng; prefix phải ổn định và cache có thể bị đuổi.</td>
+        </tr>
+        <tr>
+          <td><strong>Compaction</strong></td>
+          <td>Giảm hẳn lượng lịch sử hiển thị; giữ trạng thái làm việc; đỡ chạm trần cửa sổ.</td>
+          <td>Có thể mất chi tiết nếu không giữ anchor; nén nhiều lần dễ trôi; tốn thêm một lượt model để nén.</td>
+        </tr>
+        <tr>
+          <td><strong>Externalize + truy hồi</strong></td>
+          <td>Chi tiết lớn nằm ngoài ngữ cảnh; chỉ kéo vào đúng phần cần.</td>
+          <td>Chỉ hiệu quả nếu agent biết tìm đúng chỗ; cần hạ tầng lưu trữ và tra cứu.</td>
+        </tr>
+        <tr>
+          <td><strong>Sub-agent</strong></td>
+          <td>Ngữ cảnh "bẩn" bị cô lập trong agent con; ngữ cảnh chính chỉ nhận bản cô đọng.</td>
+          <td>Tốn thêm agent và lượt gọi; chất lượng phụ thuộc brief; cần kiểm chứng kết quả trả về.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Không chiến lược nào là "đủ"</div>
+      <p>Các harness thật dùng <strong>cả bốn</strong> cùng lúc: prefix ổn định để cache, nén khi gần đầy, đưa chi tiết lớn ra file, và giao việc nặng cho sub-agent. Bạn không cần chọn một — bạn cần hiểu mỗi cái chữa bệnh gì.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+    <p>Bốn chỗ khiến người mới hay hiểu sai — đọc kỹ để tránh:</p>
+    <ol>
+      <li><strong>"Cửa sổ ngữ cảnh to là khỏi phải quản lý."</strong> — Không. Tiền và độ trễ vẫn tăng theo độ dài; chất lượng <em>dùng được</em> (effective context) nhỏ hơn cửa sổ quảng cáo; và cửa sổ nào cũng có trần. Agent chạy 2 tiếng sẽ chạm trần dù cửa sổ là 200K hay 1M. Thêm nữa, nhiều thông tin không liên quan còn làm loãng tín hiệu.</li>
+      <li><strong>"Model tự nhớ những gì đã nói."</strong> — Không. Model không có trạng thái giữa các lần gọi. "Nhớ" nghĩa là harness gửi lại lịch sử. Vì thế mọi chiến lược trong bài đều là chuyện <em>của harness</em>, không phải <em>của model</em>.</li>
+      <li><strong>"Compaction là mất thông tin, nên tránh."</strong> — Không hẳn. Quyết định tiếp theo phụ thuộc vào <em>trạng thái</em>, không phải nguyên văn lịch sử. Cái đáng sợ là compaction <em>hỏng</em> — mất anchor, trôi qua nhiều lần nén — và có cách phòng: chép nguyên văn anchor, giữ đuôi gần nhất, giữ đường dẫn nguồn, đo bằng continuation-based evaluation. Không nén cũng có giá riêng: agent bị ngợp và chạm trần.</li>
+      <li><strong>"Prompt caching giúp model nhớ lâu hơn."</strong> — Không. Caching là chuyện hạ tầng: tái dùng trạng thái của prefix. Nó không thay đổi những gì model nhìn thấy, không cải thiện suy luận — chỉ làm phần lặp lại rẻ và nhanh hơn.</li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+    <p>Phần này quan trọng nhất. Làm ra nháp trước, rồi mới mở đáp án. Đáp án chỉ là gợi ý — điều quan trọng là <strong>cách lập luận</strong>, không phải khớp từng chữ.</p>
+
+    <div class="exercise">
+      <h3>Bài A — Đếm token (5 phút)</h3>
+      <p>Một agent có prefix 6K token. Mỗi bước, nó thêm 5K token mới (tool call + kết quả + suy luận). Giả sử không có caching.</p>
+      <ol>
+        <li>Lần gọi thứ 10 gửi bao nhiêu token?</li>
+        <li>Tổng số token input đã gửi qua 10 lần là bao nhiêu?</li>
+        <li>Với cửa sổ 200K, agent chạm trần ở khoảng bước thứ mấy?</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p><strong>(1)</strong> 6K + 9 × 5K = <strong>51K token</strong>. (Bước 1 chỉ có prefix; mỗi bước sau cộng 5K.)</p>
+        <p><strong>(2)</strong> 10 × 6K + 5K × (0 + 1 + … + 9) = 60K + 5K × 45 = <strong>285K token</strong>. Mẹo: tổng 0+1+…+9 = 45.</p>
+        <p><strong>(3)</strong> Cần 6 + 5 × (n − 1) &gt; 200 → n ≈ <strong>40</strong>. Ở bước 39 là 196K (vẫn vừa), bước 40 là 201K (tràn). Thực tế phải chạm trần <em>sớm hơn</em> một chút, vì còn phải chừa chỗ cho output — đúng như slide 49 nhắc ("reserve room for the next output").</p>
+        <p>Điểm cần thấy: mỗi bước chỉ thêm 5K, nhưng tổng tăng theo bậc hai. Đó là lý do 40 bước đã ngốn hơn 4 triệu token.</p>
+      </details>
+
+      <h3>Bài B — Viết một bản compact (7 phút)</h3>
+      <p>Đây là lịch sử của một agent đang sửa lỗi đăng nhập:</p>
+
+      <pre><code>RÀNG BUỘC (người dùng dặn): không được đổi schema API.
+OBSERVATION  Người dùng báo: bấm nút đăng nhập trả lỗi 500.
+ACTION       Đọc log server.
+OBSERVATION  800 dòng log; KeyError: 'user_id' lặp 12 lần.
+ACTION       Sửa auth.py: đọc user_id bằng .get('user_id').
+OBSERVATION  Test cũ pass, nhưng test mới fail: user rỗng vẫn đăng nhập được.
+ACTION       Bắt buộc phải có user_id; nếu thiếu thì trả 401 thay vì 500.
+OBSERVATION  Toàn bộ test pass. Log ở logs/auth-fix.log. Commit a1b2c3d.</code></pre>
+
+      <p>Hãy viết bản compact khoảng 6 dòng, theo các mục: <strong>Goal</strong> · <strong>Constraints</strong> · <strong>Cause</strong> · <strong>Verified</strong> · <strong>Evidence</strong> · <strong>Next action</strong>. Ghi rõ bạn <em>bỏ</em> gì và vì sao.</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <pre><code>Goal:        Sửa lỗi 500 khi bấm nút đăng nhập.
+Constraints: Không được đổi schema API.        (chép nguyên văn)
+Cause:       Thiếu kiểm tra user_id -> KeyError trong auth.py.
+Verified:    Bắt buộc có user_id, thiếu thì trả 401; toàn bộ test pass; commit a1b2c3d.
+Evidence:    logs/auth-fix.log                (đọc lại khi cần)
+Next action: Mở PR.</code></pre>
+        <p><strong>Bỏ:</strong> 800 dòng log (đã externalize thành đường dẫn), và lần thử đầu dùng <code>.get()</code> (đã bị thay thế vì cho phép user rỗng đăng nhập).</p>
+        <p><strong>Kiểm lại:</strong> ràng buộc có bị diễn giải lại không? Có định danh nào (commit, đường dẫn file) bị mất không? Nếu bản compact này bị nén thêm lần nữa, dòng Constraints có còn nguyên không?</p>
+      </details>
+
+      <h3>Bài C — Sắp xếp prompt cho cache (5 phút)</h3>
+      <p>Một harness gửi prompt theo thứ tự sau, mỗi lần gọi:</p>
+
+      <pre><code>[1] "Hôm nay là 23/09/2026, 14:32:07. Bạn là một coding agent..."
+[2] Định nghĩa 12 tool — mỗi lần serialize lại đổi thứ tự
+[3] Yêu cầu của người dùng
+[4] Lịch sử tool call + kết quả
+[5] Vài ví dụ mẫu (few-shot)</code></pre>
+
+      <p>Tìm hai lỗi khiến cache gần như không bao giờ trúng, và sắp xếp lại cho đúng. Đo bằng gì để biết đã sửa hiệu quả?</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p><strong>Lỗi 1:</strong> timestamp ở dòng đầu — mỗi lần gọi một giá trị khác → prefix khác → cache vô hiệu. Sửa: bỏ timestamp khỏi prefix (nếu thật cần thì đẩy xuống cuối, hoặc chỉ giữ ngày).</p>
+        <p><strong>Lỗi 2:</strong> thứ tự tool thay đổi mỗi lần serialize → prefix khác. Sửa: cố định thứ tự, cố định cách viết.</p>
+        <p><strong>Lỗi 3 (bonus):</strong> ví dụ mẫu (few-shot) không bao giờ đổi nên phải nằm <em>trong</em> prefix, không phải sau yêu cầu người dùng. Thứ tự đúng:</p>
+        <pre><code>[ system prompt ] [ định nghĩa tool ] [ few-shot ]   <- prefix ổn định
+[ yêu cầu người dùng ] [ lịch sử ] [ chỗ trống cho output ]   <- nối thêm ở cuối</code></pre>
+        <p><strong>Đo bằng:</strong> số token đọc từ cache, TTFT, và tần suất cache bị đuổi (slide 44).</p>
+      </details>
+
+      <h3>Tự kiểm nhanh (1 phút)</h3>
+      <p>Điền hai chỗ trống rồi bấm Tab (hoặc Enter) để tự chấm — ô nào xanh là đúng:</p>
+      <p class="fib-sentence">Phần đầu prompt không đổi giữa các lần gọi được gọi là <span class="fib" data-answer="prefix" data-placeholder="?"></span>, còn chiến lược thay lịch sử dài bằng một bản trạng thái ngắn có cấu trúc gọi là <span class="fib" data-answer="compaction|nén" data-placeholder="?"></span>.</p>
+
+      <p class="exercise-note">Ba bài này không cần nộp ở đâu cả — tự làm, tự mở đáp án, tự đối chiếu là đủ.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu cuối — làm nhanh để chắc chắn mình đã nắm bài. Sai thì thử lại, đúng thì hiện giải thích.</p>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">1. Context window (cửa sổ ngữ cảnh) của một model là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Toàn bộ kiến thức model học được trong lúc huấn luyện</button>
+        <button class="quiz-opt" data-key="b">Số token tối đa model xử lý trong một lần gọi, tính chung cả phần gửi vào lẫn phần viết ra</button>
+        <button class="quiz-opt" data-key="c">Số token model tự động ghi nhớ giữa các lần gọi</button>
+        <button class="quiz-opt" data-key="d">Dung lượng ổ cứng cần để lưu lịch sử trò chuyện</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nó là "cái bàn làm việc" của một lần gọi — không phải trí nhớ dài hạn.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Cửa sổ ngữ cảnh là giới hạn token cho <em>một</em> lần gọi, và phần model viết ra cũng tính vào đó — nên phải chừa chỗ cho câu trả lời tiếp theo. Model không có trí nhớ giữa các lần gọi (đáp án c sai), và kiến thức huấn luyện nằm trong trọng số model, không phải trong cửa sổ (đáp án a sai).</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">2. Vì sao tổng lượng token phải gửi tăng nhanh hơn số bước của agent?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Vì mỗi bước agent viết dài hơn bước trước</button>
+        <button class="quiz-opt" data-key="b">Vì giá token tăng dần theo thời gian</button>
+        <button class="quiz-opt" data-key="c">Vì tool trả về kết quả ngày càng dài</button>
+        <button class="quiz-opt" data-key="d">Vì mỗi lần gọi phải gửi lại toàn bộ lịch sử phía trước</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nhớ bảng số 6K → 11K → 16K → 21K, và lý do model cần thấy lại phần cũ.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Mỗi bước chỉ thêm khoảng 5K token, nhưng toàn bộ phần đã tích lũy bị gửi lại ở mỗi lần gọi. Vì thế input mỗi lần tăng theo đường thẳng, còn tổng cộng dồn tăng theo bậc hai — slide 3 gọi là "quadratic input from linear history growth".</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">3. Prompt caching giúp gì cho agent?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Tái dùng trạng thái của phần prefix không đổi, nên rẻ và nhanh hơn</button>
+        <button class="quiz-opt" data-key="b">Làm model nhớ lịch sử lâu hơn</button>
+        <button class="quiz-opt" data-key="c">Tự động tóm tắt lịch sử khi quá dài</button>
+        <button class="quiz-opt" data-key="d">Giảm số token mà model nhìn thấy ở mỗi lần gọi</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: cache nằm ở hạ tầng — nó tác động lên chi phí tính toán, không lên nội dung model thấy.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Caching giúp không phải prefill lại phần prefix: rẻ hơn và TTFT ổn định. Nó <em>không</em> làm giảm lịch sử hiển thị và không cải thiện chất lượng suy luận (slide 53).</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">4. Khi nén lịch sử (compaction), thứ nào phải được giữ <strong>nguyên văn</strong>?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Toàn bộ log 24K dòng</button>
+        <button class="quiz-opt" data-key="b">Những lần thử đã bị thay thế</button>
+        <button class="quiz-opt" data-key="c">Mục tiêu và các ràng buộc</button>
+        <button class="quiz-opt" data-key="d">Mọi bước suy luận cũ</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nhớ bảng "thứ gì sống sót" — có hai nhóm được đánh dấu giữ nguyên văn.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Anchors — mục tiêu và ràng buộc — phải chép nguyên văn, vì diễn giải lại là chỗ thông tin hay bị bóp méo (ví dụ "CUDA 12.4" thành "CUDA mới"). Log lớn thì đưa ra ngoài (giữ đường dẫn); lần thử đã bị thay thế thì bỏ (slide 48).</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">5. Vì sao nén lịch sử nhiều lần liên tiếp dễ làm mất ràng buộc?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Vì bản tóm tắt mới được viết từ bản tóm tắt cũ, nên chi tiết mất dần qua từng lần</button>
+        <button class="quiz-opt" data-key="b">Vì mỗi lần nén làm tăng số token</button>
+        <button class="quiz-opt" data-key="c">Vì cache bị xóa mỗi lần nén</button>
+        <button class="quiz-opt" data-key="d">Vì model chủ động xoá những gì ít được nhắc lại</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nghĩ tới "photocopy của bản photocopy".</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 50 gọi đây là <em>repeated compaction drift</em>: mỗi bản nén kế thừa bản nén trước đó (cộng thêm phần mới), nên chi tiết nhỏ dần qua từng vòng — "CUDA 12.4" → "CUDA 12.x" → "recent CUDA". Cách chống: chép nguyên văn anchor, giữ đuôi gần nhất, giữ đường dẫn về bằng chứng gốc. Lưu ý: model không "xoá" gì cả — nó vốn không nhớ gì; vấn đề nằm ở chuỗi tóm tắt.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">6. Agent cần đọc một log 24K dòng. Cách nào giữ ngữ cảnh chính gọn nhất?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Tăng context window lên cho đủ chứa</button>
+        <button class="quiz-opt" data-key="b">Ghi log ra file, chỉ giữ đường dẫn và vài dòng kết luận, đọc lại khi cần</button>
+        <button class="quiz-opt" data-key="c">Nhét cả log vào rồi nén lịch sử ngay sau đó</button>
+        <button class="quiz-opt" data-key="d">Chia log thành nhiều phần rồi gửi lần lượt</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: slide 48 viết "24K-line log → 3 failures + command + artifact path".</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Đó là externalize + truy hồi: nội dung lớn ở ngoài, ngữ cảnh chỉ giữ kết luận và con trỏ. (a) chỉ dời vấn đề sang chi phí và chất lượng; (c) vẫn phải prefill toàn bộ log một lần và có thể mất chi tiết khi nén; (d) vẫn mang nội dung vào ngữ cảnh chính, chỉ là chia nhỏ.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <p>Các thuật ngữ của bài — đọc lướt lại một lần là nhớ:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Context</strong> (ngữ cảnh)</td><td>Toàn bộ text gửi cho model trong một lần gọi — "trí nhớ làm việc" của agent.</td></tr>
+        <tr><td><strong>Token</strong></td><td>Mảnh chữ model đếm — một từ, một phần từ, hoặc dấu câu.</td></tr>
+        <tr><td><strong>Context window</strong></td><td>Số token tối đa một lần gọi (phần gửi vào + phần sinh ra).</td></tr>
+        <tr><td><strong>Prefix</strong></td><td>Phần đầu prompt không đổi giữa các lần gọi: system prompt, định nghĩa tool, ví dụ mẫu.</td></tr>
+        <tr><td><strong>Prefill / Decode</strong></td><td>Hai pha của một lần gọi: đọc toàn bộ prompt (nặng tính toán) / sinh từng token (tuần tự).</td></tr>
+        <tr><td><strong>TTFT / TPOT</strong></td><td>Độ trễ đến token đầu tiên / khoảng cách giữa các token output.</td></tr>
+        <tr><td><strong>KV cache</strong></td><td>Trạng thái model lưu cho từng token để không phải tính lại; cũng là thứ tốn bộ nhớ GPU.</td></tr>
+        <tr><td><strong>Prompt caching</strong></td><td>Tái dùng KV của prefix giữa các lần gọi — rẻ hơn, TTFT ổn định; không làm giảm lịch sử hiển thị.</td></tr>
+        <tr><td><strong>Compaction</strong></td><td>Thay lịch sử dài bằng bản trạng thái ngắn, có cấu trúc.</td></tr>
+        <tr><td><strong>Anchor</strong></td><td>Thông tin phải giữ nguyên văn khi nén: mục tiêu, ràng buộc, ID, số version.</td></tr>
+        <tr><td><strong>Externalize / Retrieval</strong></td><td>Đưa chi tiết lớn ra ngoài (file, kho) và kéo lại đúng phần cần khi dùng.</td></tr>
+        <tr><td><strong>Drift</strong></td><td>Thông tin trôi dần qua nhiều lần nén liên tiếp.</td></tr>
+        <tr><td><strong>Continuation-based evaluation</strong></td><td>Đánh giá compaction bằng cách cho agent làm tiếp rồi đo quyết định, thay vì chấm bản tóm tắt.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Nguồn — ghi rõ slide cho từng ý, để bạn tra lại khi cần:</p>
+    <ol class="sources">
+      <li id="src-growth">Lecture 03 — <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=3">slide 3</a>: input tăng theo lịch sử (6K → 11K → 16K → 21K → 26K; cộng dồn 80K sau 5 lần) và <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=4">slide 4</a>: thành phần prompt (system+tools ~23%, tool results ~37%, tool calls ~20%, user ~9%; trung bình 77.922 token/session trên 1.500 session OpenHands).</li>
+      <li id="src-two-challenges">Lecture 03 — <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=5">slide 5</a>: hai thách thức capacity (dùng được bằng chứng?) và efficiency (kham nổi chi phí?).</li>
+      <li id="src-inference">Lecture 03 — <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=8">slide 8</a> (prefill/decode) và <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=9">slide 9</a> (TTFT, TPOT, throughput, cost).</li>
+      <li id="src-niah">Lecture 03 — <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=11">slide 11</a>: advertised vs effective context; đánh giá needle-in-a-haystack trên GPT-4 (Kamradt, 2023).</li>
+      <li id="src-lost-middle">Đọc thêm (ngoài slide): Liu và cộng sự, <a href="https://arxiv.org/abs/2307.03172">"Lost in the Middle: How Language Models Use Long Contexts"</a> (2023) — thông tin ở giữa ngữ cảnh thường được dùng kém hơn ở đầu/cuối.</li>
+      <li id="src-arch">Lecture 03 — <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=17">slide 17</a> (bốn cơ chế lặp lại), <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=13">slide 13</a>–<a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=18">18</a> (attention toàn cục, local/sliding window), <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=25">slide 25</a> (KV compression).</li>
+      <li id="src-train">Lecture 03 — <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=27">slide 27</a> (short-to-long training: 4K–8K → 32K–128K → 128K+) và <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=29">slide 29</a>–<a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=32">32</a> (RoPE, NoPE, position interpolation, YaRN).</li>
+      <li id="src-cache">Lecture 03 — <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=38">slide 38</a> (KV caching qua các lần gọi), <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=40">slide 40</a> (giá cached/regular/output, kiểm tra 30/8/2026), <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=44">slide 44</a> (thiết kế prompt để tái dùng cache), <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=42">slide 42</a>–<a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=43">43</a> (RadixAttention, cache-aware routing), <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=53">slide 53</a> (cache không làm giảm lịch sử hiển thị).</li>
+      <li id="src-compact">Lecture 03 — <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=46">slide 46</a> (ví dụ nén log CI), <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=47">slide 47</a> (compaction như ước lượng trạng thái), <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=48">slide 48</a> (thứ gì sống sót; externalize và truy hồi), <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=49">slide 49</a> (trigger / select / replace / recover).</li>
+      <li id="src-drift">Lecture 03 — <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=50">slide 50</a> (drift khi nén lặp lại: "CUDA 12.4" → "12.x" → "recent CUDA") và <a href="https://www.cmu-agents.com/slides/lecture-03-long-context.pdf#page=51">slide 51</a> (continuation-based evaluation: state recall, task success, efficiency, stability).</li>
+      <li id="src-video">Video buổi 2a: <a href="https://www.youtube.com/watch?v=AiwCCvFW1uE">CMU 11-768 — Context Management for Long-Context Agents</a> (Graham Neubig).</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài tiếp theo:</strong> 05 · Skills &amp; Memory — bộ nhớ dài hạn của agent: kỹ năng, bộ nhớ ngoài, và cách agent học từ kinh nghiệm (theo buổi 2b).</p>
+    <p>Có chỗ nào chưa rõ? Đừng cố đi tiếp — ghi lại câu hỏi rồi quay lại đọc mục đó một lần nữa, hoặc hỏi trong chat.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 03 · Tool — công cụ của agent — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Bài 03</div>
+    <h1>Tool — công cụ của agent</h1>
+    <p class="subtitle">Cách agent mở cửa bước ra thế giới: định nghĩa tool, cơ chế gọi, ràng buộc format, REST/MCP, và đánh giá — theo buổi 1b (Lecture 02: Tool Use).</p>
+    <p class="lesson-meta"><span>~25 phút</span><span>6 câu hỏi tương tác</span><span>Nguồn: lecture-02-tool-use.pdf</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#tool-la-gi">Tool là gì — và khi nào nên dùng</a></li>
+      <li><a href="#nam-vi-du">Năm ví dụ về tool</a></li>
+      <li><a href="#code">Code — công cụ mạnh nhất</a></li>
+      <li><a href="#co-che">Cơ chế: từ schema đến kết quả</a></li>
+      <li><a href="#rang-buoc">Ràng buộc format — và điều nó KHÔNG đảm bảo</a></li>
+      <li><a href="#rest-mcp">REST API và MCP</a></li>
+      <li><a href="#song-song">Gọi nhiều tool một lúc</a></li>
+      <li><a href="#danh-gia">Đánh giá tool use</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">📝 Exam của bài này</div>
+    <p>Làm <a href="../exams/0003-exam.html"><strong>Exam 03</strong></a> để nhớ chắc — nhiều câu hỏi + bài tập code có test tự chạy, làm lại được nhiều lần. Mục tiêu: đúng ≥ 85%.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Đây là bài dài nhất từ đầu khóa (buổi 1b của khóa khá nặng). Đọc đến đâu chắc đến đó. Mục 9 có bài tập tự kiểm, mục 10 là quiz. Không cần thuộc hết — cần nắm 6 ý cốt lõi ở mục 11.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="tool-la-gi">
+    <h2>Tool là gì — và khi nào nên dùng</h2>
+    <p>Ở Bài 02, bạn đã biết: model chỉ biết sinh token, và tool call chỉ là một chuỗi token nó viết ra. Nhưng <strong>tool</strong> thực sự là gì?</p>
+
+    <blockquote>
+      <p>"A tool is an interface through which a language model can invoke an external computer program."</p>
+      <cite>— Lecture 02, slide 3 (dựa trên "What Are Tools Anyway?" — Wang et al., COLM 2024)</cite>
+    </blockquote>
+
+    <p>Dịch thoát: <em>Tool là một giao diện để model gọi một chương trình máy tính bên ngoài.</em></p>
+
+    <p>Hãy hình dung model như một chuyên gia cực kỳ uyên bác nhưng bị "nhốt" trong một căn phòng: biết rất nhiều thứ, nhưng <strong>không tra được tin mới, không tính chính xác được, không chạm được vào dữ liệu riêng, và không tác động được ra ngoài</strong>. Tool chính là những cánh cửa mở ra thế giới đó. Và như Bài 02 đã học: model chỉ <em>đề nghị</em> mở cửa — phần mềm bên ngoài (harness) quyết định có mở hay không.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Lợi ích 1 — Extend</div>
+        <h3>Mở rộng</h3>
+        <p>Tiếp cận thông tin hoặc hành động <strong>không có trong tham số của model</strong>: tin tức hôm nay, số dư tài khoản, thao tác mua hàng.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Lợi ích 2 — Facilitate</div>
+        <h3>Giao việc</h3>
+        <p>Chuyển những việc mà chương trình ngoài làm <strong>chắc chắn hoặc hiệu quả hơn</strong>: tính toán chính xác, tìm kiếm, xử lý file.</p>
+      </div>
+    </div>
+
+    <p>Bốn tình huống cần tool điển hình (slide 5):</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Cần gì</th><th>Tool ví dụ</th><th>Vì sao cần tool</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Thông tin hiện tại</td><td>Search</td><td>Model không biết chuyện hôm nay</td></tr>
+        <tr><td>Tính toán chính xác</td><td>Calculator / Python</td><td>Model có thể tính nhẩm sai</td></tr>
+        <tr><td>Dữ liệu riêng tư</td><td>Account API</td><td>Model không có quyền truy cập</td></tr>
+        <tr><td>Hành động ra ngoài</td><td>Browser / API</td><td>Model không tự thay đổi được thế giới</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Quy tắc vàng</div>
+      <p>"Call tools only when their benefit outweighs latency, cost, failure, and risk." — Chỉ gọi tool khi <strong>lợi ích lớn hơn</strong> độ trễ + chi phí + khả năng thất bại + rủi ro (slide 5).</p>
+      <p>Ba ví dụ để tự kiểm: <em>"2 + 2 bằng mấy?"</em> → không cần tool, model trả lời ngay (gọi tool chỉ thêm 1 giây vô ích). <em>"Số dư tài khoản của tôi?"</em> → bắt buộc gọi API (model không thể biết). <em>"Thời tiết Hà Nội mai thế nào?"</em> → bắt buộc search (model không biết tương lai).</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="nam-vi-du">
+    <h2>Năm ví dụ về tool</h2>
+    <p>Năm ví dụ từ slide 8–12, đi từ đơn giản đến mạnh. Để ý điểm chung ở cuối mục.</p>
+
+    <h3>1 · <code>finish(text)</code> — nút kết thúc</h3>
+    <p>Trả về câu trả lời cuối và <strong>dừng vòng lặp agent</strong>. Đây không phải chương trình bên ngoài — nó là <strong>control action</strong> của harness (slide 8). Vì sao cần? Vì không có nó, vòng lặp không biết lúc nào dừng — agent sẽ chạy mãi.</p>
+
+    <h3>2 · <code>search_web(query)</code> — lấy thông tin mới</h3>
+    <p>Ví dụ: hỏi <em>"Hôm nay CMU công bố gì?"</em> → model gọi <code>search_web("site:cmu.edu announced today")</code> → nhận kết quả → tổng hợp thành câu trả lời (slide 9).</p>
+
+    <h3>3 · <code>execute_code(code)</code> — tính chính xác</h3>
+    <p>Chạy chương trình trong môi trường cách ly và trả về output. Ví dụ: <em>"Trung bình của 18, 23, 41, 54?"</em> → <code>execute_code("sum([18,23,41,54])/4")</code> → <code>34.0</code> (slide 10). Model có thể tính nhẩm sai; code thì không.</p>
+
+    <h3>4 · <code>generate_image(query)</code> — tạo nội dung mới</h3>
+    <p>Sinh ảnh từ mô tả: <code>generate_image("watercolor robot studying in a library")</code> → file ảnh (slide 11).</p>
+
+    <h3>5 · <code>create_grocery_cart(items)</code> — tool riêng của ứng dụng</h3>
+    <p>Mở ra khả năng riêng của từng ứng dụng: <em>"Tạo giỏ hàng gồm chuối, sữa, cà phê"</em> → <code>create_grocery_cart(["bananas","milk","coffee"])</code> → <code>Cart C17 · 3 items · $31.42</code> (slide 12).</p>
+
+    <div class="callout">
+      <div class="callout-title">Điểm chung: giao diện hẹp</div>
+      <p>Mỗi tool là một <strong>narrow interface</strong> — giao diện hẹp: làm đúng <em>một</em> việc, tham số rõ ràng, dễ kiểm tra. Hẹp là có chủ đích: càng hẹp thì càng dễ validate, càng khó bị lạm dụng.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="code">
+    <h2>Code — công cụ mạnh nhất</h2>
+    <p>Thay vì cho agent hàng trăm tool nhỏ, có một hướng khác: cho nó <strong>viết code</strong>. Code tự biết kết hợp vòng lặp, biến, thư viện và nhiều thao tác trong <em>một</em> hành động (slide 14–15, CodeAct — Wang et al., ICML 2024).</p>
+
+    <p><strong>Ví dụ cụ thể:</strong> "Tính điểm trung bình từ 500 file CSV trong thư mục." Nếu agent chỉ có tool <code>read_file</code>: cần 500 lời gọi, mỗi lần một file — chậm và dễ sai giữa chừng. Nếu agent có <code>execute_code</code>: viết vài dòng code (đọc cả thư mục, tính, in kết quả) — xong trong một lời gọi.</p>
+
+    <p>Slide 16 tóm tắt kết quả nghiên cứu CodeAct: trong tập hiển thị, <strong>code có success rate tốt nhất ở 8/8 model</strong> và dùng <strong>ít lượt nhất ở 7/8</strong>; tính trên cả 17 model thì cả hai con số là 12/17.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Expressive</div>
+        <h3>Biểu đạt mạnh</h3>
+        <p>Vòng lặp, biến, thư viện — tốt cho xử lý dữ liệu nhiều bước và kết hợp thao tác.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Harder to constrain</div>
+        <h3>Khó ràng buộc</h3>
+        <p>Không gian hành động rộng; validate kém chính xác hơn một hàm hẹp có schema rõ ràng.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Higher impact</div>
+        <h3>Tác động lớn</h3>
+        <p>Chạm được vào file, mạng, tiến trình. Vì vậy cần <strong>sandbox, giới hạn tài nguyên, phân quyền, audit log</strong> (slide 17).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="co-che">
+    <h2>Cơ chế: từ schema đến kết quả</h2>
+    <p>Bài 02 đã có bức tranh lớn. Mục này làm rõ ba chi tiết mà người mới hay mắc: <strong>model "nói" format gì</strong>, <strong>harness xử lý ra sao</strong>, và <strong>kết quả khớp lại bằng gì</strong>.</p>
+
+    <h3>Một schema — nhiều "tiếng nói" của model</h3>
+    <p>JSON schema là <em>ngôn ngữ chung</em> để mô tả tool. Nhưng cách model <em>phát ra</em> lời gọi là chuyện riêng của từng dòng model (slide 23):</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Model</th><th>Cách serialize lời gọi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Qwen</td><td>Thẻ XML: <code>&lt;tool_call&gt;&lt;function=get_weather&gt;&lt;parameter=city&gt;Pittsburgh...</code></td></tr>
+        <tr><td>Mistral</td><td>Control token + JSON: <code>[TOOL_CALLS] [{"name":"get_weather",...,"id":"abc123"}]</code></td></tr>
+        <tr><td>DeepSeek</td><td>Block riêng: <code>&lt;|DSML|function_calls&gt;...&lt;|DSML|invoke name="get_weather"&gt;...</code></td></tr>
+      </tbody>
+    </table>
+    <p>Điểm cốt lõi: <strong>một schema chung, nhưng serialization và parsing là đặc thù từng model</strong>. Harness phải biết model mình đang chạy để parse đúng "tiếng nói" của nó.</p>
+
+    <h3>Harness xử lý một lời gọi như thế nào</h3>
+    <p>Slide 24 mô tả pipeline của OpenHands. Đơn giản hóa thành một dây chuyền:</p>
+    <pre><code>model sinh tool_call
+        │
+        ▼
+[parse] ──► [tra tools_map] ──► [validate tham số] ──► [execute] ──► trả kết quả (kèm call_id)</code></pre>
+    <p>Walkthrough cụ thể: model sinh <code>{"name": "get_weather", "arguments": {"city": "Pittsburgh"}}</code> → harness tách ra tên + tham số → tra <code>tools_map["get_weather"]</code> (đăng ký từ lúc khởi động: schema + hàm thực thi) → kiểm tra <code>city</code> đúng kiểu string → gọi hàm thật → nhận <code>"72°F · sunny"</code> → trả về cho model kèm <code>call_id</code>.</p>
+
+    <h3>Kết quả khớp với lời gọi bằng call ID</h3>
+    <p>Mỗi lời gọi được cấp một <strong>call ID</strong> — như "số vé". Kết quả trả về mang đúng số vé đó (slide 25). Vì sao cần? Vì khi có nhiều lời gọi (đặc biệt là gọi song song), kết quả có thể về <em>không theo thứ tự</em> — không có số vé thì harness sẽ gán nhầm kết quả cho lời gọi.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="rang-buoc">
+    <h2>Ràng buộc format — và điều nó KHÔNG đảm bảo</h2>
+    <p>Model có thể sinh JSON hỏng — ví dụ thiếu dấu đóng ngoặc (slide 27):</p>
+    <pre><code>{"name":"get_weather",
+ "arguments":{"city":"Pittsburgh"}
+                                  ← thiếu "}"</code></pre>
+    <p>Harness không parse được → lời gọi thất bại. Cách chống: <strong>constrained decoding</strong> — buộc model chỉ được sinh ra output đúng format ngay từ lúc sinh. Bốn tầng ràng buộc (slide 28):</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Tầng</th><th>Đảm bảo</th><th>Ví dụ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Syntax</td><td>JSON hợp lệ</td><td>có đủ ngoặc đóng</td></tr>
+        <tr><td>Shape</td><td>Đủ trường mong đợi</td><td>có <code>city</code></td></tr>
+        <tr><td>Types</td><td>Đúng kiểu dữ liệu</td><td><code>city</code> là string</td></tr>
+        <tr><td>Values</td><td>Đúng miền giá trị</td><td><code>units</code> chỉ là "C" hoặc "F"</td></tr>
+      </tbody>
+    </table>
+
+    <p>Các ràng buộc này được mô tả bằng <strong>JSON Schema</strong> (slide 29) — từ vựng máy đọc được để mô tả dữ liệu hợp lệ. Ví dụ, với schema cho phép <code>units</code> là "C" hoặc "F": <code>{"city":"Pgh","units":"F"}</code> hợp lệ; <code>{"city":"Pgh","units":"K"}</code> không — dù cả hai đều là JSON đúng cú pháp (slide 30).</p>
+
+    <p><strong>Cách hoạt động, nói đơn giản:</strong> một bộ kiểm tra ngữ pháp (grammar) chạy song song với model. Trước khi model chọn token tiếp theo, bộ này <strong>che (mask)</strong> những token không thể dẫn tới JSON hợp lệ — chỉ để lại các token hợp lệ. Giống như chơi ô chữ mà bàn phím chỉ bật những phím có thể tạo ra từ đúng: bạn <em>không thể</em> gõ sai. Công cụ phổ biến là XGrammar (slide 32–35), chạy nhanh gần như miễn phí nhờ cache.</p>
+
+    <div class="callout">
+      <div class="callout-title">CẢNH BÁO CỐT LÕI — đừng bỏ qua</div>
+      <p>Slide 28 nói rõ: ràng buộc đảm bảo <strong>hình thức (form)</strong> — <em>không</em> đảm bảo:</p>
+      <ul>
+        <li><strong>Sự thật:</strong> <code>city="asdfgh"</code> hợp lệ về kiểu string, nhưng vô nghĩa. Ràng buộc không biết thành phố nào tồn tại.</li>
+        <li><strong>Quyền hạn:</strong> JSON hợp lệ không có nghĩa agent được phép làm việc đó.</li>
+        <li><strong>Chọn đúng tool:</strong> format đúng không ngăn agent gọi sai tool.</li>
+        <li><strong>Thành công:</strong> lời gọi hợp lệ ≠ task hoàn thành.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="rest-mcp">
+    <h2>REST API và MCP — hai cách nối tool vào thế giới</h2>
+    <p>Tool thật thường không nằm trong máy bạn — nó là một <strong>API</strong> ở đâu đó. Có hai cách nối chính.</p>
+
+    <h3>Cách 1 — REST API trực tiếp</h3>
+    <p>Hành trình từ function đến web (slide 37–39): một hàm Python (có type + schema) → bọc bằng FastAPI thành endpoint HTTP → FastAPI tự sinh <strong>OpenAPI description</strong> (mô tả operation, tham số, cách xác thực). Ví dụ: <code>GET /weather?city=Pittsburgh&amp;units=F</code>.</p>
+    <p>Coding agent hay gọi thẳng bằng <code>curl</code> (slide 40). Đơn giản — nhưng có một cái bẫy: <strong>credential nằm ngay trong shell của agent</strong>. Agent có quyền chạy lệnh nghĩa là nó có thể đọc hoặc lạm dụng chìa khóa đó.</p>
+
+    <h3>Cách 2 — MCP (Model Context Protocol)</h3>
+    <p>MCP chuẩn hóa cách ứng dụng AI (host) nói chuyện với các server cung cấp tool (slide 42–45):</p>
+    <pre><code>agent (MCP host)
+   │  MCP key
+   ▼
+MCP server ──── upstream key ────► Weather API
+   (validate · authorize · dispatch)
+
+model không nhìn thấy key nào</code></pre>
+    <p>Điểm hay nhất là <strong>credential brokering</strong> (slide 45): agent cầm <em>MCP key</em>; MCP server giữ <em>upstream key</em> và gọi API hộ. Server nhận một chìa khóa, dùng một chìa khóa khác — model không thấy secret nào. Ngoài ra MCP có <strong>discovery</strong>: agent hỏi server "có tool gì?" (<code>tools/list</code>) rồi gọi (<code>tools/call</code>).</p>
+
+    <p>So sánh nhanh (slide 46):</p>
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>OpenAPI / REST</th><th>MCP</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Chung</td><td colspan="2">Tên, mô tả, JSON schema cho tham số</td></tr>
+        <tr><td>Discovery</td><td>Tải tài liệu OpenAPI</td><td>Gọi <code>tools/list</code> lúc chạy</td></tr>
+        <tr><td>Xác thực</td><td>Client xác thực với API</td><td>Client xác thực với MCP; upstream tách riêng</td></tr>
+      </tbody>
+    </table>
+    <p>Ví von: REST là <em>tự gọi thẳng nhà hàng</em> (bạn cần số điện thoại + thẻ thanh toán). MCP là <em>gọi qua lễ tân khách sạn</em> (lễ tân giữ thẻ, bạn chỉ cần là khách).</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="song-song">
+    <h2>Gọi nhiều tool một lúc</h2>
+    <p>Nếu agent cần ba thông tin độc lập — thời tiết, lịch hôm nay, chuyến bay — gọi lần lượt sẽ tốn: 4 lần model sinh (0,8s × 4) + 3 lần chờ tool (1,2 + 0,9 + 1,1) ≈ <strong>6,4 giây</strong> (slide 48). Gọi <strong>song song</strong>: model sinh một lần ra cả ba lời gọi, chờ tool chậm nhất ≈ <strong>2,8 giây</strong> (slide 49).</p>
+
+    <div class="callout">
+      <div class="callout-title">Chỉ song song khi độc lập</div>
+      <p><strong>An toàn để song song:</strong> thời tiết Pittsburgh + đọc lịch + tra chuyến bay — không cái nào cần kết quả của cái khác.</p>
+      <p><strong>Phải tuần tự:</strong> "tìm customer ID → dùng ID lấy orders → hoàn tiền order" — bước sau cần kết quả bước trước, không thể chạy cùng lúc (slide 50).</p>
+    </div>
+
+    <p>Khi chạy song song, <strong>call ID</strong> là thứ giữ cho kết quả khỏi bị gán nhầm: các lời gọi chạy đồng thời (ví dụ bằng <code>asyncio.gather</code>), kết quả về theo thứ tự nào cũng được — mỗi kết quả mang số vé của mình (slide 51).</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="danh-gia">
+    <h2>Đánh giá tool use</h2>
+    <p>Làm sao biết agent dùng tool <em>giỏi</em>? Không chỉ là "chạy được". Có bốn tầng để đánh giá (slide 54):</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Tầng</th><th>Câu hỏi</th><th>Lỗi điển hình</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Selection</td><td>Chọn đúng tool?</td><td>Thiếu lời gọi / gọi thừa</td></tr>
+        <tr><td>Arguments</td><td>Đúng giá trị?</td><td>Sai trường hoặc sai giá trị</td></tr>
+        <tr><td>Trajectory</td><td>Đúng thứ tự?</td><td>Phụ thuộc sai giữa các bước</td></tr>
+        <tr><td>Task</td><td>Đạt mục tiêu cuối?</td><td>Nghe hợp lý nhưng kết quả sai</td></tr>
+      </tbody>
+    </table>
+
+    <p>Ngoài độ chính xác, chất lượng còn có ba chiều vận hành (slide 55): <strong>efficiency</strong> (độ trễ, số lời gọi, token, chi phí — agent đúng nhưng chậm/đắt vô dụng), <strong>reliability</strong> (timeout, retry, thất bại một phần), <strong>safety</strong> (chính sách, quyền, tác dụng phụ).</p>
+
+    <p>Lỗi tool use đến từ ba nguồn (slide 56) — biết nguồn để sửa đúng chỗ:</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Nguồn</th><th>Lỗi ví dụ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Model</td><td>Chọn sai tool; tham số sai; bỏ qua kết quả trả về</td></tr>
+        <tr><td>Harness</td><td>Parse lỗi; xác thực lỗi; gán nhầm call ID</td></tr>
+        <tr><td>Provider / tool</td><td>Timeout; rate limit; lỗi thực thi</td></tr>
+      </tbody>
+    </table>
+
+    <p>Benchmark phổ biến để đo: <strong>Berkeley Function-Calling Leaderboard (BFCL V4)</strong> — test theo 4 nhóm: single-turn, multi-turn, agentic (web search, memory), và robustness (hallucination, độ nhạy format) — slide 53.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+    <p>Làm ra nháp trước, rồi mở đáp án. Đáp án là gợi ý — quan trọng là lập luận.</p>
+
+    <h3>A1 · Thiết kế một tool</h3>
+    <p>Viết định nghĩa cho tool <code>search_flights(origin, destination, date)</code>: name, description, JSON schema (đủ 3 tham số, tham số nào bắt buộc?).</p>
+    <details>
+      <summary>Xem đáp án gợi ý</summary>
+      <pre><code>{
+  "name": "search_flights",
+  "description": "Search available flights between two cities on a given date.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "origin":      { "type": "string" },
+      "destination": { "type": "string" },
+      "date":        { "type": "string", "description": "YYYY-MM-DD" }
+    },
+    "required": ["origin", "destination", "date"]
+  }
+}</code></pre>
+      <p>Tiêu chí tự kiểm: tên rõ nghĩa? description nói được <em>khi nào dùng</em>? schema đủ 3 tham số và khai đúng cái nào bắt buộc? Có thể thêm <code>"additionalProperties": false</code> để chặt hơn.</p>
+    </details>
+
+    <h3>A2 · Gọi tool hay không?</h3>
+    <p>Với mỗi câu hỏi, quyết định: gọi tool hay để model trả lời trực tiếp? Vì sao?</p>
+    <ol>
+      <li>"Hôm nay thời tiết Hà Nội thế nào?"</li>
+      <li>"2 + 2 bằng mấy?"</li>
+      <li>"Số dư tài khoản ngân hàng của tôi?"</li>
+    </ol>
+    <details>
+      <summary>Xem đáp án gợi ý</summary>
+      <ul>
+        <li><strong>1 — Gọi tool (search/weather).</strong> Thông tin hiện tại, model không thể biết.</li>
+        <li><strong>2 — Không gọi.</strong> Model trả lời chắc chắn và tức thì; gọi tool chỉ thêm độ trễ (quy tắc vàng: lợi ích không lớn hơn chi phí).</li>
+        <li><strong>3 — Gọi tool (account API).</strong> Dữ liệu riêng tư; model không có quyền truy cập và không thể biết.</li>
+      </ul>
+    </details>
+
+    <h3>A3 · Phân loại lỗi</h3>
+    <p>Mỗi tình huống là lỗi của <strong>model</strong>, <strong>harness</strong>, hay <strong>provider/tool</strong>?</p>
+    <ol>
+      <li>Agent gọi <code>get_weather(city="Hà Nộii")</code> — sai chính tả.</li>
+      <li>Hai lời gọi chạy song song, kết quả về lộn thứ tự và harness gán nhầm cặp call ↔ result.</li>
+      <li>API thời tiết bị timeout giữa chừng.</li>
+    </ol>
+    <details>
+      <summary>Xem đáp án gợi ý</summary>
+      <ul>
+        <li><strong>1 — Model.</strong> Tham số sai (bad arguments) — model sinh giá trị sai.</li>
+        <li><strong>2 — Harness.</strong> Lỗi khớp call ID (ID mismatch) — hệ thống quản lý lời gọi sai, không phải model.</li>
+        <li><strong>3 — Provider/tool.</strong> Lỗi hạ tầng khi thực thi — không ai trong hệ thống của bạn làm sai.</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu — làm nhanh để chắc mình nắm cốt lõi.</p>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">1. Khi nào nên gọi tool?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Càng nhiều càng tốt — tool luôn làm mọi thứ tốt hơn</button>
+        <button class="quiz-opt" data-key="b">Khi lợi ích lớn hơn độ trễ, chi phí và rủi ro</button>
+        <button class="quiz-opt" data-key="c">Chỉ khi người dùng yêu cầu rõ ràng</button>
+        <button class="quiz-opt" data-key="d">Chỉ khi model không biết câu trả lời</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: slide 5 có một câu quy tắc vàng.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> "Call tools only when their benefit outweighs latency, cost, failure, and risk." Tool không miễn phí — gọi thừa làm agent chậm, đắt, và tăng rủi ro.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">2. <code>finish(text)</code> khác gì <code>search_web(query)</code>?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">finish là tool mạnh nhất trong hệ thống</button>
+        <button class="quiz-opt" data-key="b">finish chạy trên server của nhà cung cấp</button>
+        <button class="quiz-opt" data-key="c">finish là control action của harness — dừng vòng lặp, không gọi chương trình ngoài</button>
+        <button class="quiz-opt" data-key="d">finish là tool để tìm kiếm thông tin</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: slide 8 ghi rõ "This is a harness control action, not an external program".</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Không phải mọi "lời gọi" đều là chương trình bên ngoài. <code>finish</code> là tín hiệu cho harness biết đã xong việc để dừng vòng lặp.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">3. Constrained decoding đảm bảo điều gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Tool được chọn luôn đúng</button>
+        <button class="quiz-opt" data-key="b">Agent luôn có quyền gọi tool</button>
+        <button class="quiz-opt" data-key="c">Tham số luôn đúng sự thật</button>
+        <button class="quiz-opt" data-key="d">JSON hợp lệ và đúng schema — tức là hình thức</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: "Constraints ensure form — not truth, permissions, tool choice, or task success."</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Ràng buộc chỉ đảm bảo hình thức. <code>city="asdfgh"</code> hoàn toàn hợp lệ về format — nhưng vô nghĩa. Sự thật, quyền hạn, chọn đúng tool và thành công của task nằm ngoài tầm với của constrained decoding.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">4. Kết quả tool được khớp với lời gọi bằng gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">call ID</button>
+        <button class="quiz-opt" data-key="b">Tên của tool</button>
+        <button class="quiz-opt" data-key="c">Số thứ tự lời gọi</button>
+        <button class="quiz-opt" data-key="d">Session ID</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: slide 25 — "tool_call_id matches results to calls".</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Mỗi lời gọi có một call ID như "số vé"; kết quả trả về mang đúng số vé đó. Đặc biệt quan trọng khi gọi song song — kết quả có thể về không theo thứ tự.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">5. Hai lời gọi tool nào an toàn để chạy song song?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Hai lời gọi mà cái sau cần kết quả cái trước</button>
+        <button class="quiz-opt" data-key="b">Hai lời gọi độc lập, không phụ thuộc nhau</button>
+        <button class="quiz-opt" data-key="c">Mọi lời gọi đều nên chạy song song cho nhanh</button>
+        <button class="quiz-opt" data-key="d">Không bao giờ nên chạy song song</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: ví dụ customer ID → orders → refund ở mục 7.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Chỉ song song hóa các lời gọi <em>độc lập</em>. Lời gọi phụ thuộc kết quả nhau phải chạy tuần tự — nếu không sẽ dùng dữ liệu chưa có.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question">6. Điền từ còn thiếu vào câu cốt lõi:</p>
+      <p class="fib-sentence">"The model proposes; external software <span class="fib" data-answer="decides" data-placeholder="?"></span> whether and how to execute."</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Tool</td><td>Giao diện để model gọi một chương trình bên ngoài; mô tả bằng name + description + JSON schema.</td></tr>
+        <tr><td>Control action</td><td>"Lời gọi" đặc biệt của harness (như <code>finish</code>) — không gọi chương trình ngoài, dùng để điều khiển vòng lặp.</td></tr>
+        <tr><td>Constrained decoding</td><td>Kỹ thuật che các token không hợp lệ trong lúc sinh — đảm bảo output đúng format (chỉ hình thức).</td></tr>
+        <tr><td>JSON Schema</td><td>Từ vựng mô tả dữ liệu hợp lệ: kiểu, trường bắt buộc, miền giá trị.</td></tr>
+        <tr><td>Dispatch</td><td>Dây chuyền harness xử lý lời gọi: parse → lookup → validate → execute → return.</td></tr>
+        <tr><td>Call ID</td><td>"Số vé" khớp kết quả với lời gọi — bắt buộc khi gọi song song.</td></tr>
+        <tr><td>MCP</td><td>Chuẩn nối ứng dụng AI với các server tool; hỗ trợ discovery và credential brokering.</td></tr>
+        <tr><td>Credential brokering</td><td>MCP server giữ khóa thật (upstream), agent chỉ cầm khóa MCP — model không thấy secret.</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li>Lecture 02 — <a href="https://www.cmu-agents.com/slides/lecture-02-tool-use.pdf#page=3">slide 3</a> (định nghĩa tool), <a href="https://www.cmu-agents.com/slides/lecture-02-tool-use.pdf#page=5">slide 5</a> (tình huống + quy tắc vàng), <a href="https://www.cmu-agents.com/slides/lecture-02-tool-use.pdf#page=8">slide 8</a> (finish là control action).</li>
+      <li>Lecture 02 — <a href="https://www.cmu-agents.com/slides/lecture-02-tool-use.pdf#page=15">slide 15–17</a>: CodeAct và ba tính chất của code. Nghiên cứu gốc: <a href="https://arxiv.org/abs/2402.01030">CodeAct (Wang et al., ICML 2024)</a>.</li>
+      <li>Lecture 02 — <a href="https://www.cmu-agents.com/slides/lecture-02-tool-use.pdf#page=23">slide 23–25</a>: serialization theo model, dispatch của OpenHands, call ID.</li>
+      <li>Lecture 02 — <a href="https://www.cmu-agents.com/slides/lecture-02-tool-use.pdf#page=28">slide 28–32</a>: các tầng ràng buộc, JSON Schema, constrained decoding. Công cụ: <a href="https://arxiv.org/abs/2411.15100">XGrammar (Dong et al., MLSys 2025)</a>.</li>
+      <li>Lecture 02 — <a href="https://www.cmu-agents.com/slides/lecture-02-tool-use.pdf#page=45">slide 42–46</a>: MCP và credential brokering; <a href="https://www.cmu-agents.com/slides/lecture-02-tool-use.pdf#page=50">slide 48–51</a>: gọi song song; <a href="https://www.cmu-agents.com/slides/lecture-02-tool-use.pdf#page=54">slide 53–57</a>: đánh giá tool use.</li>
+      <li>Bài báo nền: <a href="https://arxiv.org/abs/2403.15452">What Are Tools Anyway? (Wang et al., COLM 2024)</a> · Benchmark: <a href="https://gorilla.cs.berkeley.edu/leaderboard.html">Berkeley Function-Calling Leaderboard</a> · Video: <a href="https://www.youtube.com/watch?v=jXChFB4JSyw&amp;list=PLSN0qpDfUvTM&amp;index=2">Lecture 2 — Tool Use</a>.</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài tiếp theo:</strong> 04 · Quản lý ngữ cảnh — vì sao agent giỏi phải biết "quên" đúng lúc (đang được soạn).</p>
+    <p>Có chỗ nào chưa rõ? Ghi lại câu hỏi và nhắn cho giáo viên.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

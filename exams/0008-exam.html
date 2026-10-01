@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam 08 · Computer Use Agents — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Exam 08</div>
+    <h1><span class="lang-vi">Exam — Computer Use Agents</span><span class="lang-en">Exam — Computer Use Agents</span></h1>
+    <p class="subtitle"><span class="lang-vi">16 câu + 2 bài tập code. Làm lại được nhiều lần — mục tiêu: đúng ≥ 85%.</span><span class="lang-en">16 questions + 2 coding exercises. Retake as many times as you like — target: ≥ 85% correct.</span></p>
+    <p class="lesson-meta"><span>~40 phút / ~40 min</span><span><a href="../lessons/0008-computer-use-agents.html"><span class="lang-vi">← Ôn lại Bài 08</span><span class="lang-en">← Review Lesson 08</span></a></span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="exam-bar">
+    <span class="exam-progress">Đúng 0 / 13 câu tương tác</span>
+    <button class="exam-reset" type="button">Làm lại từ đầu</button>
+  </div>
+
+  <p><span class="lang-vi"><strong>Cách làm:</strong> phần A–B chấm điểm tự động; phần C–D tự kiểm bằng đáp án. Mục tiêu: <strong>≥ 85%</strong>.</span><span class="lang-en"><strong>How to use:</strong> sections A–B are scored automatically; sections C–D are self-checked with the answers. Target: <strong>≥ 85%</strong>.</span></p>
+
+  <!-- ================================================== -->
+  <section id="trac-nghiem">
+    <h2><span class="lang-vi">Phần A — Trắc nghiệm (10 câu)</span><span class="lang-en">Part A — Multiple choice (10 questions)</span></h2>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A1. Trong vòng lặp observe → reason → act, hạ tầng (infrastructure) làm gì?</span><span class="lang-en">A1. In the observe → reason → act loop, what does the infrastructure do?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Đọc ảnh chụp và đề xuất hành động kế tiếp</span><span class="lang-en">Reads the screenshot and proposes the next action</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Kiểm tra (validate) hành động rồi thực thi (execute), sau đó chụp ảnh mới trả lại cho model</span><span class="lang-en">Validates the action, then executes it, then takes a new screenshot and returns it to the model</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Tự thay đổi trạng thái và tự sinh nhiệm vụ mới</span><span class="lang-en">Changes the state by itself and generates new tasks on its own</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Lưu lịch sử ảnh để hiển thị cho người dùng</span><span class="lang-en">Stores screenshot history for the user to view</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Ba vai: model (đọc ảnh + nhiệm vụ, đề xuất hành động), hạ tầng (validate → execute, chụp ảnh mới), môi trường (trạng thái thay đổi). Slide: "Actions change the state, a new screenshot observation is provided to the model."</span><span class="lang-en">Three roles: the model (reads the screenshot + task, proposes an action), the infrastructure (validate → execute, take a new screenshot), the environment (the state changes). Slide: "Actions change the state, a new screenshot observation is provided to the model."</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A2. Trong ví dụ "buy a blue mug", ngay sau khi click vào cốc xanh ở giữa màn hình, hành động tiếp theo của model là gì?</span><span class="lang-en">A2. In the "buy a blue mug" example, right after clicking the blue mug in the middle of the screen, what is the model's next action?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Gõ mã ZIP "15213" vào ô Postal code</span><span class="lang-en">Types the ZIP code "15213" into the Postal code field</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Bấm nút "Add to cart"</span><span class="lang-en">Clicks the "Add to cart" button</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Cuộn xuống (<code>scroll</code>, dy = 520) để tìm thông tin giao hàng</span><span class="lang-en">Scrolls down (<code>scroll</code>, dy = 520) to find the shipping information</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Phát hành động <code>stop</code> và nhận reward 1.0</span><span class="lang-en">Emits the <code>stop</code> action and receives reward 1.0</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Chuỗi hành động: click cốc xanh <code>[33, 201]</code> → cuộn <code>dy 520</code> → click ô ZIP <code>[65, 53]</code> → gõ <code>"15213"</code> → … → reward 1.0. Mỗi hành động rất nhỏ, và toạ độ chỉ đúng cho ảnh chụp hiện tại.</span><span class="lang-en">Action sequence: click the blue mug <code>[33, 201]</code> → scroll <code>dy 520</code> → click the ZIP field <code>[65, 53]</code> → type <code>"15213"</code> → … → reward 1.0. Each action is tiny, and the coordinates are only valid for the current screenshot.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A3. Vì sao grounding khó? (chọn đáp án đầy đủ nhất)</span><span class="lang-en">A3. Why is grounding hard? (pick the most complete answer)</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Model chỉ có pixel; phần tử nhỏ và dày đặc; toạ độ gắn chặt với ảnh hiện tại nên mỗi ảnh mới phải định vị lại</span><span class="lang-en">The model only has pixels; UI elements are small and dense; coordinates are tied to the current screenshot, so every new screenshot forces re-grounding</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì ảnh chụp màn hình thường bị mờ và thiếu sáng</span><span class="lang-en">Because screenshots are often blurry and poorly lit</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì model không đọc được chữ trên màn hình</span><span class="lang-en">Because the model cannot read text on the screen</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì màn hình có độ phân giải quá cao so với model</span><span class="lang-en">Because screen resolution is too high for the model</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Ba lý do trong bài: model chỉ có pixel (phải học đâu là nút, đâu là chữ); giao diện chuyên nghiệp có hàng trăm biểu tượng nhỏ cạnh nhau; không có "địa chỉ" cố định — toạ độ thuộc về ảnh hiện tại.</span><span class="lang-en">Three reasons from the lecture: the model only has pixels (it must learn what is a button and what is text); professional interfaces pack hundreds of small icons next to each other; there is no fixed "address" — coordinates belong to the current screenshot.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A4. ScreenSpot-Pro chấm điểm bằng cách nào?</span><span class="lang-en">A4. How does ScreenSpot-Pro score?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Kiểm repository có rỗng không</span><span class="lang-en">It checks whether the repository is empty</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">So khớp hành động kế tiếp với bản ghi</span><span class="lang-en">It matches the next action against the recording</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Cho VLM đọc rubric rồi kết luận SUCCESS / NOT SUCCESS</span><span class="lang-en">It has a VLM read a rubric and conclude SUCCESS / NOT SUCCESS</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Point / region matching: điểm click có nằm trong vùng đúng (target box) hay không</span><span class="lang-en">Point / region matching: whether the click point falls inside the correct region (target box)</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">ScreenSpot-Pro (Li et al., 2025): 1.581 ảnh chụp, 23 ứng dụng, 3 hệ điều hành. Ví dụ Blender: ảnh gốc 2560 × 1440, vùng đúng (417,132)–(576,152) — click vào trong vùng = 1 điểm. Giao diện chuyên nghiệp độ phân giải cao khiến grounding thành một benchmark riêng.</span><span class="lang-en">ScreenSpot-Pro (Li et al., 2025): 1,581 screenshots, 23 applications, 3 operating systems. Blender example: 2560 × 1440 source image, correct region (417,132)–(576,152) — a click inside the region = 1 point. High-resolution professional interfaces make grounding a benchmark of its own.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A5. Mind2Web chấm hành động kế tiếp trên bản ghi (offline). Hạn chế cốt lõi của cách chấm này là gì?</span><span class="lang-en">A5. Mind2Web scores the next action against a recording (offline). What is the core limitation of this scoring method?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Phải chạy nhiệm vụ thật nên rất tốn kém và không tái lập được</span><span class="lang-en">It has to run the real task, so it is very expensive and not reproducible</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Chỉ đo dự đoán một hành động — một bước đúng chưa phải một nhiệm vụ hoàn thành</span><span class="lang-en">It only measures the prediction of a single action — a correct step is not a completed task</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Giám khảo VLM có sai số nên điểm không đáng tin</span><span class="lang-en">The VLM judge has error, so scores are unreliable</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Không chấm được phần tử nào được click</span><span class="lang-en">It cannot score which element was clicked</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Mind2Web (2.350 nhiệm vụ, 137 website, 31 lĩnh vực) so khớp hành động dự đoán với bản ghi — không chạy nhiệm vụ thật. Slide: "A correct step is not a completed task" và "Next-action imitation is not the same thing as task completion."</span><span class="lang-en">Mind2Web (2,350 tasks, 137 websites, 31 domains) matches the predicted action against the recording — it does not run the real task. Slide: "A correct step is not a completed task" and "Next-action imitation is not the same thing as task completion."</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A6. Ba cách chấm một CUA theo slide 17 là gì?</span><span class="lang-en">A6. What are the three ways to score a CUA according to slide 17?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Action → Outcome → Process</span><span class="lang-en">Action → Outcome → Process</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Train → Test → Deploy</span><span class="lang-en">Train → Test → Deploy</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Input → Output → Feedback</span><span class="lang-en">Input → Output → Feedback</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Đọc → Hiểu → Làm</span><span class="lang-en">Read → Understand → Do</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Action (bấm đúng mục tiêu chưa?), outcome (kết quả cuối đúng chưa?), process (quá trình có tôn trọng ràng buộc không?). Kim chỉ nam: "Evaluators should match the capability you want to measure."</span><span class="lang-en">Action (was the right target clicked?), outcome (is the final result correct?), process (did the run respect the constraints?). Guiding principle: "Evaluators should match the capability you want to measure."</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A7. Bộ benchmark nào dùng VLM làm giám khảo trên web thật, với 85,3% đồng thuận với người chấm?</span><span class="lang-en">A7. Which benchmark uses a VLM as judge on the live web, with 85.3% agreement with human raters?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">WebArena</span><span class="lang-en">WebArena</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">VisualWebArena</span><span class="lang-en">VisualWebArena</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">WebVoyager</span><span class="lang-en">WebVoyager</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">ScreenSpot-Pro</span><span class="lang-en">ScreenSpot-Pro</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">WebVoyager (He et al., 2024): 643 nhiệm vụ trên 15 website thật, giám khảo VLM theo luật rubric → bằng chứng → kết luận, 85,3% đồng thuận với người. WebArena tự dựng 4 domain và chấm bằng code (812 nhiệm vụ); VisualWebArena thêm phần "nhìn" (910 nhiệm vụ, 25,2% cần hiểu ảnh). Đánh đổi: "Realism rises; reproducibility falls."</span><span class="lang-en">WebVoyager (He et al., 2024): 643 tasks across 15 real websites, a VLM judge following the rubric → evidence → conclusion rule, 85.3% agreement with humans. WebArena builds its own 4 domains and grades with code (812 tasks); VisualWebArena adds the "seeing" part (910 tasks, 25.2% require understanding images). The trade-off: "Realism rises; reproducibility falls."</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A8. Trong ví dụ GitLab của WebArena (tạo repository rỗng tên <code>awesome_llm_reading</code>), "Emptiness is not checked" nghĩa là gì?</span><span class="lang-en">A8. In WebArena's GitLab example (creating an empty repository named <code>awesome_llm_reading</code>), what does "Emptiness is not checked" mean?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Repository phải rỗng mới được điểm</span><span class="lang-en">The repository must be empty to score</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Bộ chấm không kiểm repository có tồn tại không</span><span class="lang-en">The grader does not check whether the repository exists</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Agent không cần tạo repository</span><span class="lang-en">The agent does not need to create the repository</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Bộ chấm không kiểm repository có rỗng thật hay không — nó chỉ cho điểm nếu cái tên xuất hiện</span><span class="lang-en">The grader does not check whether the repository is really empty — it only scores if the name appears</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Bộ chấm mở trang dự án, lấy HTML và cho điểm nếu tên repo xuất hiện — "emptiness is not checked". Bài học: "Repeatable and precise — but only for conditions the tests cover."</span><span class="lang-en">The grader opens the project page, grabs the HTML and scores if the repo name appears — "emptiness is not checked". Lesson: "Repeatable and precise — but only for conditions the tests cover."</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A9. Câu "Live benchmarks drift — and judge quality becomes part of the score" (Online-Mind2Web) nghĩa là gì?</span><span class="lang-en">A9. What does the sentence "Live benchmarks drift — and judge quality becomes part of the score" (Online-Mind2Web) mean?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Giám khảo tự cập nhật điểm theo thời gian</span><span class="lang-en">The judge updates the score over time on its own</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Trang thật đổi giá, đổi bố cục, đổi nội dung làm bản ghi cũ mất giá trị — và sai số của giám khảo nằm luôn trong con số cuối</span><span class="lang-en">Real pages change prices, layout and content, so old recordings lose value — and the judge's error is baked into the final number</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Benchmark luôn chạy lại được y hệt ở mọi thời điểm</span><span class="lang-en">A benchmark can always be re-run identically at any time</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Web tự động sửa lỗi giúp agent</span><span class="lang-en">The web automatically fixes errors for the agent</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Online-Mind2Web (Xue et al., 2025): 300 nhiệm vụ trên 136 website thật, giám khảo WebJudge đạt 85,7% đồng thuận với người. Web thật trôi (drift) nên bản ghi cũ không còn khớp; và vì chấm bằng giám khảo, chất lượng giám khảo trở thành một phần của điểm số.</span><span class="lang-en">Online-Mind2Web (Xue et al., 2025): 300 tasks across 136 real websites; the WebJudge judge reaches 85.7% agreement with humans. The live web drifts, so old recordings no longer match; and because grading uses a judge, judge quality becomes part of the score.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A10. Agent thêm đúng cốc xanh dưới 20 đô vào giỏ, nhưng cũng bấm luôn nút đặt hàng — trong khi đề bài ghi "không thanh toán". Kết luận nào đúng?</span><span class="lang-en">A10. The agent adds the right blue mug, under $20, to the cart, but also clicks the order button — while the task says "do not check out." Which conclusion is correct?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">PASS — kết quả cuối đúng: giỏ có đúng cốc xanh, giá dưới 20 đô</span><span class="lang-en">PASS — the final result is right: the cart has the right blue mug, priced under $20</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">PASS — miễn là sau đó không có thêm đơn nào khác</span><span class="lang-en">PASS — as long as no further order is placed afterwards</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">FAIL — process check phát hiện hành vi vi phạm ràng buộc "không thanh toán"</span><span class="lang-en">FAIL — the process check catches behaviour that violates the "do not check out" constraint</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Không kết luận được — thiếu ảnh chụp màn hình cuối</span><span class="lang-en">Cannot conclude — the final screenshot is missing</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 39: state check thấy đúng món trong giỏ (✓) nhưng process check thấy đã tạo đơn mua (✕) → FAIL. "A plausible deliverable is not enough if the process violated the task."</span><span class="lang-en">Slide 39: the state check sees the right item in the cart (✓) but the process check sees a purchase order was created (✕) → FAIL. "A plausible deliverable is not enough if the process violated the task."</span></p></div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="dien-khuyet">
+    <h2><span class="lang-vi">Phần B — Điền khuyết (3 câu)</span><span class="lang-en">Part B — Fill in the blank (3 questions)</span></h2>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B1. Sau mỗi hành động, hạ tầng trả lại gì cho model?</span><span class="lang-en">B1. After each action, what does the infrastructure return to the model?</span></p>
+      <p class="fib-sentence">"Actions change the state, a new <span class="fib" data-answer="screenshot|ảnh chụp màn hình|ảnh chụp|ảnh màn hình|screenshot observation" data-placeholder="?"></span> observation is provided to the model."</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B2. Mind2Web chấm hành động kế tiếp — nhưng một bước đúng chưa phải là gì?</span><span class="lang-en">B2. Mind2Web scores the next action — but a correct step is not yet what?</span></p>
+      <p class="fib-sentence">"A correct step is not a completed <span class="fib" data-answer="task|nhiệm vụ|công việc" data-placeholder="?"></span>."</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B3. Odysseys chấm tiến độ theo rubric thay vì 0/1. Agent hoàn thành 7 trong 8 mục rubric thì được bao nhiêu điểm?</span><span class="lang-en">B3. Odysseys scores progress by rubric instead of 0/1. How many points does an agent get for completing 7 of 8 rubric items?</span></p>
+      <p class="fib-sentence">7 / 8 → <span class="lang-vi">điểm</span><span class="lang-en">score</span> <span class="fib" data-answer="0.875|0,875|87.5%|87,5%" data-placeholder="?"></span> <span class="lang-vi">— vẫn có công, dù chưa hoàn hảo.</span><span class="lang-en">— partial credit still counts, even if it isn't perfect.</span></p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tinh-huong">
+    <h2><span class="lang-vi">Phần C — Tình huống &amp; phân tích (3 câu)</span><span class="lang-en">Part C — Scenarios &amp; analysis (3 questions)</span></h2>
+
+    <p><strong>C1.</strong> <span class="lang-vi">Phân loại mỗi tình huống vào đúng mức benchmark (02A tĩnh · 02B web end-to-end · 02C desktop/mobile · 02D hành trình dài) và chọn kiểu chấm hợp lý (point/region matching · programmatic state check · rubric/process check · VLM judge):</span><span class="lang-en">Classify each scenario into the right benchmark level (02A static · 02B web end-to-end · 02C desktop/mobile · 02D long-horizon) and pick a sensible scoring method (point/region matching · programmatic state check · rubric/process check · VLM judge):</span></p>
+    <ol>
+      <li><span class="lang-vi">Chấm điểm click vào biểu tượng "Add UV Sphere" trong Blender — điểm click có nằm trong vùng (417,132)–(576,152) trên ảnh 2560 × 1440 hay không.</span><span class="lang-en">Score a click on the "Add UV Sphere" icon in Blender — whether the click point falls inside the region (417,132)–(576,152) on a 2560 × 1440 image.</span></li>
+      <li><span class="lang-vi">Agent tạo repository tên <code>awesome_llm_reading</code>; bộ chấm mở trang dự án và cho điểm nếu cái tên xuất hiện trong HTML.</span><span class="lang-en">The agent creates a repository named <code>awesome_llm_reading</code>; the grader opens the project page and scores if the name appears in the HTML.</span></li>
+      <li><span class="lang-vi">Agent làm quy trình kế toán trên desktop kéo dài trung vị 1,6 giờ; bộ chấm so workbook đã lưu với workbook vàng, đồng thời phải bắt được hành vi vi phạm ràng buộc.</span><span class="lang-en">The agent does an accounting workflow on the desktop lasting a median of 1.6 hours; the grader compares the saved workbook against the golden workbook, and must also catch constraint-violating behaviour.</span></li>
+    </ol>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi"><strong>(1) → 02A tĩnh, point/region matching.</strong> Đúng kiểu ScreenSpot-Pro: chỉ hỏi "bấm vào đâu", click trong vùng đúng = 1 điểm. Nhanh, rẻ, không cần môi trường — nhưng "một bước đúng chưa phải nhiệm vụ hoàn thành".</span><span class="lang-en"><strong>(1) → 02A static, point/region matching.</strong> Exactly the ScreenSpot-Pro style: it only asks "where to click", a click inside the correct region = 1 point. Fast, cheap, no environment needed — but "a correct step is not a completed task".</span></li>
+        <li><span class="lang-vi"><strong>(2) → 02B web end-to-end, programmatic state check.</strong> Kiểu WebArena (812 nhiệm vụ, 4 domain tự dựng). Cảnh báo đi kèm: "Repeatable and precise — but only for conditions the tests cover" — ví dụ này không kiểm repo có rỗng thật không ("Emptiness is not checked").</span><span class="lang-en"><strong>(2) → 02B web end-to-end, programmatic state check.</strong> The WebArena style (812 tasks, 4 self-built domains). The accompanying warning: "Repeatable and precise — but only for conditions the tests cover" — this example does not check whether the repo is really empty ("Emptiness is not checked").</span></li>
+        <li><span class="lang-vi"><strong>(3) → 02D hành trình dài, rubric + state + process check.</strong> Kiểu OSWorld 2.0 (108 quy trình, trung vị 1,6 giờ, ~318 lượt gọi): bộ kiểm tra riêng cho từng ứng dụng (so workbook với bản vàng: A1:E8 giữ nguyên, D9 ≈ −186.93, E9 ≈ 603.07), chấm tiến độ theo rubric kiểu Odysseys (7/8 = 0,875), và process check để bắt vi phạm. Ở độ dài này, "một file có thể tồn tại và vẫn sai".</span><span class="lang-en"><strong>(3) → 02D long-horizon, rubric + state + process check.</strong> The OSWorld 2.0 style (108 workflows, median 1.6 hours, ~318 calls): per-application checkers (compare the workbook against the golden copy: A1:E8 unchanged, D9 ≈ −186.93, E9 ≈ 603.07), Odysseys-style rubric progress scoring (7/8 = 0.875), and a process check to catch violations. At this length, "a file can exist and still be wrong".</span></li>
+      </ul>
+    </details>
+
+    <p><strong>C2.</strong> <span class="lang-vi">Giả sử mỗi bước agent làm đúng với xác suất 95%, và nhiệm vụ dài 50 bước. (a) Xác suất đúng cả 50 bước là bao nhiêu? (b) Vì sao lỗi của CUA nguy hiểm hơn một chương trình bị crash? (c) Nêu 2 cách chấm/kiểm soát giúp phát hiện sớm các lỗi đó.</span><span class="lang-en">Suppose each step the agent takes is correct with probability 95%, and the task is 50 steps long. (a) What is the probability of getting all 50 steps right? (b) Why is a CUA error more dangerous than a program crashing? (c) Give 2 grading/control methods that help catch those errors early.</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <p><span class="lang-vi"><strong>(a)</strong> 0,95⁵⁰ ≈ <strong>7,7%</strong> — nghĩa là hơn 9 trên 10 lần chạy sẽ có ít nhất một bước sai. (Đây là phép tính minh hoạ, không phải kết quả nghiên cứu.)</span><span class="lang-en"><strong>(a)</strong> 0.95⁵⁰ ≈ <strong>7.7%</strong> — meaning more than 9 out of 10 runs will have at least one wrong step. (This is an illustrative calculation, not a research result.)</span></p>
+      <p><span class="lang-vi"><strong>(b)</strong> Vì lỗi CUA <em>không báo động</em>: một cú click nhầm không làm chương trình crash — nó lặng lẽ đổi trạng thái, ảnh chụp tiếp theo phản ánh trạng thái sai đó, và model vẫn thấy một màn hình "trông bình thường" nên có thể tiếp tục rất tự tin. Lỗi nhỏ ở bước 10 có thể nở thành thảm hoạ ở bước 100.</span><span class="lang-en"><strong>(b)</strong> Because a CUA error <em>raises no alarm</em>: a misclick does not crash the program — it silently changes the state, the next screenshot reflects that wrong state, and the model still sees a screen that "looks normal" so it may keep going very confidently. A small error at step 10 can grow into a disaster by step 100.</span></p>
+      <p><span class="lang-vi"><strong>(c)</strong> Hai ví dụ (nêu được 2 là đủ): chấm tiến độ theo rubric thay vì 0/1 (Odysseys — 7/8 = 0,875); process check bắt vi phạm ràng buộc (ví dụ <code>place_order</code> bị đánh FAIL dù giỏ hàng đúng); kiểm trạng thái cuối theo ứng dụng (OSWorld — so workbook với bản vàng, kiểm cả nội dung chứ không chỉ sự tồn tại của file).</span><span class="lang-en"><strong>(c)</strong> Two examples (two is enough): scoring progress by rubric instead of 0/1 (Odysseys — 7/8 = 0.875); a process check that catches constraint violations (e.g. <code>place_order</code> marked FAIL even though the cart is correct); checking the final state per application (OSWorld — comparing the workbook against the golden copy, checking content, not just that the file exists).</span></p>
+    </details>
+
+    <p><strong>C3.</strong> <span class="lang-vi">Bạn muốn luyện và đo một CUA đặt vé máy bay + thuê xe. Vì sao <em>không</em> nên để nó thử đi thử lại trên web thật? Nêu ba lý do (theo slide 65) và hai ví dụ môi trường thay thế.</span><span class="lang-en">You want to train and measure a CUA for booking flights + renting cars. Why should you <em>not</em> let it trial-and-error on the live web? Give three reasons (per slide 65) and two examples of substitute environments.</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ol>
+        <li><span class="lang-vi"><strong>Tiền thật:</strong> thử lại nhiều lần có thể tạo ra nhiều đơn đặt chỗ đã trả tiền trùng nhau.</span><span class="lang-en"><strong>Real money:</strong> repeated retries can create multiple duplicate bookings that have already been paid for.</span></li>
+        <li><span class="lang-vi"><strong>Người thật:</strong> một đơn đặt xe có thể điều một tài xế đến — hành vi thử nghiệm ảnh hưởng người khác.</span><span class="lang-en"><strong>Real people:</strong> a car booking can dispatch a driver — experimental behaviour affects others.</span></li>
+        <li><span class="lang-vi"><strong>Không reset sạch được:</strong> huỷ có thể mất phí; thời gian đã tiêu không lấy lại được.</span><span class="lang-en"><strong>You cannot cleanly reset:</strong> cancelling may cost fees; time already spent cannot be recovered.</span></li>
+      </ol>
+      <p><span class="lang-vi">Môi trường thay thế: <strong>CUA-Gym</strong> (94 ứng dụng web giả lập, trạng thái cô lập — bơm trạng thái đầu, soi trạng thái cuối) hoặc <strong>Gym-Anything</strong> (200 ứng dụng, 3 hệ điều hành, hơn 12.000 nhiệm vụ và môi trường). Ở mức desktop còn có OSWorld và WindowsAgentArena (154 nhiệm vụ, 11 chương trình, chạy nhiều máy ảo song song — từ "nhiều ngày" xuống khoảng 20 phút).</span><span class="lang-en">Substitute environments: <strong>CUA-Gym</strong> (94 simulated web apps, isolated state — inject the initial state, inspect the final state) or <strong>Gym-Anything</strong> (200 apps, 3 operating systems, more than 12,000 tasks and environments). At the desktop level there are also OSWorld and WindowsAgentArena (154 tasks, 11 programs, running many VMs in parallel — from "several days" down to about 20 minutes).</span></p>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="code">
+    <h2><span class="lang-vi">Phần D — Bài tập code (2 bài)</span><span class="lang-en">Part D — Coding exercises (2)</span></h2>
+
+    <p><span class="lang-vi">Hai bài dùng Python thuần (không cần thư viện). Copy vào file <code>.py</code>, viết phần <code>TODO</code>, chạy <code>python ten_file.py</code> — thấy <code>OK!</code> là đạt.</span><span class="lang-en">Both exercises use plain Python (no libraries). Copy into a <code>.py</code> file, fill in the <code>TODO</code>, run <code>python file_name.py</code> — you pass when you see <code>OK!</code>.</span></p>
+
+    <h3><span class="lang-vi">D1 · <code>find_target</code> — mô phỏng grounding trên lưới</span><span class="lang-en">D1 · <code>find_target</code> — simulating grounding on a grid</span></h3>
+    <p><span class="lang-vi">Grounding thật làm việc trên pixel; ở đây ta mô phỏng bằng một lưới nhãn. Viết hàm tìm ô đầu tiên khớp nhãn.</span><span class="lang-en">Real grounding works on pixels; here we simulate it with a grid of labels. Write a function that finds the first cell matching a label.</span></p>
+    <div class="lang-vi">
+    <pre><code>def find_target(screen, label):
+    """Tìm ô đầu tiên trong lưới `screen` có nội dung đúng bằng `label`.
+
+    screen: list các list chuỗi — mỗi list con là một hàng, mỗi chuỗi là nhãn một ô.
+            Ví dụ: [["menu", "search", "cart"],
+                    ["logo", "", "login"]]
+    label:  nhãn cần tìm — so khớp chính xác (phân biệt hoa/thường).
+
+    Trả về (hàng, cột) — chỉ số 0-based — của ô đầu tiên khớp,
+    quét từ trên xuống dưới, trái sang phải. Không có ô nào khớp thì trả về None.
+    """
+    # TODO
+    pass
+
+
+SCREEN = [
+    ["menu", "search", "cart"],
+    ["logo", "", "login"],
+    ["help", "profile", "settings"],
+]
+
+# ---------- Tự kiểm ----------
+assert find_target(SCREEN, "search") == (0, 1)
+assert find_target(SCREEN, "login") == (1, 2)
+assert find_target(SCREEN, "settings") == (2, 2)
+assert find_target(SCREEN, "checkout") is None
+assert find_target([], "search") is None
+assert find_target([["", ""], ["", "target"]], "target") == (1, 1)
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def find_target(screen, label):
+    """Find the first cell in the `screen` grid whose content exactly equals `label`.
+
+    screen: list of lists of strings — each sublist is a row, each string is a cell label.
+            Example: [["menu", "search", "cart"],
+                      ["logo", "", "login"]]
+    label:  the label to find — exact match (case-sensitive).
+
+    Return (row, column) — 0-based indices — of the first matching cell,
+    scanning top to bottom, left to right. Return None if no cell matches.
+    """
+    # TODO
+    pass
+
+
+SCREEN = [
+    ["menu", "search", "cart"],
+    ["logo", "", "login"],
+    ["help", "profile", "settings"],
+]
+
+# ---------- Self-check ----------
+assert find_target(SCREEN, "search") == (0, 1)
+assert find_target(SCREEN, "login") == (1, 2)
+assert find_target(SCREEN, "settings") == (2, 2)
+assert find_target(SCREEN, "checkout") is None
+assert find_target([], "search") is None
+assert find_target([["", ""], ["", "target"]], "target") == (1, 1)
+print("OK!")</code></pre>
+    </div>
+
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <pre><code>def find_target(screen, label):
+    for r, row in enumerate(screen):
+        for c, cell in enumerate(row):
+            if cell == label:
+                return (r, c)
+    return None</code></pre>
+      <p><span class="lang-vi">Điểm cần chú ý: quét theo thứ tự hàng rồi cột để "ô đầu tiên" có nghĩa xác định, và trả <code>None</code> khi hết lưới. Trong thực tế, grounding không có lưới nhãn sẵn: model nhận pixel và phải tự tìm vùng — nhãn có thể lệch, chữ có thể đổi. Đó là lý do ScreenSpot-Pro chấm theo vùng (417,132)–(576,152) chứ không theo một điểm duy nhất.</span><span class="lang-en">Points to note: scan row-major so "first cell" is well-defined, and return <code>None</code> when the grid is exhausted. In reality, grounding has no ready-made label grid: the model gets pixels and must find the region itself — labels can shift, text can change. That is why ScreenSpot-Pro scores by region (417,132)–(576,152) rather than a single point.</span></p>
+    </details>
+
+    <h3><span class="lang-vi">D2 · <code>min_clicks</code> — khoảng cách Manhattan trên lưới</span><span class="lang-en">D2 · <code>min_clicks</code> — Manhattan distance on a grid</span></h3>
+    <p><span class="lang-vi">Mỗi bước, con trỏ chỉ dịch được sang một ô kề (lên / xuống / trái / phải). Tính số bước click tối thiểu để đi từ ô <code>start</code> đến ô <code>goal</code>.</span><span class="lang-en">Each step, the cursor can only move to an adjacent cell (up / down / left / right). Compute the minimum number of clicks to go from the <code>start</code> cell to the <code>goal</code> cell.</span></p>
+    <div class="lang-vi">
+    <pre><code>def min_clicks(start, goal):
+    """Số bước click tối thiểu để đi từ ô `start` đến ô `goal` trên lưới,
+    nếu mỗi bước con trỏ chỉ dịch sang một ô kề (lên / xuống / trái / phải).
+
+    start, goal: tuple (hàng, cột), chỉ số 0-based.
+                 Ví dụ: (0, 0) là góc trên trái, (2, 3) là hàng 2 cột 3.
+
+    Trả về: int — số bước tối thiểu.
+    """
+    # TODO
+    pass
+
+
+# ---------- Tự kiểm ----------
+assert min_clicks((0, 0), (0, 0)) == 0
+assert min_clicks((0, 0), (2, 2)) == 4
+assert min_clicks((1, 2), (3, 0)) == 4
+assert min_clicks((5, 5), (5, 7)) == 2
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def min_clicks(start, goal):
+    """Minimum number of clicks to go from cell `start` to cell `goal` on the grid,
+    if each step the cursor can only move to an adjacent cell (up / down / left / right).
+
+    start, goal: tuples (row, column), 0-based indices.
+                 Example: (0, 0) is the top-left corner, (2, 3) is row 2 column 3.
+
+    Return: int — the minimum number of steps.
+    """
+    # TODO
+    pass
+
+
+# ---------- Self-check ----------
+assert min_clicks((0, 0), (0, 0)) == 0
+assert min_clicks((0, 0), (2, 2)) == 4
+assert min_clicks((1, 2), (3, 0)) == 4
+assert min_clicks((5, 5), (5, 7)) == 2
+print("OK!")</code></pre>
+    </div>
+
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <pre><code>def min_clicks(start, goal):
+    return abs(start[0] - goal[0]) + abs(start[1] - goal[1])</code></pre>
+      <p><span class="lang-vi">Đây chính là khoảng cách Manhattan: chỉ đi ngang/dọc nên số bước tối thiểu = chênh lệch hàng + chênh lệch cột. Ghép với D1, bạn có pipeline thu nhỏ của một bước CUA: tìm toạ độ mục tiêu, rồi tính đường tới đó. Trên màn hình thật, agent click thẳng tới toạ độ — cái khó không phải đường đi mà là tìm đúng toạ độ (grounding).</span><span class="lang-en">This is exactly Manhattan distance: since movement is only horizontal/vertical, the minimum number of steps = row difference + column difference. Combined with D1, you have a miniature pipeline of one CUA step: find the target coordinates, then compute the path to them. On a real screen, the agent clicks straight to the coordinates — the hard part is not the path but finding the right coordinates (grounding).</span></p>
+    </details>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><a href="../exams/0007-exam.html"><span class="lang-vi">← Exam 07</span><span class="lang-en">← Exam 07</span></a> · <a href="../lessons/0008-computer-use-agents.html"><span class="lang-vi">Ôn lại Bài 08</span><span class="lang-en">Review Lesson 08</span></a> · <a href="../exams/0009-exam.html"><span class="lang-vi">Exam 09 — SFT →</span><span class="lang-en">Exam 09 — SFT →</span></a></p>
+    <p><span class="lang-vi">Chưa đạt 85%? Làm lại từ đầu — mỗi lần làm lại là một lần nhớ sâu hơn.</span><span class="lang-en">Below 85%? Start over — every retake deepens the memory.</span></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

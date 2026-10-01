@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam 09 · Training: SFT — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Exam 09</div>
+    <h1><span class="lang-vi">Exam — Training: SFT</span><span class="lang-en">Exam — Training: SFT</span></h1>
+    <p class="subtitle"><span class="lang-vi">16 câu + 2 bài tập code. Làm lại được nhiều lần — mục tiêu: đúng ≥ 85%.</span><span class="lang-en">16 questions + 2 coding exercises. Retake as many times as you like — target: ≥ 85% correct.</span></p>
+    <p class="lesson-meta"><span>~40 phút / ~40 min</span><span><a href="../lessons/0009-training-sft.html"><span class="lang-vi">← Ôn lại Bài 09</span><span class="lang-en">← Review Lesson 09</span></a></span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="exam-bar">
+    <span class="exam-progress">Đúng 0 / 13 câu tương tác</span>
+    <button class="exam-reset" type="button">Làm lại từ đầu</button>
+  </div>
+
+  <p><span class="lang-vi"><strong>Cách làm:</strong> phần A–B chấm điểm tự động; phần C–D tự kiểm bằng đáp án. Mục tiêu: <strong>≥ 85%</strong>.</span><span class="lang-en"><strong>How to use:</strong> sections A–B are scored automatically; sections C–D are self-checked with the answers. Target: <strong>≥ 85%</strong>.</span></p>
+
+  <!-- ================================================== -->
+  <section id="trac-nghiem">
+    <h2><span class="lang-vi">Phần A — Trắc nghiệm (10 câu)</span><span class="lang-en">Part A — Multiple choice (10 questions)</span></h2>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A1. SFT khác RL ở tín hiệu học như thế nào?</span><span class="lang-en">A1. How does SFT differ from RL in its learning signal?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">SFT cần sandbox và môi trường sống; RL chỉ cần dữ liệu và GPU</span><span class="lang-en">SFT needs a sandbox and a live environment; RL only needs data and GPUs</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Cả hai đều nhận một điểm số cho cả lần chạy, chỉ khác nguồn dữ liệu</span><span class="lang-en">Both receive a single score for the whole run; they differ only in the data source</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">SFT có một đích cho từng token, học từ trajectory được ghi lại; RL nhận một con số cho cả lần chạy, học từ rollout của chính nó</span><span class="lang-en">SFT has a target for every token and learns from recorded trajectories; RL receives one number per run and learns from its own rollouts</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">SFT học từ rollout của chính nó; RL học từ trajectory do model mạnh hơn sinh ra</span><span class="lang-en">SFT learns from its own rollouts; RL learns from trajectories produced by a stronger model</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 8: SFT — "a target for every token" trên trajectory được ghi lại; RL — "one number per rollout" từ rollout của chính nó. RL cần <em>nhiều hơn</em> chứ không ít hơn: môi trường, sandbox, điểm thưởng kiểm được.</span><span class="lang-en">Slide 8: SFT — "a target for every token" on recorded trajectories; RL — "one number per rollout" from its own rollouts. RL needs <em>more</em>, not less: an environment, a sandbox, a verifiable reward.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A2. Vì sao kết quả tool (observation) thường nhận mask = 0?</span><span class="lang-en">A2. Why do tool results (observations) usually get mask = 0?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì đó là ngữ cảnh điều kiện, không phải đích dự đoán — model phải học chờ tool trả về, không tự viết kết quả</span><span class="lang-en">Because it is conditioning context, not a prediction target — the model must learn to wait for the tool to return, not to write the result itself</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì observation bị xóa khỏi chuỗi token trước khi train</span><span class="lang-en">Because observations are deleted from the token sequence before training</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì observation quá ngắn, tính loss vào sẽ làm nhiễu</span><span class="lang-en">Because observations are too short, so including them in the loss adds noise</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì observation do model khác viết nên không đáng tin</span><span class="lang-en">Because observations are written by another model, so they are unreliable</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 12: "Observations are conditioning context, not prediction targets." Mask = 0 <em>không xóa</em> token — nó vẫn nằm trong chuỗi để làm điều kiện; chỉ dự đoán tại vị trí đó không bị chấm.</span><span class="lang-en">Slide 12: "Observations are conditioning context, not prediction targets." Mask = 0 does <em>not delete</em> the token — it stays in the sequence as conditioning; only the prediction at that position is not scored.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A3. Điều gì xảy ra nếu token kết thúc lượt (stop / EOS) bị mask = 0?</span><span class="lang-en">A3. What happens if the end-of-turn token (stop / EOS) gets mask = 0?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Loss giảm nhanh hơn vì bớt được một token khó</span><span class="lang-en">The loss drops faster because one hard token is removed</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Tool call sẽ không parse được khi chạy thật</span><span class="lang-en">Tool calls will fail to parse at runtime</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Không sao — role header cũng bị mask 0 nên hai thứ tương đương</span><span class="lang-en">No problem — the role header is also masked 0, so the two are equivalent</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Model có thể không bao giờ học được cách dừng, vì token đó không nằm trong đích dự đoán</span><span class="lang-en">The model may never learn to stop, because that token is not among the prediction targets</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 15: nếu stop token không nằm trong mask, "the model may not learn to stop". Role header thì ngược lại — harness cấp sẵn lúc chạy, nên nó <em>không bao giờ</em> là đích.</span><span class="lang-en">Slide 15: if the stop token is not in the mask, "the model may not learn to stop". The role header is the opposite — the harness supplies it at runtime, so it is <em>never</em> a target.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A4. Ba bước dựng mask cho một trajectory là gì?</span><span class="lang-en">A4. What are the three steps for building a mask for a trajectory?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Tokenize → Render → Mask</span><span class="lang-en">Tokenize → Render → Mask</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Render → Tokenize → Mask</span><span class="lang-en">Render → Tokenize → Mask</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Render → Mask → Tokenize</span><span class="lang-en">Render → Mask → Tokenize</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Mask → Tokenize → Render</span><span class="lang-en">Mask → Tokenize → Render</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 13: Render (template viết hội thoại thành chuỗi và đánh dấu đoạn assistant) → Tokenize (vị trí ký tự thành vị trí token) → Mask (token trong đoạn assistant nhận bit 1).</span><span class="lang-en">Slide 13: Render (the template turns the conversation into a string and marks the assistant spans) → Tokenize (character positions become token positions) → Mask (tokens inside the assistant spans get bit 1).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A5. Với khối reasoning như <code>&lt;think&gt;</code>, hai công tắc cần quyết định riêng là gì?</span><span class="lang-en">A5. For a reasoning block like <code>&lt;think&gt;</code>, what are the two switches to decide independently?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Có giữ nó trong context không? và có train nó không?</span><span class="lang-en">Keep it in the context? and train it?</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Có rút ngắn nó không? và có dịch nó sang tiếng Anh không?</span><span class="lang-en">Shorten it? and translate it into English?</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Có mask role header của nó không? và có đưa nó vào system prompt không?</span><span class="lang-en">Mask its role header? and put it into the system prompt?</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Có đưa nó vào tập đánh giá không? và có tính điểm cho nó không?</span><span class="lang-en">Include it in the evaluation set? and score it?</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 16: giữ trong context giúp nó giải thích hành động phía sau; train nó thì nó thành văn phong model tự viết. Nemotron giữ reasoning bị cắt do ngân sách trong context nhưng mask phần cắt nhân tạo đó khỏi loss.</span><span class="lang-en">Slide 16: keeping it in the context helps explain the actions that follow; training it makes it the model's own writing style. Nemotron keeps budget-truncated reasoning in the context but masks those artificial truncations out of the loss.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A6. "Plain distillation" nghĩa là gì?</span><span class="lang-en">A6. What does "plain distillation" mean?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Model tự chạy task, giữ những run đạt test, rồi lặp lại vòng đó nhiều lần</span><span class="lang-en">The model runs tasks itself, keeps the runs that pass the tests, and repeats that loop many times</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Nén một model lớn thành model nhỏ hơn bằng cách bỏ bớt layer</span><span class="lang-en">Compressing a large model into a smaller one by dropping layers</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Một model mạnh hơn chạy task; chỉ giữ những run đạt test; fine-tune học trò trên đúng những run đó</span><span class="lang-en">A stronger model runs the tasks; only the runs that pass the tests are kept; the student is fine-tuned on exactly those runs</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Train model bằng RL từ đầu, không cần dữ liệu trajectory</span><span class="lang-en">Training the model with RL from scratch, with no trajectory data</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 21: distillation = model mạnh hơn chạy, chỉ giữ run đạt test. Slide 22: GPT-4o/Claude chạy SWE-Gym, 491 run đạt, Qwen 32B tăng hơn 10 điểm. Còn "model tự chạy" là expert iteration.</span><span class="lang-en">Slide 21: distillation = a stronger model runs, only passing runs are kept. Slide 22: GPT-4o/Claude run SWE-Gym, 491 passing runs, Qwen 32B gains more than 10 points. "The model runs itself" is expert iteration.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A7. Bạn giữ nguyên bộ task, chỉ tăng số trajectory lấy mẫu cho mỗi task. Kết quả thường ra sao?</span><span class="lang-en">A7. You keep the task set fixed and only increase the number of trajectories sampled per task. What usually happens?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Accuracy tăng mãi — càng thêm run càng tốt</span><span class="lang-en">Accuracy keeps rising — the more runs the better</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Accuracy giảm ngay vì dữ liệu bị trùng lặp</span><span class="lang-en">Accuracy drops immediately because the data is duplicated</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Accuracy không đổi chút nào</span><span class="lang-en">Accuracy does not change at all</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Đường cong phẳng dần rồi bão hòa — muốn leo tiếp phải thêm task mới</span><span class="lang-en">The curve flattens and then saturates — to climb further you need new tasks</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 28: hai đường cong cùng xuất phát từ tập 10K — thêm run của cùng task phẳng dần, thêm task mới tiếp tục leo. Slide 23: hết ngân sách compute trước khi hết task.</span><span class="lang-en">Slide 28: two curves start from the same 10K set — adding runs of the same task flattens out, adding new tasks keeps climbing. Slide 23: the compute budget runs out before the tasks do.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A8. Bài học từ việc chọn "thầy" để sinh dữ liệu distillation (slide 26) là gì?</span><span class="lang-en">A8. What is the lesson from choosing a teacher to generate distillation data (slide 26)?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Chọn model đứng đầu bảng xếp hạng là an toàn nhất</span><span class="lang-en">Choosing the model at the top of the leaderboard is the safest bet</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Model mạnh nhất trên benchmark có thể tạo ra học trò yếu nhất — hãy đo bằng kết quả của học trò và thử vài thầy</span><span class="lang-en">The strongest model on the benchmarks can produce the weakest student — measure by the student's results and try several teachers</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Chọn model nhỏ nhất để tiết kiệm chi phí; chất lượng dữ liệu không quan trọng</span><span class="lang-en">Pick the smallest model to save cost; data quality does not matter</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Chọn model có nhiều tham số nhất</span><span class="lang-en">Pick the model with the most parameters</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 26: GPT-5.3-Codex mạnh nhất <em>trên chính các benchmark</em> nhưng các run của nó tạo ra học trò yếu nhất. Cách làm đúng: thử hai thầy, giữ học trò tốt hơn.</span><span class="lang-en">Slide 26: GPT-5.3-Codex is strongest <em>on those very benchmarks</em>, yet its runs produce the weakest student. The right approach: try two teachers, keep the better student.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A9. Vì sao render <em>cùng một trajectory</em> hai lần có thể cho ra hai chuỗi token khác nhau?</span><span class="lang-en">A9. Why can rendering <em>the same trajectory</em> twice produce two different token sequences?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Một conditional thinking block có thể thay đổi cả lượt assistant phía trước khi một tool message được thêm vào sau đó</span><span class="lang-en">A conditional thinking block can change the whole preceding assistant turn when a tool message is appended after it</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Tokenizer có yếu tố ngẫu nhiên nên mỗi lần tokenize ra một kết quả khác</span><span class="lang-en">The tokenizer has randomness, so each tokenization gives a different result</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Render tự động xóa mọi dấu cách nên hai lần render luôn khác nhau</span><span class="lang-en">Rendering strips all spaces automatically, so two renders are always different</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Model tự đổi chat template của chính nó trong lúc phục vụ</span><span class="lang-en">The model swaps its own chat template while serving</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 39: thêm một tool message phía sau có thể đổi cả lượt assistant phía trước, khiến prefix không còn khớp — template drift. Lỗi im lặng: model vẫn chạy, vẫn viết ra chữ, chỉ hành xử tệ đi.</span><span class="lang-en">Slide 39: appending a tool message can change the whole preceding assistant turn, so the prefix no longer matches — template drift. A silent failure: the model still runs, still writes text, only behaves worse.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A10. Cân bằng hỗn hợp dữ liệu bằng cách <em>đếm trajectory</em> có cái bẫy gì?</span><span class="lang-en">A10. What is the trap in balancing the data mix by <em>counting trajectories</em>?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Không có bẫy — loss được tính theo trajectory, không theo token</span><span class="lang-en">No trap — loss is computed per trajectory, not per token</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Trajectory ngắn luôn chiếm nhiều token hơn nên bị học quá mức</span><span class="lang-en">Short trajectories always take more tokens, so they get over-learned</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Loss tính theo token, mà trace dài (STEM/coding) chiếm gần hết token — nhìn "công bằng" bằng số ví dụ nhưng không còn công bằng khi nhìn theo token</span><span class="lang-en">Loss is computed per token, and long traces (STEM/coding) take up almost all the tokens — it looks "fair" by example count but is no longer fair in token terms</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Bẫy duy nhất là dữ liệu bị trùng lặp giữa các nguồn</span><span class="lang-en">The only trap is duplicated data across sources</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 18: "Whatever you balance by counting trajectories, check what it turned into in tokens." Ví dụ trong bài: 100 trace lập trình dài gấp 10 lần 100 trace toán → lập trình chiếm khoảng 90% token.</span><span class="lang-en">Slide 18: "Whatever you balance by counting trajectories, check what it turned into in tokens." Example from the lecture: 100 coding traces are 10× longer than 100 math traces → coding takes up about 90% of the tokens.</span></p></div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="dien-khuyet">
+    <h2><span class="lang-vi">Phần B — Điền khuyết (3 câu)</span><span class="lang-en">Part B — Fill in the blank (3 questions)</span></h2>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B1. Observation giữ vai trò gì trong loss?</span><span class="lang-en">B1. What role do observations play in the loss?</span></p>
+      <p class="fib-sentence">"Observations are <span class="fib" data-answer="conditioning|điều kiện" data-placeholder="?"></span> context, not prediction targets."</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B2. SFT để lại gì cho RL?</span><span class="lang-en">B2. What does SFT leave for RL?</span></p>
+      <p class="fib-sentence">Kimi K3: "The SFT stage establishes a high-quality <span class="fib" data-answer="cold-start|cold start|coldstart" data-placeholder="?"></span> policy for the subsequent RL stage."</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B3. Lỗi template lệch giữa lúc train và lúc serve gọi là gì?</span><span class="lang-en">B3. What is a template mismatch between train time and serve time called?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Template lúc train phải khớp template lúc serve đến từng dấu cách; lệch nhau thì gọi là</span><span class="lang-en">The training-time template must match the serving-time template down to every space; a mismatch is called</span> <span class="fib" data-answer="template drift|drift|template-drift" data-placeholder="?"></span>.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tinh-huong">
+    <h2><span class="lang-vi">Phần C — Tình huống &amp; phân tích (3 câu)</span><span class="lang-en">Part C — Scenarios &amp; analysis (3 questions)</span></h2>
+
+    <p><strong>C1.</strong> <span class="lang-vi">Một bạn dựng mask cho một trajectory (đã render) như bảng dưới. Ba chỗ <em>sai</em> nằm ở đâu, và sửa lại thế nào?</span><span class="lang-en">Someone built a mask for a trajectory (already rendered) as in the table below. Where are the three <em>mistakes</em>, and how do you fix them?</span></p>
+    <table class="mapping">
+      <thead>
+        <tr><th><span class="lang-vi">Phần của trajectory</span><span class="lang-en">Trajectory part</span></th><th><span class="lang-vi">Mask bạn ấy gán</span><span class="lang-en">Mask they assigned</span></th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="lang-vi">Lượt user: <code>test_login đang fail, sửa giúp.</code></span><span class="lang-en">User turn: <code>test_login is failing, please fix.</code></span></td><td><code>0</code></td></tr>
+        <tr><td><span class="lang-vi">Chữ do assistant viết (gồm <code>&lt;think&gt;</code>, tool call, câu trả lời)</span><span class="lang-en">Text written by the assistant (including <code>&lt;think&gt;</code>, tool calls, the reply)</span></td><td><code>1</code></td></tr>
+        <tr><td><span class="lang-vi">Kết quả tool: <code>3 failed, 41 passed</code></span><span class="lang-en">Tool result: <code>3 failed, 41 passed</code></span></td><td><code>1</code></td></tr>
+        <tr><td><span class="lang-vi">Role header <code>&lt;|im_start|&gt;assistant</code></span><span class="lang-en">Role header <code>&lt;|im_start|&gt;assistant</code></span></td><td><code>1</code></td></tr>
+        <tr><td><span class="lang-vi">Token kết thúc lượt <code>[end_of_msg]</code> ở cuối lượt assistant</span><span class="lang-en">End-of-turn token <code>[end_of_msg]</code> at the end of the assistant turn</span></td><td><code>0</code></td></tr>
+      </tbody>
+    </table>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi"><strong>Kết quả tool — sai.</strong> Phải là <code>0</code>: observation là conditioning context, không phải đích dự đoán (slide 12). Train lên nó có thể dạy model thói <em>tự viết ra kết quả tool</em> thay vì chờ tool trả về (slide 5).</span><span class="lang-en"><strong>Tool result — wrong.</strong> It must be <code>0</code>: observations are conditioning context, not prediction targets (slide 12). Training on them can teach the model the habit of <em>writing out tool results itself</em> instead of waiting for the tool to return (slide 5).</span></li>
+        <li><span class="lang-vi"><strong>Role header — sai.</strong> Phải là <code>0</code>: <code>&lt;|im_start|&gt;assistant</code> được harness cấp sẵn lúc chạy, nó <em>không bao giờ</em> là đích để model học (slide 15).</span><span class="lang-en"><strong>Role header — wrong.</strong> It must be <code>0</code>: <code>&lt;|im_start|&gt;assistant</code> is supplied by the harness at runtime; it is <em>never</em> a target for the model to learn (slide 15).</span></li>
+        <li><span class="lang-vi"><strong>Token kết thúc lượt — sai.</strong> Phải là <code>1</code>: model phải <em>tự sinh</em> nó; để mask 0 thì "the model may not learn to stop" (slide 15).</span><span class="lang-en"><strong>End-of-turn token — wrong.</strong> It must be <code>1</code>: the model must <em>generate</em> it itself; with mask 0, "the model may not learn to stop" (slide 15).</span></li>
+        <li><span class="lang-vi">Hai dòng còn lại đúng: lượt user chỉ là context (<code>0</code>), chữ assistant là phần model phải tự viết (<code>1</code>).</span><span class="lang-en">The other two rows are correct: the user turn is only context (<code>0</code>), assistant text is the part the model must write itself (<code>1</code>).</span></li>
+      </ul>
+    </details>
+
+    <p><strong>C2.</strong> <span class="lang-vi">Ba run của cùng một task vừa được ghi lại, cả ba đều <em>đạt test</em>:</span><span class="lang-en">Three runs of the same task were just recorded, and all three <em>pass the tests</em>:</span></p>
+    <ul>
+      <li><span class="lang-vi"><strong>A.</strong> 40 lượt: đọc rất nhiều file, gần như không sửa gì cho tới cuối; patch cuối vẫn còn một dòng <code>print(</code> debug.</span><span class="lang-en"><strong>A.</strong> 40 turns: reads a lot of files, edits almost nothing until the end; the final patch still contains a debug <code>print(</code> line.</span></li>
+      <li><span class="lang-vi"><strong>B.</strong> 4 lượt: sửa gọn một chỗ, chạy test, pass.</span><span class="lang-en"><strong>B.</strong> 4 turns: a clean one-spot fix, run the tests, pass.</span></li>
+      <li><span class="lang-vi"><strong>C.</strong> 12 lượt: sửa sai một lần, thấy test fail, đọc log rồi sửa lại cho đúng.</span><span class="lang-en"><strong>C.</strong> 12 turns: makes one wrong fix, sees the test fail, reads the log and fixes it properly.</span></li>
+    </ul>
+    <p><span class="lang-vi">Giữ run nào, loại run nào — vì sao? Bộ lọc "loại mọi run dưới 5 lượt" sẽ làm gì với ba run này?</span><span class="lang-en">Which run do you keep, which do you drop — and why? What will the filter "drop every run under 5 turns" do to these three runs?</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi"><strong>A — đáng loại (hoặc phải xử lý riêng).</strong> Mẫu "read, never edited" cộng với <code>print(</code> còn sót trong patch cuối nằm đúng trong danh sách hành vi xấu của slide 24. Vì loss sao chép <em>mọi</em> hành động, tốt hay không.</span><span class="lang-en"><strong>A — should be dropped (or handled separately).</strong> The "read, never edited" pattern plus the leftover <code>print(</code> in the final patch sits exactly in slide 24's list of bad behaviours. Because the loss copies <em>every</em> action, good or not.</span></li>
+        <li><span class="lang-vi"><strong>B — giữ.</strong> Ngắn, sạch, không hành vi thừa.</span><span class="lang-en"><strong>B — keep.</strong> Short, clean, no superfluous behaviour.</span></li>
+        <li><span class="lang-vi"><strong>C — cân nhắc giữ.</strong> Đây là hành vi phục hồi (sửa sau khi thấy fail) — rất quý khi chạy thật; nhưng nếu giữ nguyên, loss sẽ sao chép cả bước sửa sai. Điều bắt buộc là phải nhận ra mặt trái đó (slide 29).</span><span class="lang-en"><strong>C — consider keeping.</strong> This is recovery behaviour (fixing after seeing a failure) — very valuable in real runs; but if kept as is, the loss will copy the wrong fix too. What is mandatory is to recognise that downside (slide 29).</span></li>
+        <li><span class="lang-vi"><strong>Bộ lọc min-turns sai ở cả hai đầu:</strong> nó <em>loại B</em> (4 lượt, sạch) và <em>giữ A</em> (40 lượt, lộn xộn). Slide 25: số lượt cho biết run tốn bao nhiêu công, không cho biết công đó tốt hay không.</span><span class="lang-en"><strong>The min-turns filter is wrong at both ends:</strong> it <em>drops B</em> (4 turns, clean) and <em>keeps A</em> (40 turns, messy). Slide 25: turn count tells you how much work a run took, not whether that work was good.</span></li>
+      </ul>
+    </details>
+
+    <p><strong>C3.</strong> <span class="lang-vi">Bạn fine-tune một model: loss giảm rất đẹp, bài kiểm tra overfit 20 ví dụ cũng đạt. Mang vào harness đích chạy thật thì tool call <em>không bao giờ parse được</em>. Ba chỗ nên kiểm tra trước tiên, theo thứ tự?</span><span class="lang-en">You fine-tune a model: the loss drops beautifully, and the 20-example overfit check passes too. But in the target harness the tool calls <em>never parse</em>. What are the first three places to check, in order?</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ol>
+        <li><span class="lang-vi"><strong>Template lúc train vs lúc serve.</strong> Render cùng một trajectory hai lần — một lần có tool message phía sau, một lần không — rồi so từng ký tự, kể cả dấu cách. Tìm conditional thinking block có thể làm đổi cả lượt assistant phía trước (slide 39). Đây là nghi phạm số một, vì loss vẫn đẹp mà hành vi lệch.</span><span class="lang-en"><strong>Train-time vs serve-time template.</strong> Render the same trajectory twice — once with a tool message appended, once without — then compare character by character, spaces included. Look for a conditional thinking block that can change the whole preceding assistant turn (slide 39). This is suspect number one, because the loss looks fine while behaviour diverges.</span></li>
+        <li><span class="lang-vi"><strong>Kiểm tra kết quả render theo checklist:</strong> tool call có parse được không? mỗi call có đi kèm một suy nghĩ không? hội thoại có kết thúc đúng cách không? (slide 33).</span><span class="lang-en"><strong>Check the render output against the checklist:</strong> do the tool calls parse? does each call come with a thought? does the conversation end properly? (slide 33).</span></li>
+        <li><span class="lang-vi"><strong>Xét nguồn dữ liệu:</strong> trajectory thu trong một harness sẽ dạy luôn quy ước của harness đó — dữ liệu OpenHands đem chạy trên SWE-Agent có thể viết action sai cú pháp (slide 44).</span><span class="lang-en"><strong>Consider the data source:</strong> trajectories collected in one harness also teach that harness's conventions — OpenHands data running on SWE-Agent may write actions with the wrong syntax (slide 44).</span></li>
+      </ol>
+      <p><span class="lang-vi">Loss đẹp và overfit-20 đạt nghĩa là pipeline train không sai; vấn đề nằm ở chỗ model nhận <em>prefix khác lúc học</em> — đúng loại lỗi im lặng mà slide 39 cảnh báo.</span><span class="lang-en">A beautiful loss plus a passing overfit-20 means the training pipeline is not wrong; the problem is that the model receives a <em>different prefix at training time</em> — exactly the kind of silent failure slide 39 warns about.</span></p>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="code">
+    <h2><span class="lang-vi">Phần D — Bài tập code (2 bài)</span><span class="lang-en">Part D — Coding exercises (2)</span></h2>
+    <p><span class="lang-vi">Code thuần Python stdlib, chạy ngay bằng <code>python exam09_d1.py</code>. Đây là bản mô phỏng tí hon của bước Mask trong pipeline Render → Tokenize → Mask: quyết định token nào được train, token nào chỉ làm ngữ cảnh.</span><span class="lang-en">Plain Python stdlib code, runs straight away with <code>python exam09_d1.py</code>. This is a tiny simulation of the Mask step in the Render → Tokenize → Mask pipeline: deciding which tokens get trained and which only serve as context.</span></p>
+
+    <h3><span class="lang-vi">D1 · <code>build_mask</code> — mask cho một trajectory</span><span class="lang-en">D1 · <code>build_mask</code> — masking a trajectory</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam09_d1.py</code>, điền phần <code>TODO</code>, chạy để thấy <code>OK D1!</code>.</span><span class="lang-en">Copy into <code>exam09_d1.py</code>, fill in the <code>TODO</code>, run it and you'll see <code>OK D1!</code>.</span></p>
+
+    <div class="lang-vi">
+    <pre><code>def build_mask(messages):
+    """messages: list các dict {"role": "user"/"assistant", "text": "..."}
+       — text đã được tách token bằng dấu cách.
+
+       Trả về list các tuple (token, mask) theo đúng thứ tự xuất hiện:
+       mask = 1 cho token thuộc lượt "assistant",
+       mask = 0 cho mọi token còn lại.
+    """
+    # TODO
+    pass
+
+
+# ---------- Tự kiểm ----------
+msgs = [
+    {"role": "user",      "text": "test_login đang fail sửa giúp"},             # 5 token
+    {"role": "assistant", "text": "chạy pytest xem lỗi &lt;|im_end|&gt;"},          # 5 token
+    {"role": "user",      "text": "3 failed 41 passed"},                        # 4 token
+    {"role": "assistant", "text": "dùng math isclose &lt;|im_end|&gt;"},            # 4 token
+]
+
+tokens = build_mask(msgs)
+
+assert len(tokens) == 18, "mỗi token phải thành đúng một tuple"
+assert tokens[0] == ("test_login", 0),  "token user → mask 0"
+assert tokens[4] == ("giúp", 0)
+assert tokens[5] == ("chạy", 1),        "token assistant → mask 1"
+assert tokens[9] == ("&lt;|im_end|&gt;", 1), "token kết thúc lượt: model phải tự sinh → mask 1"
+assert tokens[10] == ("3", 0),          "kết quả tool: chỉ là context → mask 0"
+assert tokens[17] == ("&lt;|im_end|&gt;", 1)
+print("OK D1!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def build_mask(messages):
+    """messages: list of dicts {"role": "user"/"assistant", "text": "..."}
+       — text has been split into tokens by spaces.
+
+       Return a list of (token, mask) tuples in order of appearance:
+       mask = 1 for tokens belonging to the "assistant" turn,
+       mask = 0 for every other token.
+    """
+    # TODO
+    pass
+
+
+# ---------- Self-check ----------
+msgs = [
+    {"role": "user",      "text": "test_login đang fail sửa giúp"},             # 5 tokens
+    {"role": "assistant", "text": "chạy pytest xem lỗi &lt;|im_end|&gt;"},          # 5 tokens
+    {"role": "user",      "text": "3 failed 41 passed"},                        # 4 tokens
+    {"role": "assistant", "text": "dùng math isclose &lt;|im_end|&gt;"},            # 4 tokens
+]
+
+tokens = build_mask(msgs)
+
+assert len(tokens) == 18, "mỗi token phải thành đúng một tuple"
+assert tokens[0] == ("test_login", 0),  "token user → mask 0"
+assert tokens[4] == ("giúp", 0)
+assert tokens[5] == ("chạy", 1),        "token assistant → mask 1"
+assert tokens[9] == ("&lt;|im_end|&gt;", 1), "token kết thúc lượt: model phải tự sinh → mask 1"
+assert tokens[10] == ("3", 0),          "kết quả tool: chỉ là context → mask 0"
+assert tokens[17] == ("&lt;|im_end|&gt;", 1)
+print("OK D1!")</code></pre>
+    </div>
+
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <pre><code>def build_mask(messages):
+    out = []
+    for msg in messages:
+        mask = 1 if msg["role"] == "assistant" else 0
+        for token in msg["text"].split():
+            out.append((token, mask))
+    return out</code></pre>
+      <p><span class="lang-vi">Đối chiếu slide 12–13: chỉ token do assistant viết nhận mask = 1; mọi thứ khác (tin nhắn user, kết quả tool, role header) chỉ là điều kiện. Để ý assert <code>tokens[9]</code>: token kết thúc lượt nằm trong phần assistant nên <strong>phải</strong> là 1 — nếu mask 0, "the model may not learn to stop" (slide 15).</span><span class="lang-en">Cross-check with slides 12–13: only tokens written by the assistant get mask = 1; everything else (user messages, tool results, role headers) is conditioning only. Note the <code>tokens[9]</code> assert: the end-of-turn token lies in the assistant part, so it <strong>must</strong> be 1 — with mask 0, "the model may not learn to stop" (slide 15).</span></p>
+    </details>
+
+    <h3><span class="lang-vi">D2 · <code>train_ratio</code> — tỉ lệ token được train</span><span class="lang-en">D2 · <code>train_ratio</code> — the fraction of trained tokens</span></h3>
+    <p><span class="lang-vi">Làm tiếp trong cùng file với D1 (biến <code>tokens</code> đã có ở trên). Chạy tiếp để thấy <code>OK D2!</code>.</span><span class="lang-en">Continue in the same file as D1 (the <code>tokens</code> variable already exists above). Run on to see <code>OK D2!</code>.</span></p>
+
+    <div class="lang-vi">
+    <pre><code>def train_ratio(tokens):
+    """tokens: list (token, mask) — đầu ra của build_mask.
+
+       Trả về tỉ lệ token được train (mask = 1) trên tổng số token.
+       Trả về 0.0 nếu danh sách rỗng.
+    """
+    # TODO
+    pass
+
+
+# ---------- Tự kiểm (chạy tiếp sau D1) ----------
+assert abs(train_ratio(tokens) - 0.5) &lt; 1e-9, "9/18 token được train"
+assert train_ratio([("ok", 1), ("chào", 0), ("bạn", 1)]) == 2 / 3
+assert train_ratio([("chỉ_context", 0)]) == 0.0
+assert train_ratio([]) == 0.0
+print("OK D2!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def train_ratio(tokens):
+    """tokens: list of (token, mask) — the output of build_mask.
+
+       Return the fraction of trained tokens (mask = 1) out of all tokens.
+       Return 0.0 if the list is empty.
+    """
+    # TODO
+    pass
+
+
+# ---------- Self-check (continues after D1) ----------
+assert abs(train_ratio(tokens) - 0.5) &lt; 1e-9, "9/18 token được train"
+assert train_ratio([("ok", 1), ("chào", 0), ("bạn", 1)]) == 2 / 3
+assert train_ratio([("chỉ_context", 0)]) == 0.0
+assert train_ratio([]) == 0.0
+print("OK D2!")</code></pre>
+    </div>
+
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <pre><code>def train_ratio(tokens):
+    if not tokens:
+        return 0.0
+    trained = sum(1 for _, mask in tokens if mask == 1)
+    return trained / len(tokens)</code></pre>
+      <p><span class="lang-vi">Bài này nhỏ nhưng đúng câu hỏi của slide 18: loss được tính <em>theo token</em>, không theo ví dụ hay theo lượt. Con số này cũng là một cách tự kiểm mask: tỉ lệ quá cao thường là dấu hiệu bạn đang vô tình train cả phần observation hoặc role header — những thứ mà slide 12–15 nói phải mask = 0.</span><span class="lang-en">This exercise is small but gets at slide 18's point: loss is computed <em>per token</em>, not per example or per turn. This number is also a way to self-check the mask: too high a ratio is usually a sign you are accidentally training the observation spans or the role headers — the things slides 12–15 say must be mask = 0.</span></p>
+    </details>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><a href="../exams/0008-exam.html"><span class="lang-vi">← Exam 08</span><span class="lang-en">← Exam 08</span></a> · <a href="../lessons/0009-training-sft.html"><span class="lang-vi">Ôn lại Bài 09</span><span class="lang-en">Review Lesson 09</span></a></p>
+    <p><span class="lang-vi">Chưa có exam sau — Exam 10 (RL căn bản) sẽ ra cùng bài 10. Chưa đạt 85%? Làm lại từ đầu — mỗi lần làm lại là một lần nhớ sâu hơn.</span><span class="lang-en">No next exam yet — Exam 10 (RL basics) will ship with Lesson 10. Below 85%? Start over — every retake deepens the memory.</span></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

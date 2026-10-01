@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thi thử 2 · Thi thử — Capabilities &amp; Domains (Bài 06–09) — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Thi thử 2 / Mock 2</div>
+    <h1><span class="lang-vi">Thi thử — Capabilities &amp; Domains (Bài 06–09)</span><span class="lang-en">Mock — Capabilities &amp; Domains (Lessons 06–09)</span></h1>
+    <p class="subtitle"><span class="lang-vi">Đề tổng hợp: planning &amp; đa agent · coding agents · computer use · SFT.</span><span class="lang-en">Cumulative paper: planning &amp; multi-agent · coding agents · computer use · SFT.</span></p>
+    <p class="lesson-meta"><span class="lang-vi">35 câu</span><span class="lang-en">35 questions</span><span class="lang-vi">45 phút</span><span class="lang-en">45 min</span><span class="lang-vi">Đạt khi ≥ 80%</span><span class="lang-en">Pass: ≥ 80%</span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="exam-bar" data-mode="exam">
+    <span class="exam-timer" data-minutes="45">⏱ 45:00</span>
+    <span class="exam-progress" data-pass="80">…</span>
+    <button class="exam-submit" type="button">Nộp bài</button>
+    <button class="exam-reset" type="button">Làm lại</button>
+  </div>
+
+  <p><span class="lang-vi"><strong>Cách thi thử:</strong> làm liền mạch như thi thật — đồng hồ chạy, <em>đáp án chỉ hiện sau khi bấm “Nộp bài”</em> (hoặc khi hết giờ). Đề tổng hợp từ ngân hàng câu hỏi của 9 exam theo bài — đạt ≥ 80% nghĩa là bạn nhớ thật, chứ không phải đoán.</span><span class="lang-en"><strong>How to take this mock:</strong> work straight through like the real exam — the clock runs and <em>answers are revealed only after you press “Submit”</em> (or when time is up). This paper draws from the question banks of the nine per-lesson exams — scoring ≥ 80% means you genuinely remember the material, not that you guessed.</span></p>
+
+  <div class="quiz-numbered">
+
+<div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">Ba cách chấm một CUA theo slide 17 là gì?</span><span class="lang-en">What are the three ways to score a CUA according to slide 17?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Action → Outcome → Process</span><span class="lang-en">Action → Outcome → Process</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Train → Test → Deploy</span><span class="lang-en">Train → Test → Deploy</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Input → Output → Feedback</span><span class="lang-en">Input → Output → Feedback</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Đọc → Hiểu → Làm</span><span class="lang-en">Read → Understand → Do</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Action (bấm đúng mục tiêu chưa?), outcome (kết quả cuối đúng chưa?), process (quá trình có tôn trọng ràng buộc không?). Kim chỉ nam: "Evaluators should match the capability you want to measure."</span><span class="lang-en">Action (was the right target clicked?), outcome (is the final result correct?), process (did the run respect the constraints?). Guiding principle: "Evaluators should match the capability you want to measure."</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">ScreenSpot-Pro chấm điểm bằng cách nào?</span><span class="lang-en">How does ScreenSpot-Pro score?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Kiểm repository có rỗng không</span><span class="lang-en">It checks whether the repository is empty</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">So khớp hành động kế tiếp với bản ghi</span><span class="lang-en">It matches the next action against the recording</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Cho VLM đọc rubric rồi kết luận SUCCESS / NOT SUCCESS</span><span class="lang-en">It has a VLM read a rubric and conclude SUCCESS / NOT SUCCESS</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Point / region matching: điểm click có nằm trong vùng đúng (target box) hay không</span><span class="lang-en">Point / region matching: whether the click point falls inside the correct region (target box)</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">ScreenSpot-Pro (Li et al., 2025): 1.581 ảnh chụp, 23 ứng dụng, 3 hệ điều hành. Ví dụ Blender: ảnh gốc 2560 × 1440, vùng đúng (417,132)–(576,152) — click vào trong vùng = 1 điểm. Giao diện chuyên nghiệp độ phân giải cao khiến grounding thành một benchmark riêng.</span><span class="lang-en">ScreenSpot-Pro (Li et al., 2025): 1,581 screenshots, 23 applications, 3 operating systems. Blender example: 2560 × 1440 source image, correct region (417,132)–(576,152) — a click inside the region = 1 point. High-resolution professional interfaces make grounding a benchmark of its own.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">Cân bằng hỗn hợp dữ liệu bằng cách <em>đếm trajectory</em> có cái bẫy gì?</span><span class="lang-en">What is the trap in balancing the data mix by <em>counting trajectories</em>?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Không có bẫy — loss được tính theo trajectory, không theo token</span><span class="lang-en">No trap — loss is computed per trajectory, not per token</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Trajectory ngắn luôn chiếm nhiều token hơn nên bị học quá mức</span><span class="lang-en">Short trajectories always take more tokens, so they get over-learned</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Loss tính theo token, mà trace dài (STEM/coding) chiếm gần hết token — nhìn "công bằng" bằng số ví dụ nhưng không còn công bằng khi nhìn theo token</span><span class="lang-en">Loss is computed per token, and long traces (STEM/coding) take up almost all the tokens — it looks "fair" by example count but is no longer fair in token terms</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Bẫy duy nhất là dữ liệu bị trùng lặp giữa các nguồn</span><span class="lang-en">The only trap is duplicated data across sources</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 18: "Whatever you balance by counting trajectories, check what it turned into in tokens." Ví dụ trong bài: 100 trace lập trình dài gấp 10 lần 100 trace toán → lập trình chiếm khoảng 90% token.</span><span class="lang-en">Slide 18: "Whatever you balance by counting trajectories, check what it turned into in tokens." Example from the lecture: 100 coding traces are 10× longer than 100 math traces → coding takes up about 90% of the tokens.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">Một vòng Plan Mode (Claude Code, Cursor, Codex) diễn ra theo thứ tự nào?</span><span class="lang-en">In what order does a Plan Mode round (Claude Code, Cursor, Codex) play out?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Thực thi trước → viết plan để giải trình → người dùng duyệt</span><span class="lang-en">Execute first → write a plan to justify it → user approves</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Điều tra chỉ-đọc → hỏi lại nếu mơ hồ → viết plan ra → người duyệt → thực thi</span><span class="lang-en">Read-only investigation → ask again if ambiguous → write the plan out → approval → execution</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Chạy song song hai bản: một bản làm thật, một bản viết plan</span><span class="lang-en">Run two copies in parallel: one doing the work, one writing the plan</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Người dùng tự viết plan → agent chạy y nguyên, không được hỏi lại</span><span class="lang-en">The user writes the plan → the agent runs it verbatim and may not ask again</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Bước 1 chưa sửa gì nên không thể phá hỏng gì; plan là artifact bên ngoài để đọc, sửa, lưu; chỉ khi plan đã chốt agent mới thực thi — và có thể chia việc cho sub-agent. Năm điểm giúp ích: thêm compute, ngữ cảnh tốt hơn, artifact ngoài, chia nhỏ, người duyệt.</span><span class="lang-en">Step 1 changes nothing, so it cannot break anything; the plan is an external artifact you can read, edit, and save; only once the plan is settled does the agent execute — and it may split work across sub-agents. Five benefits: more compute, better context, an external artifact, decomposition, and a human approver.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">Vì sao grounding khó? (chọn đáp án đầy đủ nhất)</span><span class="lang-en">Why is grounding hard? (pick the most complete answer)</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Model chỉ có pixel; phần tử nhỏ và dày đặc; toạ độ gắn chặt với ảnh hiện tại nên mỗi ảnh mới phải định vị lại</span><span class="lang-en">The model only has pixels; UI elements are small and dense; coordinates are tied to the current screenshot, so every new screenshot forces re-grounding</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì ảnh chụp màn hình thường bị mờ và thiếu sáng</span><span class="lang-en">Because screenshots are often blurry and poorly lit</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì model không đọc được chữ trên màn hình</span><span class="lang-en">Because the model cannot read text on the screen</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì màn hình có độ phân giải quá cao so với model</span><span class="lang-en">Because screen resolution is too high for the model</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Ba lý do trong bài: model chỉ có pixel (phải học đâu là nút, đâu là chữ); giao diện chuyên nghiệp có hàng trăm biểu tượng nhỏ cạnh nhau; không có "địa chỉ" cố định — toạ độ thuộc về ảnh hiện tại.</span><span class="lang-en">Three reasons from the lecture: the model only has pixels (it must learn what is a button and what is text); professional interfaces pack hundreds of small icons next to each other; there is no fixed "address" — coordinates belong to the current screenshot.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">Bài học từ việc chọn "thầy" để sinh dữ liệu distillation (slide 26) là gì?</span><span class="lang-en">What is the lesson from choosing a teacher to generate distillation data (slide 26)?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Chọn model đứng đầu bảng xếp hạng là an toàn nhất</span><span class="lang-en">Choosing the model at the top of the leaderboard is the safest bet</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Model mạnh nhất trên benchmark có thể tạo ra học trò yếu nhất — hãy đo bằng kết quả của học trò và thử vài thầy</span><span class="lang-en">The strongest model on the benchmarks can produce the weakest student — measure by the student's results and try several teachers</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Chọn model nhỏ nhất để tiết kiệm chi phí; chất lượng dữ liệu không quan trọng</span><span class="lang-en">Pick the smallest model to save cost; data quality does not matter</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Chọn model có nhiều tham số nhất</span><span class="lang-en">Pick the model with the most parameters</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 26: GPT-5.3-Codex mạnh nhất <em>trên chính các benchmark</em> nhưng các run của nó tạo ra học trò yếu nhất. Cách làm đúng: thử hai thầy, giữ học trò tốt hơn.</span><span class="lang-en">Slide 26: GPT-5.3-Codex is strongest <em>on those very benchmarks</em>, yet its runs produce the weakest student. The right approach: try two teachers, keep the better student.</span></p></div>
+    </div>
+
+<div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">Trong Decomposed Prompting, ai chia subtask?</span><span class="lang-en">In Decomposed Prompting, who splits the subtasks?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Một </span><span class="lang-en">A </span><span class="fib" data-answer="decomposer|bộ chia" data-placeholder="?"></span><span class="lang-vi"> tạo ra các subtask, rồi định tuyến mỗi subtask cho một handler chuyên.</span><span class="lang-en"> creates the subtasks, then routes each subtask to a specialist handler.</span></p>
+    </div>
+
+<div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">Mind2Web chấm hành động kế tiếp — nhưng một bước đúng chưa phải là gì?</span><span class="lang-en">Mind2Web scores the next action — but a correct step is not yet what?</span></p>
+      <p class="fib-sentence">"A correct step is not a completed <span class="fib" data-answer="task|nhiệm vụ|công việc" data-placeholder="?"></span>."</p>
+    </div>
+
+<div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">Mô hình manager–worker (MACU, slide 40–44) — phát hiện nào đúng?</span><span class="lang-en">The manager–worker model (MACU, slides 40–44) — which finding is correct?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Chỉ nên dùng worker, bỏ manager để tiết kiệm token và tránh nút cổ chai</span><span class="lang-en">Use only workers; drop the manager to save tokens and avoid a bottleneck</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Worker càng yếu càng tốt, vì manager dễ tổng hợp kết quả đơn giản</span><span class="lang-en">The weaker the workers the better, because the manager can easily combine simple results</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Manager càng mạnh thì phối hợp càng tốt; worker yếu được nâng lên nhiều hơn — mở ra tiềm năng dùng model nhỏ, rẻ cho worker và model mạnh cho manager</span><span class="lang-en">The stronger the manager, the better the coordination; weak workers improve more — opening up small, cheap models for workers and a strong model for the manager</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Chạy nhiều worker song song không đem lại lợi ích trong bất kỳ bộ task nào</span><span class="lang-en">Running many workers in parallel brings no benefit on any task set</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Ablation trên OSWorld (36 task, worker Qwen3.5-4B) cho thấy chất lượng manager ảnh hưởng trực tiếp tới kết quả; với manager rất mạnh (Opus 4.6), worker yếu được cải thiện rõ hơn. Chạy worker song song có ích trên bộ dễ của Odysseys (45 task), và đồ thị công việc còn được sửa giữa chừng khi cần.</span><span class="lang-en">An ablation on OSWorld (36 tasks, Qwen3.5-4B workers) shows manager quality directly affects outcomes; with a very strong manager (Opus 4.6), weak workers improve more clearly. Parallel workers help on the easy set of Odysseys (45 tasks), and the work graph can even be revised mid-run when needed.</span></p></div>
+    </div>
+
+<div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">Khi luyện infilling, file bị cắt thành ba phần nào?</span><span class="lang-en">When training infilling, the file is cut into which three parts?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">File được cắt thành <code>prefix</code> / <code>span</code> / </span><span class="lang-en">The file is split into <code>prefix</code> / <code>span</code> / </span><span class="fib" data-answer="suffix" data-placeholder="?"></span><span class="lang-vi">, rồi xếp lại quanh sentinel token <code>[M0]</code> để model học điền vào giữa.</span><span class="lang-en">, then reassembled around the sentinel token <code>[M0]</code> so the model learns infilling.</span></p>
+    </div>
+
+<div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">Bốn tính chất khiến task dài khó xử lý (slide 3) là gì?</span><span class="lang-en">What are the four properties that make long tasks hard (slide 3)?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Song song · phụ thuộc · thông tin đến muộn · bước không thể hoàn tác</span><span class="lang-en">Parallelism · dependencies · late-arriving information · irreversible steps</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Nhanh · rẻ · dễ đoán · cứng</span><span class="lang-en">Fast · cheap · predictable · rigid</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Modularity · feedback · long horizon · control</span><span class="lang-en">Modularity · feedback · long horizon · control</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Thu thập · phân tích · quyết định · hành động</span><span class="lang-en">Collect · analyze · decide · act</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Cả bốn đều có mặt trong ví dụ mua máy trạm GPU: bốn cuộc tìm kiếm độc lập (song song), phải có spec mới đối chiếu được với wiki (phụ thuộc), ràng buộc 4U/1600 W lộ ra sau khi đã chốt cấu hình (thông tin đến muộn), và Submit requisition (không hoàn tác). Phương án c là <em>bốn áp lực</em> khiến người ta thêm planning vào hệ agent (slide 17–18) — khác với bốn tính chất của task.</span><span class="lang-en">All four appear in the GPU workstation purchase example: four independent searches (parallelism), the spec must exist before it can be checked against the wiki (dependency), the 4U/1600 W constraint only surfaces after the config was locked in (late information), and Submit requisition (irreversible). Option c lists the <em>four pressures</em> that push people to add planning to agent systems (slides 17–18) — not the four properties of the task.</span></p></div>
+    </div>
+
+<div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">Trong Python, các giá trị như 0, "", [], None, False được gọi là gì?</span><span class="lang-en">In Python, values like 0, "", [], None, False are called what?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Chúng là các giá trị </span><span class="lang-en">They are </span><span class="fib" data-answer="falsy|falsey" data-placeholder="?"></span><span class="lang-vi"> — nên <code>x or y</code> biến số 0 hợp lệ thành giá trị mặc định, và đó là gốc của bug "retries = 0 thành 3".</span><span class="lang-en"> values — so <code>x or y</code> turns a valid 0 into the default, which is the root of the "retries = 0 becomes 3" bug.</span></p>
+    </div>
+
+<div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">Điền nốt định nghĩa plan:</span><span class="lang-en">Complete the definition of a plan:</span></p>
+      <p class="fib-sentence">"A plan is an explicit representation of intended future behavior: the actions or subgoals an agent will attempt, with any ordering or <span class="fib" data-answer="dependencies|dependency|phụ thuộc" data-placeholder="?"></span> among them."</p>
+    </div>
+
+<div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">Câu "Live benchmarks drift — and judge quality becomes part of the score" (Online-Mind2Web) nghĩa là gì?</span><span class="lang-en">What does the sentence "Live benchmarks drift — and judge quality becomes part of the score" (Online-Mind2Web) mean?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Giám khảo tự cập nhật điểm theo thời gian</span><span class="lang-en">The judge updates the score over time on its own</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Trang thật đổi giá, đổi bố cục, đổi nội dung làm bản ghi cũ mất giá trị — và sai số của giám khảo nằm luôn trong con số cuối</span><span class="lang-en">Real pages change prices, layout and content, so old recordings lose value — and the judge's error is baked into the final number</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Benchmark luôn chạy lại được y hệt ở mọi thời điểm</span><span class="lang-en">A benchmark can always be re-run identically at any time</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Web tự động sửa lỗi giúp agent</span><span class="lang-en">The web automatically fixes errors for the agent</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Online-Mind2Web (Xue et al., 2025): 300 nhiệm vụ trên 136 website thật, giám khảo WebJudge đạt 85,7% đồng thuận với người. Web thật trôi (drift) nên bản ghi cũ không còn khớp; và vì chấm bằng giám khảo, chất lượng giám khảo trở thành một phần của điểm số.</span><span class="lang-en">Online-Mind2Web (Xue et al., 2025): 300 tasks across 136 real websites; the WebJudge judge reaches 85.7% agreement with humans. The live web drifts, so old recordings no longer match; and because grading uses a judge, judge quality becomes part of the score.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">Least-to-Most giải bài toán khó bằng hai giai đoạn như thế nào?</span><span class="lang-en">How does Least-to-Most solve a hard problem in two stages?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Giải câu hỏi khó trước để lấy đà, câu dễ giải sau</span><span class="lang-en">Solve the hard question first for momentum, then the easy ones</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Sinh nhiều lời giải rồi chọn đáp án xuất hiện nhiều lần nhất</span><span class="lang-en">Generate many solutions and pick the answer that appears most often</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Hỏi người dùng vài câu dễ trước khi bắt đầu giải</span><span class="lang-en">Ask the user a few easy questions before starting to solve</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Viết các câu hỏi con từ dễ đến khó, rồi trả lời lần lượt; đáp án của câu trước trở thành ngữ cảnh cho câu sau</span><span class="lang-en">Write sub-questions from easy to hard, then answer them in order; each earlier answer becomes context for the next question</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Vì sao hiệu quả: model giỏi trả lời câu hỏi con hơn câu hỏi lớn, và mỗi câu con cần ít ngữ cảnh hơn — lợi ích còn <em>tăng theo độ dài bài toán</em>. Điểm mạnh thứ hai là kiểm được từng chặng; câu con nào vẫn khó thì chia tiếp (tinh thần Recursive Language Models).</span><span class="lang-en">Why it works: models are better at answering sub-questions than the big question, and each sub-question needs less context — the benefit even <em>grows with problem length</em>. The second strength is that every stage can be checked; any sub-question that is still hard gets split further (the spirit of Recursive Language Models).</span></p></div>
+    </div>
+
+<div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">Phần thưởng chỉ có ở cuối chuỗi hành động thì gây ra bài toán gì?</span><span class="lang-en">When rewards exist only at the end of an action sequence, what problem does that create?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Một thất bại ở cuối không chỉ ra quyết định nào ở giữa đã sai — trong học tăng cường, đây là bài toán credit </span><span class="lang-en">A failure at the end does not show which middle decision was wrong — in reinforcement learning this is the credit </span><span class="fib" data-answer="assignment|phân bổ công lỗi|phan bo cong loi" data-placeholder="?"></span><span class="lang-vi">.</span><span class="lang-en"> problem.</span></p>
+    </div>
+
+<div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">"Plain distillation" nghĩa là gì?</span><span class="lang-en">What does "plain distillation" mean?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Model tự chạy task, giữ những run đạt test, rồi lặp lại vòng đó nhiều lần</span><span class="lang-en">The model runs tasks itself, keeps the runs that pass the tests, and repeats that loop many times</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Nén một model lớn thành model nhỏ hơn bằng cách bỏ bớt layer</span><span class="lang-en">Compressing a large model into a smaller one by dropping layers</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Một model mạnh hơn chạy task; chỉ giữ những run đạt test; fine-tune học trò trên đúng những run đó</span><span class="lang-en">A stronger model runs the tasks; only the runs that pass the tests are kept; the student is fine-tuned on exactly those runs</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Train model bằng RL từ đầu, không cần dữ liệu trajectory</span><span class="lang-en">Training the model with RL from scratch, with no trajectory data</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 21: distillation = model mạnh hơn chạy, chỉ giữ run đạt test. Slide 22: GPT-4o/Claude chạy SWE-Gym, 491 run đạt, Qwen 32B tăng hơn 10 điểm. Còn "model tự chạy" là expert iteration.</span><span class="lang-en">Slide 21: distillation = a stronger model runs, only passing runs are kept. Slide 22: GPT-4o/Claude run SWE-Gym, 491 passing runs, Qwen 32B gains more than 10 points. "The model runs itself" is expert iteration.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">Ba bước dựng mask cho một trajectory là gì?</span><span class="lang-en">What are the three steps for building a mask for a trajectory?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Tokenize → Render → Mask</span><span class="lang-en">Tokenize → Render → Mask</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Render → Tokenize → Mask</span><span class="lang-en">Render → Tokenize → Mask</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Render → Mask → Tokenize</span><span class="lang-en">Render → Mask → Tokenize</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Mask → Tokenize → Render</span><span class="lang-en">Mask → Tokenize → Render</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 13: Render (template viết hội thoại thành chuỗi và đánh dấu đoạn assistant) → Tokenize (vị trí ký tự thành vị trí token) → Mask (token trong đoạn assistant nhận bit 1).</span><span class="lang-en">Slide 13: Render (the template turns the conversation into a string and marks the assistant spans) → Tokenize (character positions become token positions) → Mask (tokens inside the assistant spans get bit 1).</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">Vì sao render <em>cùng một trajectory</em> hai lần có thể cho ra hai chuỗi token khác nhau?</span><span class="lang-en">Why can rendering <em>the same trajectory</em> twice produce two different token sequences?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Một conditional thinking block có thể thay đổi cả lượt assistant phía trước khi một tool message được thêm vào sau đó</span><span class="lang-en">A conditional thinking block can change the whole preceding assistant turn when a tool message is appended after it</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Tokenizer có yếu tố ngẫu nhiên nên mỗi lần tokenize ra một kết quả khác</span><span class="lang-en">The tokenizer has randomness, so each tokenization gives a different result</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Render tự động xóa mọi dấu cách nên hai lần render luôn khác nhau</span><span class="lang-en">Rendering strips all spaces automatically, so two renders are always different</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Model tự đổi chat template của chính nó trong lúc phục vụ</span><span class="lang-en">The model swaps its own chat template while serving</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 39: thêm một tool message phía sau có thể đổi cả lượt assistant phía trước, khiến prefix không còn khớp — template drift. Lỗi im lặng: model vẫn chạy, vẫn viết ra chữ, chỉ hành xử tệ đi.</span><span class="lang-en">Slide 39: appending a tool message can change the whole preceding assistant turn, so the prefix no longer matches — template drift. A silent failure: the model still runs, still writes text, only behaves worse.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">Với dòng <code>if·ready:↵····return·value↵</code>, vì sao bốn dấu cách thụt lề không bị cắt thành bốn token riêng?</span><span class="lang-en">For the line <code>if·ready:↵····return·value↵</code>, why aren't the four indent spaces cut into four separate tokens?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì tokenizer xóa toàn bộ thụt lề trước khi cắt</span><span class="lang-en">Because the tokenizer deletes all indentation before tokenizing</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì cụm khoảng trắng hay gặp được gộp thành một token (ví dụ <code>↵···</code>), giúp tiết kiệm token mà thụt lề vẫn được giữ</span><span class="lang-en">Because common whitespace runs are merged into a single token (e.g. <code>↵···</code>), saving tokens while the indentation is still preserved</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì mỗi dấu cách vẫn là một token, chỉ là không được đếm</span><span class="lang-en">Because each space is still one token, it just isn't counted</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì thụt lề được đổi thành ký tự tab trước khi tokenize</span><span class="lang-en">Because indentation is converted to tab characters before tokenizing</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 9: ví dụ trên tốn 7 token thay vì 13. Token thứ tư là <code>↵···</code> (xuống dòng + ba dấu cách); dấu cách thứ tư dính vào chữ tiếp theo thành <code>·return</code>. Thụt lề vẫn là token mang cú pháp — model vẫn "thấy" được cấu trúc khối.</span><span class="lang-en">Slide 9: the example costs 7 tokens instead of 13. The fourth token is <code>↵···</code> (newline + three spaces); the fourth space sticks to the next word as <code>·return</code>. Indentation is still a syntax-carrying token — the model still "sees" block structure.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">Một world model đoán đoạn code sau cho <code>result = 1</code>. Nó sai ở đâu?<br><code>items = [1]</code> · <code>alias = items</code> · <code>alias.append(2)</code> · <code>result = len(items)</code></span><span class="lang-en">A world model predicts the snippet below gives <code>result = 1</code>. Where is it wrong?<br><code>items = [1]</code> · <code>alias = items</code> · <code>alias.append(2)</code> · <code>result = len(items)</code></span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Không sai — items ban đầu chỉ có một phần tử nên result = 1</span><span class="lang-en">Nothing wrong — items starts with one element, so result = 1</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Sai vì <code>alias.append(2)</code> là cú pháp không hợp lệ</span><span class="lang-en">Wrong, because <code>alias.append(2)</code> is invalid syntax</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Không sai — Python luôn sao chép danh sách khi gán biến</span><span class="lang-en">Nothing wrong — Python always copies a list when assigned to a variable</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Sai — <code>alias</code> và <code>items</code> trỏ vào cùng một danh sách, nên <code>result = 2</code>; model tưởng <code>alias</code> là bản sao riêng</span><span class="lang-en">Wrong — <code>alias</code> and <code>items</code> point to the same list, so <code>result = 2</code>; the model thought <code>alias</code> was its own copy</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 75: gán là aliasing, không phải copy. Thực tế <code>items = [1, 2]</code> và <code>result = 2</code>. Slide 76: chỉ cần world model sai một lần là có thể chọn nhầm patch (vứt bản sửa đúng A để chọn bản sai B) — nên chạy thật vẫn là thước đo cuối cùng.</span><span class="lang-en">Slide 75: assignment is aliasing, not copying. In reality <code>items = [1, 2]</code> and <code>result = 2</code>. Slide 76: a world model only has to be wrong once to pick the wrong patch (discarding the correct fix A in favor of the wrong one B) — so actually running things remains the final measure.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">Trong ví dụ "buy a blue mug", ngay sau khi click vào cốc xanh ở giữa màn hình, hành động tiếp theo của model là gì?</span><span class="lang-en">In the "buy a blue mug" example, right after clicking the blue mug in the middle of the screen, what is the model's next action?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Gõ mã ZIP "15213" vào ô Postal code</span><span class="lang-en">Types the ZIP code "15213" into the Postal code field</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Bấm nút "Add to cart"</span><span class="lang-en">Clicks the "Add to cart" button</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Cuộn xuống (<code>scroll</code>, dy = 520) để tìm thông tin giao hàng</span><span class="lang-en">Scrolls down (<code>scroll</code>, dy = 520) to find the shipping information</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Phát hành động <code>stop</code> và nhận reward 1.0</span><span class="lang-en">Emits the <code>stop</code> action and receives reward 1.0</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Chuỗi hành động: click cốc xanh <code>[33, 201]</code> → cuộn <code>dy 520</code> → click ô ZIP <code>[65, 53]</code> → gõ <code>"15213"</code> → … → reward 1.0. Mỗi hành động rất nhỏ, và toạ độ chỉ đúng cho ảnh chụp hiện tại.</span><span class="lang-en">Action sequence: click the blue mug <code>[33, 201]</code> → scroll <code>dy 520</code> → click the ZIP field <code>[65, 53]</code> → type <code>"15213"</code> → … → reward 1.0. Each action is tiny, and the coordinates are only valid for the current screenshot.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">Vì sao kỹ năng infilling (điền vào giữa, đọc cả prefix lẫn suffix) đặc biệt quan trọng với coding agent?</span><span class="lang-en">Why is infilling (reading both prefix and suffix) especially important for a coding agent?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì nó giúp model chạy code nhanh hơn</span><span class="lang-en">Because it helps the model run code faster</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì nó thay thế được bước chạy test khi kiểm chứng</span><span class="lang-en">Because it can replace running tests for verification</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì nó giúp model nhớ cú pháp của nhiều ngôn ngữ hơn</span><span class="lang-en">Because it helps the model remember the syntax of more languages</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì sửa code chính là một bài infilling — thay đoạn giữa file phải tôn trọng cả phần trên lẫn phần dưới</span><span class="lang-en">Because editing code is an infilling task — replacing a middle span must respect both what comes before and what comes after</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 14–18: luyện với sentinel token kiểu <code>[M0]</code> để model dùng cả suffix khi sinh. Số liệu slide 16: đoán một chiều 48.2% → infilling 69.0% (một dòng); 24.9% → 38.6% (nhiều dòng). Và học infilling không làm hỏng khả năng viết code thường (slide 17).</span><span class="lang-en">Slides 14–18: training with sentinel tokens like <code>[M0]</code> so the model uses the suffix too when generating. Slide 16 data: one-direction prediction 48.2% → infilling 69.0% (single line); 24.9% → 38.6% (multi-line). And learning infilling doesn't hurt regular code writing (slide 17).</span></p></div>
+    </div>
+
+<div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">Sau mỗi hành động, hạ tầng trả lại gì cho model?</span><span class="lang-en">After each action, what does the infrastructure return to the model?</span></p>
+      <p class="fib-sentence">"Actions change the state, a new <span class="fib" data-answer="screenshot|ảnh chụp màn hình|ảnh chụp|ảnh màn hình|screenshot observation" data-placeholder="?"></span> observation is provided to the model."</p>
+    </div>
+
+<div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">Với khối reasoning như <code>&lt;think&gt;</code>, hai công tắc cần quyết định riêng là gì?</span><span class="lang-en">For a reasoning block like <code>&lt;think&gt;</code>, what are the two switches to decide independently?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Có giữ nó trong context không? và có train nó không?</span><span class="lang-en">Keep it in the context? and train it?</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Có rút ngắn nó không? và có dịch nó sang tiếng Anh không?</span><span class="lang-en">Shorten it? and translate it into English?</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Có mask role header của nó không? và có đưa nó vào system prompt không?</span><span class="lang-en">Mask its role header? and put it into the system prompt?</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Có đưa nó vào tập đánh giá không? và có tính điểm cho nó không?</span><span class="lang-en">Include it in the evaluation set? and score it?</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 16: giữ trong context giúp nó giải thích hành động phía sau; train nó thì nó thành văn phong model tự viết. Nemotron giữ reasoning bị cắt do ngân sách trong context nhưng mask phần cắt nhân tạo đó khỏi loss.</span><span class="lang-en">Slide 16: keeping it in the context helps explain the actions that follow; training it makes it the model's own writing style. Nemotron keeps budget-truncated reasoning in the context but masks those artificial truncations out of the loss.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">Theo định nghĩa ở mục 2 của bài giảng, plan của một agent là gì?</span><span class="lang-en">According to the definition in section 2 of the lecture, what is an agent's plan?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Danh sách bước cố định do lập trình viên viết sẵn trong code — model chỉ chạy từng bước</span><span class="lang-en">A fixed list of steps hard-coded by the developer — the model just runs each step</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Lời hứa của agent rằng task sẽ được hoàn thành đúng như mô tả</span><span class="lang-en">The agent's promise that the task will be completed exactly as described</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Biểu diễn tường minh hành vi tương lai dự định — các hành động/mục tiêu con, kèm thứ tự và phụ thuộc giữa chúng</span><span class="lang-en">An explicit representation of intended future behavior — the actions or subgoals, with their ordering and dependencies</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Bản tóm tắt những gì agent đã làm, viết ra sau khi task kết thúc</span><span class="lang-en">A summary of what the agent did, written after the task ends</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">"A plan is an explicit representation of intended future behavior" — viết ra được, đọc lại được. Plan là một <em>proposal</em>, không phải lời bảo đảm: nó có thể bị người dùng, model khác, hoặc môi trường sửa lại. Phương án a mô tả workflow cố định (một mức cam kết — xem A8).</span><span class="lang-en">"A plan is an explicit representation of intended future behavior" — it can be written down and read back. A plan is a <em>proposal</em>, not a guarantee: the user, another model, or the environment may revise it. Option a describes a fixed workflow (one of the commitment levels — see A8).</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">Bạn giữ nguyên bộ task, chỉ tăng số trajectory lấy mẫu cho mỗi task. Kết quả thường ra sao?</span><span class="lang-en">You keep the task set fixed and only increase the number of trajectories sampled per task. What usually happens?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Accuracy tăng mãi — càng thêm run càng tốt</span><span class="lang-en">Accuracy keeps rising — the more runs the better</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Accuracy giảm ngay vì dữ liệu bị trùng lặp</span><span class="lang-en">Accuracy drops immediately because the data is duplicated</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Accuracy không đổi chút nào</span><span class="lang-en">Accuracy does not change at all</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Đường cong phẳng dần rồi bão hòa — muốn leo tiếp phải thêm task mới</span><span class="lang-en">The curve flattens and then saturates — to climb further you need new tasks</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 28: hai đường cong cùng xuất phát từ tập 10K — thêm run của cùng task phẳng dần, thêm task mới tiếp tục leo. Slide 23: hết ngân sách compute trước khi hết task.</span><span class="lang-en">Slide 28: two curves start from the same 10K set — adding runs of the same task flattens out, adding new tasks keeps climbing. Slide 23: the compute budget runs out before the tasks do.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">Vì sao test chấm điểm của SWE-bench bị ẩn khỏi agent?</span><span class="lang-en">Why are SWE-bench's grading tests hidden from the agent?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Để tiết kiệm ngân sách ngữ cảnh cho repository</span><span class="lang-en">To save context budget for the repository</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Để agent không thể "học tủ" theo test — nó phải giải bài toán thật thay vì đoán đáp án</span><span class="lang-en">So the agent can't "cram" for the tests — it must solve the real problem instead of guessing answers</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì test được viết sau khi agent nộp patch</span><span class="lang-en">Because the tests are written after the agent submits its patch</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì ở thời điểm đó repository chưa có test nào</span><span class="lang-en">Because the repository had no tests at that point</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Một trong năm lý do SWE-bench khó (mục 6). Bốn lý do còn lại: định vị trong repository lớn, không được phá hành vi cũ, issue viết mơ hồ, và môi trường phải chạy được.</span><span class="lang-en">One of the five reasons SWE-bench is hard (section 6). The other four: locating things in a large repository, not breaking existing behavior, vaguely written issues, and a working environment.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">Trong vòng lặp observe → reason → act, hạ tầng (infrastructure) làm gì?</span><span class="lang-en">In the observe → reason → act loop, what does the infrastructure do?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Đọc ảnh chụp và đề xuất hành động kế tiếp</span><span class="lang-en">Reads the screenshot and proposes the next action</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Kiểm tra (validate) hành động rồi thực thi (execute), sau đó chụp ảnh mới trả lại cho model</span><span class="lang-en">Validates the action, then executes it, then takes a new screenshot and returns it to the model</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Tự thay đổi trạng thái và tự sinh nhiệm vụ mới</span><span class="lang-en">Changes the state by itself and generates new tasks on its own</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Lưu lịch sử ảnh để hiển thị cho người dùng</span><span class="lang-en">Stores screenshot history for the user to view</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Ba vai: model (đọc ảnh + nhiệm vụ, đề xuất hành động), hạ tầng (validate → execute, chụp ảnh mới), môi trường (trạng thái thay đổi). Slide: "Actions change the state, a new screenshot observation is provided to the model."</span><span class="lang-en">Three roles: the model (reads the screenshot + task, proposes an action), the infrastructure (validate → execute, take a new screenshot), the environment (the state changes). Slide: "Actions change the state, a new screenshot observation is provided to the model."</span></p></div>
+    </div>
+
+<div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">Handoff giữa hai agent thường chuyển cái gì?</span><span class="lang-en">What do handoffs between two agents usually transfer?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Thứ được chuyển thường là một </span><span class="lang-en">What gets transferred is usually a </span><span class="fib" data-answer="summary|summary report|bản tóm tắt|báo cáo tóm tắt" data-placeholder="?"></span><span class="lang-vi"> — nên nó phải bỏ bớt chi tiết, và có thể bỏ đúng chi tiết agent sau cần.</span><span class="lang-en"> — so it has to drop details, and it may drop exactly the details the next agent needs.</span></p>
+    </div>
+
+<div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">Trong ví dụ TravelPlanner, ngân sách — phương tiện di chuyển — chế độ ăn là loại ràng buộc gì?</span><span class="lang-en">In the TravelPlanner example, budget — transportation — diet are what kind of constraint?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Ràng buộc địa phương: mỗi subtask tự xử lý, ghép lại không cần kiểm tra</span><span class="lang-en">Local constraints: each subtask handles them itself; no check needed when combining</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Ràng buộc chỉ đáng quan tâm khi người dùng nói rõ; còn lại có thể bỏ qua</span><span class="lang-en">Constraints worth caring about only when the user states them explicitly; otherwise they can be ignored</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Ràng buộc không biểu diễn được nên phải quay về workflow cố định</span><span class="lang-en">Constraints that cannot be represented, so you must fall back to a fixed workflow</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Ràng buộc toàn cục: liên quan tới mọi mảnh, thường bị vi phạm khi ghép các mảnh lại</span><span class="lang-en">Global constraints: they touch every piece and are often violated when the pieces are combined</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Chia nhỏ rất sạch (vé máy bay, khách sạn, ăn uống, tham quan) nhưng ghép lại có thể vượt ngân sách hoặc không kịp di chuyển — vì mỗi mảnh tối ưu cho riêng nó. Cách xử lý: xác định trước ràng buộc "không được vỡ ở bất kỳ mảnh nào"; giao manager giữ chứ không đẩy xuống worker; kiểm tra ở bước ghép như tiêu chí nghiệm thu.</span><span class="lang-en">The decomposition is very clean (flights, hotel, food, attractions) but combining the pieces can exceed the budget or leave no time to travel — because each piece optimizes for itself. The fix: identify up front the constraints that "must not break in any piece"; give them to the manager rather than pushing them down to workers; check them at the merge step as acceptance criteria.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">Nguyên tắc sắt khi tạo task luyện kiểu SWE-smith là gì?</span><span class="lang-en">What is the iron rule when generating training tasks SWE-smith style?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Sửa code, không sửa test — chỉ giữ những ca mà test bắt đầu fail</span><span class="lang-en">Edit the code, not the tests — keep only the cases where the tests start failing</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Sửa test cho khớp với code sai để bộ test xanh trở lại</span><span class="lang-en">Edit the tests to match the wrong code so the suite goes green again</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Xóa bớt test để agent làm được task dễ hơn</span><span class="lang-en">Delete some tests so the agent can solve the task more easily</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Tiêm bug vào chính file test</span><span class="lang-en">Inject the bug into the test file itself</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 51–52: test là nguồn sự thật của task; bẻ test cho khớp code sai là dạy agent "làm hài lòng đề bài hỏng". Bằng chứng ba trạng thái: 4 pass (baseline) → 3 pass + 1 fail (sau tiêm bug) → 4 pass (khôi phục).</span><span class="lang-en">Slides 51–52: the tests are the task's source of truth; bending tests to match wrong code teaches the agent to "please a broken problem statement". Three-state evidence: 4 passing (baseline) → 3 passing + 1 failing (after bug injection) → 4 passing (restored).</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">Theo slide 54, harness của một coding agent gồm bốn thành phần nào?</span><span class="lang-en">According to slide 54, what are the four components of a coding agent's harness?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Model · dữ liệu luyện · GPU · API</span><span class="lang-en">Model · training data · GPU · API</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Issue · repository · patch · test</span><span class="lang-en">Issue · repository · patch · test</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Prompts · tools · agent loop · context management</span><span class="lang-en">Prompts · tools · agent loop · context management</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Pre-training · mid-training · RL · evaluation</span><span class="lang-en">Pre-training · mid-training · RL · evaluation</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 54: harness = prompts + tools + agent loop + context management — bốn thứ của bài 02–04 ghép lại. Vì harness và model là hai nửa của một năng lực, người ta còn luyện model qua nhiều harness (multi-harness training: Nemotron 3 Ultra, Polar).</span><span class="lang-en">Slide 54: harness = prompts + tools + agent loop + context management — the four things from lessons 02–04 stitched together. Because the harness and the model are two halves of one capability, labs even train models across many harnesses (multi-harness training: Nemotron 3 Ultra, Polar).</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">Vì sao kết quả tool (observation) thường nhận mask = 0?</span><span class="lang-en">Why do tool results (observations) usually get mask = 0?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì đó là ngữ cảnh điều kiện, không phải đích dự đoán — model phải học chờ tool trả về, không tự viết kết quả</span><span class="lang-en">Because it is conditioning context, not a prediction target — the model must learn to wait for the tool to return, not to write the result itself</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì observation bị xóa khỏi chuỗi token trước khi train</span><span class="lang-en">Because observations are deleted from the token sequence before training</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì observation quá ngắn, tính loss vào sẽ làm nhiễu</span><span class="lang-en">Because observations are too short, so including them in the loss adds noise</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì observation do model khác viết nên không đáng tin</span><span class="lang-en">Because observations are written by another model, so they are unreliable</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 12: "Observations are conditioning context, not prediction targets." Mask = 0 <em>không xóa</em> token — nó vẫn nằm trong chuỗi để làm điều kiện; chỉ dự đoán tại vị trí đó không bị chấm.</span><span class="lang-en">Slide 12: "Observations are conditioning context, not prediction targets." Mask = 0 does <em>not delete</em> the token — it stays in the sequence as conditioning; only the prediction at that position is not scored.</span></p></div>
+    </div>
+
+<div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">Trong ví dụ GitLab của WebArena (tạo repository rỗng tên <code>awesome_llm_reading</code>), "Emptiness is not checked" nghĩa là gì?</span><span class="lang-en">In WebArena's GitLab example (creating an empty repository named <code>awesome_llm_reading</code>), what does "Emptiness is not checked" mean?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Repository phải rỗng mới được điểm</span><span class="lang-en">The repository must be empty to score</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Bộ chấm không kiểm repository có tồn tại không</span><span class="lang-en">The grader does not check whether the repository exists</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Agent không cần tạo repository</span><span class="lang-en">The agent does not need to create the repository</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Bộ chấm không kiểm repository có rỗng thật hay không — nó chỉ cho điểm nếu cái tên xuất hiện</span><span class="lang-en">The grader does not check whether the repository is really empty — it only scores if the name appears</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Bộ chấm mở trang dự án, lấy HTML và cho điểm nếu tên repo xuất hiện — "emptiness is not checked". Bài học: "Repeatable and precise — but only for conditions the tests cover."</span><span class="lang-en">The grader opens the project page, grabs the HTML and scores if the repo name appears — "emptiness is not checked". Lesson: "Repeatable and precise — but only for conditions the tests cover."</span></p></div>
+    </div>
+
+  </div>
+
+  <footer class="lesson-footer">
+    <p><a href="../reference/course-map.html"><span class="lang-vi">← Bản đồ khóa học</span><span class="lang-en">← Course map</span></a> · <span class="lang-vi">Thi thử:</span><span class="lang-en">Mocks:</span> <a href="mock-01.html"><span class="lang-vi">Đề 1</span><span class="lang-en">Mock 1</span></a> · <a href="mock-02.html"><span class="lang-vi">Đề 2</span><span class="lang-en">Mock 2</span></a> · <a href="mock-final.html"><span class="lang-vi">Tổng hợp</span><span class="lang-en">Comprehensive</span></a></p>
+    <p><span class="lang-vi">Đạt ≥ 80%? Lên bài tiếp. Chưa đạt? Xem lại các bài hay sai rồi làm lại.</span><span class="lang-en">Scored ≥ 80%? Move on. Below? Review the lessons behind your misses and retake.</span></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

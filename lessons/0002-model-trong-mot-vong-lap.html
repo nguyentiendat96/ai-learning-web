@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 02 · Model trong một vòng lặp — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Bài 02</div>
+    <h1>Model trong một vòng lặp</h1>
+    <p class="subtitle">Từ dự đoán token đến hành động — mổ xẻ câu thần chú <em>"An agent is a model in a loop"</em> (Lecture 01, slide 10–16).</p>
+    <p class="lesson-meta"><span>~15 phút</span><span>5 câu kiểm tra</span><span>Nguồn: lecture-01-agents.pdf</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#recap">Nhắc lại: ta đang ở đâu</a></li>
+      <li><a href="#llm">LLM — cỗ máy dự đoán token</a></li>
+      <li><a href="#tool">Tool — giao diện có kiểu</a></li>
+      <li><a href="#call">Tool call — hành động cũng là token</a></li>
+      <li><a href="#loop">Vòng lặp ReAct</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#exercise">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#sources">Nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">📝 Exam của bài này</div>
+    <p>Làm <a href="../exams/0002-exam.html"><strong>Exam 02</strong></a> để nhớ chắc — nhiều câu hỏi + bài tập code có test tự chạy, làm lại được nhiều lần. Mục tiêu: đúng ≥ 85%.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="recap">
+    <h2>Nhắc lại: ta đang ở đâu</h2>
+    <p>Bài 01 kết thúc với câu thần chú: <em>"An agent is a model in a loop"</em> — agent là một model nằm trong một vòng lặp. Nhưng còn hai câu hỏi bỏ ngỏ:</p>
+    <ul>
+      <li>"Model" ở đây chính xác là gì, và nó hoạt động ra sao?</li>
+      <li>Làm sao một model chỉ biết sinh chữ lại <strong>hành động</strong> được — chạy lệnh, sửa file, gọi API?</li>
+    </ul>
+    <p>Bài này trả lời cả hai. Đây là bài nền tảng nhất của khóa — hiểu chắc nó thì mọi bài sau đều dễ.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="llm">
+    <h2>LLM — cỗ máy dự đoán token</h2>
+    <p>Điều duy nhất một LLM làm là <strong>dự đoán token tiếp theo</strong>. Token là mảnh chữ nhỏ — có thể là một từ, một phần từ, hoặc một dấu câu. Quy trình lặp đi lặp lại:</p>
+    <ol class="steps">
+      <li>Nhìn vào chuỗi token hiện có (prompt + những gì đã sinh).</li>
+      <li>Cho xác suất cho <em>mọi token có thể xảy ra tiếp theo</em>.</li>
+      <li>Chọn một token, nối vào chuỗi.</li>
+      <li>Lặp lại từ bước 1 — lúc này chuỗi đã dài thêm một token.</li>
+    </ol>
+    <p>Ví dụ: nhìn thấy <code>The capital of France is</code>, model gán xác suất cao nhất cho token <code>Paris</code> — chọn nó, nối vào, và tiếp tục.</p>
+    <p>Một biến thể quan trọng: <strong>chain of thought</strong> — trước khi đưa ra câu trả lời, model sinh ra các token suy luận trung gian. Các token này trở thành ngữ cảnh cho những dự đoán sau, giúp câu trả lời chính xác hơn. Ví dụ từ slide 10:</p>
+    <pre><code>Prompt:     2 × (3 + 4)
+Reasoning:  3 + 4 = 7          ← token suy luận trung gian
+Answer:     14</code></pre>
+    <p>Ghi nhớ điểm này: <strong>mọi thứ model làm — trả lời, suy luận, và cả "gọi tool" — đều chỉ là sinh token</strong>. Không có nút bấm ma thuật nào khác.<sup><a href="#src-slide10">[1]</a></sup></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tool">
+    <h2>Tool — giao diện có kiểu</h2>
+    <p>Nếu model chỉ sinh chữ, thì "chạy lệnh shell" hay "gọi API" là những thứ nằm ngoài nó. Cầu nối giữa hai bên là <strong>tool</strong>:</p>
+
+    <blockquote>
+      <p>"A tool is an interface through which a language model can invoke an external computer program."</p>
+      <cite>— Lecture 02, slide 3 <sup><a href="#src-slide-lec2">[2]</a></sup></cite>
+    </blockquote>
+
+    <p>Mỗi tool được mô tả bằng một <strong>định nghĩa</strong> gồm: <strong>name</strong> (tên), <strong>description</strong> (mô tả để model hiểu khi nào dùng), và <strong>JSON schema</strong> (kiểu dữ liệu của các tham số). Ví dụ tool đọc file từ slide 11:</p>
+
+    <pre><code>{
+  "name": "read_file",
+  "description": "Read a UTF-8 file.",
+  "parameters": {
+    "type": "object",
+    "properties": { "path": { "type": "string" } },
+    "required": ["path"]
+  }
+}</code></pre>
+
+    <p>Và đây là điểm dễ gây bất ngờ nhất: model <em>không có kênh riêng</em> để "thấy" tool. Chat template chỉ đơn giản <strong>render định nghĩa tool thành text</strong> và nhét vào prompt:</p>
+
+    <pre><code>&lt;tools&gt;
+{"name":"read_file","description":"Read a UTF-8 file.", ...}
+&lt;/tools&gt;</code></pre>
+
+    <p>Nghĩa là: với model, danh sách tool chỉ là… một đoạn văn bản trong ngữ cảnh. Nó "biết" mình có tool nào vì đọc được mô tả — giống như bạn đọc một tờ hướng dẫn.<sup><a href="#src-slide11">[3]</a></sup></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="call">
+    <h2>Tool call — hành động cũng là token</h2>
+    <p>Khi model quyết định dùng tool, nó sinh ra một chuỗi token mô tả lời gọi — ví dụ từ slide 12:</p>
+
+    <pre><code>&lt;tool_call&gt;
+{"name":"read_file","arguments":{"path":"test.py"}}
+&lt;/tool_call&gt;</code></pre>
+
+    <p>Chuỗi này <em>trông giống</em> một hành động, nhưng thực chất vẫn chỉ là dự đoán token tiếp theo. Việc biến nó thành hành động thật là của <strong>harness</strong> — chương trình chạy vòng lặp agent. Harness sẽ:</p>
+    <ol class="steps">
+      <li><strong>Parse</strong> — đọc chuỗi token, tách ra tên tool + tham số.</li>
+      <li><strong>Validate</strong> — kiểm tra tham số đúng schema không.</li>
+      <li><strong>Execute</strong> — chạy chương trình tương ứng (đọc file, gọi API…).</li>
+      <li><strong>Return</strong> — gửi kết quả về cho model dưới dạng một message mới, kèm <code>tool_call_id</code> để khớp kết quả với lời gọi (quan trọng khi có nhiều lời gọi cùng lúc).</li>
+    </ol>
+
+    <p>Kết quả quay về trông như thế này (slide 12):</p>
+
+    <pre><code>&lt;tool_response&gt;
+def add(a, b): …
+&lt;/tool_response&gt;</code></pre>
+
+    <blockquote>
+      <p>"The model proposes; external software decides whether and how to execute."</p>
+      <cite>— Lecture 02, slide 3 <sup><a href="#src-slide-lec2">[2]</a></sup></cite>
+    </blockquote>
+
+    <p>Đây không chỉ là chi tiết kỹ thuật — nó là nền tảng của <strong>safety</strong> về sau: vì quyền quyết định nằm ở harness, harness có thể chặn, xác nhận, hoặc giới hạn mọi lời gọi tool trước khi nó chạm vào thế giới thật.<sup><a href="#src-slide12">[4]</a></sup></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="loop">
+    <h2>Vòng lặp ReAct</h2>
+    <p>Ghép tất cả lại, ta được vòng lặp hoàn chỉnh — lecture gọi là mô hình <strong>ReAct</strong> (reason + act):</p>
+
+    <pre><code>messages = [hướng dẫn hệ thống, task]          # ngữ cảnh ban đầu
+while True:
+    message = model.query(messages)            # model sinh token từ ngữ cảnh
+    messages.append(message)                   # ghi lại vào lịch sử
+    if message là câu trả lời cuối:            # model quyết định dừng
+        break
+    kết_quả = harness.execute(message)         # harness chạy tool call
+    messages.append(kết_quả)                   # kết quả thành quan sát mới
+                                               # → vòng lặp quay lại đầu</code></pre>
+
+    <p>Đây là pseudocode đơn giản hóa từ slide 15. Bản thật nằm trong <strong>mini-swe-agent</strong> — agent chỉ ~100 dòng Python nhưng đạt hơn 74% trên SWE-bench verified (benchmark sửa lỗi GitHub thật). Bạn sẽ đọc code đó ở bài sau.</p>
+
+    <div class="callout">
+      <div class="callout-title">Vậy câu thần chú có nghĩa là</div>
+      <p><strong>Model</strong> sinh token dự đoán từ ngữ cảnh. <strong>Loop</strong> là vòng while: hành động thay đổi môi trường, kết quả quay về thành quan sát mới, ngữ cảnh lớn dần — cho đến khi model quyết định dừng.</p>
+      <p>Bài 03 đi sâu vào phần "tool" của vòng lặp: thiết kế tool tốt, khi nào nên gọi, gọi song song, và cách đánh giá tool use (theo buổi 1b của khóa).</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Làm ngay — sai thì thử lại, đúng thì hiện giải thích.</p>
+
+    <div class="quiz-q">
+      <p class="quiz-question">1. Hoàn thành câu thần chú của khóa học:</p>
+      <p class="fib-sentence">"An agent is a model in a <span class="fib" data-answer="loop" data-placeholder="?"></span>."</p>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">2. Khi model "gọi tool", thực chất nó đang làm gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Chạy chương trình đó ngay lập tức</button>
+        <button class="quiz-opt" data-key="b">Sinh một chuỗi token mô tả lời gọi tool</button>
+        <button class="quiz-opt" data-key="c">Gửi HTTP request đến máy chủ tool</button>
+        <button class="quiz-opt" data-key="d">Hỏi người dùng trước khi thực thi</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: model chỉ có một khả năng duy nhất — dự đoán token tiếp theo.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Model chỉ sinh token. Chuỗi token đó (ví dụ <code>&lt;tool_call&gt;{"name":"read_file",...}&lt;/tool_call&gt;</code>) chỉ <em>mô tả</em> lời gọi — nó chưa chạy gì cả. Việc thực thi là bước tiếp theo, do harness làm.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">3. Ai là bên thực thi tool call?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Harness — phần mềm bọc quanh model</button>
+        <button class="quiz-opt" data-key="b">Model tự chạy trong lúc sinh token</button>
+        <button class="quiz-opt" data-key="c">Người dùng — sau khi xác nhận</button>
+        <button class="quiz-opt" data-key="d">Không ai — tool call chỉ là gợi ý</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: lecture 02 nói "The model proposes; external software decides…" — external software đó tên là gì?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Harness parse → validate → execute → return kết quả. Chính vì quyền thực thi nằm ở harness (không phải model) mà sau này người ta mới gắn được các lớp an toàn: sandbox, giới hạn quyền, xác nhận của người dùng.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">4. Một định nghĩa tool (tool definition) gồm những phần nào?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Một đoạn code Python hoàn chỉnh</button>
+        <button class="quiz-opt" data-key="b">Một URL kèm tài khoản đăng nhập</button>
+        <button class="quiz-opt" data-key="c">Name, description và JSON schema của tham số</button>
+        <button class="quiz-opt" data-key="d">Một prompt riêng cho từng loại tool</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: model cần biết tên tool, khi nào dùng, và tham số có kiểu gì.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Name + description + JSON schema — và chat template render cả ba thành text trong prompt. Model "biết" có tool nào đơn giản vì đọc được mô tả, chứ không có kênh kết nối đặc biệt nào.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">5. Chain of thought (chuỗi suy luận) là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Model trả lời ngay không cần suy nghĩ</button>
+        <button class="quiz-opt" data-key="b">Model chạy song song trên nhiều máy chủ</button>
+        <button class="quiz-opt" data-key="c">Model gọi nhiều tool trong một lượt</button>
+        <button class="quiz-opt" data-key="d">Model sinh token suy luận trung gian trước câu trả lời</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nhớ ví dụ 2 × (3 + 4) ở mục 2.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Các token suy luận trung gian trở thành ngữ cảnh cho những dự đoán sau — nhờ đó model "tính toán" được những việc khó hơn. Và chúng cũng chỉ là token, như mọi thứ khác model sinh ra.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="exercise">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+
+    <div class="exercise">
+      <h3>Bài tập 1 — Tự thiết kế một tool</h3>
+      <p>Viết định nghĩa cho một tool mà bạn muốn agent của mình có. Gồm 3 phần: <strong>name</strong>, <strong>description</strong> (1 câu, nói rõ khi nào dùng), và <strong>JSON schema</strong> cho 1–2 tham số. Gợi ý đề bài: <code>get_weather(city)</code>, <code>send_email(to, subject)</code>, <code>search_products(keyword, max_price)</code>… hoặc tự nghĩ.</p>
+      <details>
+        <summary>Xem đáp án mẫu (get_weather)</summary>
+        <pre><code>{
+  "name": "get_weather",
+  "description": "Get the current weather for a city.",
+  "parameters": {
+    "type": "object",
+    "properties": { "city": { "type": "string" } },
+    "required": ["city"]
+  }
+}</code></pre>
+        <p>Tiêu chí tự kiểm: name ngắn và rõ? description nói được <em>khi nào dùng</em>? schema khai đúng kiểu tham số và tham số nào bắt buộc?</p>
+      </details>
+
+      <h3>Bài tập 2 — Giải thích bằng lời của bạn</h3>
+      <p>Trong 3–4 câu: vì sao một model chỉ biết "dự đoán token tiếp theo" mà vẫn có thể gọi tool và hành động lên thế giới bên ngoài?</p>
+      <details>
+        <summary>Checklist tự kiểm</summary>
+        <p>Câu trả lời tốt cần đủ 3 ý: (1) model chỉ sinh token — tool call cũng chỉ là một chuỗi token nó viết ra; (2) harness đọc chuỗi đó rồi thực thi thật; (3) kết quả được đưa trở lại ngữ cảnh như một observation mới, để model quyết định bước tiếp.</p>
+      </details>
+
+      <p class="exercise-note">Tự làm trước, rồi mới mở đáp án để đối chiếu. (Muốn tôi chữa kỹ thì cứ gửi vào chat — nhưng không bắt buộc.)</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="sources">
+    <h2>Nguồn chính</h2>
+    <ol class="sources">
+      <li id="src-slide10">Lecture 01 — <a href="https://www.cmu-agents.com/slides/lecture-01-agents.pdf#page=10">slide 10</a>: next-token prediction &amp; chain of thought.</li>
+      <li id="src-slide-lec2">Lecture 02 — <a href="https://www.cmu-agents.com/slides/lecture-02-tool-use.pdf#page=3">slide 3</a>: định nghĩa tool &amp; "The model proposes; external software decides…".</li>
+      <li id="src-slide11">Lecture 01 — <a href="https://www.cmu-agents.com/slides/lecture-01-agents.pdf#page=11">slide 11</a> (tool definition) và <a href="https://www.cmu-agents.com/slides/lecture-01-agents.pdf#page=12">slide 12</a> (tool call &amp; result).</li>
+      <li id="src-slide12">Lecture 01 — <a href="https://www.cmu-agents.com/slides/lecture-01-agents.pdf#page=13">slide 13</a> (actions as tokens, Toolformer) và <a href="https://www.cmu-agents.com/slides/lecture-01-agents.pdf#page=14">slide 14</a> (model in a loop, ReAct).</li>
+      <li>Lecture 01 — <a href="https://www.cmu-agents.com/slides/lecture-01-agents.pdf#page=15">slide 15</a>: minimal ReAct loop (mini-swe-agent). Code thật: <a href="https://github.com/SWE-agent/mini-swe-agent">github.com/SWE-agent/mini-swe-agent</a> · tutorial tự build: <a href="https://minimal-agent.com/">minimal-agent.com</a>.</li>
+      <li>Bài báo gốc: <a href="https://arxiv.org/abs/2210.03629">ReAct (Yao et al., ICLR 2023)</a> · <a href="https://arxiv.org/abs/2302.04761">Toolformer (Schick et al., 2023)</a>.</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài tiếp theo:</strong> 03 · Tool Use — thiết kế tool, cơ chế gọi tool, và cách đánh giá (theo buổi 1b của khóa).</p>
+    <p>Có chỗ nào chưa rõ? Quay lại chat hỏi giáo viên bất cứ lúc nào.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
