@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài C3 · Claude Code — cấu hình &amp; quy trình làm việc — Track Claude</title>
+<link rel="stylesheet" href="../../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Track Claude · C3 — Claude Code</div>
+    <h1>Claude Code — cấu hình &amp; quy trình làm việc</h1>
+    <p class="subtitle">Từ bốn bề mặt của Claude Code đến cây settings, CLAUDE.md, skills, hooks, permissions, sub-agents và CI — bám sát blueprint CCAR-F “Claude Code Configuration &amp; Workflows” và CCDV-F mục “Claude Code”.</p>
+    <p class="lesson-meta"><span>~35 phút</span><span>6 câu hỏi tương tác</span><span>Thực hành có đáp án tự kiểm</span><span>Nguồn: code.claude.com/docs</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#claude-code-la-gi">Claude Code là gì — và nó chạy ở đâu</a></li>
+      <li><a href="#config-hierarchy">Cấu hình phân tầng: file nào đè file nào</a></li>
+      <li><a href="#claude-md">CLAUDE.md — bộ nhớ do bạn viết</a></li>
+      <li><a href="#auto-memory">Auto memory — Claude tự ghi chú</a></li>
+      <li><a href="#commands-skills">Commands vs Skills — cùng dấu <code>/</code>, khác ở đâu</a></li>
+      <li><a href="#examples">Viết bằng ví dụ, đừng viết bằng mô tả</a></li>
+      <li><a href="#hooks">Hooks — tự động hóa theo sự kiện</a></li>
+      <li><a href="#permissions-plan">Permissions &amp; Plan Mode</a></li>
+      <li><a href="#sub-agents">Sub-agents — worker có ngữ cảnh riêng</a></li>
+      <li><a href="#ci">CI &amp; chế độ non-interactive</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#luyen-them">Luyện thêm với nguồn chính thức</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bài này nhiều tên file và tên field — đúng chất đề thi cấu hình. Đừng học thuộc lòng; hãy học theo ba câu hỏi: <strong>cái này đặt ở đâu</strong>, <strong>ai đè ai</strong>, <strong>khi nào dùng thay cho cái kia</strong>. Mục 12 có bài tập tự kiểm (mở <code>&lt;details&gt;</code> để xem đáp án), mục 13 là quiz. Tất cả ví dụ file trong bài đều lấy từ tài liệu chính thức tại <a href="https://code.claude.com/docs">code.claude.com/docs</a> — Claude Code cập nhật rất nhanh, chỗ nào gắn số phiên bản bạn nhớ kiểm tra lại docs mới nhất.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="claude-code-la-gi">
+    <h2>Claude Code là gì — và nó chạy ở đâu</h2>
+    <p>Định nghĩa gọn nhất từ docs: <strong>Claude Code là một agentic coding tool</strong> — nó đọc codebase của bạn, sửa file, chạy lệnh, và tích hợp với các công cụ phát triển xung quanh bạn. Nó không chỉ trả lời câu hỏi như chatbot; nó tự làm, tự kiểm, tự lặp cho đến khi xong việc.</p>
+
+    <p>Cùng một Claude Code, có bốn bề mặt chính (docs Overview):</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Terminal</div>
+        <h3>CLI — bản đầy đủ tính năng</h3>
+        <p>Chạy <code>claude</code> ngay trong terminal, tại thư mục project. Cài bằng script native, Homebrew (macOS), hoặc WinGet (Windows). Đây là bản gốc — mọi tính năng đều có ở đây.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">IDE</div>
+        <h3>VS Code &amp; JetBrains</h3>
+        <p>Extension cho VS Code (và Cursor), plugin cho JetBrains. Có inline diff, @-mention, duyệt plan, lịch sử hội thoại ngay trong editor. Plugin JetBrains cần cài CLI riêng trước.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Desktop</div>
+        <h3>Ứng dụng desktop</h3>
+        <p>App riêng (macOS/Windows/Linux beta): xem diff trực quan, chạy nhiều session song song, lên lịch task định kỳ, khởi động cloud session. Đã bao gồm Claude Code, không cần cài CLI.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Web</div>
+        <h3>claude.ai/code</h3>
+        <p>Chạy trên browser, không cần cài gì. Hợp cho task dài: giao việc rồi quay lại xem kết quả, làm việc trên repo không có sẵn trên máy, chạy nhiều task song song.</p>
+      </div>
+    </div>
+
+    <p>Vài điều Claude Code làm được, theo docs:</p>
+    <ul>
+      <li><strong>Tự động hóa việc tồn đọng:</strong> viết test cho code chưa có test, sửa lỗi lint khắp project, gỡ merge conflict, cập nhật dependency.</li>
+      <li><strong>Xây tính năng &amp; sửa bug:</strong> mô tả bằng ngôn ngữ tự nhiên; Claude lập kế hoạch, viết code nhiều file, rồi kiểm chứng.</li>
+      <li><strong>Commit &amp; PR:</strong> làm việc trực tiếp với git — stage, viết commit message, tạo branch, mở PR.</li>
+      <li><strong>Nối công cụ qua MCP:</strong> đọc tài liệu trên Google Drive, cập nhật ticket Jira, lấy dữ liệu Slack…</li>
+      <li><strong>Tùy biến bằng instructions, skills, hooks:</strong> chính là nội dung các mục sau của bài này.</li>
+      <li><strong>Chạy song song &amp; tự động hóa:</strong> nhiều agent cùng lúc; pipe log vào, chạy trong CI, ghép với công cụ khác.</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">Một câu để nhớ</div>
+      <p>Claude Code = <strong>agent</strong> (model trong vòng lặp — bạn đã biết) + <strong>harness</strong> + <strong>một bộ đồ nghề built-in</strong> (đọc file, sửa file, chạy lệnh, web…). Bài này lo phần “cấu hình harness”: dạy harness biết luật của bạn, biết gọi đúng quy trình, và biết hỏi trước khi làm việc nguy hiểm.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="config-hierarchy">
+    <h2>Cấu hình phân tầng: file nào đè file nào</h2>
+    <p>Claude Code đọc cấu hình từ nhiều nơi. Khi cùng một key xuất hiện ở nhiều nơi, <strong>nơi có độ ưu tiên cao hơn thắng</strong>. Đây là thứ tự từ cao xuống thấp, theo docs Settings:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>#</th><th>Tầng</th><th>File / nguồn</th><th>Phạm vi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td><strong>Managed settings</strong> (enterprise)</td><td><code>managed-settings.json</code>, MDM policy, hoặc server-managed settings từ claude.ai console</td><td>Tổ chức triển khai. Gần như không gì của bạn đè được (chỉ vài ngoại lệ bảo mật đặc biệt).</td></tr>
+        <tr><td>2</td><td><strong>Command line</strong></td><td>Flag khi chạy <code>claude</code>, hoặc <code>claude --settings &lt;file-json&gt;</code></td><td>Chỉ session hiện tại.</td></tr>
+        <tr><td>3</td><td><strong>Project local</strong></td><td><code>.claude/settings.local.json</code></td><td>Bạn, trong đúng dự án này. Claude Code tự giữ file này ngoài git khi nó tạo file.</td></tr>
+        <tr><td>4</td><td><strong>Shared project</strong></td><td><code>.claude/settings.json</code></td><td>Cả nhóm — commit file này để teammate nhận cùng cấu hình.</td></tr>
+        <tr><td>5</td><td><strong>User</strong></td><td><code>~/.claude/settings.json</code></td><td>Bạn, cho mọi dự án trên máy.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Ví dụ đời thường: team set <code>"model"</code> trong <code>.claude/settings.json</code> là <code>claude-sonnet-5</code>; bạn muốn dùng Opus nên set <code>"model": "claude-opus-5-5"</code> trong <code>.claude/settings.local.json</code>. Vì local nằm <em>trên</em> shared project, chỉ session của bạn đổi model — teammate không bị ảnh hưởng (đúng ví dụ trong docs Settings).</p>
+
+    <h3>Hai cái bẫy của cơ chế phân tầng</h3>
+    <ol>
+      <li><strong>Không phải “file này thay cả file kia”.</strong> Claude Code trộn theo <em>từng key</em>: key nào có ở tầng cao hơn thì lấy tầng đó, key nào không có thì rơi xuống tầng dưới.</li>
+      <li><strong>List thì hợp nhất, không đè.</strong> <code>permissions.allow</code> set ở user, project, local… sẽ được <em>cộng dồn</em> — mỗi file thêm mục của mình mà không xóa mục của file khác.</li>
+    </ol>
+
+    <p>Trên Windows, <code>~/.claude</code> nghĩa là <code>%USERPROFILE%\.claude</code>. Muốn biết máy mình đang bị ảnh hưởng bởi nguồn nào, chạy <code>/status</code> — dòng <em>Setting sources</em> cho biết nguồn managed nào đang áp dụng; menu <code>/config</code> để đổi các thiết lập thường dùng.</p>
+
+    <div class="callout">
+      <div class="callout-title">Câu thần chú cho đề thi</div>
+      <p><strong>Managed &gt; command line &gt; project local &gt; shared project &gt; user.</strong> Managed chỉ nói về quyền của tổ chức; còn giữa “của bạn” và “của nhóm”, cái riêng luôn thắng cái chung.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="claude-md">
+    <h2>CLAUDE.md — bộ nhớ do bạn viết</h2>
+    <p>Mỗi session Claude Code bắt đầu với một context window mới tinh. <strong>CLAUDE.md</strong> là file markdown chứa chỉ dẫn bền vững: Claude đọc nó ở <em>đầu mọi session</em>. Docs nói thẳng vai trò của nó: hãy xem CLAUDE.md là nơi ghi lại những thứ mà nếu không có, bạn sẽ phải giải thích lại mỗi session.</p>
+
+    <h3>Đặt ở đâu</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Phạm vi</th><th>Đường dẫn</th><th>Dùng cho</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Managed policy</td><td>Windows: <code>C:\Program Files\ClaudeCode\CLAUDE.md</code><br>Linux/WSL: <code>/etc/claude-code/CLAUDE.md</code><br>macOS: <code>/Library/Application Support/ClaudeCode/CLAUDE.md</code></td><td>Chuẩn code, chính sách bảo mật, yêu cầu tuân thủ của tổ chức.</td></tr>
+        <tr><td>User</td><td><code>~/.claude/CLAUDE.md</code></td><td>Sở thích cá nhân cho mọi dự án.</td></tr>
+        <tr><td>Project</td><td><code>./CLAUDE.md</code> hoặc <code>./.claude/CLAUDE.md</code></td><td>Chuẩn và quy ước của nhóm — commit để mọi người dùng chung.</td></tr>
+        <tr><td>Local</td><td><code>./CLAUDE.local.md</code></td><td>Ghi chú riêng cho dự án này; nhớ thêm vào <code>.gitignore</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Nó được nạp như thế nào</h3>
+    <ul>
+      <li>Claude Code nạp CLAUDE.md và CLAUDE.local.md từ thư mục làm việc <strong>và mọi thư mục cha</strong> ở trên. Chạy ở <code>foo/bar/</code> thì nạp cả <code>foo/CLAUDE.md</code> lẫn <code>foo/bar/CLAUDE.md</code>.</li>
+      <li>Các file được <strong>nối vào context</strong> chứ không đè nhau: từ gốc filesystem xuống thư mục làm việc, nên file gần bạn nhất được đọc <em>sau cùng</em>. Trong cùng một thư mục, <code>CLAUDE.local.md</code> nằm sau <code>CLAUDE.md</code>.</li>
+      <li>CLAUDE.md trong các thư mục con <strong>không nạp lúc khởi động</strong> — chỉ nạp khi Claude đọc file trong thư mục đó.</li>
+    </ul>
+
+    <h3>Viết gì trong đó</h3>
+    <p>Docs đưa một tiêu chí rất dễ nhớ: viết chỉ dẫn <strong>đủ cụ thể để kiểm chứng được</strong>. So sánh:</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>❌ Mô tả chung chung</th><th>✅ Cụ thể, kiểm chứng được</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>“Format code cho tử tế”</td><td>“Dùng thụt lề 2 space”</td></tr>
+        <tr><td>“Nhớ test thay đổi của bạn”</td><td>“Chạy <code>npm test</code> trước khi commit”</td></tr>
+        <tr><td>“Giữ file có tổ chức”</td><td>“API handlers nằm trong <code>src/api/handlers/</code>”</td></tr>
+      </tbody>
+    </table>
+    <p>Ba nguyên tắc kích thước và cấu trúc:</p>
+    <ul>
+      <li><strong>Ngắn:</strong> nhắm dưới <strong>200 dòng</strong> mỗi file. File dài ăn context và làm Claude tuân kém hơn.</li>
+      <li><strong>Có cấu trúc:</strong> nhóm theo heading + bullet; Claude theo chỉ dẫn có tổ chức dễ hơn đoạn văn dày đặc.</li>
+      <li><strong>Nhất quán:</strong> hai chỉ dẫn mâu thuẫn thì Claude có thể chọn đại một cái. Thỉnh thoảng chạy <code>/doctor prompt-audit</code> để Claude tự soi file chỉ dẫn cũ/mâu thuẫn.</li>
+    </ul>
+
+    <h3>Ví dụ một CLAUDE.md mẫu</h3>
+    <p>Đây là file cho một dự án Node/TypeScript tưởng tượng — chú ý nó chỉ chứa thứ Claude <em>không thể tự suy ra</em> từ code:</p>
+    <pre><code># Project: acme-api
+
+## Commands
+- Install: `pnpm install`
+- Dev server: `pnpm dev`
+- Tests: `pnpm vitest run &lt;file&gt;` (chạy một file trước — full suite rất chậm)
+- Typecheck: `pnpm tsc --noEmit`
+
+## Conventions
+- TypeScript strict mode; không dùng `any`.
+- API handlers nằm trong `src/api/handlers/`, mỗi resource một file.
+- Lỗi trả về dạng `{ code, message }`, không bao giờ trả stack trace thô.
+
+## Workflow
+- Chạy typecheck + test file vừa sửa trước khi báo xong.
+- Không commit trực tiếp lên `main`; đặt tên branch `feat/…`, `fix/…`.</code></pre>
+
+    <h3>Vài công cụ liên quan</h3>
+    <ul>
+      <li><code>/init</code> — để Claude phân tích codebase và <strong>sinh file CLAUDE.md khởi đầu</strong> (build commands, test, quy ước nó tìm thấy). Nếu đã có CLAUDE.md, <code>/init</code> gợi ý cải thiện chứ không ghi đè.</li>
+      <li><code>/context</code> — kiểm tra file nào đã nạp, mục <strong>Memory files</strong>.</li>
+      <li><code>/memory</code> — mở và sửa CLAUDE.md / CLAUDE.local.md / auto memory ngay trong session.</li>
+      <li><strong>Import file khác</strong> bằng cú pháp <code>@path/to/file</code> — file được import cũng nạp lúc khởi động, tối đa 4 tầng lồng nhau.</li>
+    </ul>
+
+    <h3>Còn AGENTS.md?</h3>
+    <p>Nếu repo của bạn đã có <code>AGENTS.md</code> cho các coding agent khác, Claude Code <strong>đọc trực tiếp được</strong>. Mặc định (giá trị <code>claude-md-or-agents-md</code>): nếu không có CLAUDE.md/CLAUDE.local.md trong thư mục làm việc hoặc phía trên, Claude dùng <code>AGENTS.md</code>; nếu có CLAUDE.md thì chỉ đọc CLAUDE.md. Bạn có thể đặt chế độ đọc <em>cả hai</em> (<code>claude-md-and-agents-md</code>). Mẹo an toàn cho đa nền tảng: để một dòng <code>@AGENTS.md</code> trong CLAUDE.md — Claude luôn đọc được, kể cả trên Windows nơi symlink hay gặp trục trặc.</p>
+
+    <div class="callout">
+      <div class="callout-title">Điểm quan trọng nhất của mục này</div>
+      <p>Docs nói rất rõ: CLAUDE.md được Claude coi là <strong>context, không phải cấu hình được cưỡng chế</strong>. Nó định hướng hành vi, nhưng không phải hàng rào an ninh. Muốn <em>chặn cứng</em> một hành động bất kể Claude quyết định gì, phải dùng <strong>hook</strong> (mục 7) hoặc <strong>permission rule</strong> (mục 8).</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="auto-memory">
+    <h2>Auto memory — Claude tự ghi chú</h2>
+    <p>CLAUDE.md là thứ <em>bạn</em> viết. <strong>Auto memory</strong> là thứ <em>Claude</em> viết: nó tự ghi lại các bài học, sở thích của bạn, và những chỉnh sửa bạn lặp đi lặp lại — để session sau không phải dạy lại.</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>CLAUDE.md</th><th>Auto memory</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ai viết</td><td>Bạn</td><td>Claude</td></tr>
+        <tr><td>Nội dung</td><td>Chỉ dẫn, quy tắc</td><td>Bài học, pattern, sở thích</td></tr>
+        <tr><td>Phạm vi</td><td>Theo project, user, hoặc tổ chức</td><td>Theo repository, dùng chung giữa các worktree</td></tr>
+        <tr><td>Nạp vào session</td><td>Mỗi session, toàn bộ file</td><td>Mỗi session, <strong>200 dòng đầu hoặc 25KB</strong></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Lưu ở đâu và gồm những gì</h3>
+    <p>Mỗi project có một thư mục riêng: <code>~/.claude/projects/&lt;project&gt;/memory/</code>. Đường dẫn <code>&lt;project&gt;</code> suy ra từ git repository, nên mọi worktree và thư mục con của cùng một repo dùng chung một thư mục memory. Trong thư mục đó:</p>
+    <pre><code>~/.claude/projects/&lt;project&gt;/memory/
+├── MEMORY.md           # Index — mỗi memory một dòng, nạp vào mọi session
+├── user_role.md        # Một memory
+├── feedback_testing.md # Một memory
+└── ...                 # Claude tự tạo thêm file chủ đề</code></pre>
+    <p>Auto memory là <strong>machine-local</strong> — không đồng bộ giữa các máy hay lên cloud; file cũng không mất theo thời hạn dọn transcript. Bạn có thể mở xem, sửa, xóa thoải mái vì nó chỉ là markdown.</p>
+
+    <h3>Điều khiển</h3>
+    <ul>
+      <li>Mặc định <strong>bật</strong>. Vào <code>/memory</code> để bật/tắt — nó ghi key <code>autoMemoryEnabled</code> vào settings.</li>
+      <li>Tắt cho một project: đặt <code>autoMemoryEnabled: false</code> trong settings của project đó. Hoặc tắt hẳn bằng biến môi trường <code>CLAUDE_CODE_DISABLE_AUTO_MEMORY=1</code>.</li>
+      <li>Đổi vị trí lưu: key <code>autoMemoryDirectory</code> (đường dẫn tuyệt đối hoặc bắt đầu bằng <code>~/</code>).</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">Phân biệt để không mất điểm</div>
+      <p>Khi bạn nói “<em>remember that the API tests require a local Redis instance</em>” — Claude lưu vào <strong>auto memory</strong>. Khi bạn muốn nó vào file quy tắc của nhóm, phải nói rõ: “<em>add this to CLAUDE.md</em>”.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="commands-skills">
+    <h2>Commands vs Skills — cùng dấu <code>/</code>, khác ở đâu</h2>
+    <p>Đây là chỗ đề thi rất hay hỏi, và cũng là chỗ docs có tin “vỡ lòng”: <strong>custom commands đã được gộp vào skills</strong>. Một file <code>.claude/commands/deploy.md</code> và một skill <code>.claude/skills/deploy/SKILL.md</code> đều tạo ra <code>/deploy</code> và hoạt động giống nhau. Các file <code>.claude/commands/</code> cũ vẫn chạy tiếp.</p>
+
+    <p>Vậy skill <em>thêm</em> gì so với command file?</p>
+    <ul>
+      <li><strong>Một thư mục cho file phụ trợ</strong> — tài liệu tham chiếu dài, script, template chỉ nạp khi cần.</li>
+      <li><strong>Frontmatter điều khiển ai được gọi skill</strong> — bạn hay Claude, hoặc cả hai.</li>
+      <li><strong>Khả năng Claude tự nạp khi thấy liên quan</strong> — dựa vào <code>description</code>, không cần bạn gõ <code>/</code>.</li>
+    </ul>
+
+    <p>Cần phân biệt thêm một tầng: <strong>built-in command</strong> (như <code>/help</code>, <code>/compact</code>) chạy logic cố định; còn <strong>bundled skill</strong> (như <code>/code-review</code>, <code>/debug</code>, <code>/doctor</code>) là prompt có sẵn để Claude tự orchestrate bằng tools của nó. Skills của Claude Code theo chuẩn mở Agent Skills, và Claude Code mở rộng thêm: điều khiển invocation, chạy trong subagent, tiêm context động.</p>
+
+    <h3>Skill sống ở đâu</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Vị trí</th><th>Đường dẫn</th><th>Nạp trong</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Personal</td><td><code>~/.claude/skills/&lt;tên&gt;/SKILL.md</code></td><td>Mọi dự án của bạn trên máy này</td></tr>
+        <tr><td>Project</td><td><code>.claude/skills/&lt;tên&gt;/SKILL.md</code></td><td>Repo này — commit để cả nhóm dùng</td></tr>
+        <tr><td>Nested</td><td><code>&lt;subdir&gt;/.claude/skills/&lt;tên&gt;/SKILL.md</code></td><td>Session bắt đầu trong/below thư mục con đó</td></tr>
+        <tr><td>Plugin</td><td><code>&lt;plugin&gt;/skills/&lt;tên&gt;/SKILL.md</code></td><td>Nơi plugin được bật — gọi dạng <code>/plugin:tên</code></td></tr>
+        <tr><td>Enterprise</td><td><code>.claude/skills/</code> trong managed settings directory</td><td>Mọi user được tổ chức triển khai</td></tr>
+      </tbody>
+    </table>
+
+    <h3>SKILL.md — frontmatter thật</h3>
+    <p>Một skill gồm hai phần: YAML frontmatter giữa hai dấu <code>---</code>, và phần markdown là chỉ dẫn. Tên thư mục (hoặc field <code>name</code>) thành tên lệnh; <code>description</code> là thứ Claude dùng để quyết định có tự nạp skill không. Đây là ví dụ nguyên bản từ docs — skill tóm tắt thay đổi chưa commit, kèm kỹ thuật <strong>dynamic context injection</strong> (<code>!`lệnh`</code> được chạy và thay bằng output <em>trước khi</em> Claude đọc skill):</p>
+
+    <pre><code>---
+description: Summarizes uncommitted changes and flags anything risky. Use when the user asks what changed, wants a commit message, or asks to review their diff.
+---
+
+## Current changes
+
+!`git diff HEAD`
+
+## Instructions
+
+Summarize the changes above in two or three bullet points, then list any risks you notice
+such as missing error handling, hardcoded values, or tests that need updating.
+If the diff is empty, say there are no uncommitted changes.</code></pre>
+
+    <p>Các field quan trọng nhất (đầy đủ hơn trong docs Skills):</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Field</th><th>Nghĩa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>name</code></td><td>Tên hiện trong menu <code>/</code>. Mặc định lấy tên thư mục.</td></tr>
+        <tr><td><code>description</code></td><td><strong>Field được khuyến nghị nhất.</strong> Nói skill làm gì và <em>khi nào dùng</em>. Phần <code>description</code> + <code>when_to_use</code> bị cắt ở 1.536 ký tự — đặt use case chính lên đầu.</td></tr>
+        <tr><td><code>when_to_use</code></td><td>Thêm ngữ cảnh kích hoạt: trigger phrase, ví dụ yêu cầu. Được nối vào <code>description</code>.</td></tr>
+        <tr><td><code>disable-model-invocation: true</code></td><td><strong>Chỉ bạn</strong> gọi được skill. Dùng cho việc có tác dụng phụ như <code>/deploy</code>, <code>/commit</code>.</td></tr>
+        <tr><td><code>user-invocable: false</code></td><td><strong>Chỉ Claude</strong> gọi được; ẩn khỏi menu <code>/</code>. Dùng cho kiến thức nền, không phải hành động.</td></tr>
+        <tr><td><code>allowed-tools</code></td><td>Tool được phép dùng <em>không hỏi</em> trong lượt gọi skill; hết hiệu lực ở tin nhắn kế tiếp.</td></tr>
+        <tr><td><code>disallowed-tools</code></td><td>Tool bị rút khỏi pool khi skill đang chạy.</td></tr>
+        <tr><td><code>paths</code></td><td>Glob giới hạn việc tự kích hoạt: chỉ nạp khi Claude làm việc với file khớp pattern.</td></tr>
+        <tr><td><code>context: fork</code></td><td>Chạy skill trong ngữ cảnh subagent riêng (mục 9).</td></tr>
+        <tr><td><code>model</code>, <code>effort</code></td><td>Đổi model / mức effort khi skill đang hoạt động.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Ví dụ một skill “task content” chỉ bạn được gọi (ý tưởng từ docs):</p>
+    <pre><code>---
+name: deploy
+description: Deploy the application to staging. Use when the user asks to ship a build.
+disable-model-invocation: true
+allowed-tools: Bash(pnpm run *) Bash(git status *)
+---
+
+Deploy the application:
+1. Run the test suite
+2. Build the application
+3. Push to the deployment target</code></pre>
+
+    <h3>Khi nào dùng cái nào — bảng quyết định</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Tình huống</th><th>Dùng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Điều luôn đúng ở mọi session, ngắn gọn (“dùng pnpm, không dùng npm”)</td><td>CLAUDE.md</td></tr>
+        <tr><td>Quy trình nhiều bước, checklist, reference dài chỉ đôi khi cần</td><td>Skill</td></tr>
+        <tr><td>Việc có tác dụng phụ, chỉ chạy khi bạn chủ động gọi</td><td>Skill + <code>disable-model-invocation: true</code></td></tr>
+        <tr><td>Kiến thức nền Claude cần khi liên quan, người dùng không “gọi” được</td><td>Skill + <code>user-invocable: false</code></td></tr>
+        <tr><td>Việc phải xảy ra <em>mỗi lần</em>, không phụ thuộc model quyết định</td><td>Hook</td></tr>
+        <tr><td>Việc phụ đọc nhiều file/thử nhiều hướng, làm ngập context chính</td><td>Subagent</td></tr>
+      </tbody>
+    </table>
+
+    <p>Một ưu điểm lớn về context: khác với CLAUDE.md, <strong>thân skill chỉ nạp khi được dùng</strong> — nên tài liệu tham chiếu dài gần như miễn phí cho đến lúc cần.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="examples">
+    <h2>Viết bằng ví dụ, đừng viết bằng mô tả</h2>
+    <p>Đây là nguyên tắc xuyên suốt của docs cho mọi thứ bạn viết cho Claude: CLAUDE.md, skill, prompt. Khái niệm nó muốn nói rất đơn giản: <strong>một ví dụ cụ thể đáng giá hơn ba tính từ trừu tượng</strong>, vì ví dụ chỉ cho Claude biết “đúng trông như thế nào”.</p>
+
+    <h3>Cùng một yêu cầu, hai cách viết</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Mô tả trừu tượng</th><th>Viết bằng ví dụ / tiêu chí</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>“Implement a function that validates email addresses.”</td>
+          <td>“Write a <code>validateEmail</code> function. Example test cases: <code>user@example.com</code> is true, <code>invalid</code> is false, <code>user@.com</code> is false. Run the tests after implementing.” (ví dụ từ docs Best practices)</td>
+        </tr>
+        <tr>
+          <td>“Làm dashboard đẹp hơn.”</td>
+          <td>“[dán screenshot] implement this design. Take a screenshot of the result and compare it to the original. List differences and fix them.”</td>
+        </tr>
+        <tr>
+          <td>“Sửa lỗi build.”</td>
+          <td>“Build fails with this error: [dán lỗi]. Fix it and verify the build succeeds. Address the root cause, don't suppress the error.”</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Vì sao nó hoạt động? Vì Claude dừng khi công việc “trông xong”. Nếu không có tiêu chí kiểm chứng, bạn chính là vòng kiểm tra — mọi sai sót phải đợi bạn phát hiện. Đưa ví dụ hoặc lệnh kiểm tra (test, build, lint, screenshot so sánh), vòng lặp agent tự khép kín: Claude làm → chạy kiểm tra → đọc kết quả → sửa tiếp.</p>
+
+    <h3>Áp vào cách viết skill</h3>
+    <ul>
+      <li>Trong <code>description</code>: đặt use case chính lên đầu và <em>kèm ví dụ yêu cầu</em> ở <code>when_to_use</code> (“dùng khi user hỏi ‘what changed’, xin commit message, hoặc nhờ review diff”).</li>
+      <li>Nếu Claude gọi skill quá thường xuyên: docs khuyên <strong>làm description cụ thể hơn</strong> — thêm ví dụ đúng, bớt từ chung.</li>
+      <li>Trong thân skill: viết chỉ dẫn ở dạng hành động kiểm chứng được (“Run the tests after every edit”) thay vì mô tả mơ hồ (“test cẩn thận”).</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">Câu tự kiểm</div>
+      <p>Với mỗi câu bạn viết trong CLAUDE.md hoặc skill, hỏi: <em>“Nếu không có câu này, Claude có mắc lỗi cụ thể nào không?”</em> Nếu không trả lời được, cắt nó đi — file gọn thì Claude tuân tốt hơn. Đây cũng chính là tiêu chí docs dùng: mỗi dòng phải đáng giá context của nó.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hooks">
+    <h2>Hooks — tự động hóa theo sự kiện</h2>
+    <p><strong>Hook</strong> là các lệnh do bạn định nghĩa (shell command, HTTP endpoint, MCP tool, prompt, hoặc subagent) mà Claude Code <em>tự chạy</em> tại những thời điểm nhất định trong vòng đời của nó. Docs gọi đây là lớp kiểm soát <strong>deterministic</strong>: việc gì đã cấu hình hook thì chắc chắn xảy ra — không phụ thuộc model “có nhớ hay không”.</p>
+
+    <p>Hook chạy theo ba nhịp (docs Hooks):</p>
+    <ul>
+      <li><strong>Mỗi session:</strong> <code>SessionStart</code>, <code>SessionEnd</code>.</li>
+      <li><strong>Mỗi lượt:</strong> <code>UserPromptSubmit</code> (trước khi Claude xử lý prompt), <code>Stop</code> (khi Claude kết thúc lượt trả lời).</li>
+      <li><strong>Mỗi lời gọi tool:</strong> <code>PreToolUse</code> (trước khi tool chạy — chặn được) và <code>PostToolUse</code> (sau khi tool chạy thành công).</li>
+    </ul>
+
+    <p>Một bảng rút gọn các event quan trọng và khả năng chặn (theo bảng exit-code trong docs Hooks reference):</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Event</th><th>Khi nào chạy</th><th>Exit code 2 có chặn được?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>SessionStart</code></td><td>Đầu session hoặc khi resume</td><td>Không — stderr chỉ hiện cho user</td></tr>
+        <tr><td><code>UserPromptSubmit</code></td><td>Trước khi Claude xử lý prompt</td><td><strong>Có</strong> — chặn prompt, không tới Claude</td></tr>
+        <tr><td><code>PreToolUse</code></td><td>Trước khi tool chạy</td><td><strong>Có</strong> — chặn lời gọi tool</td></tr>
+        <tr><td><code>PostToolUse</code></td><td>Sau khi tool chạy thành công</td><td>Không — tool đã chạy rồi; stderr được hiện cho Claude</td></tr>
+        <tr><td><code>Stop</code></td><td>Khi Claude định kết thúc lượt</td><td><strong>Có</strong> — bắt Claude tiếp tục làm</td></tr>
+        <tr><td><code>SubagentStop</code></td><td>Khi subagent xong</td><td><strong>Có</strong> — ngăn subagent dừng</td></tr>
+        <tr><td><code>Notification</code></td><td>Khi Claude Code gửi thông báo (vd cần bạn nhập)</td><td>Không</td></tr>
+        <tr><td><code>PreCompact</code></td><td>Trước khi nén context</td><td><strong>Có</strong> — chặn compaction</td></tr>
+        <tr><td><code>SessionEnd</code></td><td>Khi session kết thúc</td><td>Không</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Cấu hình hooks trông thế nào</h3>
+    <p>Hook được khai trong settings file (hoặc trong frontmatter của skill/agent). Một object <code>hooks</code>, mỗi event là một key, trong đó là mảng các nhóm <code>{ matcher, hooks: [...] }</code>. <code>matcher</code> lọc lời gọi tool (ví dụ <code>"Edit|Write"</code>); để trống nghĩa là mọi trường hợp. Đây là ví dụ <strong>auto-format sau mỗi lần sửa file</strong> — nguyên bản từ docs:</p>
+
+    <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+
+    <p>Đọc từng phần: event <code>PostToolUse</code> chạy sau khi tool sửa file thành công; <code>matcher: "Edit|Write"</code> chỉ áp cho hai tool ghi file; command nhận JSON sự kiện trên stdin, moi <code>.tool_input.file_path</code> bằng <code>jq</code>, rồi gọi Prettier lên file đó. Chạy thành công thì Claude Code im lặng — muốn chắc hook đã chạy, xem file được format lại hoặc bật debug log.</p>
+
+    <p><strong>Một lưu ý thực tế từ docs:</strong> hook trên chỉ bắt được file do tool <code>Edit</code>/<code>Write</code> sửa. Nếu Claude ghi file bằng lệnh shell, hook không thấy. Muốn phủ <em>mọi</em> thay đổi, dùng hook <code>FileChanged</code> (theo dõi file trên đĩa) hoặc một hook <code>Stop</code> quét cây làm việc mỗi lượt.</p>
+
+    <h3>Ví dụ thật thứ hai: lint trước khi commit</h3>
+    <p>Bài toán: chặn Claude commit khi lint còn lỗi. Đây là <code>PreToolUse</code> — nó chạy <em>trước</em> khi tool Bash thực thi, nên chặn được. Dùng <code>if</code> để hook chỉ nổ với lệnh <code>git commit</code>:</p>
+
+    <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/lint-before-commit.sh"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+
+    <p>Và script <code>.claude/hooks/lint-before-commit.sh</code>:</p>
+    <pre><code>#!/bin/bash
+# Đọc JSON sự kiện từ stdin, lấy lệnh mà Claude định chạy.
+input=$(cat)
+cmd=$(echo "$input" | jq -r '.tool_input.command')
+
+case "$cmd" in
+  git\ commit*)
+    npm run lint || { echo "Lint failed - fix the errors before committing." 1&gt;&amp;2; exit 2; }
+    ;;
+esac
+
+exit 0</code></pre>
+
+    <p>Ba điều cần khắc cốt:</p>
+    <ul>
+      <li><strong>exit 0</strong> và không in gì = “không có ý kiến gì” — tool tiếp tục chạy theo luồng permission bình thường. Hook im lặng <em>không</em> có nghĩa là phê duyệt.</li>
+      <li><strong>exit 2</strong> = “dừng, đừng làm” — với <code>PreToolUse</code> nó chặn lời gọi tool; nội dung stderr được đưa cho Claude làm phản hồi để sửa. Lưu ý: exit 1 <em>không</em> chặn — nên script phải chủ động <code>exit 2</code> khi lint fail.</li>
+      <li>Muốn điều khiển tinh hơn (allow/ask/deny, thêm context…) thì <code>exit 0</code> và in JSON ra stdout — ví dụ <code>hookSpecificOutput.permissionDecision: "deny"</code>.</li>
+    </ul>
+
+    <p>Dùng <code>/hooks</code> để xem toàn bộ hook đang cấu hình (menu này chỉ đọc — muốn sửa thì sửa file settings hoặc nhờ Claude sửa).</p>
+
+    <div class="callout">
+      <div class="callout-title">Vì sao hook quan trọng đến vậy</div>
+      <p>Mọi thứ ở các mục trước (CLAUDE.md, skill) đều là “lời khuyên” cho model. Hook là <strong>cơ chế cưỡng chế</strong> của harness: format luôn chạy, lint luôn chạy, lệnh nguy hiểm luôn bị chặn — dù model có “quên”. Đây cũng là câu trả lời chuẩn cho câu hỏi thi: “muốn đảm bảo X luôn xảy ra thì dùng gì?” → hook.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="permissions-plan">
+    <h2>Permissions &amp; Plan Mode</h2>
+    <p>Claude Code có hệ thống quyền nhiều tầng: hành động rủi ro thì hỏi, hành động an toàn thì chạy thẳng. Nền tảng (docs Permissions): đọc file trong thư mục làm việc không cần hỏi; lệnh Bash <strong>có hỏi</strong> (trừ nhóm lệnh read-only có sẵn); sửa file <strong>có hỏi</strong>; web fetch/search có hỏi. Khi bạn chọn “Yes, and don’t ask again” cho một lệnh Bash, Claude Code lưu thành rule <code>allow</code> trong <code>.claude/settings.local.json</code> của repo.</p>
+
+    <h3>Ba loại rule: allow / ask / deny</h3>
+    <ul>
+      <li><strong>Allow</strong> — dùng tool không cần hỏi. <strong>Ask</strong> — luôn hỏi. <strong>Deny</strong> — cấm hẳn.</li>
+      <li>Cú pháp: <code>Tool</code> hoặc <code>Tool(specifier)</code> — ví dụ <code>Bash(npm run build)</code>, <code>Read(./.env)</code>, <code>WebFetch(domain:example.com)</code>.</li>
+      <li><strong>Thứ tự đánh giá: deny → ask → allow.</strong> Match đầu tiên thắng, và độ cụ thể <em>không</em> đổi thứ tự này. Nghĩa là một deny rộng như <code>Bash(aws *)</code> chặn mọi lệnh aws, kể cả lệnh khớp allow hẹp hơn — allow không thể “khoét lỗ” trong deny.</li>
+      <li>Deny bằng <em>tên tool trần</em> (ví dụ <code>Bash</code>) còn mạnh hơn: nó rút tool khỏi context của Claude — Claude không còn thấy tool đó nữa.</li>
+    </ul>
+
+    <p>Ví dụ trong settings (nguyên bản từ docs):</p>
+    <pre><code>{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git commit *)"
+    ],
+    "deny": [
+      "Bash(git push *)"
+    ]
+  }
+}</code></pre>
+    <p>Cấu hình này cho Claude chạy script npm và git commit không cần hỏi, nhưng cấm mọi lệnh bắt đầu bằng <code>git push</code>. Nhớ quy tắc list hợp nhất ở mục 2: rule allow/deny từ nhiều file settings được cộng lại khi đánh giá.</p>
+
+    <h3>Permission modes — ai hỏi, ai không</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Mode</th><th>Không cần hỏi</th><th>Hợp cho</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>default</code> (Manual)</td><td>Chỉ đọc</td><td>Việc nhạy cảm, code lạ — bạn duyệt mọi hành động</td></tr>
+        <tr><td><code>acceptEdits</code></td><td>Đọc + sửa file + lệnh filesystem thông thường (<code>mkdir</code>, <code>touch</code>, <code>mv</code>, <code>cp</code>)</td><td>Lặp nhanh trên code bạn đang review</td></tr>
+        <tr><td><code>plan</code></td><td>Đọc + lệnh read-only; <strong>không sửa file nguồn</strong></td><td>Khám phá codebase trước khi đổi</td></tr>
+        <tr><td><code>auto</code></td><td>Hầu hết, với classifier chạy nền kiểm tra hành động</td><td>Task dài, giảm mệt mỏi vì prompt</td></tr>
+        <tr><td><code>dontAsk</code></td><td>Đọc + tool đã pre-approve; mọi thứ khác bị <strong>từ chối</strong></td><td>CI/script bị khóa chặt</td></tr>
+        <tr><td><code>bypassPermissions</code></td><td>Tất cả</td><td><strong>Chỉ</strong> container/VM cách ly — bỏ qua cả prompt cho path được bảo vệ</td></tr>
+      </tbody>
+    </table>
+    <p>Ghi chú phiên bản: từ v2.1.283, <code>auto</code> là mode mặc định khi khởi động session terminal/VS Code trên mọi gói; bạn vẫn đổi mode bất cứ lúc nào (xem docs mới nhất). Mode mặc định đặt được bằng key <code>permissions.defaultMode</code> trong settings file. Muốn xem/sửa rule đang có, gõ <code>/permissions</code> — dialog liệt kê rule và file settings chứa nó.</p>
+
+    <h3>Plan Mode — nghĩ trước, sửa sau</h3>
+    <p>Plan mode tách <em>khám phá</em> khỏi <em>thực thi</em>. Trong plan mode, Claude đọc file và chạy lệnh read-only để hiểu vấn đề, rồi trình một kế hoạch — <strong>không sửa file nguồn cho tới khi bạn duyệt</strong>. Cách vào:</p>
+    <ol class="steps">
+      <li><strong>Bật:</strong> nhấn <code>Shift+Tab</code> tới khi thanh trạng thái hiện <code>⏸ plan mode on</code>, gõ <code>/plan</code> trước một prompt, hoặc khởi động bằng <code>claude --permission-mode plan</code>.</li>
+      <li><strong>Khám phá:</strong> để Claude đọc code, trả lời câu hỏi — chưa có thay đổi nào trên đĩa.</li>
+      <li><strong>Lập kế hoạch:</strong> yêu cầu một plan chi tiết (file nào đổi, luồng ra sao). Nhấn <code>Ctrl+G</code> để mở plan trong editor và sửa trực tiếp nếu muốn.</li>
+      <li><strong>Duyệt:</strong> Claude hỏi bạn chọn — <em>Yes, and use auto mode</em> (duyệt + chạy auto), <em>Yes, manually approve edits</em> (duyệt + duyệt từng sửa đổi), hoặc <em>No, keep planning</em> (giữ plan mode, nói Claude sửa kế hoạch).</li>
+      <li><strong>Thực thi:</strong> duyệt plan là thoát plan mode; Claude bắt đầu code và tự kiểm chứng theo plan.</li>
+    </ol>
+
+    <div class="callout">
+      <div class="callout-title">Khi nào dùng — và khi nào đừng</div>
+      <p><strong>Dùng</strong> khi bạn chưa chắc về hướng làm, khi thay đổi nhiều file, hoặc khi làm với code bạn không quen. <strong>Bỏ qua</strong> khi phạm vi đã rõ và sửa đổi nhỏ (sửa typo, thêm một dòng log, đổi tên biến) — plan mode thêm overhead không cần thiết. Câu tự kiểm của docs: <em>“Nếu bạn mô tả được diff trong một câu, bỏ qua plan.”</em></p>
+    </div>
+
+    <p>Một chi tiết nối sang mục sau: khi ở plan mode và cần nghiên cứu codebase, Claude giao việc tìm hiểu cho <strong>Plan subagent</strong> — output khám phá nằm trong context riêng, còn hội thoại chính vẫn read-only.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="sub-agents">
+    <h2>Sub-agents — worker có ngữ cảnh riêng</h2>
+    <p><strong>Subagent</strong> là một trợ lý chuyên biệt chạy trong <em>context window riêng</em>, có system prompt riêng, bộ tool riêng, và quyền riêng; khi xong nó chỉ trả <strong>bản tóm tắt</strong> về cho hội thoại chính. Docs ví von rất chuẩn: dùng subagent khi một việc phụ sẽ “làm ngập” hội thoại chính bằng kết quả tìm kiếm, log, hay nội dung file mà bạn sẽ không tham chiếu lại.</p>
+
+    <p>Lợi ích chính:</p>
+    <ul>
+      <li><strong>Giữ context:</strong> việc khám phá/cài đặt diễn ra ngoài hội thoại chính.</li>
+      <li><strong>Cưỡng chế ràng buộc:</strong> giới hạn tool mà subagent được dùng (ví dụ chỉ đọc).</li>
+      <li><strong>Chuyên môn hóa:</strong> system prompt tập trung cho một loại việc.</li>
+      <li><strong>Tiết kiệm:</strong> định tuyến việc phù hợp sang model nhanh/rẻ hơn (ví dụ Haiku).</li>
+    </ul>
+
+    <p>Claude Code có sẵn vài subagent built-in: <strong>Explore</strong> (read-only, tìm kiếm/phân tích codebase), <strong>Plan</strong> (nghiên cứu cho plan mode), <strong>General-purpose</strong> (việc nhiều bước cần cả khám phá lẫn sửa). Claude chọn subagent dựa trên <code>description</code> của nó — nên description phải nói rõ <em>khi nào dùng</em>.</p>
+
+    <h3>Tạo subagent</h3>
+    <p>Subagent là file markdown có YAML frontmatter, đặt trong <code>.claude/agents/</code> (project) hoặc <code>~/.claude/agents/</code> (cá nhân, dùng mọi project). Ví dụ nguyên bản từ docs:</p>
+    <pre><code>---
+name: code-improver
+description: Scans files and suggests improvements for readability, performance, and best practices. Use after writing or modifying code.
+tools: Read, Grep, Glob
+model: sonnet
+---
+
+You are a code improvement specialist. For each issue you find, explain
+the problem, show the current code, and provide an improved version.</code></pre>
+
+    <p>Gọi thử: “<em>Use the code-improver agent to suggest improvements in this project</em>”. Trong transcript, việc giao việc hiện thành một dòng tool call mang tên subagent kèm mô tả ngắn.</p>
+
+    <p>Vài lưu ý vận hành (docs Sub-agents):</p>
+    <ul>
+      <li><strong>Description tốn context:</strong> mô tả của các subagent (trừ built-in) cộng lại vượt <strong>15.000 token</strong> thì Claude Code cảnh báo lúc khởi động — hãy viết ngắn, đẩy chi tiết vào system prompt (chỉ nạp khi subagent chạy).</li>
+      <li>Subagent chạy trong cùng session; muốn nhiều session song song thì đó là chuyện của background agents / agent view (tầng khác).</li>
+      <li>Subagent có thể được cấu hình preload skill; ngược lại, skill có thể chạy trong ngữ cảnh subagent bằng <code>context: fork</code>.</li>
+    </ul>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Tiêu chí</th><th>Skill</th><th>Subagent</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Bản chất</td><td>Nội dung tái sử dụng, nạp vào context hiện tại</td><td>Worker chạy tách biệt, có context riêng</td></tr>
+        <tr><td>Tác động lên context chính</td><td>Cộng thêm vào cửa sổ chính</td><td>Chỉ trả summary về cửa sổ chính</td></tr>
+        <tr><td>Hợp cho</td><td>Tài liệu tham chiếu, quy trình gọi bằng <code>/tên</code></td><td>Việc đọc nhiều file, việc song song, worker chuyên biệt</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="ci">
+    <h2>CI &amp; chế độ non-interactive</h2>
+    <p>Cùng một Claude Code, chạy không cần người ngồi trước màn hình: thêm flag <code>-p</code> (viết đầy đủ <code>--print</code>) là mọi lệnh <code>claude</code> trở thành non-interactive. Claude Code trả kết quả ra stdout, <strong>exit code 0 khi thành công</strong> và khác 0 khi thất bại — nên script của bạn rẽ nhánh được theo exit status.</p>
+
+    <p>Các lệnh mẫu từ docs:</p>
+    <pre><code># Hỏi một câu về codebase rồi in câu trả lời
+claude -p "What does the auth module do?"
+
+# Chạy task có pre-approve tool (không bị hỏi permission giữa chừng)
+claude -p "Find and fix the bug in auth.py" --allowedTools "Read,Edit,Bash"
+
+# Pipe dữ liệu vào, ghi kết quả ra file
+cat build-error.txt | claude -p 'concisely explain the root cause of this build error' > output.txt
+
+# Output JSON có cấu trúc (kèm session ID, usage, chi phí)
+claude -p "Summarize this project" --output-format json</code></pre>
+
+    <p>Vài flag đáng nhớ cho CI:</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Flag</th><th>Dùng để</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--allowedTools</code></td><td>Pre-approve tool — ví dụ <code>"Read,Edit,Bash"</code> hoặc rule hẹp như <code>"Bash(npm test)"</code></td></tr>
+        <tr><td><code>--output-format</code></td><td><code>text</code> (mặc định) · <code>json</code> · <code>stream-json</code> (JSON theo dòng, stream thời gian thực)</td></tr>
+        <tr><td><code>--json-schema</code></td><td>Ép output khớp một JSON Schema; kết quả nằm ở field <code>structured_output</code> (kèm <code>--output-format json</code>)</td></tr>
+        <tr><td><code>--bare</code></td><td>Bỏ qua auto-discovery hooks, skills, MCP, CLAUDE.md, auto memory — chạy nhanh và <strong>giống nhau trên mọi máy</strong>. Docs khuyến nghị cho CI/script; cần <code>ANTHROPIC_API_KEY</code> (không dùng login subscription).</td></tr>
+        <tr><td><code>--permission-mode</code></td><td>Ví dụ CI khóa chặt: <code>claude -p "run the test suite" --permission-mode dontAsk --allowedTools "Bash(npm test)" "Read"</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Cẩn thận khi chạy <code>-p</code></div>
+      <p>Một session <code>-p</code> <strong>không hỏi gì</strong>: không có dialog tin cậy workspace, không có prompt phê duyệt MCP server. Không có <code>--bare</code>, nó vẫn chạy hook trong <code>.claude/settings.json</code> của project và kết nối server trong <code>.mcp.json</code> — kể cả ở thư mục bạn chưa từng “trust”. Vì vậy trong CI hãy dùng <code>--bare</code> hoặc allowlist chặt bằng <code>--allowedTools</code> + <code>dontAsk</code>.</p>
+    </div>
+
+    <h3>GitHub Actions — Claude trong PR/issue</h3>
+    <p><a href="https://github.com/anthropics/claude-code-action">Claude Code GitHub Action</a> chạy Claude Code ngay trong workflow của repo: ai đó viết <code>@claude …</code> trong comment issue/PR, Claude phân tích code, thực hiện thay đổi và push commit; hoặc bạn truyền <code>prompt</code> để nó chạy tự động theo bất kỳ event nào (kể cả cron). Cài nhanh bằng <code>/install-github-app</code> trong Claude Code, hoặc cài thủ công: cài Claude GitHub App → thêm secret (<code>ANTHROPIC_API_KEY</code>, hoặc <code>CLAUDE_CODE_OAUTH_TOKEN</code> cho subscription) → copy workflow vào <code>.github/workflows/</code>.</p>
+
+    <p>Workflow tối thiểu cho chế độ tương tác <code>@claude</code> (nguyên bản từ docs):</p>
+    <pre><code>name: Claude Code
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+jobs:
+  claude:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}</code></pre>
+
+    <p>Vài điểm docs nhấn mạnh:</p>
+    <ul>
+      <li><code>id-token: write</code> là bắt buộc cho cơ chế xác thực GitHub App mặc định của action; <code>actions: read</code> cho Claude đọc kết quả CI trên PR; <code>if</code> giúp không khởi động runner cho comment không nhắc <code>@claude</code>.</li>
+      <li>Tham số <code>claude_args</code> truyền được mọi CLI argument của Claude Code, ví dụ <code>--max-turns 5 --model claude-sonnet-5</code> hoặc <code>--allowedTools …</code>.</li>
+      <li>Chạy skill trong CI: skill trong repo (cần <code>actions/checkout</code> trước) thì truyền <code>/tên-skill</code> làm <code>prompt</code>; skill trong plugin thì khai <code>plugin_marketplaces</code> + <code>plugins</code> rồi truyền <code>/plugin:tên-skill</code>.</li>
+      <li>Best practices từ docs: chuẩn dự án viết vào <strong>CLAUDE.md</strong> (workflow trong CI cũng đọc); <strong>không bao giờ commit key</strong> — luôn để trong GitHub Secrets; quản lý chi phí bằng prompt cụ thể và <code>--max-turns</code>.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+    <p>Bốn chỗ người mới hay hiểu sai — mỗi cái đều là một câu hỏi thi tiềm năng:</p>
+    <ol>
+      <li><strong>“Viết vào CLAUDE.md là Claude bắt buộc phải tuân.”</strong> — Không. Docs nói CLAUDE.md là <em>context, không phải cấu hình cưỡng chế</em>. Hai chỉ dẫn mâu thuẫn thì Claude có thể chọn đại một cái. Muốn chặn cứng: PreToolUse hook hoặc rule <code>deny</code>.</li>
+      <li><strong>“Settings để ở file nào cũng như nhau.”</strong> — Không. Có đúng một thứ tự: managed &gt; command line &gt; project local &gt; shared project &gt; user. Ngoài ra rule dạng list như <code>permissions.allow</code> thì <em>hợp nhất</em> giữa các file, chứ không đè nhau — nên đừng ngạc nhiên khi rule từ file khác vẫn có hiệu lực.</li>
+      <li><strong>“Slash command và Agent Skill là hai hệ thống riêng.”</strong> — Không. Custom commands đã được gộp vào skills: <code>.claude/commands/deploy.md</code> và <code>.claude/skills/deploy/SKILL.md</code> cùng tạo <code>/deploy</code>. Skill chỉ <em>thêm</em> khả năng: thư mục file phụ trợ, frontmatter điều khiển ai gọi, và Claude tự nạp khi liên quan. (Built-in command và bundled skill thì vẫn khác nhau — một cái chạy logic cố định, một cái là prompt cho Claude orchestrator.)</li>
+      <li><strong>“Auto memory chính là CLAUDE.md do Claude viết.”</strong> — Không hẳn: cùng là bộ nhớ bền vững nhưng khác vai. CLAUDE.md là <em>chỉ dẫn do bạn viết</em>, đọc toàn bộ mỗi session. Auto memory là <em>bài học Claude tự ghi</em>, theo từng repository, máy cục bộ, và chỉ nạp 200 dòng đầu hoặc 25KB mỗi session. Muốn chỉ dẫn vào file của nhóm thì phải nói rõ “add this to CLAUDE.md”.</li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+    <p>Làm ra nháp trước, rồi mở đáp án. Đáp án là gợi ý — điều quan trọng là bạn giải thích được <em>vì sao</em>.</p>
+
+    <div class="exercise">
+      <h3>A1 · Viết một CLAUDE.md cho dự án giả định</h3>
+      <p>Bối cảnh: dự án <code>booking-api</code> (Node + TypeScript). Sự thật cần truyền đạt:</p>
+      <ul>
+        <li>Dùng <code>pnpm</code>, không dùng npm. Test bằng <code>pnpm vitest run &lt;file&gt;</code> — chạy một file trước vì full suite chậm. Typecheck bằng <code>pnpm tsc --noEmit</code>.</li>
+        <li>Handlers nằm trong <code>src/api/handlers/</code>. Lỗi trả về dạng <code>{ code, message }</code>, không trả stack trace thô.</li>
+        <li>Không commit trực tiếp lên <code>main</code>. Branch: <code>feat/…</code>, <code>fix/…</code>.</li>
+        <li>Claude phải chạy typecheck + test file vừa sửa trước khi báo xong.</li>
+      </ul>
+      <p>Viết file dưới 200 dòng, rồi tự kiểm bằng checklist trong đáp án.</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <pre><code># Project: booking-api
+
+## Commands
+- Install: `pnpm install`
+- Tests: `pnpm vitest run &lt;file&gt;` (một file trước; full suite rất chậm)
+- Typecheck: `pnpm tsc --noEmit`
+
+## Conventions
+- API handlers nằm trong `src/api/handlers/`.
+- Lỗi trả `{ code, message }`; không trả stack trace thô.
+
+## Workflow
+- Chạy typecheck + test file vừa sửa trước khi báo xong.
+- Không commit trực tiếp lên `main`; branch `feat/…`, `fix/…`.</code></pre>
+        <p><strong>Checklist tự kiểm:</strong></p>
+        <ul>
+          <li>Mỗi dòng có phải thứ Claude <em>không thể tự suy ra</em> từ code? (Nếu suy ra được — cắt.)</li>
+          <li>Chỉ dẫn có cụ thể, kiểm chứng được? (“Chạy <code>pnpm tsc --noEmit</code>” chứ không phải “đảm bảo code đúng”.)</li>
+          <li>Có mâu thuẫn với chỉ dẫn nào khác không? Có trùng lặp không?</li>
+          <li>Dưới 200 dòng? (File này ~12 dòng — tốt.)</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>A2 · Chọn đúng công cụ: CLAUDE.md, skill, hook hay subagent?</h3>
+      <p>Với mỗi tình huống, chọn một cơ chế và giải thích một câu:</p>
+      <ol>
+        <li>“Luôn dùng 2-space indentation, không dùng tab.”</li>
+        <li>“Quy trình release 7 bước, chỉ chạy khi tôi gọi <code>/release</code> — tuyệt đối không để Claude tự chạy.”</li>
+        <li>“Sau mỗi lần Claude sửa file, tự chạy Prettier.”</li>
+        <li>“Cần đọc 30 file trong repo để trả lời một câu hỏi kiến trúc; không muốn kết quả tràn vào hội thoại chính.”</li>
+        <li>“Chặn mọi lệnh <code>git push</code>.”</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>1 — CLAUDE.md.</strong> Sự thật luôn đúng, mọi session, ngắn gọn.</li>
+          <li><strong>2 — Skill + <code>disable-model-invocation: true</code>.</strong> Quy trình nhiều bước, có tác dụng phụ, chỉ bạn kích hoạt. (Đặt frontmatter này để Claude không tự gọi.)</li>
+          <li><strong>3 — Hook</strong> (<code>PostToolUse</code>, matcher <code>Edit|Write</code>). Phải xảy ra mỗi lần, không phụ thuộc model.</li>
+          <li><strong>4 — Subagent.</strong> Cách ly context: nó đọc 30 file nhưng chỉ trả summary.</li>
+          <li><strong>5 — Permission rule <code>deny</code></strong> (<code>Bash(git push *)</code>), hoặc PreToolUse hook nếu cần logic phức tạp. Đây là cơ chế cưỡng chế, không phải lời khuyên.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>A3 · Viết một skill + một hook config thật</h3>
+      <p><strong>Phần 1 — Skill.</strong> Viết <code>.claude/skills/review-diff/SKILL.md</code>: một skill tóm tắt diff chưa commit và cảnh báo rủi ro. Yêu cầu: có <code>description</code> nêu rõ khi nào dùng (kèm trigger phrase), pre-approve đúng tool cần thiết, và tiêm diff hiện tại vào nội dung skill.</p>
+      <p><strong>Phần 2 — Hook.</strong> Viết config auto-format sau mỗi lần Claude sửa file bằng <code>Edit</code>/<code>Write</code>, dùng Prettier. Nêu một hạn chế của hook này và cách khắc phục.</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p><strong>Phần 1 — SKILL.md:</strong></p>
+        <pre><code>---
+description: Summarizes uncommitted changes and flags anything risky. Use when the user asks what changed, wants a commit message, or asks to review their diff.
+allowed-tools: Bash(git diff *)
+---
+
+## Current changes
+
+!`git diff HEAD`
+
+## Instructions
+
+Summarize the changes above in two or three bullet points, then list any risks
+such as missing error handling, hardcoded values, or tests that need updating.
+If the diff is empty, say there are no uncommitted changes.</code></pre>
+        <p>Tự kiểm: <code>description</code> có nêu <em>khi nào dùng</em> và trigger phrase? <code>allowed-tools</code> có đủ hẹp (<code>Bash(git diff *)</code>, không phải <code>Bash</code>) không? Có cần <code>disable-model-invocation</code> không? (Ở đây không — skill này vô hại và hữu ích khi Claude tự nạp.)</p>
+        <p><strong>Phần 2 — hook:</strong></p>
+        <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+        <p><strong>Hạn chế:</strong> chỉ bắt file do tool <code>Edit</code>/<code>Write</code> sửa; nếu Claude ghi file qua lệnh shell thì hook không thấy. Khắc phục: dùng hook <code>FileChanged</code> (theo dõi file trên đĩa, bất kể ai ghi) hoặc hook <code>Stop</code> quét cây làm việc mỗi lượt.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu — làm nhanh để chắc mình nắm phần cấu hình. Chú ý phân bố đáp án đấy.</p>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">1. Trong các tầng cấu hình, tầng nào có độ ưu tiên <strong>cao nhất</strong>?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><code>~/.claude/settings.json</code> (user)</button>
+        <button class="quiz-opt" data-key="b"><code>.claude/settings.json</code> (shared project)</button>
+        <button class="quiz-opt" data-key="c"><code>.claude/settings.local.json</code> (project local)</button>
+        <button class="quiz-opt" data-key="d">Managed settings (tổ chức triển khai)</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: tầng nào mà bạn không đè được?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Thứ tự đầy đủ: <strong>managed &gt; command line &gt; project local &gt; shared project &gt; user</strong>. Managed settings do tổ chức triển khai (file/MDM/server-managed) và gần như không gì của bạn đè được — chỉ có vài ngoại lệ bảo mật đặc biệt.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">2. Bạn muốn chỉ dẫn dùng chung cho cả nhóm, được commit vào repo. Đặt CLAUDE.md ở đâu?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><code>./CLAUDE.md</code> hoặc <code>./.claude/CLAUDE.md</code></button>
+        <button class="quiz-opt" data-key="b"><code>~/.claude/CLAUDE.md</code></button>
+        <button class="quiz-opt" data-key="c"><code>./CLAUDE.local.md</code></button>
+        <button class="quiz-opt" data-key="d">Thư mục <code>~/.claude/projects/&lt;project&gt;/memory/</code></button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: file nào Claude Code tự giữ ngoài git, và file nào là ghi chú cá nhân?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Project instructions nằm ở <code>./CLAUDE.md</code> hoặc <code>./.claude/CLAUDE.md</code> — commit để cả nhóm nhận. <code>~/.claude/CLAUDE.md</code> là sở thích cá nhân; <code>CLAUDE.local.md</code> là ghi chú riêng (nên gitignore); còn đường dẫn <code>memory/</code> là auto memory do Claude tự ghi.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">3. Có cả <code>.claude/commands/deploy.md</code> và <code>.claude/skills/deploy/SKILL.md</code>. Điều gì đúng?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Hai hệ thống khác nhau; command và skill không liên quan gì tới nhau</button>
+        <button class="quiz-opt" data-key="b">Cả hai tạo ra <code>/deploy</code> và hoạt động giống nhau — custom commands đã được gộp vào skills</button>
+        <button class="quiz-opt" data-key="c">Chỉ command file mới tạo được lệnh <code>/deploy</code></button>
+        <button class="quiz-opt" data-key="d">Skill không gọi được bằng dấu <code>/</code></button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: docs nói custom commands “đã được hợp nhất” vào đâu?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Custom commands đã được gộp vào skills: file command và skill tạo cùng tên lệnh, chạy cùng cách. Skills thêm thư mục file phụ trợ, frontmatter điều khiển invocation, và khả năng Claude tự nạp khi thấy liên quan.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">4. Muốn tự động chạy formatter <strong>sau khi</strong> Claude sửa file thành công, dùng hook event nào?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><code>SessionEnd</code></button>
+        <button class="quiz-opt" data-key="b"><code>PreToolUse</code></button>
+        <button class="quiz-opt" data-key="c"><code>PostToolUse</code></button>
+        <button class="quiz-opt" data-key="d"><code>UserPromptSubmit</code></button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: “sau khi tool chạy thành công”.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> <code>PostToolUse</code> chạy sau khi tool thành công — ví dụ matcher <code>"Edit|Write"</code> cộng lệnh Prettier. <code>PreToolUse</code> chạy trước và có thể chặn; <code>UserPromptSubmit</code> chạy trước khi Claude xử lý prompt; <code>SessionEnd</code> chạy lúc kết thúc session.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">5. Tình huống nào hợp với <strong>Plan Mode</strong> nhất?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Thêm Google OAuth — thay đổi nhiều file, bạn chưa rõ luồng session và muốn duyệt kế hoạch trước</button>
+        <button class="quiz-opt" data-key="b">Sửa một lỗi typo trong README</button>
+        <button class="quiz-opt" data-key="c">Đổi tên một biến cục bộ</button>
+        <button class="quiz-opt" data-key="d">Thêm một dòng log để debug</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: docs nói nếu mô tả được diff trong một câu thì bỏ qua plan.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Plan mode hữu ích khi bạn chưa chắc về hướng làm, thay đổi chạm nhiều file, hoặc code không quen. Ba việc còn lại đều nhỏ và rõ phạm vi — plan chỉ thêm overhead.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question">6. Điền flag còn thiếu để chạy Claude Code <strong>non-interactive</strong> trong script/CI:</p>
+      <p class="fib-sentence">claude <span class="fib" data-answer="-p|--print" data-placeholder="?"></span> "Summarize this project"</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="luyen-them">
+    <h2>Luyện thêm với nguồn chính thức</h2>
+    <p>Bốn repo GitHub chính thức của Anthropic — nơi tra cứu khi docs chưa đủ, và để học bằng ví dụ thật:</p>
+    <ul>
+      <li><a href="https://github.com/anthropics/claude-code">anthropics/claude-code</a> — repo chính thức của Claude Code; theo dõi issues và release notes khi cần thông tin mới nhất ngoài trang documentation.</li>
+      <li><a href="https://github.com/anthropics/claude-code-action">anthropics/claude-code-action</a> — GitHub Action chính thức để dùng Claude Code trong CI (nối tiếp phần GitHub Actions ở mục 10); mở thư mục <code>examples/</code> để lấy workflow <code>claude.yml</code> dùng ngay.</li>
+      <li><a href="https://github.com/anthropics/skills">anthropics/skills</a> — kho Agent Skills chính thức; đọc các skill mẫu (frontmatter + thân skill) rồi bắt chước cấu trúc để viết skill của mình.</li>
+      <li><a href="https://github.com/anthropics/claude-plugins-official">anthropics/claude-plugins-official</a> — thư mục plugins chính thức; xem cách đóng gói skills, hooks, subagents thành plugin để tái sử dụng và chia sẻ cho nhóm.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>CLAUDE.md</td><td>File markdown chỉ dẫn bền vững, Claude đọc đầu mỗi session. Context — không phải cưỡng chế.</td></tr>
+        <tr><td>Auto memory</td><td>Bài học Claude tự ghi, theo repository, lưu ở <code>~/.claude/projects/&lt;project&gt;/memory/</code>, nạp 200 dòng/25KB mỗi session.</td></tr>
+        <tr><td>Settings files</td><td><code>~/.claude/settings.json</code> (user), <code>.claude/settings.json</code> (project), <code>.claude/settings.local.json</code> (local), managed settings (tổ chức).</td></tr>
+        <tr><td>Precedence</td><td>Managed &gt; command line &gt; project local &gt; shared project &gt; user. List thì hợp nhất, không đè.</td></tr>
+        <tr><td>Skill / SKILL.md</td><td>File markdown + YAML frontmatter mở rộng Claude; gọi bằng <code>/tên</code> hoặc để Claude tự nạp theo <code>description</code>.</td></tr>
+        <tr><td>Frontmatter fields</td><td><code>description</code>, <code>when_to_use</code>, <code>disable-model-invocation</code>, <code>user-invocable</code>, <code>allowed-tools</code>, <code>paths</code>, <code>context: fork</code>…</td></tr>
+        <tr><td>Slash command</td><td>Cùng cơ chế với skill; custom commands cũ trong <code>.claude/commands/</code> vẫn chạy.</td></tr>
+        <tr><td>Hook</td><td>Lệnh tự chạy theo sự kiện vòng đời — cơ chế deterministic, không phụ thuộc model.</td></tr>
+        <tr><td>Hook events</td><td><code>SessionStart</code>, <code>UserPromptSubmit</code>, <code>PreToolUse</code>, <code>PostToolUse</code>, <code>Stop</code>, <code>SubagentStop</code>, <code>PreCompact</code>, <code>SessionEnd</code>…</td></tr>
+        <tr><td>Exit code 2</td><td>Cách hook nói “dừng”: chặn tool call (PreToolUse), chặn prompt, hoặc bắt Claude làm tiếp (Stop). Exit 1 không chặn.</td></tr>
+        <tr><td>Permission rule</td><td><code>allow</code> / <code>ask</code> / <code>deny</code>, đánh giá theo thứ tự deny → ask → allow.</td></tr>
+        <tr><td>Permission modes</td><td><code>default</code> (Manual), <code>acceptEdits</code>, <code>plan</code>, <code>auto</code>, <code>dontAsk</code>, <code>bypassPermissions</code>.</td></tr>
+        <tr><td>Plan Mode</td><td>Đọc + lập kế hoạch, không sửa file nguồn cho tới khi bạn duyệt plan.</td></tr>
+        <tr><td>Subagent</td><td>Worker context riêng, system prompt/tool/permission riêng, chỉ trả summary; tạo ở <code>.claude/agents/</code> hoặc <code>~/.claude/agents/</code>.</td></tr>
+        <tr><td><code>claude -p</code></td><td>Chế độ non-interactive (print) — dùng trong script, CI; exit code phản ánh thành/bại.</td></tr>
+        <tr><td><code>--bare</code></td><td>Bỏ auto-discovery (hooks, skills, MCP, CLAUDE.md…) cho CI chạy nhanh và tái lập được.</td></tr>
+        <tr><td>GitHub Actions</td><td><code>anthropics/claude-code-action@v1</code>: <code>@claude</code> trong issue/PR comment, hoặc <code>prompt</code> chạy theo event/cron.</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li>Claude Code — <a href="https://code.claude.com/docs/en/overview">Overview</a>: định nghĩa, bốn bề mặt, các nhóm tính năng.</li>
+      <li>Claude Code — <a href="https://code.claude.com/docs/en/settings">Settings files and precedence</a>: bảng độ ưu tiên, vị trí file, list hợp nhất.</li>
+      <li>Claude Code — <a href="https://code.claude.com/docs/en/memory">How Claude remembers your project</a>: CLAUDE.md (vị trí, thứ tự nạp, cách viết), AGENTS.md, rules, auto memory.</li>
+      <li>Claude Code — <a href="https://code.claude.com/docs/en/skills">Extend Claude with skills</a>: SKILL.md, frontmatter reference, invocation control, paths, dynamic context injection.</li>
+      <li>Claude Code — <a href="https://code.claude.com/docs/en/hooks-guide">Automate actions with hooks</a> và <a href="https://code.claude.com/docs/en/hooks">Hooks reference</a>: event, matcher, exit code, ví dụ auto-format.</li>
+      <li>Claude Code — <a href="https://code.claude.com/docs/en/permissions">Configure permissions</a> và <a href="https://code.claude.com/docs/en/permission-modes">Choose a permission mode</a>: allow/ask/deny, sáu mode, plan mode.</li>
+      <li>Claude Code — <a href="https://code.claude.com/docs/en/sub-agents">Create custom subagents</a>: built-in agents, frontmatter, context isolation.</li>
+      <li>Claude Code — <a href="https://code.claude.com/docs/en/headless">Run Claude Code programmatically</a>: <code>-p</code>, <code>--allowedTools</code>, <code>--output-format</code>, <code>--bare</code>.</li>
+      <li>Claude Code — <a href="https://code.claude.com/docs/en/github-actions">Claude Code GitHub Actions</a>: cài đặt, workflow <code>@claude</code>, secrets, <code>claude_args</code>.</li>
+      <li>Claude Code — <a href="https://code.claude.com/docs/en/best-practices">Best practices</a>, <a href="https://code.claude.com/docs/en/common-workflows">Common workflows</a>, <a href="https://code.claude.com/docs/en/features-overview">Extend Claude Code</a>: nguyên tắc viết chỉ dẫn bằng ví dụ, plan→implement→commit, bảng chọn feature.</li>
+      <li>Chỉ mục đầy đủ: <a href="https://code.claude.com/docs/llms.txt">code.claude.com/docs/llms.txt</a> — dùng khi cần tra trang mới nhất.</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Trước:</strong> C2 · <strong>Sau:</strong> C4 — track Claude, cùng thư mục <code>lessons/claude/</code>. Nếu phần cấu hình còn rối, hãy quay lại bảng precedence ở mục 2 và vẽ nó ra giấy một lần — đó là xương sống của cả bài.</p>
+    <p>Có chỗ nào chưa rõ? Ghi lại câu hỏi và nhắn cho giáo viên.</p>
+  </footer>
+
+</main>
+
+<script src="../../assets/lang.js"></script>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>

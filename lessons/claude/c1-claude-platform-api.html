@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Track Claude C1 · Claude Platform &amp; Messages API</title>
+<link rel="stylesheet" href="../../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Track Claude · C1 — Platform &amp; API</div>
+    <h1>Claude Platform &amp; Messages API</h1>
+    <p class="subtitle">Từ một lời gọi API đầu tiên đến chọn model, đọc response, tính tiền token, cache và batch — bài nền cho nhánh kỹ thuật CCDV-F / CCAR-F.</p>
+    <p class="lesson-meta"><span>~30 phút</span><span>6 câu hỏi tương tác</span><span>Nguồn: Anthropic docs (platform.claude.com)</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#platform">Claude Platform là gì — bốn cửa để dùng Claude</a></li>
+      <li><a href="#request">Messages API — một request gồm những gì</a></li>
+      <li><a href="#response">Response — content blocks, stop_reason, usage</a></li>
+      <li><a href="#multi-turn">Multi-turn — ai giữ trạng thái?</a></li>
+      <li><a href="#system">System prompt — luật chơi đặt trước</a></li>
+      <li><a href="#streaming">Streaming — chữ chảy về từng mảnh</a></li>
+      <li><a href="#models">Chọn model — khả năng, giá, độ trễ, context window</a></li>
+      <li><a href="#pricing">Token, giá, và ba cách tiết kiệm</a></li>
+      <li><a href="#limits">Rate limits, lỗi API và SDK</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#luyen-them">Luyện thêm với nguồn chính thức</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bạn đã nắm vòng lặp agent và tool. Bài này chuyển sang phần <strong>Claude nói riêng</strong>: gọi model thế nào, trả về cái gì, tốn bao nhiêu tiền, và chọn model nào cho việc gì. Mọi con số (giá, context window, rate limit) tôi lấy nguyên từ Anthropic docs và ghi nguồn ở cuối bài — <strong>bạn nên mở lại docs khi làm thật</strong>, vì giá và model ID thay đổi theo thời gian.</p>
+    <p>Đến mục 11, bạn tự làm bài rồi mở đáp án để tự kiểm. Không nộp cho ai.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="platform">
+    <h2>Claude Platform là gì — bốn cửa để dùng Claude</h2>
+    <p><strong>Claude Platform</strong> là tên gọi chung cho nền tảng dành cho developer của Anthropic: một tài khoản <em>Claude Console</em>, một <em>API key</em>, và các endpoint HTTP để bạn gọi model Claude từ code của mình. Muốn bắt đầu, bạn cần đúng hai thứ: tài khoản Console và API key.<sup><a href="#src-getstarted">[1]</a></sup></p>
+
+    <p>Điểm dễ nhầm nhất khi mới vào: <strong>“dùng Claude” không chỉ có một cách</strong>. Có bốn cửa chính, tùy bạn muốn tự viết bao nhiêu phần việc.</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Cửa</th><th>Bạn tự lo gì?</th><th>Ai vận hành model?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Messages API</strong> (Claude API)</td><td>Mọi thứ: vòng lặp, tool, trạng thái, retry</td><td>Anthropic</td></tr>
+        <tr><td><strong>Claude Managed Agents</strong> (beta)</td><td>Chỉ cấu hình agent; harness + sandbox + session do Anthropic lo</td><td>Anthropic</td></tr>
+        <tr><td><strong>Amazon Bedrock</strong></td><td>Vẫn là vòng lặp của bạn</td><td>AWS (được AWS xuất hoá đơn)</td></tr>
+        <tr><td><strong>Google Cloud Agent Platform</strong> · <strong>Microsoft Foundry</strong></td><td>Vẫn là vòng lặp của bạn</td><td>Google / Microsoft</td></tr>
+      </tbody>
+    </table>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Messages API</div>
+        <h3>Gọi model trực tiếp</h3>
+        <p>Endpoint <code>POST /v1/messages</code>. Hợp với vòng lặp agent bạn tự viết, cần kiểm soát chi tiết từng bước — đúng tinh thần các bài 01–09 bạn đã học.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Managed Agents</div>
+        <h3>Harness dựng sẵn</h3>
+        <p>Anthropic giữ sẵn harness + hạ tầng: agent tự đọc file, chạy lệnh, tìm web, chạy code trong sandbox. Hợp với task dài, chạy nền.</p>
+      </div>
+    </div>
+
+    <p>Docs mô tả Managed Agents bằng một bảng so sánh rất gọn:<sup><a href="#src-managed">[11]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Messages API</th><th>Claude Managed Agents</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Là gì</strong></td><td>Truy cập model để prompt trực tiếp</td><td>Harness agent dựng sẵn, chạy trên hạ tầng Anthropic quản lý</td></tr>
+        <tr><td><strong>Hợp với</strong></td><td>Vòng lặp agent tự viết, kiểm soát chi tiết</td><td>Task dài hơi, công việc bất đồng bộ</td></tr>
+      </tbody>
+    </table>
+
+    <p>Managed Agents xoay quanh bốn khái niệm: <strong>Agent</strong> (model + system prompt + tool + MCP + skills), <strong>Environment</strong> (sandbox chạy ở đâu), <strong>Session</strong> (một lượt agent đang chạy), <strong>Events</strong> (tin nhắn hai chiều giữa app của bạn và agent). Nó là beta, và mọi request cần header <code>managed-agents-2026-04-01</code>. Điểm khác gốc: session được lưu <strong>server-side</strong> — nên nó <em>stateful</em>, ngược hẳn với Messages API (bạn sẽ thấy ngay ở mục 4).</p>
+
+    <div class="callout">
+      <div class="callout-title">Ba nền tảng cloud — gần như cùng một API</div>
+      <p>Cùng một model, nhưng trên Google Cloud Agent Platform có hai khác biệt định dạng: <code>model</code> nằm trong <strong>URL endpoint</strong> (không nằm trong body), và <code>anthropic_version</code> là trường trong body với giá trị <code>vertex-2023-10-16</code>. SDK có bản riêng — ví dụ Python cài <code>anthropic[vertex]</code> rồi dùng class <code>AnthropicVertex</code>.<sup><a href="#src-vertex">[13]</a></sup></p>
+      <p>Trên Bedrock và Google Cloud, <strong>nhà cung cấp cloud xuất hoá đơn và tự đặt giá riêng</strong> — đừng lấy bảng giá của Anthropic áp thẳng vào đó.</p>
+    </div>
+
+    <p>Còn hai thứ cao cấp hơn nữa mà docs xếp chung nhóm “building agents”: <strong>Claude Code</strong> (công cụ coding agent) và <strong>Claude Agent SDK</strong> (tự viết agent chạy trong tiến trình của bạn). Bài C3 và C5 sẽ nói riêng.<sup><a href="#src-sdk">[10]</a></sup></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="request">
+    <h2>Messages API — một request gồm những gì</h2>
+    <p>Toàn bộ bài này xoay quanh một endpoint:</p>
+    <pre><code>POST https://api.anthropic.com/v1/messages</code></pre>
+
+    <p>Ba header bắt buộc, và một body JSON. Đây là ví dụ đầy đủ đầu tiên trong docs:<sup><a href="#src-getstarted">[1]</a></sup></p>
+
+    <pre><code>curl https://api.anthropic.com/v1/messages \
+  -H "content-type: application/json" \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -d '{
+    "model": "claude-opus-5-5",
+    "max_tokens": 1000,
+    "messages": [
+      {
+        "role": "user",
+        "content": "What should I search for to find the latest developments in renewable energy?"
+      }
+    ]
+  }'</code></pre>
+
+    <p>Bản Python dùng SDK chính thức — SDK tự đọc biến môi trường <code>ANTHROPIC_API_KEY</code>:</p>
+
+    <pre><code>import anthropic
+
+client = anthropic.Anthropic()
+
+message = client.messages.create(
+    model="claude-opus-5-5",
+    max_tokens=1000,
+    messages=[
+        {
+            "role": "user",
+            "content": "What should I search for to find the latest developments in renewable energy?",
+        }
+    ],
+)
+
+for block in message.content:
+    if block.type == "text":
+        print(block.text)</code></pre>
+
+    <h3>Các trường trong body</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Trường</th><th>Bắt buộc?</th><th>Nghĩa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>model</code></td><td>Có</td><td>Model ID, ví dụ <code>claude-opus-5-5</code>.</td></tr>
+        <tr><td><code>max_tokens</code></td><td>Có</td><td><strong>Trần</strong> số token được sinh ra. Model có thể dừng <em>trước</em> trần này. Đặt <code>0</code> để chỉ “hâm nóng” prompt cache mà không sinh câu trả lời.</td></tr>
+        <tr><td><code>messages</code></td><td>Có</td><td>Danh sách lượt hội thoại, mỗi phần tử có <code>role</code> + <code>content</code>. Tối đa 100.000 message trong một request.</td></tr>
+        <tr><td><code>system</code></td><td>Không</td><td>System prompt — nhận <em>string</em> hoặc mảng text block. Là trường <strong>top-level</strong>, không phải một role.</td></tr>
+        <tr><td><code>stream</code></td><td>Không</td><td><code>true</code> để nhận dần qua SSE (mục 6).</td></tr>
+        <tr><td><code>tools</code></td><td>Không</td><td>Danh sách tool model được phép đề nghị gọi (mục C2 sẽ đào sâu).</td></tr>
+        <tr><td><code>stop_sequences</code></td><td>Không</td><td>Chuỗi tự chọn; model gặp chuỗi này thì dừng, <code>stop_reason</code> là <code>stop_sequence</code>.</td></tr>
+        <tr><td><code>thinking</code></td><td>Không</td><td>Cấu hình extended thinking; tốn tối thiểu 1.024 token budget và <strong>tính vào <code>max_tokens</code></strong>.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">temperature / top_p / top_k đã deprecated</div>
+      <p>Docs ghi rõ: các model ra đời <strong>sau Claude Opus 4.6</strong> không nhận <code>temperature</code>, <code>top_p</code>, <code>top_k</code> nữa. Giá trị tương thích ngược duy nhất được chấp nhận là <code>temperature: 1.0</code> (và <code>top_p ≥ 0.99</code>); giá trị khác bị trả về lỗi 400. Nếu bạn copy code cũ có <code>temperature=0</code> từ tutorial trên mạng, nó sẽ gãy — đây là bẫy rất thật khi nâng cấp.</p>
+    </div>
+
+    <h3>Ba luật của mảng <code>messages</code></h3>
+    <ol class="steps">
+      <li><strong>Chỉ có hai role:</strong> <code>user</code> và <code>assistant</code>. Không có role <code>system</code> — muốn system prompt thì dùng trường <code>system</code>.</li>
+      <li><strong>Hai lượt cùng role liền nhau sẽ bị gộp</strong> thành một lượt. Bạn không cần (và không nên) lo chuyện “phải xen kẽ tuyệt đối”.</li>
+      <li><strong>Nếu message cuối là <code>assistant</code></strong>, câu trả lời sẽ <em>viết tiếp</em> từ đó. Mẹo này gọi là prefill — dùng để ép model bắt đầu bằng một khuôn định sẵn.</li>
+    </ol>
+
+    <pre><code>[
+  {"role": "user", "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"},
+  {"role": "assistant", "content": "The best answer is ("}
+]</code></pre>
+
+    <p>Model sẽ viết tiếp từ <code>"The best answer is ("</code> — hữu ích khi bạn cần output đúng khuôn mà không muốn viết parser phức tạp.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="response">
+    <h2>Response — content blocks, stop_reason, usage</h2>
+    <p>Chạy lời gọi trên, đây là thứ quay về (rút gọn phần chữ):<sup><a href="#src-getstarted">[1]</a></sup></p>
+
+    <pre><code>{
+  "model": "claude-opus-5-5",
+  "id": "msg_013mHbppMPd2PrVJzGMZPt2D",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "text",
+      "text": "Here are some effective search strategies to find the latest developments..."
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "stop_details": null,
+  "usage": {
+    "input_tokens": 21,
+    "output_tokens": 305
+  }
+}</code></pre>
+
+    <div class="callout">
+      <div class="callout-title">Vì sao <code>content</code> là mảng?</div>
+      <p>Vì một lượt trả lời có thể gồm <em>nhiều loại khối</em> khác nhau: <code>text</code>, <code>tool_use</code> (đề nghị gọi tool), <code>thinking</code> (suy nghĩ), <code>redacted_thinking</code>… Đó là lý do đoạn code quickstart phải viết <code>for block in message.content: if block.type == "text"</code> — chứ không đọc thẳng một chuỗi text.</p>
+    </div>
+
+    <h3><code>stop_reason</code> — model dừng vì lý do gì?</h3>
+    <p>Đây là trường quan trọng nhất để viết code chống lỗi, vì nó cho biết câu trả lời có <em>trọn vẹn</em> không. Docs liệt kê bảy giá trị:<sup><a href="#src-create">[2]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Giá trị</th><th>Nghĩa</th><th>Bạn nên làm gì</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>end_turn</code></td><td>Model kết thúc tự nhiên</td><td>Vui vẻ đi tiếp</td></tr>
+        <tr><td><code>max_tokens</code></td><td>Chạm trần <code>max_tokens</code> (hoặc trần của model)</td><td>Câu trả lời bị <strong>cụt</strong> — tăng trần hoặc xử lý nối tiếp</td></tr>
+        <tr><td><code>stop_sequence</code></td><td>Gặp một chuỗi trong <code>stop_sequences</code></td><td>Đọc <code>stop_sequence</code> để biết chuỗi nào</td></tr>
+        <tr><td><code>tool_use</code></td><td>Model đề nghị gọi tool</td><td>Chạy tool rồi gửi kết quả về (vòng lặp agent!)</td></tr>
+        <tr><td><code>pause_turn</code></td><td>Lượt dài bị tạm dừng</td><td>Gửi lại nguyên response để model viết tiếp</td></tr>
+        <tr><td><code>refusal</code></td><td>Classifier can thiệp vì chính sách</td><td>Đọc <code>stop_details</code> (có <code>category</code>, <code>explanation</code>)</td></tr>
+        <tr><td><code>model_context_window_exceeded</code></td><td>Vượt cửa sổ ngữ cảnh của model</td><td>Cắt ngắn ngữ cảnh rồi gọi lại</td></tr>
+      </tbody>
+    </table>
+
+    <p>Khi streaming, ở event <code>message_start</code> trường này là <code>null</code>; các event sau mới có giá trị. Còn ở chế độ thường (non-streaming) nó <strong>luôn có giá trị</strong>.</p>
+
+    <h3><code>usage</code> — hoá đơn mini của mỗi request</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Trường</th><th>Nghĩa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>input_tokens</code></td><td>Token input <strong>sau cache breakpoint cuối</strong> — không phải tổng input!</td></tr>
+        <tr><td><code>cache_creation_input_tokens</code></td><td>Token đang được <em>ghi</em> vào cache</td></tr>
+        <tr><td><code>cache_read_input_tokens</code></td><td>Token <em>đọc từ</em> cache (rẻ hơn nhiều)</td></tr>
+        <tr><td><code>output_tokens</code></td><td>Token model sinh ra</td></tr>
+        <tr><td><code>output_tokens_details.thinking_tokens</code></td><td>Phần output là suy nghĩ nội bộ (nếu có)</td></tr>
+        <tr><td><code>server_tool_use</code></td><td>Số lượt gọi server tool (web search, web fetch…)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Công thức tổng input — chỗ này ai cũng từng tính sai</div>
+      <p><code>total_input_tokens = cache_read_input_tokens + cache_creation_input_tokens + input_tokens</code></p>
+      <p>Vì <code>input_tokens</code> chỉ đếm phần <em>từ sau breakpoint cuối</em>. Ví dụ trong docs: bạn cache một tài liệu 200.000 token rồi hỏi một câu 50 token — response sẽ hiện <code>input_tokens: 50</code>, dù tổng input là 200.050 token.<sup><a href="#src-ratelimits">[8]</a></sup></p>
+    </div>
+
+    <p>Một chi tiết nhỏ nhưng hay gặp khi debug: docs lưu ý <code>output_tokens</code> <strong>luôn khác 0</strong>, kể cả khi model trả về chuỗi rỗng — vì còn phần định dạng mà bạn không nhìn thấy.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="multi-turn">
+    <h2>Multi-turn — ai giữ trạng thái?</h2>
+    <p>Đây là câu hỏi tôi muốn bạn nhớ nhất bài. Docs nói gọn: Messages API dùng được cho “single queries or <strong>stateless</strong> multi-turn conversations”.<sup><a href="#src-create">[2]</a></sup></p>
+
+    <blockquote>
+      <p>“You specify the prior conversational turns with the <code>messages</code> parameter, and the model then generates the next Message in the conversation.”</p>
+      <cite>— Anthropic docs, Create a Message</cite>
+    </blockquote>
+
+    <p>Nghĩa là: <strong>model không nhớ gì giữa các lời gọi</strong>. Không có session, không có cookie, không có “cuộc hội thoại đang mở”. Muốn lượt 2 hiểu lượt 1, bạn phải <em>gửi lại toàn bộ lịch sử</em>.</p>
+
+    <p>Cụ thể, lượt 1:</p>
+    <pre><code>messages: [
+  { "role": "user", "content": "Hà Nội có bao nhiêu quận?" }
+]</code></pre>
+
+    <p>Lượt 2, bạn gửi <strong>cả ba</strong> message — trong đó câu trả lời cũ do <em>bạn</em> lấy từ response trước rồi ghép vào:</p>
+    <pre><code>messages: [
+  { "role": "user",      "content": "Hà Nội có bao nhiêu quận?" },
+  { "role": "assistant", "content": "12 quận, 17 huyện và 1 thị xã." },
+  { "role": "user",      "content": "Vậy kể tên các quận." }
+]</code></pre>
+
+    <pre><code>Lượt 1:  [user]                → model → [assistant A1]
+Lượt 2:  [user, assistant A1, user] → model → [assistant A2]
+Lượt 3:  [user, assistant A1, user, assistant A2, user] → ...
+                  ▲
+        "trạng thái" nằm ở ĐÂY — trong app của bạn</code></pre>
+
+    <p>Hệ quả thực tế, và đây là phần đáng nhớ hơn định nghĩa:</p>
+    <ul>
+      <li><strong>Input token tăng dần mỗi lượt.</strong> Lượt 10 trả tiền cho cả 9 lượt trước. Hội thoại càng dài, mỗi câu hỏi mới càng đắt — đây chính là lý do prompt caching tồn tại (mục 8).</li>
+      <li><strong>Bạn phải tự cắt tỉa (context management).</strong> Không ai cắt giúp bạn; history dài quá thì chạm <code>model_context_window_exceeded</code>.</li>
+      <li><strong>Bạn giữ nguyên văn các block đặc biệt.</strong> Ví dụ <code>redacted_thinking</code> phải gửi lại y nguyên khi tiếp tục hội thoại.</li>
+      <li><strong>Muốn stateful thật thì chọn cửa khác.</strong> Managed Agents lưu session, conversation history và filesystem <em>server-side</em> — nó stateful theo thiết kế. Còn Messages API thì không, và đó là lựa chọn có chủ đích: đơn giản, dễ suy luận, dễ scale.</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">Câu thần chú</div>
+      <p><em>“Stateless API, stateful app.”</em> — API không nhớ; <strong>ứng dụng của bạn</strong> nhớ, và mỗi lần gọi nó kể lại câu chuyện từ đầu.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="system">
+    <h2>System prompt — luật chơi đặt trước</h2>
+    <p>Trường <code>system</code> là nơi đặt vai trò, giọng điệu và ràng buộc chung. Docs mô tả nó là cách “cung cấp bối cảnh và chỉ dẫn, ví dụ xác định mục tiêu hoặc vai trò cụ thể”.<sup><a href="#src-create">[2]</a></sup></p>
+
+    <pre><code>{
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 1024,
+  "system": "Bạn là trợ lý pháp chế của một công ty bảo hiểm. Chỉ trả lời dựa trên tài liệu được cung cấp. Nếu tài liệu không có thông tin, nói thẳng là không có — tuyệt đối không suy đoán. Trả lời bằng tiếng Việt, tối đa 5 câu.",
+  "messages": [
+    { "role": "user", "content": "Khách hàng chậm đóng phí 45 ngày thì hợp đồng thế nào?" }
+  ]
+}</code></pre>
+
+    <p>Ba điều cần nhớ về <code>system</code>:</p>
+    <ol>
+      <li><strong>Nó là top-level, không phải một role.</strong> Viết <code>{"role": "system", ...}</code> trong <code>messages</code> là lỗi — docs nói thẳng: “there is no <code>system</code> role for input messages in the Messages API”.</li>
+      <li><strong>Nó nhận string hoặc mảng text block.</strong> Dạng mảng cần khi bạn muốn gắn <code>cache_control</code> vào từng khối (xem mục 8).</li>
+      <li><strong>Nó nằm trong phần cache được.</strong> Thứ tự phân cấp cache là <code>tools</code> → <code>system</code> → <code>messages</code>. Đổi system prompt là vứt bỏ cache của cả system lẫn messages — nên hãy đặt phần <em>ổn định</em> ở đầu, phần <em>hay đổi</em> ở cuối.</li>
+    </ol>
+
+    <p>Tôi hay ví system prompt như <strong>bản mô tả công việc</strong> dán ở cửa phòng: mọi câu hỏi đi qua đều chịu ảnh hưởng của nó, nhưng nó không phải một lượt nói chuyện. Vì nó lặp lại ở mọi request, nó cũng là <em>ứng viên số một để cache</em>.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="streaming">
+    <h2>Streaming — chữ chảy về từng mảnh</h2>
+    <p>Mặc định, bạn chờ đến khi model viết xong mới nhận cả response. Với <code>"stream": true</code>, response được đẩy về dần bằng <strong>server-sent events (SSE)</strong> — cùng cơ chế khiến ChatGPT “gõ chữ” trước mắt bạn.<sup><a href="#src-streaming">[6]</a></sup></p>
+
+    <h3>Trình tự event</h3>
+    <ol class="steps">
+      <li><code>message_start</code> — một object <code>Message</code> với <code>content</code> rỗng; <code>stop_reason</code> là <code>null</code>.</li>
+      <li>Với mỗi content block: <code>content_block_start</code> → một hoặc nhiều <code>content_block_delta</code> → <code>content_block_stop</code>. Mỗi block có <code>index</code> khớp vị trí của nó trong mảng <code>content</code> cuối cùng.</li>
+      <li>Một hoặc nhiều <code>message_delta</code> — cập nhật ở cấp message (ví dụ <code>stop_reason</code>, <code>usage</code>).</li>
+      <li><code>message_stop</code> — kết thúc.</li>
+    </ol>
+    <p>Rải rác trong đó có thể có event <code>ping</code> (giữ kết nối), và nếu lỗi xảy ra giữa dòng thì có event <code>error</code>.</p>
+
+    <pre><code>event: message_start
+data: {"type":"message_start","message":{"id":"msg_1nZd...","content":[],"stop_reason":null,
+       "usage":{"input_tokens":25,"output_tokens":1}}}
+
+event: content_block_start
+data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello"}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"!"}}
+
+event: content_block_stop
+...</code></pre>
+
+    <p>Ba loại <code>delta</code> bạn sẽ gặp:</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Delta</th><th>Dùng cho</th><th>Ghi chú</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>text_delta</code></td><td>Chữ thường</td><td>Cộng dồn chuỗi là ra câu trả lời</td></tr>
+        <tr><td><code>input_json_delta</code></td><td>Tham số tool</td><td>JSON về từng mảnh — phải ghép rồi mới parse</td></tr>
+        <tr><td><code>thinking_delta</code> + <code>signature_delta</code></td><td>Suy nghĩ</td><td>Signature gửi ngay trước <code>content_block_stop</code> để xác thực block</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Hai chi tiết dễ sai</div>
+      <ul>
+        <li><strong><code>usage</code> trong <code>message_delta</code> là luỹ kế</strong> — không phải “token của riêng event này”.</li>
+        <li><strong>Tool call có thể “im lặng” một lúc.</strong> Các model hiện tại chỉ phát từng cặp key–value hoàn chỉnh của <code>input</code>, nên giữa các event có thể có khoảng nghỉ trong khi model đang nghĩ.</li>
+      </ul>
+    </div>
+
+    <p>SDK giúp bạn khỏi tự ghép event. Python:</p>
+    <pre><code>with client.messages.stream(
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Hello"}],
+    model="claude-opus-5-5",
+) as stream:
+    for text in stream.text_stream:
+        print(text, end="", flush=True)</code></pre>
+
+    <p>Nếu bạn <em>không</em> cần hiện dần mà chỉ muốn tránh timeout với <code>max_tokens</code> lớn, SDK có cách stream ngầm rồi trả về message hoàn chỉnh — ví dụ <code>stream.get_final_message()</code> trong Python. Docs ghi rõ: với <code>max_tokens</code> lớn, SDK <strong>bắt buộc dùng streaming ngầm</strong> để tránh HTTP timeout.</p>
+
+    <p>Vì sao nên stream? Vì cảm nhận của người dùng. Tổng thời gian sinh có thể như nhau, nhưng nhìn thấy chữ chạy thì “nhanh” hơn hẳn so với màn hình trắng 8 giây.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="models">
+    <h2>Chọn model — khả năng, giá, độ trễ, context window</h2>
+    <p>Docs khuyên: nếu chưa biết chọn gì, <strong>bắt đầu với Claude Opus 5.5 cho phần lớn workload</strong>; dùng <strong>Claude Fable 5.1</strong> khi cần reasoning khắt khe và agentic dài hơi, hoặc khi eval của bạn trên Opus 5.5 vẫn chưa đạt.<sup><a href="#src-models">[3]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Fable 5.1</th><th>Opus 5.5</th><th>Sonnet 5.5</th><th>Haiku 4.5</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Định vị (docs)</strong></td><td>Reasoning khắt khe &amp; agentic dài hơi</td><td>Agentic coding &amp; knowledge work chạy lâu</td><td>Kết hợp tốt nhất giữa tốc độ và trí tuệ</td><td>Nhanh nhất, trí tuệ gần frontier</td></tr>
+        <tr><td><strong>Độ trễ tương đối</strong></td><td>Chậm hơn</td><td>Trung bình</td><td>Nhanh</td><td>Nhanh nhất</td></tr>
+        <tr><td><strong>Giá vào / ra</strong> ($/MTok)</td><td>10 / 50</td><td>4 / 20</td><td>2 / 10</td><td>1 / 5</td></tr>
+        <tr><td><strong>Context window</strong></td><td>1M token</td><td>1M token</td><td>1M token</td><td>200K token</td></tr>
+        <tr><td><strong>Max output</strong></td><td>128K</td><td>128K</td><td>128K</td><td>64K</td></tr>
+        <tr><td><strong>API ID</strong></td><td><code>claude-fable-5-1</code></td><td><code>claude-opus-5-5</code></td><td><code>claude-sonnet-5-5</code></td><td><code>claude-haiku-4-5-20251001</code></td></tr>
+        <tr><td><strong>Alias</strong></td><td><code>claude-fable-5-1</code></td><td><code>claude-opus-5-5</code></td><td><code>claude-sonnet-5-5</code></td><td><code>claude-haiku-4-5</code></td></tr>
+        <tr><td><strong>Knowledge cutoff</strong></td><td>Jun 2026</td><td>Jun 2026</td><td>Jun 2026</td><td>Feb 2025</td></tr>
+      </tbody>
+    </table>
+
+    <p>Bảng này chính là bài học “model selection”: <strong>khả năng – giá – độ trễ là ba đỉnh của một tam giác</strong>, không có đỉnh nào miễn phí. Fable 5.1 mạnh nhất nhưng đắt gấp 5 lần Haiku 4.5 ở input; Haiku nhanh nhất nhưng knowledge cutoff cũ hơn và context window nhỏ hơn.</p>
+
+    <h3>Context window</h3>
+    <p>Context window là <strong>tổng ngân sách token cho một lời gọi</strong>: input + output. Với các model 1M token hiện tại, docs ước lượng 1M token ≈ <strong>555k từ</strong> hoặc khoảng 2,5 triệu ký tự Unicode; còn 200K token ≈ 150k từ.</p>
+
+    <div class="callout">
+      <div class="callout-title">Hai cái bẫy về “1M token”</div>
+      <ul>
+        <li><strong>Context lớn không có nghĩa là miễn phí.</strong> Bạn vẫn trả tiền theo token thật dùng. Docs nói rõ một request 900k token được tính cùng đơn giá mỗi token như request 9k token — tức là <em>cùng giá trên mỗi token</em>, chứ không phải cùng tổng tiền.</li>
+        <li><strong>Tokenizer đổi từ Claude 4.7.</strong> Tokenizer mới sinh <strong>khoảng 30% nhiều token hơn</strong> cho cùng một đoạn text. Đừng lấy số token đo hồi trước để tính ngân sách cho model mới — hãy đo lại.</li>
+      </ul>
+    </div>
+
+    <h3>Chọn model theo tình huống</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Tình huống</th><th>Bắt đầu từ</th><th>Lý do</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Phần lớn công việc mặc định</td><td>Opus 5.5</td><td>Khuyến nghị mặc định của docs</td></tr>
+        <tr><td>Reasoning khắt khe, agent chạy hàng giờ</td><td>Fable 5.1</td><td>Mạnh nhất cho long-horizon</td></tr>
+        <tr><td>Sản phẩm cần phản hồi nhanh, khối lượng lớn</td><td>Sonnet 5.5 / Haiku 4.5</td><td>Tam giác giá–tốc độ đổi chiều</td></tr>
+        <tr><td>Phân loại, trích xuất, việc “dễ” số lượng lớn</td><td>Haiku 4.5</td><td>1 USD/MTok input — rẻ nhất đội hình hiện tại</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Việc bạn phải tự làm: đo bằng eval của mình.</strong> Docs chỉ cho điểm khởi đầu; câu trả lời đúng cho app của bạn chỉ có khi bạn chạy thử trên dữ liệu thật. Một mẹo vận hành: gọi endpoint <code>POST /v1/messages/count_tokens</code> để đếm token <em>trước</em> khi gửi — dùng cho quyết định routing model và quản lý chi phí.<sup><a href="#src-tokencount">[12]</a></sup></p>
+
+    <p>Cuối cùng, chuyện ID: mọi model ID đều là <strong>snapshot được ghim</strong>, kể cả các ID không ghi ngày từ thế hệ 4.6 trở đi. Mỗi nền tảng có ID hơi khác nhau — ví dụ trên Bedrock là <code>anthropic.claude-opus-5-5</code>, trên Google Cloud có bản như <code>claude-haiku-4-5@20251001</code>. Đừng hardcode ID rồi quên.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="pricing">
+    <h2>Token, giá, và ba cách tiết kiệm</h2>
+    <p>Đơn vị tính giá là <strong>MTok — million token</strong>. “$4 / MTok” nghĩa là 4 USD cho mỗi triệu token.<sup><a href="#src-pricing">[4]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Model</th><th>Input</th><th>Output</th><th>Cache write 5m</th><th>Cache write 1h</th><th>Cache hit</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Fable 5.1</td><td>$10</td><td>$50</td><td>$12.50</td><td>$20</td><td>$0.25</td></tr>
+        <tr><td>Opus 5.5</td><td>$4</td><td>$20</td><td>$5</td><td>$8</td><td>$0.20</td></tr>
+        <tr><td>Sonnet 5.5</td><td>$2</td><td>$10</td><td>$2.50</td><td>$4</td><td>$0.20</td></tr>
+        <tr><td>Haiku 4.5</td><td>$1</td><td>$5</td><td>$1.25</td><td>$2</td><td>$0.10</td></tr>
+      </tbody>
+    </table>
+
+    <p>Công thức tính tiền một lượt gọi rất đơn giản:</p>
+    <pre><code>cost ≈ input_tokens/1_000_000 × giá_input + output_tokens/1_000_000 × giá_output</code></pre>
+
+    <p><strong>Ví dụ 1 — chính response trong bài này.</strong> Quickstart trả về <code>input_tokens: 21</code>, <code>output_tokens: 305</code>, model Opus 5.5:</p>
+    <pre><code>21    / 1.000.000 × $4  = $0,000084
+305   / 1.000.000 × $20 = $0,0061
+                        ─────────
+                        ≈ $0,0062 một lượt</code></pre>
+
+    <p><strong>Ví dụ 2 — bài toán thật hơn.</strong> Một lượt gọi Sonnet 5.5 với 10.000 token input (system + tài liệu) và 500 token output:</p>
+    <pre><code>input : 10.000 × $2  / 1.000.000 = $0,020
+output:    500 × $10 / 1.000.000 = $0,005
+                                   ───────
+                                   $0,025 / lượt
+1.000 lượt/ngày → $25/ngày → khoảng $750/tháng</code></pre>
+
+    <p>Nhìn con số cuối là thấy vì sao phần còn lại của mục này quan trọng.</p>
+
+    <h3>Cách 1 — Prompt caching (giảm giá input lặp lại)</h3>
+    <p>Ý tưởng: phần đầu prompt (system prompt, tài liệu dài, tool definitions, lịch sử hội thoại) thường <strong>lặp y nguyên</strong> giữa các request. Cache lại thì lần sau chỉ trả giá đọc cache.</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Thao tác cache</th><th>Hệ số giá</th><th>Ghi chú</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ghi cache 5 phút</td><td>1,25× giá input</td><td>TTL mặc định</td></tr>
+        <tr><td>Ghi cache 1 giờ</td><td>2× giá input</td><td>Chọn khi cần giữ lâu hơn</td></tr>
+        <tr><td>Đọc cache (hit)</td><td>0,1× giá input</td><td>Opus 5.5: 0,05×; Fable 5.1 &amp; Mythos 5.1: 0,025×</td></tr>
+      </tbody>
+    </table>
+
+    <p>Có hai cách bật. <strong>Automatic caching</strong> đơn giản nhất — thêm một trường top-level vào request, hệ thống tự đặt breakpoint ở block cache-được cuối cùng và tự dịch nó về trước khi hội thoại dài ra. <strong>Explicit breakpoints</strong> là gắn <code>cache_control</code> lên từng content block khi cần kiểm soát kỹ. Cả hai dùng chung một trường <code>cache_control: {"type": "ephemeral"}</code> (chỉ <code>ephemeral</code> được hỗ trợ).<sup><a href="#src-caching">[5]</a></sup></p>
+
+    <pre><code>curl https://api.anthropic.com/v1/messages \
+  -H "content-type: application/json" \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -d '{
+    "model": "claude-opus-5-5",
+    "max_tokens": 1024,
+    "cache_control": {"type": "ephemeral"},
+    "system": "Bạn là chuyên gia phân tích văn học...",
+    "messages": [
+      {"role": "user", "content": "Analyze the major themes in Pride and Prejudice."}
+    ]
+  }'</code></pre>
+
+    <p>Vài con số và luật chơi phải nhớ:</p>
+    <ul>
+      <li><strong>Ngưỡng tối thiểu để được cache:</strong> 512 token với Fable 5.1, Mythos 5.1, Opus 5.5, Opus 5, Sonnet 5.5; 1.024 token với Opus 4.8, Sonnet 5, Sonnet 4.6/4.5; <strong>4.096 token với Opus 4.6/4.5 và Haiku 4.5</strong>. Ngắn hơn ngưỡng thì request vẫn chạy nhưng <em>không được cache</em>, và không có lỗi nào báo.</li>
+      <li><strong>Cache là theo tiền tố (prefix), phân cấp</strong> <code>tools</code> → <code>system</code> → <code>messages</code>. Đổi tool definitions là mất sạch cache; đổi <code>tool_choice</code> chỉ ảnh hưởng tầng messages.</li>
+      <li><strong>Tối đa 4 breakpoint; cửa sổ lookback 20 block.</strong> Hệ thống tìm ngược tối đa 20 vị trí để tìm entry mà request trước đã ghi.</li>
+      <li><strong>Chính breakpoint không tốn tiền</strong> — chỉ ghi cache và đọc cache mới tính tiền.</li>
+      <li><strong>Hoàn vốn:</strong> với TTL 5 phút, cache có lợi ngay sau <em>một</em> lần đọc; với TTL 1 giờ, sau <em>hai</em> lần đọc.</li>
+      <li><strong>Bẫy hay gặp:</strong> đặt breakpoint lên block <em>đổi mỗi request</em> (timestamp, câu hỏi mới) thì lần nào cũng là cache write, không bao giờ hit. Hãy đặt cuối phần tĩnh.</li>
+      <li><strong>Request song song:</strong> entry cache chỉ “hiện ra” sau khi response đầu tiên bắt đầu — muốn hit, hãy đợi request đầu rồi mới bắn các request sau.</li>
+      <li><strong>Lợi thêm về rate limit:</strong> với đa số model, token đọc từ cache <strong>không tính</strong> vào ITPM. Docs ví dụ: trần 2.000.000 ITPM với tỉ lệ cache hit 80% cho phép xử lý hiệu dụng ~10.000.000 input token/phút.</li>
+    </ul>
+
+    <p><strong>Tính thử hiệu quả.</strong> Cũng bài toán ví dụ 2, nhưng 10.000 token đầu là một tài liệu không đổi, và bạn gọi 10 lần liên tiếp trong 5 phút:</p>
+    <pre><code>Không cache : 10 × 10.000 token = 100.000 token input
+              = 0,1 MTok × $2 = $0,20
+
+Có cache    : ghi 10.000 × $2 × 1,25 = $0,025
+              đọc 9 lần: 0,09 MTok × $0,20 = $0,018
+              ───────────────────────────────
+              tổng $0,043  →  rẻ hơn ~78% phần input này</code></pre>
+
+    <h3>Cách 2 — Batch API (giảm 50%)</h3>
+    <p>Nếu việc không cần trả lời ngay — ví dụ chạy eval trên hàng nghìn test case, moderation nội dung, sinh mô tả sản phẩm hàng loạt — hãy ném vào Batch. Đặc điểm từ docs:<sup><a href="#src-batch">[7]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Đặc điểm</th><th>Con số / luật</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Giá</td><td><strong>50% giá chuẩn</strong> cho cả input lẫn output. Ví dụ Opus 5.5 còn $2 / $10; Sonnet 5.5 còn $1 / $5; Haiku 4.5 còn $0,50 / $2,50</td></tr>
+        <tr><td>Thời gian</td><td>Phần lớn batch xong trong vòng 1 giờ</td></tr>
+        <tr><td>Giới hạn một batch</td><td>100.000 request <em>hoặc</em> 256 MB, tuỳ cái nào chạm trước</td></tr>
+        <tr><td>Hết hạn</td><td>Batch chưa xong trong 24 giờ thì hết hạn; kết quả giữ được 29 ngày</td></tr>
+        <tr><td>Định danh</td><td>Mỗi request cần <code>custom_id</code> — 1–64 ký tự, chỉ chữ/số/gạch ngang/gạch dưới</td></tr>
+        <tr><td>Không hỗ trợ</td><td><code>stream: true</code>, <code>speed</code> (fast mode), <code>max_tokens: 0</code></td></tr>
+      </tbody>
+    </table>
+
+    <p>Batch làm được gần như mọi thứ Messages API làm: vision, tool use (kể cả server tool), system prompt, multi-turn, extended thinking. Vì mỗi request xử lý độc lập, bạn có thể trộn nhiều loại request trong một batch.</p>
+
+    <h3>Cách 3 — Đo trước, và chọn đúng model</h3>
+    <p>Hai thói quen rẻ tiền nhưng tiết kiệm thật: gọi <code>POST /v1/messages/count_tokens</code> để biết trước input token (đây là <em>ước lượng</em>, và bạn không bị tính tiền cho token do hệ thống tự thêm vào), và dùng model rẻ hơn cho việc dễ. Đổi từ Opus 5.5 sang Haiku 4.5 cho một tác vụ phân loại là giảm 4 lần chi phí input ngay lập tức — miễn là eval vẫn đạt.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="limits">
+    <h2>Rate limits, lỗi API và SDK</h2>
+    <p>Anthropic giới hạn theo <strong>tổ chức</strong>, và có hai loại: <strong>spend limits</strong> (trần chi tiêu tháng) và <strong>rate limits</strong> (trần số request/token mỗi phút). Rate limits đo bằng ba thước: <strong>RPM</strong> (request/phút), <strong>ITPM</strong> (input token/phút), <strong>OTPM</strong> (output token/phút) — riêng cho từng model.<sup><a href="#src-ratelimits">[8]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Tier</th><th>Trần chi tiêu tháng</th><th>Opus 5.5 / Sonnet 5.5 / Haiku 4.5</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Start</td><td>$500</td><td>1.000 RPM · 2.000.000 ITPM · 400.000 OTPM</td></tr>
+        <tr><td>Build</td><td>$1.000</td><td>5.000 RPM · 5.000.000 ITPM · 1.000.000 OTPM</td></tr>
+        <tr><td>Scale</td><td>$200.000</td><td>10.000 RPM · 10.000.000 ITPM · 2.000.000 OTPM</td></tr>
+      </tbody>
+    </table>
+
+    <p>Tổ chức mới có thể bắt đầu ở tier <em>Evaluation</em> với trần thấp hơn, rồi tự nâng khi có lịch sử dùng. Cơ chế là <strong>token bucket</strong>: capacity được nạp liên tục tới trần, không phải reset theo mốc cố định — nên burst ngắn vẫn có thể vượt và ăn 429.</p>
+
+    <div class="callout">
+      <div class="callout-title">Cache-aware ITPM — điểm cộng ít người biết</div>
+      <p>Với <strong>đa số model Claude</strong>, chỉ <code>input_tokens</code> và <code>cache_creation_input_tokens</code> tính vào ITPM; <code>cache_read_input_tokens</code> <strong>không tính</strong>. Nghĩa là cache không chỉ rẻ hơn mà còn cho throughput hiệu dụng cao hơn — đúng như ví dụ 80% cache hit ở mục 8.</p>
+    </div>
+
+    <h3>429 và các lỗi HTTP cần biết</h3>
+    <table class="mapping">
+      <thead>
+        <tr><th>Mã</th><th>Loại lỗi</th><th>Nghĩa / xử lý</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>400</td><td><code>invalid_request_error</code></td><td>Sai định dạng/nội dung request — sửa code, đừng retry mù</td></tr>
+        <tr><td>401</td><td><code>authentication_error</code></td><td>API key sai, bị thu hồi, hết hạn</td></tr>
+        <tr><td>402</td><td><code>billing_error</code></td><td>Vấn đề thanh toán</td></tr>
+        <tr><td>403</td><td><code>permission_error</code></td><td>Key không có quyền với tài nguyên đó</td></tr>
+        <tr><td>404</td><td><code>not_found_error</code></td><td>Sai đường dẫn hoặc ID tài nguyên</td></tr>
+        <tr><td>409</td><td><code>conflict_error</code></td><td>Xung đột trạng thái tài nguyên — giải quyết rồi retry</td></tr>
+        <tr><td>413</td><td><code>request_too_large</code></td><td>Vượt giới hạn dung lượng (Messages API: 32 MB)</td></tr>
+        <tr><td>429</td><td><code>rate_limit_error</code></td><td>Chạm rate limit, chạm trần chi tiêu, hoặc tier bị giới hạn</td></tr>
+        <tr><td>500</td><td><code>api_error</code></td><td>Lỗi phía Anthropic — retry với exponential backoff</td></tr>
+        <tr><td>504</td><td><code>timeout_error</code></td><td>Xử lý quá lâu — cân nhắc streaming</td></tr>
+        <tr><td>529</td><td><code>overloaded_error</code></td><td>API tạm quá tải</td></tr>
+      </tbody>
+    </table>
+
+    <p>Với 429 thường, response có header <code>retry-after</code> cho biết nên đợi bao lâu. Nhưng có một ca đặc biệt: khi chạm <strong>trần chi tiêu</strong> của tier, bạn cũng nhận 429 mà <em>không</em> có <code>retry-after</code> và retry sẽ fail mãi cho tới khi quyền truy cập được mở lại — phân biệt bằng <code>error.details.error_code = "enforced_spend_limit_reached"</code>.</p>
+
+    <p>Mọi lỗi đều có cùng hình dạng, kèm một <code>request_id</code> để bạn đưa cho support khi cần:<sup><a href="#src-errors">[9]</a></sup></p>
+
+    <pre><code>{
+  "type": "error",
+  "error": {
+    "type": "not_found_error",
+    "message": "The requested resource could not be found."
+  },
+  "request_id": "req_011CSHoEeqs5C35K2UUqR7Fy"
+}</code></pre>
+
+    <h3>SDK lo phần khó</h3>
+    <p>SDK chính thức có cho <strong>bảy ngôn ngữ</strong>: Python, TypeScript, C#, Go, Java, PHP, Ruby — cộng thêm CLI <code>ant</code> và vài thư viện tích hợp (Apple Foundation Models, tương thích OpenAI SDK). Chúng lo sẵn: type safety, streaming, xử lý lỗi, và <strong>tự retry các lỗi tạm thời</strong> (lỗi kết nối, rate limit, 5xx) bằng exponential backoff — mặc định <strong>2 lần</strong>, có tôn trọng header <code>retry-after</code>, và chỉnh được qua <code>max_retries</code>.<sup><a href="#src-sdk">[10]</a></sup></p>
+
+    <p>Ba lệnh cài đặt để bắt đầu: <code>pip install anthropic</code> (Python), <code>npm install @anthropic-ai/sdk</code> (TypeScript), <code>brew install anthropics/tap/ant</code> (CLI).</p>
+
+    <div class="callout">
+      <div class="callout-title">Lỗi giữa dòng stream</div>
+      <p>Nếu lỗi xảy ra <em>sau khi</em> API đã trả 200 và stream đang chảy, cơ chế xử lý khác đi: bạn nhận một event <code>error</code> trong chính dòng SSE, chứ không phải HTTP status. Đừng chỉ bọc <code>try/except</code> quanh lời gọi rồi quên phần đọc stream.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+    <ol>
+      <li><strong>“API tự nhớ hội thoại của tôi.”</strong> — Không. Messages API là stateless; mỗi request phải mang theo đủ lịch sử. Muốn server giữ trạng thái thì chọn Managed Agents (stateful theo thiết kế), còn không thì app của bạn là nơi lưu.</li>
+      <li><strong>“<code>max_tokens</code> là số token model sẽ viết.”</strong> — Không, nó là <em>trần</em>. Model có thể dừng sớm (<code>end_turn</code>) hoặc bị cắt (<code>max_tokens</code>). Và nó cũng không ảnh hưởng rate limit OTPM — OTPM đếm token thật sinh ra.</li>
+      <li><strong>“Model đắt hơn luôn là lựa chọn đúng.”</strong> — Không. Tam giác khả năng–giá–độ trễ nghĩa là model mạnh nhất có thể là lựa chọn <em>sai</em> cho một tác vụ phân loại chạy 10 triệu lần. Chọn bằng eval, không bằng cảm giác.</li>
+      <li><strong>“Bật cache là tự động rẻ hơn.”</strong> — Không hẳn. Prompt ngắn hơn ngưỡng tối thiểu thì không được cache; breakpoint đặt sai chỗ thì không bao giờ hit; và lần ghi cache <em>đắt hơn</em> input thường (1,25×). Cache chỉ thắng khi phần prefix được tái sử dụng thật.</li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+    <p>Làm ra nháp trước, rồi mở đáp án. Đáp án là gợi ý — quan trọng là <strong>cách lập luận</strong>.</p>
+
+    <div class="exercise">
+      <h3>A1 · Đọc một response và tính tiền</h3>
+      <p>Đây là response rút gọn của một lời gọi <code>claude-opus-5-5</code>:</p>
+      <pre><code>{
+  "content": [ { "type": "text", "text": "..." } ],
+  "stop_reason": "max_tokens",
+  "usage": { "input_tokens": 1200, "output_tokens": 1000 }
+}</code></pre>
+      <p>Trả lời: (a) câu trả lời có trọn vẹn không, vì sao? (b) chi phí lượt gọi này? (c) nếu muốn câu trả lời dài hơn, sửa gì?</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p><strong>(a) Không trọn vẹn.</strong> <code>stop_reason: "max_tokens"</code> nghĩa là model bị cắt vì chạm trần <code>max_tokens</code>. Trường này là thứ duy nhất cho bạn biết điều đó — code đọc mỗi <code>content</code> sẽ âm thầm trả về câu trả lời cụt.</p>
+        <p><strong>(b)</strong> Opus 5.5 giá $4 input / $20 output mỗi MTok:</p>
+        <pre><code>input : 1.200 × $4  / 1.000.000 = $0,0048
+output: 1.000 × $20 / 1.000.000 = $0,0200
+                                 ───────
+                                 $0,0248</code></pre>
+        <p><strong>(c)</strong> Tăng <code>max_tokens</code>. Nhưng lưu ý trần đó còn bị chặn bởi max output của model (Opus 5.5: 128K) và bởi context window (input + output ≤ 1M với Opus 5.5). Nếu <code>stop_reason</code> là <code>model_context_window_exceeded</code> thì phải cắt ngữ cảnh, không phải tăng trần.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>A2 · Viết request cho lượt hội thoại thứ hai</h3>
+      <p>App của bạn đang chat với người dùng. Lượt 1, bạn đã gửi:</p>
+      <pre><code>{ "role": "user", "content": "Giải thích prompt caching trong 3 câu." }</code></pre>
+      <p>Model trả về đoạn text <code>T1</code>. Viết body JSON cho lượt 2 với câu hỏi tiếp: <em>“Cho tôi ví dụ cụ thể.”</em> — tối giản nhất có thể, và giải thích vì sao phải viết như vậy.</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <pre><code>{
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 1024,
+  "messages": [
+    { "role": "user",      "content": "Giải thích prompt caching trong 3 câu." },
+    { "role": "assistant", "content": "T1" },
+    { "role": "user",      "content": "Cho tôi ví dụ cụ thể." }
+  ]
+}</code></pre>
+        <p><strong>Vì sao:</strong> API stateless — không có <code>T1</code> trong <code>messages</code> thì model không biết bạn đang nói “ví dụ” cho cái gì. Lưu ý <code>T1</code> là nội dung <em>bạn</em> lấy từ response trước và ghép lại; bạn đóng vai người ghi biên bản hội thoại.</p>
+        <p><strong>Tiêu chí tự kiểm:</strong> đúng 3 message, đúng thứ tự user → assistant → user? Không có role <code>system</code> lẫn trong mảng? Nếu khối trả lời có tool_use thì bạn phải gửi lại cả block đó kèm <code>tool_result</code> tương ứng — đó là lý do mục 4 nhấn mạnh “giữ nguyên văn các block đặc biệt”.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>A3 · Thiết kế cấu hình tiết kiệm</h3>
+      <p><strong>Tình huống:</strong> Trợ lý nội bộ trả lời câu hỏi về một quy chế 50.000 token (không đổi). Mỗi ngày có khoảng 2.000 câu hỏi, mỗi câu hỏi ~300 token, mỗi câu trả lời ~400 token. Câu trả lời không cần ngay lập tức — có thể chờ trong giờ. Ngân sách là mối quan tâm số một.</p>
+      <p>Chọn: model nào, có dùng prompt caching không, có dùng Batch API không? Ước lượng chi phí mỗi ngày (theo giá chuẩn, dùng Sonnet 5.5 và Haiku 4.5 để so).</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p><strong>1. Cache chắc chắn dùng.</strong> Tài liệu 50.000 token giống hệt nhau ở mọi request — vượt xa ngưỡng cache 512 token. Đặt nó ở <code>system</code>, bật automatic caching (<code>cache_control</code> top-level), hoặc explicit breakpoint ở cuối tài liệu. Phần đổi mỗi request là câu hỏi 300 token — đặt sau breakpoint.</p>
+        <p><strong>2. Batch dùng được</strong> vì không cần trả lời ngay. Nhớ dùng TTL cache 1 giờ khi chạy batch (batch có thể lâu hơn 5 phút), và <code>max_tokens: 0</code> không được hỗ trợ trong batch.</p>
+        <p><strong>3. Ước lượng với Sonnet 5.5, 2.000 câu/ngày, có cache:</strong></p>
+        <pre><code>Input tài liệu (cache):
+  ghi lần đầu : 50.000 × $2 × 1,25 / 1.000.000 = $0,125
+  1.999 lần đọc: 1.999 × 50.000 × $0,20 / 1.000.000 ≈ $19,99
+Input câu hỏi (không cache):
+  2.000 × 300 = 600.000 token × $2 / 1.000.000 = $1,20
+Output:
+  2.000 × 400 = 800.000 token × $10 / 1.000.000 = $8,00
+                                    ─────────────────
+                                    ≈ $29,3/ngày</code></pre>
+        <p>Nếu <strong>không cache</strong>, riêng tài liệu đã tốn 2.000 × 50.000 = 100 MTok × $2 = <strong>$200/ngày</strong> — cache tiết kiệm phần lớn con số đó. Nếu đổi sang <strong>Haiku 4.5</strong> với cùng cách làm: tài liệu ~$10, câu hỏi $0,60, output $4 → khoảng <strong>$14,6/ngày</strong>. Cộng thêm batch (giảm 50% trên giá token) thì còn thấp hơn nữa — nhưng phải kiểm tra eval: quy chế là loại tác vụ cần độ chính xác, nên hãy đo trước khi hạ model.</p>
+        <p><strong>Điểm cần nói ra:</strong> thứ tự ưu tiên tối ưu là <em>cache → chọn model → batch</em>. Cache giải quyết phần lặp lại (lớn nhất ở đây), chọn model thay đổi đơn giá, batch cắt thêm 50% nhưng đổi lấy việc không có kết quả tức thời.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu — làm nhanh để chắc mình nắm cốt lõi.</p>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">1. Bạn gọi Messages API hai lần liên tiếp. Lần thứ hai, model không biết gì về lượt trước. Vì sao?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Vì mỗi model ID là một snapshot riêng</button>
+        <button class="quiz-opt" data-key="b">Vì Messages API là stateless — muốn model biết, bạn phải gửi lại lịch sử trong <code>messages</code></button>
+        <button class="quiz-opt" data-key="c">Vì API key chưa bật quyền memory</button>
+        <button class="quiz-opt" data-key="d">Vì cần truyền tham số <code>session_id</code></button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: docs gọi nó là “stateless multi-turn conversations”.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> API không giữ trạng thái giữa các lời gọi. Bạn gửi các lượt trước trong <code>messages</code> để model sinh lượt kế tiếp. Không có <code>session_id</code> cho Messages API — muốn session server-side thì đó là Managed Agents.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">2. <code>stop_reason</code> trả về <code>"max_tokens"</code>. Điều đó nghĩa là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Model đã trả lời xong và dừng tự nhiên</button>
+        <button class="quiz-opt" data-key="b">Bạn đã vượt rate limit output token</button>
+        <button class="quiz-opt" data-key="c">Model từ chối trả lời vì chính sách</button>
+        <button class="quiz-opt" data-key="d">Câu trả lời bị cắt vì chạm trần sinh token</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: <code>max_tokens</code> là trần, không phải đích.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Model có thể dừng <em>trước</em> trần; chạm trần thì <code>stop_reason</code> là <code>max_tokens</code> và output bị cụt. Dừng tự nhiên là <code>end_turn</code>; từ chối là <code>refusal</code>.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">3. Theo bảng giá, một cache hit trên Claude Opus 5.5 tốn bao nhiêu?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">$4 / MTok — bằng giá input</button>
+        <button class="quiz-opt" data-key="b">$5 / MTok — bằng giá ghi cache 5 phút</button>
+        <button class="quiz-opt" data-key="c">$0,20 / MTok — 5% giá input</button>
+        <button class="quiz-opt" data-key="d">$0 / MTok — đọc cache miễn phí</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: Opus 5.5 là ngoại lệ so với hệ số 0,1× tiêu chuẩn.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Opus 5.5 có cache hit giá 0,05× giá input — tức $0,20/MTok. Fable 5.1 và Mythos 5.1 còn rẻ hơn theo tỉ lệ (0,025× = $0,25/MTok, nhưng giá gốc cao hơn nhiều). Các model khác dùng mức chuẩn 0,1×.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">4. Batch API khác gì so với gọi Messages API thông thường?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Xử lý bất đồng bộ, giảm 50% giá, phần lớn xong trong 1 giờ</button>
+        <button class="quiz-opt" data-key="b">Chạy được nhiều request hơn nhưng giá cao hơn</button>
+        <button class="quiz-opt" data-key="c">Trả kết quả ngay lập tức nhưng giới hạn 100.000 request</button>
+        <button class="quiz-opt" data-key="d">Chỉ dùng được với model Haiku</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: chữ “asynchronous” ở ngay mô tả đầu tiên của docs.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Batch là async, giảm 50% trên cả input lẫn output, phần lớn batch xong trong 1 giờ; batch chưa xong trong 24 giờ thì hết hạn. Tất cả model đang hoạt động đều hỗ trợ batch, không riêng Haiku.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">5. Với đa số model Claude, token nào KHÔNG tính vào rate limit ITPM?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Token câu hỏi mới nhất của người dùng</button>
+        <button class="quiz-opt" data-key="b">Token đang được ghi vào cache</button>
+        <button class="quiz-opt" data-key="c">Token output</button>
+        <button class="quiz-opt" data-key="d">Token đọc từ cache (cache read)</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: docs nói đây là “key advantage that makes the rate limits effectively higher”.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Chỉ <code>input_tokens</code> + <code>cache_creation_input_tokens</code> tính vào ITPM; <code>cache_read_input_tokens</code> không tính (ngoại lệ: Haiku 3.5). Nhờ vậy cache vừa rẻ vừa tăng throughput hiệu dụng.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question">6. Điền hệ số còn thiếu:</p>
+      <p class="fib-sentence">"Theo bảng giá, cache write 5 phút tốn 1,25× giá input; còn cache hit (đọc) mặc định tốn <span class="fib" data-answer="0.1|0,1" data-placeholder="?"></span>× giá input."</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="luyen-them">
+    <h2>Luyện thêm với nguồn chính thức</h2>
+    <p>Ba repo dưới đây đều là nguồn chính thức của Anthropic trên GitHub (tổ chức <code>anthropics</code>) — dùng để luyện tay song song với bài này:</p>
+    <ul>
+      <li><a href="https://github.com/anthropics/courses">anthropics/courses</a> — khóa <strong><code>anthropic_api_fundamentals</code></strong> (một thư mục trong repo): khóa API cơ bản chính thức; làm song song bài C1.</li>
+      <li><a href="https://github.com/anthropics/claude-cookbooks">anthropics/claude-cookbooks</a> — chọn 1–2 notebook về API basics để chạy thử.</li>
+      <li><a href="https://github.com/anthropics/anthropic-cli">anthropics/anthropic-cli</a> — CLI chính thức của Claude API; luyện gọi API từ terminal.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Messages API</td><td>Endpoint <code>POST /v1/messages</code> — cửa gọi model trực tiếp của Anthropic.</td></tr>
+        <tr><td><code>max_tokens</code></td><td>Trần số token model được sinh; bắt buộc trong mọi request.</td></tr>
+        <tr><td><code>system</code></td><td>System prompt top-level (string hoặc mảng text block); không phải một role.</td></tr>
+        <tr><td>Stateless</td><td>API không nhớ gì giữa các lời gọi — app của bạn phải gửi lại lịch sử.</td></tr>
+        <tr><td><code>stop_reason</code></td><td>Lý do model dừng: <code>end_turn</code>, <code>max_tokens</code>, <code>stop_sequence</code>, <code>tool_use</code>, <code>pause_turn</code>, <code>refusal</code>, <code>model_context_window_exceeded</code>.</td></tr>
+        <tr><td>Content block</td><td>Một khối trong mảng <code>content</code> của response: text, tool_use, thinking…</td></tr>
+        <tr><td>SSE / streaming</td><td>Đẩy response về dần bằng server-sent events khi <code>stream: true</code>.</td></tr>
+        <tr><td>Context window</td><td>Tổng ngân sách token một lời gọi (input + output): 1M với Fable 5.1 / Opus 5.5 / Sonnet 5.5, 200K với Haiku 4.5.</td></tr>
+        <tr><td>MTok</td><td>Million token — đơn vị giá: “$4/MTok” là 4 USD mỗi triệu token.</td></tr>
+        <tr><td>Prompt caching</td><td>Tái sử dụng tiền tố prompt: ghi 1,25× (5 phút) hoặc 2× (1 giờ), đọc 0,1× (thấp hơn với một số model).</td></tr>
+        <tr><td>Batch API</td><td>Xử lý bất đồng bộ, giảm 50% giá; tối đa 100.000 request hoặc 256 MB mỗi batch.</td></tr>
+        <tr><td>RPM / ITPM / OTPM</td><td>Ba thước đo rate limit: request, input token, output token mỗi phút.</td></tr>
+        <tr><td><code>retry-after</code></td><td>Header trên lỗi 429 cho biết nên chờ bao lâu trước khi gọi lại.</td></tr>
+        <tr><td>Token counting</td><td>Endpoint <code>POST /v1/messages/count_tokens</code> — đếm input token trước khi gửi (là ước lượng).</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Ghi chú về độ mới của số liệu:</strong> giá, model ID, rate limit trong bài được lấy từ Anthropic docs tại thời điểm 01/10/2026. Anthropic thay đổi các con số này khá thường xuyên — trước khi dùng thật, mở lại trang Pricing và Models overview.</p>
+
+    <ol class="sources">
+      <li id="src-getstarted">Anthropic — <a href="https://platform.claude.com/docs/en/get-started">Get started with Claude</a> (ví dụ cURL/Python/CLI, response mẫu, header <code>anthropic-version</code>).</li>
+      <li id="src-create">Anthropic — <a href="https://platform.claude.com/docs/en/api/messages/create">Create a Message (API reference)</a> (toàn bộ tham số body, luật <code>messages</code>, danh sách <code>stop_reason</code>, cấu trúc <code>usage</code>, tool definitions).</li>
+      <li id="src-models">Anthropic — <a href="https://platform.claude.com/docs/en/models/overview">Models overview</a> (lineup hiện tại, giá, context window, max output, knowledge cutoff, model ID theo từng nền tảng).</li>
+      <li id="src-pricing">Anthropic — <a href="https://platform.claude.com/docs/en/about-claude/pricing">Pricing</a> (bảng giá model, hệ số cache, batch, long context, data residency, fast mode).</li>
+      <li id="src-caching">Anthropic — <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Prompt caching</a> (automatic vs explicit breakpoints, TTL, ngưỡng tối thiểu, cấu trúc tiền tố, lookback 20 block).</li>
+      <li id="src-streaming">Anthropic — <a href="https://platform.claude.com/docs/en/build-with-claude/streaming">Streaming messages</a> (trình tự event SSE, các loại delta, SDK streaming helpers).</li>
+      <li id="src-batch">Anthropic — <a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing">Batch processing</a> (giảm 50%, giới hạn batch, <code>custom_id</code>, các tham số không hỗ trợ).</li>
+      <li id="src-ratelimits">Anthropic — <a href="https://platform.claude.com/docs/en/api/rate-limits">Rate limits</a> (tier, spend cap, RPM/ITPM/OTPM, cache-aware ITPM, token bucket).</li>
+      <li id="src-errors">Anthropic — <a href="https://platform.claude.com/docs/en/api/errors">Claude API errors</a> (bảng mã lỗi, hình dạng lỗi, request ID, giới hạn dung lượng request, retry của SDK).</li>
+      <li id="src-sdk">Anthropic — <a href="https://platform.claude.com/docs/en/cli-sdks-libraries/overview">SDKs, CLI, and libraries</a> (bảy SDK chính thức, CLI <code>ant</code>, thư viện tích hợp, phân biệt với Claude Code / Agent SDK / Managed Agents).</li>
+      <li id="src-managed">Anthropic — <a href="https://platform.claude.com/docs/en/managed-agents/overview">Claude Managed Agents overview</a> (bốn khái niệm, built-in tools, trạng thái beta <code>managed-agents-2026-04-01</code>).</li>
+      <li id="src-tokencount">Anthropic — <a href="https://platform.claude.com/docs/en/build-with-claude/token-counting">Token counting</a> (endpoint <code>count_tokens</code>, tính chất ước lượng, tokenizer mới sinh ~30% nhiều token hơn).</li>
+      <li id="src-vertex">Anthropic — <a href="https://platform.claude.com/docs/en/build-with-claude/claude-on-vertex-ai">Claude on Google Cloud (Agent Platform)</a> (khác biệt request format, SDK <code>anthropic[vertex]</code>, model ID). Liên kết liên quan từ trang Models overview: <a href="https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock">Claude in Amazon Bedrock</a> · <a href="https://platform.claude.com/docs/en/build-with-claude/claude-in-microsoft-foundry">Claude in Microsoft Foundry</a>.</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài tiếp theo:</strong> C2 · Tool use &amp; MCP thực chiến — từ <code>tool_use</code> block đến MCP server, và vòng lặp agent khi model tự gọi tool.</p>
+    <p>Còn chỗ nào chưa rõ? Ghi lại câu hỏi và mở lại docs Anthropic ở mục nguồn phía trên — mọi con số trong bài đều truy được về đó.</p>
+  </footer>
+
+</main>
+
+<script src="../../assets/lang.js"></script>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>

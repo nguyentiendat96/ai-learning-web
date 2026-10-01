@@ -115,6 +115,49 @@
       <p>Điểm cộng lớn: <strong>khóa học chuẩn bị nằm trên Anthropic Partner Academy</strong> — có thể học trước, kể cả khi chưa đủ điều kiện thi.</p>
     </div>
     <p><strong>Luyện đề:</strong> có một trang cộng đồng luyện đề cho đúng 4 chứng chỉ này — <a href="https://hoangduong92.github.io/exam-prep-web/">exam-prep-web</a>: ~534 câu song ngữ EN–VI cho CCAO-F / CCDV-F / CCAR-F / CCAR-P + labs theo exam guide, chạy offline trên iPhone. Câu hỏi do AI soạn theo Exam Guide công khai — <em>không phải đề thật</em>; nhớ đối chiếu chéo với tài liệu gốc.</p>
+    <p><strong>Bài học của track (đã soạn xong 01/10):</strong> <a href="../lessons/claude/c1-claude-platform-api.html">C1 Platform &amp; API</a> · <a href="../lessons/claude/c2-tool-use-mcp.html">C2 Tool use &amp; MCP</a> · <a href="../lessons/claude/c3-claude-code.html">C3 Claude Code</a> · <a href="../lessons/claude/c4-prompt-structured-output.html">C4 Prompt &amp; Structured Output</a> · <a href="../lessons/claude/c5-agent-sdk-orchestration.html">C5 Agent SDK &amp; Orchestration</a> · <a href="../lessons/claude/c6-security-eval.html">C6 Security, Eval &amp; Governance</a> — mỗi bài có mục "Luyện thêm với nguồn chính thức" (GitHub Anthropic).</p>
+
+    <h3>Blueprint chi tiết &amp; độ phủ (trước C1–C6: ~35% → sau khi xong C1–C6: ~70–80%)</h3>
+    <p><strong>CCDV-F — Developer (Foundations):</strong> 53 câu / 120 phút · 8 domain (Exam Guide v1.0):</p>
+    <table class="mapping">
+      <thead><tr><th>Domain CCDV-F</th><th>%</th><th>Bài học hiện có</th><th>Phủ</th></tr></thead>
+      <tbody>
+        <tr><td>Agents and Workflows</td><td>14.7%</td><td>Bài 01, 02, 06</td><td>◐ khái niệm</td></tr>
+        <tr><td>Applications and Integration (Claude API, app design, config)</td><td>33.1%</td><td>—</td><td>✗ thiếu</td></tr>
+        <tr><td>Claude Code</td><td>3.1%</td><td>—</td><td>✗</td></tr>
+        <tr><td>Eval, Testing, Debugging</td><td>2.6%</td><td>Bài 03 §8 (một phần)</td><td>◐</td></tr>
+        <tr><td>Model Selection &amp; Optimisation</td><td>16.8%</td><td>Bài 02, 04 (một phần)</td><td>◐</td></tr>
+        <tr><td>Prompt and Context Engineering</td><td>11%</td><td>Bài 04, 05</td><td>◐</td></tr>
+        <tr><td>Security and Safety</td><td>8.1%</td><td>—</td><td>✗</td></tr>
+        <tr><td>Tools and MCPs</td><td>10.6%</td><td>Bài 03 (concept; chưa có MCP dev)</td><td>◐</td></tr>
+      </tbody>
+    </table>
+    <p><strong>CCAR-F — Architect (Foundations):</strong> 60 câu / 120 phút · pass 720/1000 · 5 domain:</p>
+    <table class="mapping">
+      <thead><tr><th>Domain CCAR-F</th><th>%</th><th>Bài học hiện có</th><th>Phủ</th></tr></thead>
+      <tbody>
+        <tr><td>Agentic Architecture &amp; Orchestration (Agent SDK, hooks, orchestration)</td><td>27%</td><td>Bài 01, 02, 06 (khái niệm)</td><td>◐</td></tr>
+        <tr><td>Tool Design &amp; MCP Integration</td><td>18%</td><td>Bài 03</td><td>◐</td></tr>
+        <tr><td>Claude Code Configuration &amp; Workflows</td><td>20%</td><td>—</td><td>✗</td></tr>
+        <tr><td>Prompt Engineering &amp; Structured Output</td><td>20%</td><td>Bài 05 (nhẹ)</td><td>◐</td></tr>
+        <tr><td>Context Management &amp; Reliability</td><td>15%</td><td>Bài 04</td><td>◐</td></tr>
+      </tbody>
+    </table>
+    <p><strong>CCAO-F — Associate (Foundations):</strong> 60 câu / 120 phút · pass 720/1000 · <em>non-technical</em> (không cần code/API). Đây là cert về <strong>dùng Claude như công cụ năng suất</strong> — 7 domain:</p>
+    <table class="mapping">
+      <thead><tr><th>Domain CCAO-F</th><th>%</th><th>Bài học hiện có</th><th>Phủ</th></tr></thead>
+      <tbody>
+        <tr><td>Prompting and Task Execution</td><td>14%</td><td>C4 (một phần — thiên kỹ thuật)</td><td>◐</td></tr>
+        <tr><td>Output Evaluation and Validation (hallucination, fact-check)</td><td>21%</td><td>—</td><td>✗</td></tr>
+        <tr><td>Product and Model Selection (Projects, research mode, artifacts)</td><td>12%</td><td>C1 (phần model; chưa có phần sản phẩm)</td><td>◐</td></tr>
+        <tr><td>Workflow Integration and Solution Design</td><td>16%</td><td>—</td><td>✗</td></tr>
+        <tr><td>Configuration and Knowledge Management (Projects, knowledge sources)</td><td>12%</td><td>—</td><td>✗</td></tr>
+        <tr><td>Governance, Risk, and Responsible Use</td><td>15%</td><td>C6 (một phần)</td><td>◐</td></tr>
+        <tr><td>Troubleshooting and Optimization</td><td>10%</td><td>C6 (một phần)</td><td>◐</td></tr>
+      </tbody>
+    </table>
+    <p><strong>CCAO-F hiện ~20%</strong> — không phải vì nội dung yếu, mà vì <em>khác trục</em>: mọi bài hiện có đều về <strong>xây agent bằng kỹ thuật</strong>, còn CCAO-F hỏi về <strong>sử dụng Claude trong công việc</strong> (Projects, artifacts, research mode, quy trình văn phòng, kiểm chứng output). Muốn nhắm CCAO-F → cần module riêng <strong>"C0 — Claude cho công việc"</strong> (non-technical).</p>
+    <p><strong>Kết luận nhánh kỹ thuật (CCDV-F/CCAR-F): ~35% trước → ~70–80% sau khi hoàn thành C1–C6 (đã soạn xong 01/10).</strong> Phần "agentic fundamentals" (vòng lặp, tool, ngữ cảnh, memory, planning) đã có và chắc; C1–C6 đã bù <strong>toàn bộ phần Claude-specific</strong>: Claude API (Messages API, caching, batch, cost), Claude Code (config/hooks/permissions/CI — riêng domain này 20% của CCAR-F), Agent SDK &amp; orchestration, MCP server development, prompt/structured output nâng cao, security &amp; eval. Việc còn lại: luyện đề + hoàn thiện các mục nhỏ trong bảng.</p>
   </section>
 
   <section id="do-phu">
@@ -181,6 +224,8 @@
       <li><strong>M4 — Knowledge integration</strong>: RAG, dữ liệu ngoài, xử lý dữ liệu cho agent.</li>
       <li><strong>M5 — Human-AI interaction</strong>: con người giám sát agent, giao tiếp, phê duyệt.</li>
       <li><strong>M6 — AI/ML căn bản + dịch vụ cloud</strong> (cho Bậc 1–2): ML concepts, GenAI, prompt engineering, dịch vụ của nhà cung cấp bạn chọn.</li>
+      <li><strong>Module Claude C1–C6</strong> (cho nhánh Claude — CCDV-F / CCAR-F): C1 Platform &amp; API (Messages API, models, caching, batch, cost) · C2 Tool use &amp; MCP thực chiến · C3 Claude Code chuyên sâu (config, hooks, permissions, CI) · C4 Prompt engineering &amp; structured output · C5 Agent SDK &amp; orchestration · C6 Security, eval &amp; governance.</li>
+      <li><strong>Module C0 — Claude cho công việc</strong> (non-technical, cho CCAO-F): dùng Claude app (Projects, Artifacts, research mode, connectors, memory) · prompting cho công việc · <strong>đánh giá &amp; kiểm chứng output</strong> (domain 21%) · workflow integration · configuration &amp; knowledge · governance &amp; data handling · troubleshooting.</li>
     </ul>
 
     <h3>Phase 3 — luyện thi theo từng bậc</h3>

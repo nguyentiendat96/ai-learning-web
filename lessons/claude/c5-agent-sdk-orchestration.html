@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C5 · Agent SDK &amp; Orchestration — Track Claude</title>
+<link rel="stylesheet" href="../../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Track Claude · C5 — Agent SDK &amp; Orchestration</div>
+    <h1>Agent SDK &amp; Orchestration</h1>
+    <p class="subtitle">Bạn đã hiểu vòng lặp, tool, planning và đa agent qua bài 01–09. Giờ là lúc nhìn chúng dưới lăng kính Claude: ai thật sự chạy vòng lặp, sub-agent bị giới hạn quyền ra sao, và khi nào nên để máy tự chia việc — theo tài liệu chính thức của Anthropic.</p>
+    <p class="lesson-meta"><span>~30 phút</span><span>Phủ ~27% blueprint CCAR-F · Agentic Architecture &amp; Orchestration</span><span>3 bài thực hành tự kiểm</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#vong-lap">Ai giữ vòng lặp — API tự viết hay Agent SDK?</a></li>
+      <li><a href="#agent-sdk">Claude Agent SDK: là gì, khi nào dùng</a></li>
+      <li><a href="#orchestration">Orchestration: hub-and-spoke và sub-agents</a></li>
+      <li><a href="#enforcement">Ràng buộc: code hay prompt?</a></li>
+      <li><a href="#hooks">Hooks &amp; triggers: tự động hoá ở điểm móc</a></li>
+      <li><a href="#decomposition">Fixed hay dynamic decomposition?</a></li>
+      <li><a href="#session">Session: continue, resume theo tên, fork</a></li>
+      <li><a href="#nang-cao">Progressive summarization &amp; escalation — nhập môn</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#luyen-them">Luyện thêm với nguồn chính thức</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">🎯 Vì sao bài này quan trọng cho kỳ thi</div>
+    <p>Blueprint nhánh kỹ thuật CCDV-F/CCAR-F dành khoảng <strong>27%</strong> cho chủ đề <em>Agentic Architecture &amp; Orchestration</em>. Bài này phủ gần hết các task statement của chủ đề đó: vòng lặp agent ở hai tầng, Agent SDK, orchestration và sub-agents, ràng buộc bằng code so với ràng buộc bằng prompt, hooks, decomposition cố định so với động, session resume, và một phần nhập môn về summarization/escalation.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bài nối tiếp trực tiếp bài 02 (vòng lặp), bài 03 (tool), bài 06 (planning &amp; đa agent) trong khóa nền tảng. Mục 1–8 là phần chính; nhiều đoạn code là Python vì đó là ngôn ngữ SDK chính, chỗ nào khác ở TypeScript tôi ghi chú ngay cạnh. Đến mục 10, bạn tự làm rồi mở đáp án để tự kiểm — không phải nộp cho ai cả.</p>
+    <p><strong>Lưu ý:</strong> tài liệu Anthropic cập nhật rất nhanh (Agent SDK, dynamic workflows, Managed Agents đều đang tiến hoá). Bài này bám bản docs đọc ngày 01/10/2026; chỗ nào dễ đổi tôi ghi "(xem docs mới nhất)".</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="vong-lap">
+    <h2>Ai giữ vòng lặp — API tự viết hay Agent SDK?</h2>
+
+    <p>Bài 02 đã chốt: <em>an agent is a model in a loop</em>. Bài 03 đã chốt thêm: model chỉ <em>đề nghị</em> gọi tool, còn harness mới là bên thực thi. Vậy harness đó — bạn tự viết, hay để ai đó viết hộ?</p>
+
+    <h3>Tầng API: bạn tự cầm lái</h3>
+
+    <p>Gọi thẳng Messages API (qua Client SDK), <strong>bạn</strong> phải viết toàn bộ vòng lặp. Tài liệu tool-use mô tả đúng vòng lặp đó: Claude trả về <code>stop_reason: "tool_use"</code> kèm một hoặc nhiều <code>tool_use</code> block; code của bạn chạy tool thật rồi gửi kết quả ngược lại trong <code>tool_result</code> — kèm đúng <code>tool_use_id</code> — và lặp tiếp cho đến khi model trả lời mà không gọi tool nữa.</p>
+
+    <pre><code># Vòng lặp tầng API (giản lược theo docs tool-use của Anthropic)
+messages = [{"role": "user", "content": "Thời tiết San Francisco thế nào?"}]
+
+# 1) Gọi Messages API với tools=[...]
+#    Claude trả về: stop_reason = "tool_use"
+#                   content = [ {type:"tool_use", id:"ABC123",
+#                                name:"get_weather", input:{...}} ]
+
+# 2) BẠN tự chạy tool thật trong ứng dụng của mình
+result = get_weather("San Francisco, CA")     # "15°C, partly cloudy"
+
+# 3) Gửi kết quả về, kèm đúng tool_use_id
+messages += [
+    {"role": "assistant", "content": assistant_content},
+    {"role": "user", "content": [
+        {"type": "tool_result", "tool_use_id": "ABC123", "content": result}
+    ]},
+]
+
+# 4) Lặp cho đến khi stop_reason KHÔNG còn là "tool_use"
+</code></pre>
+
+    <p>Ở tầng này mọi thứ là code của bạn: parse lời gọi, validate tham số, chạy hàm, khớp kết quả, cắt tỉa ngữ cảnh, retry khi lỗi, dừng khi xong. Lợi ích là kiểm soát tuyệt đối; cái giá là bạn phải tự xây lại rất nhiều thứ mà một harness tử tế cần có. (Anthropic có thêm <em>tool runner</em> bản beta trong Client SDK để đỡ phần nào — xem docs mới nhất.)</p>
+
+    <p>Một chi tiết tài liệu nói rõ: không phải tool nào cũng chạy trong máy bạn. <strong>Client tools</strong> (tool bạn định nghĩa, cùng các tool schema do Anthropic định nghĩa như <code>bash</code>, <code>text_editor</code>) do ứng dụng của bạn thực thi. <strong>Server tools</strong> như <code>web_search</code>, <code>web_fetch</code>, <code>code_execution</code> chạy trên hạ tầng Anthropic — bạn thấy kết quả luôn, không phải tự chạy.</p>
+
+    <h3>Tầng SDK: vòng lặp đã có người lo</h3>
+
+    <p>Claude Agent SDK là thư viện (Python và TypeScript) chạy đúng vòng lặp đang vận hành Claude Code. Tài liệu mô tả vòng lặp đó gồm năm bước:</p>
+
+    <ol class="steps">
+      <li><strong>Nhận prompt.</strong> Claude nhận prompt của bạn, kèm system prompt, định nghĩa tool và lịch sử hội thoại. SDK phát ra một <code>SystemMessage</code> subtype <code>"init"</code> chứa metadata của session.</li>
+      <li><strong>Đánh giá và trả lời.</strong> Claude quyết định bước kế tiếp: trả text, yêu cầu một hoặc nhiều tool call, hoặc cả hai. Mỗi content block là một <code>AssistantMessage</code>.</li>
+      <li><strong>Chạy tool.</strong> SDK tự chạy từng tool và thu kết quả. Mỗi tập kết quả được đưa ngược về Claude cho quyết định tiếp theo. Bạn có thể dùng hooks để chặn hoặc sửa tool call trước khi nó chạy.</li>
+      <li><strong>Lặp.</strong> Bước 2–3 lặp thành chu kỳ. Mỗi chu kỳ đầy đủ là <strong>một turn</strong>. Claude tiếp tục cho đến khi tạo ra câu trả lời không còn tool call.</li>
+      <li><strong>Trả kết quả.</strong> SDK phát ra <code>AssistantMessage</code> cuối cùng (chỉ text), rồi <code>ResultMessage</code> chứa kết quả, token usage, chi phí và session ID.</li>
+    </ol>
+
+    <div class="callout">
+      <div class="callout-title">Điểm mấu chốt: một turn là gì</div>
+      <p>Trong SDK, <strong>turn</strong> là một vòng khứ hồi bên trong loop: Claude sinh output có tool call → SDK chạy tool → kết quả quay về Claude — và việc này xảy ra <em>không cần trả quyền điều khiển về cho code của bạn</em>. Loop dừng khi output không còn tool call.</p>
+      <p>Ví dụ từ docs: prompt <em>"Fix the failing tests in auth.ts"</em> diễn ra trong 4 turn — ba turn gọi tool (chạy test, đọc file, sửa + chạy lại) và một turn cuối chỉ có text. Toàn bộ hành trình đó nằm gọn trong <strong>một</strong> lần gọi <code>query()</code>.</p>
+    </div>
+
+    <h3>Dòng message — bạn nhìn thấy gì</h3>
+
+    <p>SDK phát ra một stream message. Năm loại cốt lõi (theo docs):</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Message</th><th>Nghĩa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>SystemMessage</code></td><td>Sự kiện vòng đời session: <code>"init"</code> (metadata), <code>"compact_boundary"</code> (sau khi nén ngữ cảnh), <code>"informational"</code>, <code>"worker_shutting_down"</code>.</td></tr>
+        <tr><td><code>AssistantMessage</code></td><td>Phát ra cho từng content block trong câu trả lời của Claude — text hoặc một tool call.</td></tr>
+        <tr><td><code>UserMessage</code></td><td>Phát ra sau mỗi lần chạy tool, mang kết quả gửi ngược về Claude (và cả input bạn stream vào giữa loop).</td></tr>
+        <tr><td><code>StreamEvent</code></td><td>Chỉ có khi bật partial messages — sự kiện streaming thô (text delta, chunk input của tool).</td></tr>
+        <tr><td><code>ResultMessage</code></td><td>Kết thúc loop: text cuối, token usage, chi phí, session ID. Kiểm tra <code>subtype</code> để biết thành công hay chạm trần.</td></tr>
+      </tbody>
+    </table>
+
+    <p><code>ResultMessage.subtype</code> cho biết chuyện gì đã xảy ra: <code>success</code> (xong bình thường), <code>error_max_turns</code> (chạm trần số turn), <code>error_max_budget_usd</code> (chạm trần ngân sách), <code>error_during_execution</code> (lỗi giữa chừng), <code>error_max_structured_output_retries</code> (không ra được JSON hợp lệ sau số lần retry cấu hình). Trường <code>result</code> (text cuối) <strong>chỉ có</strong> ở subtype <code>success</code> — luôn kiểm subtype trước khi đọc.</p>
+
+    <h3>Van an toàn: đừng để agent chạy mãi</h3>
+
+    <p>Không đặt giới hạn thì loop chạy đến khi Claude tự thấy xong — ổn với task hẹp, nhưng có thể chạy rất lâu với prompt mở kiểu "cải thiện codebase này". Hai van chính là <code>max_turns</code>/<code>maxTurns</code> (đếm <strong>chỉ các turn có tool</strong>) và <code>max_budget_usd</code>/<code>maxBudgetUsd</code> (trần chi phí). Ví dụ trong docs: <code>max_turns=2</code> ở kịch bản sửa test sẽ dừng trước bước sửa file. Ngân sách còn bao trùm cả sub-agent — tiêu của sub-agent tính vào tổng, và khi chạm trần thì không spawn thêm sub-agent được nữa.</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Việc</th><th>Messages API — bạn viết</th><th>Agent SDK — SDK lo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Vòng lặp model → tool → model</td><td>Bạn viết <code>while</code>, tự parse <code>stop_reason</code></td><td>SDK chạy sẵn; bạn theo dõi stream message</td></tr>
+        <tr><td>Thực thi tool</td><td>Bạn tự gọi hàm rồi gửi <code>tool_result</code></td><td>SDK chạy built-in tool và custom tool của bạn</td></tr>
+        <tr><td>Quản lý ngữ cảnh / nén</td><td>Bạn tự cắt, tự tóm tắt</td><td>Compaction tự động + hooks để can thiệp</td></tr>
+        <tr><td>Quyền và phê duyệt</td><td>Bạn tự code</td><td>Permission mode, allow/deny rules, hooks, callback <code>canUseTool</code></td></tr>
+        <tr><td>Session</td><td>Bạn tự lưu history</td><td>Ghi ra đĩa tự động; continue / resume / fork</td></tr>
+        <tr><td>Bạn viết gì</td><td>Toàn bộ harness</td><td>Prompt + options + xử lý message</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="agent-sdk">
+    <h2>Claude Agent SDK: là gì, khi nào dùng</h2>
+
+    <p>Định nghĩa gọn từ docs: Agent SDK cho bạn <strong>đúng bộ tool, vòng lặp agent và cách quản lý ngữ cảnh đang vận hành Claude Code</strong>, lập trình được bằng Python và TypeScript. Cả hai SDK đóng gói kèm một binary Claude Code gốc, nên phần lớn trường hợp bạn không cần cài Claude Code riêng.</p>
+
+    <h3>Bốn lựa chọn — chọn đúng hàng</h3>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Bạn muốn</th><th>Dùng</th><th>Bạn nhận được</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Nhúng agent kiểu Claude Code vào app Python/TS của mình, tự vận hành process</td><td><strong>Agent SDK</strong></td><td>Thư viện chạy binary Claude Code, kèm built-in tool, permissions, sessions, hooks…</td></tr>
+        <tr><td>Làm việc tương tác hoặc chạy task một lần từ terminal</td><td><strong>Claude Code CLI</strong></td><td>Giao diện terminal cho dùng hằng ngày</td></tr>
+        <tr><td>Gọi thẳng Claude API từ code của mình</td><td><strong>Client SDK</strong></td><td>Truy cập Messages API trực tiếp; bạn tự viết tool loop (hoặc dùng tool runner beta)</td></tr>
+        <tr><td>Để Anthropic host agent, cấu hình qua Claude API</td><td><strong>Managed Agents</strong></td><td>Harness host sẵn, session trong sandbox do Anthropic quản lý (hoặc sandbox tự host)</td></tr>
+      </tbody>
+    </table>
+
+    <p>Nói cách khác: <em>Client SDK</em> cho bạn nguyên liệu (model + API); <em>Agent SDK</em> cho bạn cả căn bếp (vòng lặp + tool + quyền + session); <em>Managed Agents</em> là thuê luôn đầu bếp (Anthropic chạy harness).</p>
+
+    <h3>Các khái niệm chính — theo docs</h3>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Agents &amp; tools</div>
+        <h3>Agent và tool</h3>
+        <p>Bộ built-in tool giống Claude Code: <code>Read</code>, <code>Write</code>, <code>Edit</code>, <code>Bash</code>, <code>Glob</code>, <code>Grep</code>, <code>WebSearch</code>, <code>WebFetch</code>… Ngoài ra có custom tool (chạy in-process) và tool qua MCP.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Permissions</div>
+        <h3>Quyền</h3>
+        <p>Quyết định tool nào chạy tự động, tool nào cần phê duyệt: permission mode, allow/deny rules, hooks, callback <code>canUseTool</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Sessions</div>
+        <h3>Session</h3>
+        <p>Hội thoại được ghi ra đĩa tự động; quay lại bằng continue / resume / fork — giữ nguyên ngữ cảnh đã đọc, đã phân tích, đã quyết.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Hooks &amp; subagents</div>
+        <h3>Hooks và sub-agent</h3>
+        <p>Hook chạy code của bạn tại các điểm trong vòng đời agent; sub-agent là agent con có ngữ cảnh riêng, tool riêng, model riêng.</p>
+      </div>
+    </div>
+
+    <p>Thêm: skills, commands và memory <strong>tự nạp từ <code>.claude/</code> của project và <code>~/.claude/</code></strong> giống hệt Claude Code — nghĩa là hạ tầng bạn đã xây cho CLI dùng lại được trong SDK.</p>
+
+    <h3>Agent đầu tiên — code thật từ quickstart</h3>
+
+    <p>Đây là ví dụ nguyên văn tinh thần từ quickstart (Python): một agent tự tìm và sửa bug trong <code>utils.py</code>.</p>
+
+    <pre><code>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ResultMessage
+
+
+async def main():
+    async for message in query(
+        prompt="Review utils.py for bugs that would cause crashes. Fix any issues you find.",
+        options=ClaudeAgentOptions(
+            allowed_tools=["Read", "Edit", "Glob"],   # tự phê duyệt các tool này
+            permission_mode="acceptEdits",            # tự phê duyệt thao tác sửa file
+        ),
+    ):
+        if isinstance(message, AssistantMessage):
+            for block in message.content:
+                if hasattr(block, "text"):
+                    print(block.text)                 # Claude đang nghĩ/viết gì
+                elif hasattr(block, "name"):
+                    print(f"Tool: {block.name}")      # tool đang được gọi
+        elif isinstance(message, ResultMessage):
+            print(f"Done: {message.subtype}")         # kết quả cuối
+
+
+asyncio.run(main())
+</code></pre>
+
+    <p>Nhìn kỹ: bạn <strong>không hề viết vòng lặp</strong>. Bạn khai báo quyền, đưa prompt, rồi đọc stream. SDK lo phần còn lại — kể cả việc gọi <code>Edit</code>, chạy lại test và lặp cho đến khi xong.</p>
+
+    <div class="callout">
+      <div class="callout-title">Hai điều dễ quên về xác thực</div>
+      <p>Một: SDK đọc API key từ biến môi trường của process chạy agent (<code>ANTHROPIC_API_KEY</code>); nó <em>không</em> tự đọc file <code>.env</code> — muốn thì bạn tự nạp trước. Hai: trừ khi được Anthropic phê duyệt trước, bên thứ ba không được dùng login claude.ai hay hạn mức của claude.ai cho sản phẩm của mình — hãy dùng xác thực bằng API key như quickstart.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="orchestration">
+    <h2>Orchestration: hub-and-spoke và sub-agents</h2>
+
+    <p>Bài 06 đã dạy: đa agent chỉ thắng khi các nhánh thật sự độc lập, chuyên môn hoá có ích, và có manager đủ mạnh để tổng hợp. Claude biến mô hình đó thành một cấu trúc cụ thể: <strong>hub-and-spoke</strong> — một agent trung tâm (lead/coordinator) giao việc cho các sub-agent chuyên biệt, mỗi sub-agent chạy trong ngữ cảnh riêng và chỉ trả về kết quả cuối.</p>
+
+    <pre><code>                    ┌───────────────────────────┐
+                    │   LEAD (agent trung tâm)  │  giữ mục tiêu, chia việc,
+                    │   ví dụ: "review PR #42"  │  tổng hợp kết quả
+                    └─────────┬────────┬────────┘
+                     Agent tool (ủy quyền)│
+              ┌───────────────┘        └───────────────┐
+              ▼                        ▼               ▼
+     ┌─────────────────┐    ┌─────────────────┐   ┌─────────────────┐
+     │ sub-agent: bảo  │    │ sub-agent: chạy │   │ sub-agent: docs │
+     │ mật (chỉ đọc)   │    │ test (Bash)     │   │ (Write)         │
+     │ Read,Grep,Glob  │    │ Bash,Read,Grep  │   │ Read,Write      │
+     └────────┬────────┘    └────────┬────────┘   └────────┬────────┘
+              └────────── chỉ kết quả cuối trở về hub ─────┘
+                          (tool call, file đọc, log… ở lại ngữ cảnh con)
+</code></pre>
+
+    <p>Vì sao mô hình này đáng dùng — tài liệu SDK nêu bốn lợi ích, và tôi đối chiếu với bài 06:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Lợi ích</th><th>Nghĩa là gì</th><th>Ví dụ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Context isolation</strong></td><td>Mỗi sub-agent có hội thoại riêng; tool call và kết quả trung gian ở lại trong đó, chỉ thông điệp cuối trở về agent cha.</td><td>Sub-agent đọc hàng chục file để tìm lỗi — ngữ cảnh chính chỉ nhận một bản tóm tắt.</td></tr>
+        <tr><td><strong>Parallelization</strong></td><td>Nhiều sub-agent chạy đồng thời; việc xong theo thời gian của cái chậm nhất thay vì tổng thời gian.</td><td>Ba sub-agent review style / security / test-coverage chạy cùng lúc.</td></tr>
+        <tr><td><strong>Specialized instructions</strong></td><td>Mỗi sub-agent có system prompt chuyên môn riêng, không làm nhiễu prompt của agent chính.</td><td>Sub-agent "database-migration" chỉ chứa kiến thức về SQL, rollback, toàn vẹn dữ liệu.</td></tr>
+        <tr><td><strong>Tool restrictions</strong></td><td>Giới hạn tool của sub-agent — vừa an toàn vừa đỡ tốn ngữ cảnh vì mỗi định nghĩa tool đều chiếm chỗ.</td><td>Sub-agent "doc-reviewer" chỉ có <code>Read</code> + <code>Grep</code>: phân tích được nhưng không thể sửa nhầm.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Còn chi phí thì vẫn như bài 06 dạy: coordination không miễn phí, handoff là bản tóm tắt nên dễ rơi mất chi tiết, và mỗi sub-agent là thêm token. Tài liệu bổ sung vài con số vận hành cần biết: sub-agent <strong>chạy nền theo mặc định</strong>; mặc định tối đa <strong>20 sub-agent chạy đồng thời</strong> trong một session (đổi được qua biến môi trường <code>CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS</code>); và sub-agent có thể tự spawn sub-agent nữa, có giới hạn độ sâu (con số cụ thể thay đổi theo phiên bản — xem docs mới nhất).</p>
+
+    <h3>Task tool — giờ tên là Agent tool</h3>
+
+    <p>Trong Claude Code, việc uỷ quyền diễn ra qua <strong>Agent tool</strong>. Tài liệu ghi rõ: <em>từ phiên bản 2.1.63, Task tool được đổi tên thành Agent</em>; các tham chiếu <code>Task(...)</code> cũ trong settings và định nghĩa agent vẫn hoạt động như alias. Nếu bạn gặp tài liệu cũ nói "Task tool" — đó chính là nó. Một số điểm khác cần nhớ:</p>
+
+    <ul>
+      <li>Claude Code có sẵn các sub-agent built-in: <strong>Explore</strong> (chỉ đọc, tìm kiếm codebase), <strong>Plan</strong> (nghiên cứu để lập kế hoạch, chỉ đọc), <strong>general-purpose</strong> (làm được cả việc khám phá lẫn sửa đổi).</li>
+      <li>Claude có thể <strong>đặt tên</strong> cho sub-agent qua tham số <code>name</code> khi gọi Agent tool — tên giúp gọi lại, nhắn hoặc resume sub-agent đó sau khi nó xong.</li>
+      <li>Muốn cấm hẳn việc uỷ quyền: deny Agent tool trong <code>permissions.deny</code>, hoặc bỏ <code>Agent</code> khỏi danh sách tools của sub-agent đang xét (để nó không đẻ thêm sub-agent).</li>
+    </ul>
+
+    <h3>Định nghĩa một sub-agent — hai cách</h3>
+
+    <p>Cách 1: khai báo trong code SDK bằng <code>AgentDefinition</code> (docs khuyến nghị cho ứng dụng SDK).</p>
+
+    <pre><code>from claude_agent_sdk import ClaudeAgentOptions, AgentDefinition
+
+options = ClaudeAgentOptions(
+    # Tool của PHIÊN được tự phê duyệt; "Agent" ở đây là để cho phép ủy quyền
+    allowed_tools=["Read", "Grep", "Glob", "Agent"],
+    agents={
+        "code-reviewer": AgentDefinition(
+            # description: Claude dựa vào đây để biết KHI NÀO giao việc
+            description="Expert code review specialist. Use for quality, security, and maintainability reviews.",
+            # prompt: system prompt riêng của sub-agent
+            prompt="You are a code review specialist. Identify security vulnerabilities, "
+                   "check performance, verify coding standards, suggest specific improvements.",
+            # tools: giới hạn quyền THẬT SỰ của sub-agent — ở đây là chỉ đọc
+            tools=["Read", "Grep", "Glob"],
+            model="sonnet",
+        ),
+    },
+)
+</code></pre>
+
+    <p>Cách 2: file Markdown trong <code>.claude/agents/</code> (dùng cho cả CLI lẫn SDK).</p>
+
+    <pre><code>---
+name: code-improver
+description: Scans files and suggests improvements for readability,
+  performance, and best practices. Use after writing or modifying code.
+tools: Read, Grep, Glob
+model: sonnet
+---
+
+You are a code improvement specialist. For each issue you find, explain
+the problem, show the current code, and provide an improved version.
+</code></pre>
+
+    <div class="callout">
+      <div class="callout-title">Đừng lẫn ba cái tên</div>
+      <p>Đây là chỗ đề thi rất dễ gài. Ba khái niệm khác nhau:</p>
+      <ul>
+        <li><code>allowed_tools</code> / <code>allowedTools</code> — option trên <code>query()</code>: danh sách tool được <strong>tự động phê duyệt</strong> cho phiên. Tool không nằm trong danh sách vẫn tồn tại; lời gọi cần phê duyệt sẽ rơi xuống permission mode rồi tới callback <code>canUseTool</code>.</li>
+        <li><code>disallowed_tools</code> / <code>disallowedTools</code> — danh sách <strong>chặn</strong>, áp ở mọi chế độ, kể cả <code>bypassPermissions</code> (với rule có phạm vi như <code>Bash(rm *)</code>). Riêng deny theo tên trần như <code>"Bash"</code> thì tool bị xoá khỏi ngữ cảnh của Claude trước cả khi model kịp thấy.</li>
+        <li><code>tools</code> / <code>disallowedTools</code> trong <code>AgentDefinition</code> hoặc frontmatter sub-agent — <strong>giới hạn thật sự bộ tool của sub-agent</strong>. Đây mới là thứ tạo ra ranh giới "chỉ đọc".</li>
+      </ul>
+      <p>Mẹo nhớ: <code>allowedTools</code> là "cửa mở sẵn cho ai qua", <code>tools</code> của sub-agent là "phát cho nhân viên đúng chùm chìa khoá họ được dùng".</p>
+    </div>
+
+    <h3>Phiên bản "managed" của hub-and-spoke</h3>
+
+    <p>Nếu chọn Managed Agents (beta), orchestration được khai báo ở tầng cấu hình agent: trường <code>multiagent</code> kiểu <code>coordinator</code> liệt kê <strong>danh sách agent được phép uỷ quyền</strong>. Điểm đáng nhớ từ docs: các agent chia sẻ sandbox, filesystem và credentials, nhưng mỗi agent chạy trong <strong>session thread riêng</strong> — luồng sự kiện tách biệt ngữ cảnh, có lịch sử hội thoại riêng. Thread <em>bền</em>: coordinator có thể gửi follow-up cho agent đã gọi từ trước và agent đó vẫn nhớ các turn cũ. Docs cũng gọi tên ba pattern hợp với multi-agent: <strong>parallelization</strong> (fan-out việc độc lập rồi tổng hợp), <strong>specialization</strong> (agent chuyên miền), và <strong>escalation</strong> (nhờ agent/model mạnh hơn cho một số subtask khó) — escalation bạn sẽ gặp lại ở mục 8.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="enforcement">
+    <h2>Ràng buộc: code hay prompt?</h2>
+
+    <p>Đây là một trong những câu hỏi thi quan trọng nhất của chủ đề orchestration: <strong>muốn agent bị ràng buộc thì viết vào prompt hay viết vào code?</strong> Nguyên tắc gọn: prompt nói <em>ý định</em>; code bảo đảm <em>hành vi</em>. Model có thể bỏ qua hoặc quên một câu trong prompt; nó không thể vượt qua một deny rule hay một hook chặn — vì những thứ đó chạy <em>ngoài</em> model.</p>
+
+    <h3>Thứ tự đánh giá quyền — bản đồ để chọn chỗ đặt ràng buộc</h3>
+
+    <p>Khi Claude xin gọi một tool, SDK kiểm tra theo đúng sáu bước sau (theo docs permissions):</p>
+
+    <ol class="steps">
+      <li><strong>Hooks.</strong> Chạy trước tiên. Hook có thể chặn thẳng lời gọi. Một hook trả <code>allow</code> <em>không</em> bỏ qua các bước deny/ask phía sau — chúng vẫn được đánh giá.</li>
+      <li><strong>Deny rules.</strong> Khớp là chặn, kể cả trong <code>bypassPermissions</code>. Deny theo tên trần (như <code>Bash</code>) xoá tool khỏi ngữ cảnh; deny có phạm vi (như <code>Bash(rm *)</code>) được kiểm ở bước này.</li>
+      <li><strong>Ask rules.</strong> Khớp là rơi xuống callback <code>canUseTool</code> để hỏi, kể cả trong <code>bypassPermissions</code>.</li>
+      <li><strong>Permission mode.</strong> Chế độ hiện hành quyết định: <code>acceptEdits</code> tự duyệt thao tác sửa file, <code>plan</code> không tự duyệt ghi file, <code>bypassPermissions</code> duyệt gần hết (trừ các critical path), <code>dontAsk</code> từ chối thay vì hỏi…</li>
+      <li><strong>Allow rules.</strong> Khớp là duyệt luôn. Có những lời gọi được duyệt sẵn không cần rule, ví dụ đọc file trong working directory.</li>
+      <li><strong>Callback <code>canUseTool</code>.</strong> Không bước nào giải quyết thì mới tới đây — code bạn tự quyết. Ở mode <code>dontAsk</code>, bước này bị bỏ qua và lời gọi bị từ chối.</li>
+    </ol>
+
+    <div class="callout">
+      <div class="callout-title">Ba sự thật quyết định thiết kế</div>
+      <ul>
+        <li><strong>Deny và hook thắng tất cả.</strong> Hook deny áp dụng <em>kể cả</em> trong <code>bypassPermissions</code>. Muốn kiểm tra chạy trên <em>mọi</em> tool call — dùng <code>PreToolUse</code> hook, đừng trông vào <code>canUseTool</code>.</li>
+        <li><strong>Tool được auto-approve không bao giờ tới <code>canUseTool</code>.</strong> Nếu bạn đặt logic kiểm tra ở callback này nhưng tool đã được allow rule duyệt trước, logic của bạn bị bỏ qua trong im lặng.</li>
+        <li><strong>Prompt không phải hàng rào.</strong> "Tuyệt đối không sửa file .env" viết trong system prompt là lời dặn, không phải khoá. Khoá thật là rule/hook.</li>
+      </ul>
+    </div>
+
+    <h3>Khi nào dùng cái nào</h3>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Tình huống</th><th>Cơ chế nên dùng</th><th>Vì sao</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Không bao giờ được đụng vào file bí mật (<code>.env</code>, khoá…)</td><td><strong>Code:</strong> deny rule + <code>PreToolUse</code> hook</td><td>Ràng buộc cứng, chạy ở mọi chế độ</td></tr>
+        <tr><td>Không cho sub-agent chạy Bash</td><td><strong>Code:</strong> <code>tools</code> của AgentDefinition / frontmatter</td><td>Không phát tool thì không thể gọi</td></tr>
+        <tr><td>Trần chi phí mỗi phiên</td><td><strong>Code:</strong> <code>max_budget_usd</code>, <code>max_turns</code></td><td>Van an toàn do SDK thực thi</td></tr>
+        <tr><td>Ghi log / audit mọi tool call</td><td><strong>Code:</strong> hook <code>PostToolUse</code> (hoặc <code>PreToolUse</code> nếu cần cả lời gọi bị chặn)</td><td>Hook chạy trong process của bạn, không chiếm ngữ cảnh model</td></tr>
+        <tr><td>Giọng văn, ngôn ngữ trả lời, thứ tự ưu tiên khi mơ hồ</td><td><strong>Prompt:</strong> system prompt / CLAUDE.md</td><td>Là hướng dẫn mềm, cần linh hoạt theo ngữ cảnh</td></tr>
+        <tr><td>Quy ước nội bộ, "thích" làm theo cách nào</td><td><strong>Prompt:</strong> CLAUDE.md</td><td>Được nhắc lại mỗi request nên không sợ bị nén mất</td></tr>
+      </tbody>
+    </table>
+
+    <p>Docs còn cho một công thức cho agent bị khoá chặt: ghép <code>allowedTools</code> với <code>permissionMode: "dontAsk"</code> — chỉ những tool được liệt kê mới chạy, mọi thứ khác bị từ chối thay vì hỏi. Và nhớ điều ngược lại: allow rule theo tên trần như <code>Read</code> tự duyệt <em>mọi</em> lời gọi tool đó; muốn hẹp hơn thì dùng rule có phạm vi, ví dụ <code>Bash(npm test *)</code>.</p>
+
+    <div class="callout">
+      <div class="callout-title">Đối chiếu bài 06 — "global constraints"</div>
+      <p>Bài 06 dạy: ràng buộc toàn cục (ngân sách, thời gian, chính sách) phải do manager giữ, không đẩy xuống worker. Ở tầng Claude, điều đó nghĩa là: đặt ngân sách ở <code>maxBudgetUsd</code> của phiên (bao trùm cả sub-agent), đặt chính sách ở hook/rule cấp phiên — chứ đừng chỉ dặn từng sub-agent bằng prompt.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hooks">
+    <h2>Hooks &amp; triggers: tự động hoá ở điểm móc</h2>
+
+    <p><strong>Hook</strong> là hàm callback chạy khi có sự kiện trong vòng đời agent: tool sắp được gọi, tool vừa trả kết quả, session bắt đầu, agent dừng… Chúng chạy <em>trong process ứng dụng của bạn</em>, không nằm trong ngữ cảnh của model — nên không tốn context, và có thể <strong>rút ngắn vòng lặp</strong>: một <code>PreToolUse</code> từ chối khiến tool không chạy, Claude chỉ nhận thông báo bị từ chối.</p>
+
+    <p>Các hook thường dùng (theo docs SDK):</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Hook</th><th>Kích hoạt khi</th><th>Dùng để</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>PreToolUse</code></td><td>Trước khi tool chạy (chặn/sửa được)</td><td>Validate input, chặn lệnh nguy hiểm</td></tr>
+        <tr><td><code>PostToolUse</code></td><td>Sau khi tool trả kết quả</td><td>Audit output, kích hoạt tác dụng phụ</td></tr>
+        <tr><td><code>UserPromptSubmit</code></td><td>Khi prompt được gửi đi</td><td>Bơm thêm ngữ cảnh vào prompt</td></tr>
+        <tr><td><code>Stop</code></td><td>Khi agent kết thúc</td><td>Kiểm tra kết quả, lưu trạng thái session</td></tr>
+        <tr><td><code>SubagentStart</code> / <code>SubagentStop</code></td><td>Sub-agent khởi động / hoàn tất</td><td>Theo dõi, gom kết quả các task song song</td></tr>
+        <tr><td><code>PreCompact</code></td><td>Trước khi nén ngữ cảnh</td><td>Lưu trữ transcript đầy đủ trước khi tóm tắt</td></tr>
+      </tbody>
+    </table>
+
+    <p>Danh sách đầy đủ có thêm <code>PostToolUseFailure</code>, <code>PermissionRequest</code>, <code>SessionStart</code>, <code>SessionEnd</code>, <code>Notification</code>, <code>TaskCompleted</code>… (một số chỉ có ở TypeScript SDK — xem docs mới nhất). Ngoài callback trong code, SDK còn nạp được hook dạng shell command từ file settings khi bật <code>settingSources</code>.</p>
+
+    <h3>Ví dụ: chặn ghi vào <code>.env</code> bằng code, không bằng lời dặn</h3>
+
+    <p>Ví dụ nguyên mẫu từ docs hooks — tôi rút gọn phần khung, giữ nguyên logic:</p>
+
+    <pre><code>async def protect_env_files(input_data, tool_use_id, context):
+    file_path = input_data["tool_input"].get("file_path", "")
+    if file_path.split("/")[-1] == ".env":
+        return {
+            "hookSpecificOutput": {
+                "hookEventName": input_data["hook_event_name"],
+                "permissionDecision": "deny",
+                "permissionDecisionReason": "Cannot modify .env files",
+            }
+        }
+    return {}   # trả object rỗng = cho qua
+
+
+options = ClaudeAgentOptions(
+    # matcher lọc hook: chỉ chạy với Write|Edit
+    hooks={"PreToolUse": [HookMatcher(matcher="Write|Edit", hooks=[protect_env_files])]}
+)
+</code></pre>
+
+    <p>Khi chạy, Claude thử tạo <code>.env</code>, hook từ chối, và câu trả lời cuối của Claude giải thích rằng nó không thể tạo file <code>.env</code>. Điểm đáng chú ý: <strong>ranh giới nằm ở code</strong> — kể cả model bị "dụ" bởi prompt injection cũng không qua được hook.</p>
+
+    <h3>Còn "triggers" thì sao?</h3>
+
+    <p>Nếu hook là "làm gì đó <em>khi agent đang chạy</em>", thì trigger là "khởi động agent <em>khi có sự kiện</em>". Claude Code có các cơ chế như <strong>routines</strong> — chạy theo lịch, kích hoạt qua API call, hoặc phản ứng với sự kiện GitHub, từ hạ tầng cloud; <strong>scheduled tasks</strong> trên desktop chạy theo lịch định kỳ; và <strong>GitHub Actions / GitLab CI</strong> để chạy Claude trong pipeline. Ba thứ này thuộc nhóm tính năng đang tiến hoá nhanh — dùng chúng để <em>gọi</em> agent, rồi để hook <em>canh chừng</em> agent bên trong. (xem docs mới nhất: routines, scheduled-tasks, github-actions.)</p>
+
+    <div class="callout">
+      <div class="callout-title">Phân vai cho gọn</div>
+      <ul>
+        <li><strong>Trigger</strong> — khi nào bắt đầu một phiên (lịch, sự kiện, webhook).</li>
+        <li><strong>Permission rule / hook</strong> — điều gì được phép xảy ra trong phiên (cứng, ngoài model).</li>
+        <li><strong>Prompt / CLAUDE.md</strong> — nên hành xử thế nào khi mọi thứ hợp lệ (mềm, trong model).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="decomposition">
+    <h2>Fixed hay dynamic decomposition?</h2>
+
+    <p>Bài 06 đã phân biệt ba mức cam kết: workflow cố định → plan-then-execute → replan. Ở tầng Claude, câu chuyện tương tự nhưng có thêm một lựa chọn mới: để chính Claude <strong>viết harness cho task</strong> thay vì bạn viết trước.</p>
+
+    <h3>Fixed (static) — bạn viết quy trình trước</h3>
+
+    <p>Bạn tự chia việc và mã hoá quy trình bằng Agent SDK (hoặc <code>claude -p</code>): tuần tự gọi agent A, fan-out cho B/C/D, tổng hợp bằng E. Ưu điểm: rẻ, dễ đoán, dễ test, tái dùng. Nhược điểm nằm ở chính ưu điểm: vì phải <em>đúng cho mọi trường hợp</em>, pipeline thường phải chung chung. Blog Anthropic mô tả đúng điểm này: static workflow "phải chạy được cho mọi edge case", nên nó generic.</p>
+
+    <h3>Dynamic — Claude tự viết harness khi chạy</h3>
+
+    <p>Với <strong>dynamic workflows</strong> (tính năng khá mới của Claude Code — xem docs mới nhất), Claude viết một file JavaScript orchestrate các sub-agent ngay lúc chạy, may đo cho đúng task trước mắt:</p>
+
+    <pre><code>workflow.js  (Claude viết ra trong lúc chạy)
+├─ agent(prompt, opts)   → sinh một subagent (chọn được model, isolation)
+├─ parallel([...])       → fan-out nhiều agent rồi chờ tất cả
+└─ pipeline(items, ...)  → chảy từng item qua các bước
+
+(ví dụ prompt: "dùng workflow kiểm chứng từng claim kỹ thuật
+ trong bản nháp này với codebase — tôi không muốn ship thứ gì sai")
+</code></pre>
+
+    <p>Blog nêu ba chế độ thất bại mà cách này nhắm khắc phục — đọc kỹ vì đây là chất liệu thi tốt:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Chế độ thất bại</th><th>Nghĩa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Agentic laziness</strong></td><td>Dừng trước khi xong task nhiều phần rồi tuyên bố hoàn thành (ví dụ làm 35/50 mục của một buổi security review).</td></tr>
+        <tr><td><strong>Self-preferential bias</strong></td><td>Thiên vị kết quả của chính mình, đặc biệt khi được yêu cầu tự kiểm hay tự chấm theo rubric.</td></tr>
+        <tr><td><strong>Goal drift</strong></td><td>Mất dần độ trung thành với mục tiêu gốc qua nhiều turn, nhất là sau compaction — mỗi lần tóm tắt là mất mát, các ràng buộc kiểu "đừng làm X" dễ bị rơi.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Cách chữa nằm ở cấu trúc: tách nhiều sub-agent với ngữ cảnh riêng và mục tiêu hẹp, để việc kiểm tra không nằm trong cùng đầu với việc làm. Sáu pattern Claude hay ghép (theo blog):</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Pattern</th><th>Ý tưởng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Classify-and-act</td><td>Agent phân loại task rồi định tuyến tới agent/hành vi phù hợp.</td></tr>
+        <tr><td>Fan-out-and-synthesize</td><td>Chia thành nhiều mảnh, chạy mỗi mảnh một agent, rồi tổng hợp (bước tổng hợp là barrier — chờ tất cả).</td></tr>
+        <tr><td>Adversarial verification</td><td>Mỗi agent sinh kết quả có một agent khác phản biện/kiểm chứng độc lập.</td></tr>
+        <tr><td>Generate-and-filter</td><td>Sinh nhiều ý tưởng, lọc theo rubric/kiểm chứng, bỏ trùng, giữ cái tốt nhất.</td></tr>
+        <tr><td>Tournament</td><td>Nhiều agent cùng giải một task theo cách khác nhau; agent chấm đấu cặp chọn ra người thắng.</td></tr>
+        <tr><td>Loop until done</td><td>Việc chưa biết trước số lượng thì lặp đến khi điều kiện dừng đạt (không còn phát hiện mới, không còn lỗi).</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Tradeoff — và câu tự vấn</div>
+      <p>Dynamic workflows "thường dùng nhiều token hơn và hợp với task phức tạp, giá trị cao". Blog tự đặt câu hỏi tỉnh táo: <em>task này có thật sự cần thêm compute không?</em> — và tự trả lời: hầu hết task code thường ngày không cần một hội đồng 5 reviewer.</p>
+      <p>Nối với bài 06: <strong>fixed = chốt trước khi làm; dynamic = vừa làm vừa chia lại</strong>. Quy tắc ngón tay cũ vẫn đúng — chốt sớm thì nhanh, rẻ, dễ đoán; linh hoạt thì thích ứng tốt nhưng đắt và phức tạp hơn. Chọn theo giá trị của phần phản hồi thu về.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="session">
+    <h2>Session: continue, resume theo tên, fork</h2>
+
+    <p>Bài 04 và bài 05 đã nói về quản lý ngữ cảnh và memory. Ở tầng SDK, cơ chế ghi nhớ có tên gọi riêng: <strong>session</strong> — và nó cũng là một task statement của blueprint: <em>named session resume</em>.</p>
+
+    <p>Định nghĩa từ docs: session là <strong>lịch sử hội thoại</strong> SDK tích luỹ trong khi agent làm việc — prompt của bạn, mọi tool call, mọi kết quả, mọi câu trả lời. SDK tự ghi ra đĩa. Quay lại session nghĩa là agent có trọn ngữ cảnh cũ: file đã đọc, phân tích đã làm, quyết định đã ra. Có một câu cần nhớ nguyên văn: <em>Sessions persist the conversation, not the filesystem</em> — session không phải ảnh chụp ổ đĩa; muốn hoàn tác thay đổi file phải dùng cơ chế khác (file checkpointing).</p>
+
+    <h3>Ba động từ: continue, resume, fork</h3>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Bạn cần</th><th>Dùng gì</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Task một phát, không theo sau</td><td>Một lần gọi <code>query()</code> là đủ — không cần gì thêm.</td></tr>
+        <tr><td>Chat nhiều lượt trong cùng một process</td><td>Python: <code>ClaudeSDKClient</code> (tự theo dõi session). TypeScript: <code>continue: true</code> trên mỗi lần gọi.</td></tr>
+        <tr><td>Tiếp tục sau khi process khởi động lại</td><td><code>continue_conversation=True</code> (Python) / <code>continue: true</code> (TS) — bám session gần nhất trong thư mục hiện tại, không cần ID.</td></tr>
+        <tr><td>Quay lại một session cụ thể (không phải session mới nhất)</td><td><code>resume</code> + session ID. Bắt buộc khi có nhiều session (ví dụ mỗi user một session).</td></tr>
+        <tr><td>Thử hướng khác mà không phá bản gốc</td><td><strong>Fork</strong>: tạo session mới, bắt đầu bằng bản sao lịch sử của session gốc; bản gốc còn nguyên.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Code tối thiểu (Python) — lấy ID rồi quay lại:</p>
+
+    <pre><code># Lần chạy 1: hứng session ID từ ResultMessage
+async for message in query(prompt="Phân tích module auth và đề xuất cải tiến", options=...):
+    if isinstance(message, ResultMessage):
+        session_id = message.session_id      # lưu lại (DB, file…) để resume sau
+
+# Lần chạy sau: quay lại đúng session đó
+async for message in query(
+    prompt="Giờ refactor nó sang JWT",
+    options=ClaudeAgentOptions(resume=session_id),
+):
+    ...
+</code></pre>
+
+    <p>Với TypeScript, cách "nhớ session" đơn giản nhất là <code>continue: true</code> — nó tự tìm session gần nhất trên đĩa, không cần bạn cầm ID. Muốn mang session sang máy khác (container, serverless), truyền thêm adapter <code>session_store</code>/<code>sessionStore</code> để SDK nhân bản transcript sang backend của bạn cho host khác resume được.</p>
+
+    <h3>Resume theo tên — phía Claude Code CLI</h3>
+
+    <p>Ở CLI, session còn được <strong>đặt tên</strong>. Trong phiên, gõ <code>/rename auth-refactor</code>; sau này quay lại đúng phiên đó bằng:</p>
+
+    <pre><code>claude --continue              # mở cuộc trò chuyện GẦN NHẤT trong thư mục hiện tại
+claude --resume                # mở trình chọn session
+claude --resume auth-refactor  # resume thẳng session theo TÊN
+claude --resume &lt;session-id&gt;   # resume theo ID (dùng cho session tạo bởi SDK / claude -p)
+</code></pre>
+
+    <p>Vài chi tiết đáng nhớ:</p>
+    <ul>
+      <li>Đặt tên được cả bằng <code>/rename</code> trong phiên, <code>Ctrl+R</code> trong trình chọn session, hoặc từ app/Remote Control. Khi tên bị trùng với một session đang sống, Claude Code giữ tên cho session cũ và thêm hậu tố cho session mới (ví dụ <code>auth-refactor-grace</code>).</li>
+      <li>Session tạo bởi <code>claude -p</code> hoặc Agent SDK bị loại khỏi trình chọn session và khỏi <code>--continue</code>, nhưng vẫn resume được nếu bạn truyền thẳng session ID: <code>claude --resume &lt;session-id&gt;</code>.</li>
+      <li>Resume khôi phục: lịch sử hội thoại (kể cả tool call/result), model đang dùng, agent (nếu chạy bằng <code>--agent</code>, giữ nguyên tool restrictions và model), permission mode (khi resume ở terminal), goal đang hoạt động, scheduled task chưa hết hạn. <strong>Không</strong> tự khôi phục một số flag khởi chạy như <code>--mcp-config</code>, <code>--settings</code>, <code>--plugin-dir</code>, <code>--fallback-model</code>, các thư mục <code>--add-dir</code> — gặp lại thì phải truyền lại. (xem docs mới nhất.)</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">Trạng thái dài hạn nằm ở đâu?</div>
+      <p>Session giữ <em>hội thoại</em>, nhưng như mục 8 sẽ thấy, hội thoại có thể bị nén và mất chi tiết. Vì vậy quy tắc bền vững (style, quy ước, "đừng làm X") phải sống ở <strong>CLAUDE.md</strong> — tài liệu nói rõ: CLAUDE.md được nạp lại ở <em>mọi</em> request, còn chi tiết trong prompt ban đầu có thể không được giữ sau compaction.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="nang-cao">
+    <h2>Progressive summarization &amp; escalation — nhập môn</h2>
+
+    <p>Hai chủ đề này thuộc C6, nhưng bạn cần biết chúng <em>tồn tại</em> để hiểu vì sao các phần trên được thiết kế như vậy. Mục này chỉ ở mức nhận diện.</p>
+
+    <h3>Progressive summarization = compaction</h3>
+
+    <p>Ngữ cảnh không tự reset giữa các turn trong một session — system prompt, định nghĩa tool, hội thoại, input/output của tool… tất cả tích tụ. Khi cửa sổ ngữ cảnh gần đầy, SDK <strong>tự động nén</strong> (compact): tóm tắt lịch sử cũ để giải phóng chỗ, giữ lại các trao đổi gần nhất và quyết định then chốt. Khi việc đó xảy ra, stream phát ra một message <code>type: "system"</code>, subtype <code>"compact_boundary"</code>.</p>
+
+    <p>Bốn điều thực dụng quanh compaction:</p>
+    <ul>
+      <li><strong>Nó lossy.</strong> Tóm tắt thay message cũ, nên chỉ dẫn cụ thể ở đầu hội thoại có thể không còn. Quy tắc bền vững phải nằm ở CLAUDE.md (được bơm lại mỗi request).</li>
+      <li><strong>Dạy nó giữ gì.</strong> Compactor đọc CLAUDE.md như mọi ngữ cảnh khác — thêm một mục kiểu "When summarizing, always preserve: mục tiêu hiện tại, file đã đọc/sửa, kết quả test, quyết định đã ra…" là tóm tắt biết giữ đúng thứ.</li>
+      <li><strong>Hook để lưu vết.</strong> <code>PreCompact</code> chạy trước khi nén — chỗ lý tưởng để archive transcript đầy đủ.</li>
+      <li><strong>Nén thủ công.</strong> Gửi <code>/compact</code> như một prompt string để kích hoạt theo ý muốn.</li>
+    </ul>
+
+    <p>Vì sao điều này gắn với orchestration? Vì blog dynamic workflows xếp <em>goal drift</em> là hệ quả trực tiếp của chuỗi nén: "mỗi bước tóm tắt là mất mát". Tách việc ra nhiều sub-agent ngữ cảnh riêng chính là một cách giảm số lần phải nén một ngữ cảnh khổng lồ.</p>
+
+    <h3>Escalation = biết khi nào cần "người giỏi hơn"</h3>
+
+    <p>Trong tài liệu Managed Agents, escalation là một trong ba pattern multi-agent được gọi tên: <strong>consult a more capable agent or model for a subset of complex subtasks</strong> — với một phần việc con khó, đừng cố nhồi cho agent yếu; hãy hỏi agent/model mạnh hơn. Còn trong pattern triage của dynamic workflows, escalation là nhánh dành cho con người: agent đọc nội dung không tin cậy thì chỉ phân loại và tóm tắt; nếu không tự xử được thì <em>escalate to a human</em>.</p>
+
+    <p>Một dạng escalation "đời thường" bạn đã gặp ngay trong bài này: khi agent chạm trần <code>error_max_turns</code>, docs gợi ý <strong>resume session với giới hạn cao hơn</strong> — chuyển từ chế độ chạy tự do sang chế độ có người xem lại và nới van. C6 sẽ đào sâu: khi nào nén, khi nào tách ngữ cảnh mới, khi nào chuyển model/người.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+
+    <p>Bốn hiểu lầm hay gặp nhất khi mới chuyển từ "tự viết loop" sang hệ sinh thái Claude:</p>
+
+    <ol>
+      <li>
+        <p><strong>"Agent SDK chính là Anthropic API / Client SDK đổi tên."</strong> — Không. Client SDK cho bạn truy cập Messages API; bạn tự viết tool loop. Agent SDK là <em>một thư viện khác</em>: nó chạy binary Claude Code và mang sẵn vòng lặp agent, built-in tool, permissions, sessions, hooks. Chọn sai hàng trong bảng bốn lựa chọn ở mục 2 là lỗi thiết kế, không chỉ là lỗi từ ngữ.</p>
+      </li>
+      <li>
+        <p><strong>"Cứ viết 'tuyệt đối không làm X' vào prompt là an toàn."</strong> — Không. Prompt là hướng dẫn mềm; model có thể quên hoặc bị prompt injection dụ. Ràng buộc cứng nằm ở code: deny rule, hook <code>PreToolUse</code>, giới hạn <code>tools</code> của sub-agent. Và nhớ: tool được auto-approve không bao giờ tới <code>canUseTool</code> — đặt kiểm tra ở đó có thể bị bỏ qua trong im lặng.</p>
+      </li>
+      <li>
+        <p><strong>"Nhiều sub-agent thì luôn tốt hơn một agent."</strong> — Không. Sub-agent tách ngữ cảnh, chạy song song và chuyên môn hoá tốt — nhưng handoff chỉ là bản tóm tắt (bài 06: "handoff là bản tóm tắt" là cái bẫy), coordination tốn kém, và mỗi sub-agent là thêm token. Docs cũng nhắc dùng sub-agent như một cách <em>giữ ngữ cảnh sạch</em>, không phải như một nghi thức bắt buộc cho mọi task.</p>
+      </li>
+      <li>
+        <p><strong>"Resume session là khôi phục lại mọi thứ."</strong> — Không. Session lưu <em>hội thoại</em>, không lưu filesystem; compaction đã làm mất một phần chi tiết; và một số flag khởi chạy (MCP config, settings, plugin dir, add-dir…) không được tự khôi phục. Resume giỏi giữ mạch suy nghĩ — không phải một nút "undo" vạn năng.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+
+    <p>Ba bài dưới đây làm ra nháp trước, rồi mới mở đáp án. Đáp án là gợi ý — quan trọng là <strong>cách lập luận</strong> của bạn.</p>
+
+    <div class="exercise">
+      <h3>Bài 1 — Chọn tầng cho đúng</h3>
+      <p><strong>Đề bài:</strong> Với mỗi tình huống, chọn công cụ phù hợp nhất — Messages API (Client SDK, tự viết loop), Agent SDK, hay Managed Agents — và nói vì sao. Nêu một rủi ro nếu chọn sai.</p>
+      <ol>
+        <li>Script nội bộ chạy trong CI: mỗi khi có PR, tự đọc diff, sửa lỗi chính tả tài liệu, chạy lại lint, rồi đăng comment. Chạy trong repo, cần quyền ghi file.</li>
+        <li>Một endpoint nhỏ: người dùng gửi câu hỏi, bạn muốn model trả về JSON đúng schema cố định, không cần tool, không cần nhớ gì.</li>
+        <li>Sản phẩm agent chạy 24/7: session khách hàng nằm trong sandbox do Anthropic quản lý, công ty không muốn tự vận hành hạ tầng harness.</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>1 — Agent SDK</strong> (hoặc chạy CLI headless <code>claude -p</code> với <code>--output-format json</code>): bài toán cần đúng thứ SDK mang sẵn — built-in tool đọc/sửa file, chạy lệnh, permission cho thao tác ghi, hook để audit. Tự viết loop bằng Messages API nghĩa là bạn phải tự xây lại mọi thứ đó. Rủi ro nếu chọn sai tầng: ước tính công sức sai và tự tạo lỗ hổng ở phần tool/permission.</li>
+          <li><strong>2 — Messages API</strong> (Client SDK): một lượt, không tool, không session — vòng lặp agent là thừa. Nếu cần JSON đúng schema, dùng structured output của API. Rủi ro nếu chọn sai: kéo cả harness nặng vào cho một việc một phát, tăng độ trễ, chi phí và bề mặt lỗi.</li>
+          <li><strong>3 — Managed Agents</strong>: đúng định nghĩa "Anthropic host agent, cấu hình qua Claude API" — harness chạy sẵn, session trong sandbox managed (hoặc self-hosted sandbox nếu cần). Lưu ý đây là beta (xem docs mới nhất). Rủi ro nếu chọn sai: tự vận hành hạ tầng session/sandbox là việc lớn không tạo giá trị trực tiếp.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 2 — Thiết kế hub-and-spoke cho một buổi review</h3>
+      <p><strong>Đề bài:</strong> Bạn cần review một PR lớn gồm 3 phần: (a) thay đổi xác thực, (b) migration database, (c) tài liệu API. Hãy:</p>
+      <ol>
+        <li>Vẽ sơ đồ hub-and-spoke: lead + 3 sub-agent.</li>
+        <li>Viết cho mỗi sub-agent một dòng <code>description</code> và danh sách <code>tools</code> giới hạn hợp lý.</li>
+        <li>Phần nào chạy song song được, phần nào phải chờ? Bước tổng hợp do ai làm?</li>
+        <li>Dự đoán một chi tiết có thể mất khi handoff, và cách giữ nó.</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <pre><code>                    ┌──────────────────────────────┐
+                    │ LEAD: "review PR #42, tổng   │
+                    │ hợp thành báo cáo cuối"      │
+                    └──────┬─────────┬─────────┬───┘
+                 ┌─────────┘         │         └─────────┐
+                 ▼                   ▼                   ▼
+        ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+        │ security-review │ │ migration-review│ │ docs-review     │
+        │ Read,Grep,Glob  │ │ Read,Grep,Bash  │ │ Read,Grep       │
+        │ (chỉ đọc)       │ │ (chạy EXPLAIN…) │ │ (chỉ đọc)       │
+        └─────────────────┘ └─────────────────┘ └─────────────────┘
+                    3 kết quả độc lập → lead tổng hợp
+</code></pre>
+        <ul>
+          <li><strong>Descriptions:</strong> security — "Reviews authentication and authorization changes for security issues. Read-only."; migration — "Reviews database migrations for correctness, rollback safety, and data integrity. Read-only, may run read-only DB commands."; docs — "Checks API documentation against the code changes. Read-only."</li>
+          <li><strong>Tools:</strong> cả ba <em>không</em> có Write/Edit. Chỉ migration-review có Bash (và chỉ nên là lệnh đọc). Đây là ranh giới cứng — đừng chỉ dặn trong prompt.</li>
+          <li><strong>Song song:</strong> ba review độc lập chạy đồng thời; bước tổng hợp là barrier — lead chờ cả ba rồi mới viết báo cáo (giống fan-out-and-synthesize).</li>
+          <li><strong>Handoff mất gì:</strong> evidence thô — số dòng, đoạn log, trích dẫn file — vì sub-agent chỉ trả thông điệp cuối. Cách giữ: yêu cầu kết quả có trích dẫn <code>file:line</code> cụ thể trong bản tóm tắt, hoặc cho sub-agent ghi bằng chứng ra file trong repo để lead đọc khi cần.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 3 — Enforcement hay prompt?</h3>
+      <p><strong>Đề bài:</strong> Mỗi yêu cầu sau nên thực hiện bằng <em>code</em> hay <em>prompt</em>? Nêu cơ chế cụ thể (rule, hook, option…) nếu là code:</p>
+      <ol>
+        <li>Không bao giờ cho agent sửa file <code>.env</code>.</li>
+        <li>Agent luôn trả lời bằng tiếng Việt.</li>
+        <li>Mỗi phiên tối đa 2 USD.</li>
+        <li>Sub-agent "doc-checker" không được chạy Bash, chỉ đọc và grep.</li>
+        <li>Agent nên chạy test trước khi khẳng định đã sửa xong.</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>1 — Code.</strong> Deny rule cho Edit/Write trên đường dẫn đó <em>+</em> hook <code>PreToolUse</code> kiểm tra <code>file_path</code> và trả <code>permissionDecision: "deny"</code>. Hook chạy trước mọi bước và áp cả trong <code>bypassPermissions</code>.</li>
+          <li><strong>2 — Prompt.</strong> Đây là hướng dẫn mềm về phong cách — system prompt hoặc CLAUDE.md. Không có cơ chế code nào "bắt" được nội dung text trả lời một cách hợp lý (và cũng không cần).</li>
+          <li><strong>3 — Code.</strong> <code>max_budget_usd</code>/<code>maxBudgetUsd</code>; chạm trần thì SDK trả <code>ResultMessage</code> subtype <code>error_max_budget_usd</code>. Ngân sách bao cả sub-agent.</li>
+          <li><strong>4 — Code.</strong> Khai <code>tools: ["Read", "Grep"]</code> (frontmatter) hoặc <code>AgentDefinition(tools=["Read","Grep"])</code>. Không phát tool thì sub-agent không thể gọi — mạnh hơn mọi câu dặn dò.</li>
+          <li><strong>5 — Prompt (kèm code tuỳ chọn).</strong> "Test trước khi kết luận" là ưu tiên hành vi → system prompt/CLAUDE.md. Muốn siết hơn thì thêm hook <code>Stop</code> để kiểm tra trạng thái test trước khi cho dừng, nhưng hãy coi đó là biện pháp tăng cường, không phải mặc định cho mọi dự án.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu — làm nhanh để chắc mình nắm cốt lõi.</p>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">1. Agent SDK khác Client SDK (Messages API) ở điểm cốt lõi nào?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Agent SDK nhanh hơn và rẻ hơn khi gọi model</button>
+        <button class="quiz-opt" data-key="b">SDK tự chạy vòng lặp: thực thi tool, đưa kết quả về model, bạn chỉ theo dõi stream</button>
+        <button class="quiz-opt" data-key="c">Agent SDK chỉ là tên mới của Messages API</button>
+        <button class="quiz-opt" data-key="d">Agent SDK chỉ dùng được qua giao diện web</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: hỏi "ai viết vòng lặp model → tool → model?"</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Client SDK cho bạn Messages API và bạn tự viết tool loop (nhận <code>stop_reason: "tool_use"</code>, chạy tool, gửi <code>tool_result</code>, lặp). Agent SDK mang sẵn vòng lặp đó — cùng bộ tool, cách quản lý ngữ cảnh và permissions của Claude Code.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">2. Trong vòng lặp của Agent SDK, một <strong>turn</strong> là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Một lần người dùng gõ prompt</button>
+        <button class="quiz-opt" data-key="b">Một lần model trả lời text cho người dùng</button>
+        <button class="quiz-opt" data-key="c">Toàn bộ một phiên làm việc từ đầu đến cuối</button>
+        <button class="quiz-opt" data-key="d">Một khứ hồi trong loop: model sinh output có tool call → SDK chạy tool → kết quả quay về model</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: docs nói turn là một round trip bên trong loop và xảy ra không cần trả quyền về code của bạn.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Turn là chu kỳ model → tool → model. Loop tiếp tục các turn cho đến khi output không còn tool call. Và nhớ: <code>max_turns</code>/<code>maxTurns</code> chỉ đếm các turn có dùng tool.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">3. Muốn sub-agent <strong>không thể</strong> sửa file (chỉ đọc), cách nào là ràng buộc cứng đúng nhất?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Giới hạn tool của sub-agent: <code>tools: Read, Grep, Glob</code> trong frontmatter (hoặc <code>AgentDefinition(tools=[...])</code>)</button>
+        <button class="quiz-opt" data-key="b">Viết thật to trong system prompt "TUYỆT ĐỐI không được sửa file"</button>
+        <button class="quiz-opt" data-key="c">Tăng model của sub-agent lên bản mạnh nhất</button>
+        <button class="quiz-opt" data-key="d">Giảm temperature xuống 0</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: model chỉ có thể gọi những tool mà nó nhìn thấy.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Không phát tool ghi file thì sub-agent không thể gọi — đó là ranh giới thực thi được. Prompt chỉ là hướng dẫn mềm; model mạnh hay temperature thấp không thay đổi bộ tool được cấp.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">4. Điều nào sau đây <strong>KHÔNG đúng</strong> về hooks trong Agent SDK?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Hook chạy trong process ứng dụng của bạn, không nằm trong ngữ cảnh của model</button>
+        <button class="quiz-opt" data-key="b">Một <code>PreToolUse</code> hook có thể chặn tool call, kể cả trong chế độ <code>bypassPermissions</code></button>
+        <button class="quiz-opt" data-key="c">Hook chỉ là gợi ý mềm — model có thể bỏ qua quyết định của hook</button>
+        <button class="quiz-opt" data-key="d">Hook phù hợp để audit mọi tool call và lưu transcript trước khi compaction</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: hook "rút ngắn vòng lặp" nghĩa là gì?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Hook không phải gợi ý — nó chạy trước mọi bước đánh giá quyền và có thể chặn thẳng; hook deny còn áp dụng cả trong <code>bypassPermissions</code>. Vì chạy trong process của bạn nên hook không tốn ngữ cảnh của model, và <code>PreCompact</code> đúng là chỗ để archive transcript.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">5. Bạn muốn quay lại đúng phiên đã đặt tên <code>auth-refactor</code> trong Claude Code CLI. Lệnh nào đúng?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">claude --continue auth-refactor</button>
+        <button class="quiz-opt" data-key="b">claude --resume auth-refactor</button>
+        <button class="quiz-opt" data-key="c">claude --session auth-refactor</button>
+        <button class="quiz-opt" data-key="d">claude --open auth-refactor</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: <code>--continue</code> không nhận tên; nó chỉ mở phiên gần nhất.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> <code>claude --resume &lt;name&gt;</code> resume thẳng phiên theo tên (đặt bằng <code>/rename</code>); <code>claude --continue</code> chỉ mở phiên gần nhất trong thư mục hiện tại. Session tạo bởi SDK hoặc <code>claude -p</code> không nằm trong trình chọn nhưng vẫn resume được bằng <code>claude --resume &lt;session-id&gt;</code>.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question">6. Điền từ còn thiếu vào câu cốt lõi của docs về session:</p>
+      <p class="fib-sentence">"Sessions persist the <span class="fib" data-answer="conversation" data-placeholder="?"></span>, not the filesystem."</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="luyen-them">
+    <h2>Luyện thêm với nguồn chính thức</h2>
+    <p>Ba kho chính thức của Anthropic để bạn luyện tay — mở ra chạy thử, đừng chỉ đọc:</p>
+    <ul>
+      <li><a href="https://github.com/anthropics/claude-agent-sdk-python">anthropics/claude-agent-sdk-python</a> — SDK Python chính thức: đọc README rồi mở thư mục <code>examples/</code>, chọn một demo và chạy thử để thấy vòng lặp <code>query()</code> trong code thật.</li>
+      <li><a href="https://github.com/anthropics/claude-agent-sdk-demos">anthropics/claude-agent-sdk-demos</a> — các demo thực tế dựng bằng Agent SDK: chọn cái gần bài toán của bạn nhất, chạy thử rồi đọc phần orchestration trong code.</li>
+      <li><a href="https://github.com/anthropics/launch-your-agent">anthropics/launch-your-agent</a> — từ ý tưởng đến Claude Managed Agent, kèm skills chính thức: đi theo hướng dẫn để nắm quy trình triển khai một managed agent từ đầu.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Agent SDK</td><td>Thư viện Python/TypeScript chạy đúng tool, vòng lặp và cách quản lý ngữ cảnh của Claude Code, kèm binary Claude Code.</td></tr>
+        <tr><td>Agent loop</td><td>Chu trình nhận prompt → đánh giá/trả lời → chạy tool → lặp → trả kết quả cuối (<code>ResultMessage</code>).</td></tr>
+        <tr><td>Turn</td><td>Một khứ hồi model → tool → model bên trong loop; đếm bằng <code>max_turns</code>/<code>maxTurns</code>.</td></tr>
+        <tr><td>Client SDK / Messages API</td><td>Gọi API trực tiếp; bạn tự viết tool loop (client tool do bạn chạy, server tool do Anthropic chạy).</td></tr>
+        <tr><td>Managed Agents</td><td>Anthropic host harness; khái niệm Agent / Environment / Session / Events (beta).</td></tr>
+        <tr><td>Sub-agent</td><td>Agent con chạy trong ngữ cảnh riêng, chỉ trả kết quả cuối về agent cha; có tool, model, prompt riêng.</td></tr>
+        <tr><td>Agent tool (Task tool cũ)</td><td>Cơ chế uỷ quyền của Claude Code; đổi tên từ Task ở v2.1.63, alias <code>Task(...)</code> vẫn dùng được.</td></tr>
+        <tr><td>allowedTools / allowed_tools</td><td>Danh sách tool được tự động phê duyệt cho phiên (không phải tool của sub-agent).</td></tr>
+        <tr><td>tools / disallowedTools (sub-agent)</td><td>Giới hạn thật sự bộ tool của sub-agent, khai trong AgentDefinition hoặc frontmatter.</td></tr>
+        <tr><td>Permission mode</td><td>Mức phê duyệt của phiên: <code>default</code>, <code>acceptEdits</code>, <code>plan</code>, <code>dontAsk</code>, <code>bypassPermissions</code>…</td></tr>
+        <tr><td>Hook</td><td>Callback tại sự kiện vòng đời (<code>PreToolUse</code>, <code>PostToolUse</code>, <code>Stop</code>, <code>PreCompact</code>…), chạy ngoài ngữ cảnh model, có thể chặn.</td></tr>
+        <tr><td>Session / resume / fork</td><td>Lịch sử hội thoại ghi ra đĩa; continue (gần nhất), resume (theo ID/tên), fork (bản sao để thử hướng khác).</td></tr>
+        <tr><td>Compaction</td><td>Nén tự động lịch sử cũ khi ngữ cảnh gần đầy; lossy; phát tín hiệu <code>compact_boundary</code>.</td></tr>
+        <tr><td>Fixed vs dynamic decomposition</td><td>Quy trình chia việc viết trước (static, generic, rẻ) so với Claude tự viết harness khi chạy (dynamic, may đo, nhiều token hơn).</td></tr>
+        <tr><td>Hub-and-spoke</td><td>Một agent trung tâm giao việc cho các sub-agent độc lập rồi tổng hợp kết quả.</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li>Anthropic — <a href="https://code.claude.com/docs/en/agent-sdk/overview">Agent SDK overview</a>: so sánh Agent SDK / CLI / Client SDK / Managed Agents, các capability (tool, hooks, subagents, MCP, permissions, sessions…).</li>
+      <li>Anthropic — <a href="https://code.claude.com/docs/en/agent-sdk/agent-loop">How the agent loop works</a>: vòng lặp 5 bước, turn, message types, turns &amp; budget, effort, permission mode, context window &amp; automatic compaction, hooks.</li>
+      <li>Anthropic — <a href="https://code.claude.com/docs/en/agent-sdk/quickstart">Agent SDK quickstart</a>: cài đặt, API key, ví dụ agent sửa bug.</li>
+      <li>Anthropic — <a href="https://code.claude.com/docs/en/agent-sdk/permissions">Configure permissions</a>: 6 bước đánh giá quyền, allow/deny rules, permission modes, <code>canUseTool</code>.</li>
+      <li>Anthropic — <a href="https://code.claude.com/docs/en/agent-sdk/hooks">Hooks</a>: danh sách hook, ví dụ chặn <code>.env</code>, matcher, output.</li>
+      <li>Anthropic — <a href="https://code.claude.com/docs/en/agent-sdk/subagents">Subagents in the SDK</a>: AgentDefinition, ba cách định nghĩa, lợi ích, giới hạn song song/độ sâu.</li>
+      <li>Anthropic — <a href="https://code.claude.com/docs/en/sub-agents">Create custom subagents</a>: sub-agent built-in (Explore/Plan/general-purpose), frontmatter, <code>tools</code>/<code>disallowedTools</code>, đổi tên Task → Agent.</li>
+      <li>Anthropic — <a href="https://code.claude.com/docs/en/agent-sdk/sessions">Work with sessions</a> và <a href="https://code.claude.com/docs/en/sessions">Manage sessions</a>: continue/resume/fork, session ID, <code>/rename</code>, <code>claude --resume &lt;name&gt;</code>, những gì được khôi phục.</li>
+      <li>Anthropic — <a href="https://platform.claude.com/docs/en/managed-agents/quickstart">Managed Agents quickstart</a>, <a href="https://platform.claude.com/docs/en/managed-agents/agent-setup">Define your agent</a>, <a href="https://platform.claude.com/docs/en/managed-agents/multiagent-orchestration">Multiagent orchestration</a>: Agent/Environment/Session/Events, <code>multiagent</code> coordinator, pattern parallelization/specialization/escalation (beta).</li>
+      <li>Anthropic — <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview">Tool use overview</a>: client tools vs server tools, vòng lặp <code>tool_use</code> → <code>tool_result</code>.</li>
+      <li>Anthropic — <a href="https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code">A harness for every task: dynamic workflows</a> (blog, 06/2026): static vs dynamic workflows, agentic laziness / self-preferential bias / goal drift, sáu pattern, khi nào không dùng. Docs liên quan: <a href="https://code.claude.com/docs/en/workflows">workflows</a>.</li>
+      <li>Anthropic — <a href="https://code.claude.com/docs/en/routines">Automate work with routines</a>, <a href="https://code.claude.com/docs/en/hooks">Claude Code hooks</a>, <a href="https://code.claude.com/docs/en/how-claude-code-works">How Claude Code works</a>: triggers, hook phía CLI, vòng lặp agentic của Claude Code (một số tính năng đang tiến hoá — xem docs mới nhất).</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Track Claude:</strong> trước — C4; sau — <strong>C6</strong> · Progressive summarization &amp; escalation, đào sâu hai chủ đề ở mục 8 (compaction, tách ngữ cảnh, chuyển model/người).</p>
+    <p>Có chỗ nào chưa rõ? Ghi lại câu hỏi và nhắn cho giáo viên — đặc biệt nếu bạn đang chuẩn bị thi CCDV-F/CCAR-F.</p>
+  </footer>
+
+</main>
+
+<script src="../../assets/lang.js"></script>
+<script src="../../assets/quiz.js"></script>
+</body>
+</html>
