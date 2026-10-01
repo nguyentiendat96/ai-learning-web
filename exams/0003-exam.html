@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam 03 · Tool Use — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Exam 03</div>
+    <h1><span class="lang-vi">Exam — Tool Use</span><span class="lang-en">Exam — Tool Use</span></h1>
+    <p class="subtitle"><span class="lang-vi">16 câu + 2 bài tập code. Làm lại được nhiều lần — mục tiêu: đúng ≥ 85%.</span><span class="lang-en">16 questions + 2 coding exercises. Retake as many times as you like — target: ≥ 85% correct.</span></p>
+    <p class="lesson-meta"><span>~40 phút / ~40 min</span><span><a href="../lessons/0003-tool-use.html"><span class="lang-vi">← Ôn lại Bài 03</span><span class="lang-en">← Review Lesson 03</span></a></span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="exam-bar">
+    <span class="exam-progress">Đúng 0 / 13 câu tương tác</span>
+    <button class="exam-reset" type="button">Làm lại từ đầu</button>
+  </div>
+
+  <p><span class="lang-vi"><strong>Cách làm:</strong> phần A–B chấm điểm tự động; phần C–D tự kiểm bằng đáp án. Mục tiêu: <strong>≥ 85%</strong>.</span><span class="lang-en"><strong>How to use:</strong> sections A–B are scored automatically; sections C–D are self-checked by revealing the answers. Target: <strong>≥ 85%</strong>.</span></p>
+
+  <!-- ================================================== -->
+  <section id="trac-nghiem">
+    <h2><span class="lang-vi">Phần A — Trắc nghiệm (10 câu)</span><span class="lang-en">Part A — Multiple choice (10 questions)</span></h2>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A1. Khi nào nên gọi tool?</span><span class="lang-en">A1. When should you call a tool?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Luôn luôn — tool làm mọi thứ tốt hơn</span><span class="lang-en">Always — tools make everything better</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Khi lợi ích lớn hơn độ trễ, chi phí và rủi ro</span><span class="lang-en">When the benefit outweighs latency, cost, and risk</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Chỉ khi người dùng yêu cầu rõ ràng</span><span class="lang-en">Only when the user explicitly asks</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Chỉ khi model không biết câu trả lời</span><span class="lang-en">Only when the model doesn't know the answer</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Quy tắc vàng của buổi 1b: "Call tools only when their benefit outweighs latency, cost, failure, and risk."</span><span class="lang-en">The golden rule from session 1b: "Call tools only when their benefit outweighs latency, cost, failure, and risk."</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A2. <code>finish(text)</code> khác gì các tool khác?</span><span class="lang-en">A2. How is <code>finish(text)</code> different from other tools?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Nó là tool mạnh nhất trong hệ thống</span><span class="lang-en">It is the most powerful tool in the system</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Nó chạy trên server của nhà cung cấp</span><span class="lang-en">It runs on the provider's server</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Nó là control action của harness — dừng vòng lặp, không gọi chương trình ngoài</span><span class="lang-en">It is a harness control action — it stops the loop and calls no external program</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Nó là tool để tìm kiếm thông tin</span><span class="lang-en">It is a tool for searching information</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 8 ghi rõ: "This is a harness control action, not an external program."</span><span class="lang-en">Slide 8 states: "This is a harness control action, not an external program."</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A3. Vì sao tool nên có "giao diện hẹp" (narrow interface)?</span><span class="lang-en">A3. Why should a tool have a "narrow interface"?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Dễ kiểm tra tham số, khó bị lạm dụng</span><span class="lang-en">Parameters are easy to check and hard to abuse</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Để model nhớ tên dễ hơn</span><span class="lang-en">So the model remembers the name more easily</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Để chạy nhanh hơn</span><span class="lang-en">So it runs faster</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Để tiết kiệm token</span><span class="lang-en">To save tokens</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Hẹp là có chủ đích: càng hẹp càng dễ validate và càng khó bị lạm dụng.</span><span class="lang-en">Narrow is deliberate: the narrower it is, the easier to validate and the harder to abuse.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A4. Constrained decoding đảm bảo điều gì?</span><span class="lang-en">A4. What does constrained decoding guarantee?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Tool được chọn luôn đúng</span><span class="lang-en">The chosen tool is always right</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Agent luôn có quyền gọi tool</span><span class="lang-en">The agent always has permission to call the tool</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Tham số luôn đúng sự thật</span><span class="lang-en">The arguments are always factually true</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Hình thức: JSON hợp lệ và đúng schema</span><span class="lang-en">Form: valid JSON that matches the schema</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">"Constraints ensure form — not truth, permissions, tool choice, or task success."</span><span class="lang-en">"Constraints ensure form — not truth, permissions, tool choice, or task success."</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A5. Call ID đặc biệt quan trọng trong tình huống nào?</span><span class="lang-en">A5. In which situation is the call ID especially important?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Khi chỉ có một lời gọi duy nhất</span><span class="lang-en">When there is only a single call</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Khi tool bị lỗi timeout</span><span class="lang-en">When the tool times out</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Khi nhiều lời gọi chạy song song và kết quả về không theo thứ tự</span><span class="lang-en">When many calls run in parallel and results come back out of order</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Khi model quên tham số</span><span class="lang-en">When the model forgets an argument</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Kết quả về theo thứ tự nào cũng được — mỗi kết quả mang "số vé" của mình.</span><span class="lang-en">Results may come back in any order — each result carries its own "ticket number".</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A6. Code (execute_code) là loại tool như thế nào?</span><span class="lang-en">A6. What kind of tool is code (execute_code)?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Yếu nhất — chỉ để tính toán đơn giản</span><span class="lang-en">The weakest — only for simple calculations</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Mạnh nhưng tác động lớn — cần sandbox, giới hạn quyền, audit log</span><span class="lang-en">Powerful but high-impact — it needs a sandbox, permission limits, and an audit log</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Không cần kiểm soát vì nó chạy nhanh</span><span class="lang-en">No controls needed because it runs fast</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Chỉ dùng được khi offline</span><span class="lang-en">Only usable offline</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Code biểu đạt mạnh (vòng lặp, thư viện) nhưng khó ràng buộc và tác động cao — vì vậy cần sandbox và giới hạn.</span><span class="lang-en">Code is highly expressive (loops, libraries) but hard to constrain and high-impact — hence the need for a sandbox and limits.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A7. Với MCP credential brokering, model nhìn thấy những chìa khóa nào?</span><span class="lang-en">A7. With MCP credential brokering, which keys does the model see?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Cả MCP key và upstream key</span><span class="lang-en">Both the MCP key and the upstream key</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Chỉ upstream key</span><span class="lang-en">Only the upstream key</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Chỉ khi người dùng cho phép</span><span class="lang-en">Only if the user allows it</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Không thấy secret nào</span><span class="lang-en">No secrets at all</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Agent cầm MCP key; server giữ upstream key và gọi API hộ — model không thấy secret nào.</span><span class="lang-en">The agent holds the MCP key; the server keeps the upstream key and calls the API on its behalf — the model sees no secrets.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A8. Hai lời gọi tool nào an toàn để chạy song song?</span><span class="lang-en">A8. Which two tool calls are safe to run in parallel?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Hai lời gọi mà cái sau cần kết quả cái trước</span><span class="lang-en">Two calls where the second needs the first's result</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Hai lời gọi độc lập, không phụ thuộc nhau</span><span class="lang-en">Two independent calls that do not depend on each other</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Mọi lời gọi đều nên chạy song song</span><span class="lang-en">All calls should run in parallel</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Không bao giờ nên chạy song song</span><span class="lang-en">Calls should never run in parallel</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Lời gọi phụ thuộc nhau phải chạy tuần tự — nếu không sẽ dùng dữ liệu chưa có.</span><span class="lang-en">Dependent calls must run sequentially — otherwise they use data that does not exist yet.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A9. Harness gán nhầm kết quả cho lời gọi (ID mismatch) — lỗi thuộc nguồn nào?</span><span class="lang-en">A9. The harness pairs a result with the wrong call (ID mismatch) — which source is this error from?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Model</span><span class="lang-en">Model</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Provider / tool</span><span class="lang-en">Provider / tool</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Harness</span><span class="lang-en">Harness</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Người dùng</span><span class="lang-en">The user</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Ba nguồn lỗi: model (bad args…), harness (parse, validate, ID mismatch…), provider (timeout, rate limit…).</span><span class="lang-en">Three error sources: model (bad args…), harness (parse, validate, ID mismatch…), provider (timeout, rate limit…).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A10. Bốn tầng đánh giá tool use là gì?</span><span class="lang-en">A10. What are the four levels of tool-use evaluation?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Selection → Arguments → Trajectory → Task</span><span class="lang-en">Selection → Arguments → Trajectory → Task</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Đọc → hiểu → viết → nộp</span><span class="lang-en">Read → understand → write → submit</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Train → test → deploy → monitor</span><span class="lang-en">Train → test → deploy → monitor</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Input → output → feedback → retrain</span><span class="lang-en">Input → output → feedback → retrain</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Chọn đúng tool → đúng tham số → đúng thứ tự → đạt mục tiêu cuối.</span><span class="lang-en">Pick the right tool → right arguments → right order → reach the final goal.</span></p></div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="dien-khuyet">
+    <h2><span class="lang-vi">Phần B — Điền khuyết (3 câu)</span><span class="lang-en">Part B — Fill in the blank (3 questions)</span></h2>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B1. Ai quyết định việc thực thi?</span><span class="lang-en">B1. Who decides whether to execute?</span></p>
+      <p class="fib-sentence">"The model proposes; external software <span class="fib" data-answer="decides|decide" data-placeholder="?"></span> whether and how to execute."</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B2. Ràng buộc đảm bảo điều gì?</span><span class="lang-en">B2. What do constraints guarantee?</span></p>
+      <p class="fib-sentence">"Constraints ensure <span class="fib" data-answer="form|hình thức" data-placeholder="?"></span> — not truth, permissions, tool choice, or task success."</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B3. MCP server giữ khóa thật, còn agent cầm khóa gì?</span><span class="lang-en">B3. The MCP server keeps the real key — which key does the agent hold?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Agent cầm </span><span class="lang-en">The agent holds </span><span class="fib" data-answer="mcp key|mcp-key|mcpkey" data-placeholder="?"></span><span class="lang-vi">, còn server giữ upstream key.</span><span class="lang-en">, while the server keeps the upstream key.</span></p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tinh-huong">
+    <h2><span class="lang-vi">Phần C — Tình huống &amp; phân tích (3 câu)</span><span class="lang-en">Part C — Scenarios &amp; analysis (3 questions)</span></h2>
+
+    <p><strong>C1.</strong> <span class="lang-vi">Phân loại 3 lỗi sau theo nguồn: <em>model</em> / <em>harness</em> / <em>provider-tool</em>.</span><span class="lang-en">Classify the following three errors by source: <em>model</em> / <em>harness</em> / <em>provider-tool</em>.</span></p>
+    <ol>
+      <li><span class="lang-vi">Agent gọi <code>get_weather(city="Hà Nộii")</code> — sai chính tả.</span><span class="lang-en">The agent calls <code>get_weather(city="Hà Nộii")</code> — a typo.</span></li>
+      <li><span class="lang-vi">Hai lời gọi song song, kết quả về lộn thứ tự và harness gán nhầm cặp.</span><span class="lang-en">Two calls run in parallel; the results come back out of order and the harness pairs them wrongly.</span></li>
+      <li><span class="lang-vi">API thời tiết bị timeout giữa chừng.</span><span class="lang-en">The weather API times out midway.</span></li>
+    </ol>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi">1 — <strong>Model</strong>: tham số sai (bad arguments).</span><span class="lang-en">1 — <strong>Model</strong>: wrong arguments (bad arguments).</span></li>
+        <li><span class="lang-vi">2 — <strong>Harness</strong>: lỗi khớp call ID (ID mismatch).</span><span class="lang-en">2 — <strong>Harness</strong>: call-ID matching error (ID mismatch).</span></li>
+        <li><span class="lang-vi">3 — <strong>Provider/tool</strong>: lỗi hạ tầng khi thực thi.</span><span class="lang-en">3 — <strong>Provider/tool</strong>: an infrastructure error during execution.</span></li>
+      </ul>
+    </details>
+
+    <p><strong>C2.</strong> <span class="lang-vi">Thiết kế tool <code>create_meeting(title, time, attendees)</code>: viết name, description và JSON schema (tham số nào bắt buộc?).</span><span class="lang-en">Design a <code>create_meeting(title, time, attendees)</code> tool: write the name, description, and JSON schema (which parameters are required?).</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án gợi ý</span><span class="lang-en">See suggested answer</span></summary>
+      <pre><code>{
+  "name": "create_meeting",
+  "description": "Create a calendar meeting with a title, time, and list of attendees.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "title":     { "type": "string" },
+      "time":      { "type": "string", "description": "ISO 8601, e.g. 2026-10-01T09:00" },
+      "attendees": { "type": "array", "items": { "type": "string" } }
+    },
+    "required": ["title", "time"]
+  }
+}</code></pre>
+      <p><span class="lang-vi">Tiêu chí tự kiểm: description nói rõ khi nào dùng? <code>attendees</code> có thể để tùy chọn (không bắt buộc) — điều đó hợp lệ nếu bạn giải thích được.</span><span class="lang-en">Self-check criteria: does the description state clearly when to use it? <code>attendees</code> may be optional (not required) — that is valid as long as you can explain why.</span></p>
+    </details>
+
+    <p><strong>C3.</strong> <span class="lang-vi">Agent gọi <code>get_weather(city="asdfgh")</code>. Lời gọi này có "hợp lệ" không? Constrained decoding có chặn được không? Vì sao?</span><span class="lang-en">The agent calls <code>get_weather(city="asdfgh")</code>. Is this call "valid"? Can constrained decoding block it? Why?</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <p><span class="lang-vi"><strong>Hợp lệ về hình thức</strong> (city là string đúng schema) nhưng <strong>vô nghĩa về nội dung</strong>. Constrained decoding <em>không chặn được</em> — nó chỉ đảm bảo form, không đảm bảo truth. Muốn chặn cần lớp khác: validate ngữ nghĩa (thành phố có tồn tại?), quyền, hoặc kiểm tra của harness/tool.</span><span class="lang-en"><strong>Valid in form</strong> (city is a string matching the schema) but <strong>meaningless in content</strong>. Constrained decoding <em>cannot block it</em> — it only guarantees form, not truth. Blocking it takes another layer: semantic validation (does the city exist?), permissions, or checks by the harness/tool.</span></p>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="code">
+    <h2><span class="lang-vi">Phần D — Bài tập code (2 bài)</span><span class="lang-en">Part D — Coding exercises (2 exercises)</span></h2>
+
+    <h3><span class="lang-vi">D1 · Tool dispatcher có validation</span><span class="lang-en">D1 · A tool dispatcher with validation</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam03_d1.py</code>, viết <code>TODO</code>, chạy để thấy <code>OK!</code>. Đây chính là pipeline parse → validate → execute ở dạng thu nhỏ.</span><span class="lang-en">Copy into <code>exam03_d1.py</code>, write the <code>TODO</code>, run it to see <code>OK!</code>. This is the parse → validate → execute pipeline in miniature.</span></p>
+    <div class="lang-vi">
+    <pre><code>def get_weather(city, units="F"):
+    return f"{city}: 30°C, nắng"
+
+TOOLS = {
+    "get_weather": {
+        "required": ["city"],
+        "properties": {"city": str, "units": str},
+        "func": get_weather,
+    },
+}
+
+def dispatch(name, args):
+    """Gọi tool theo tên với tham số args (dict). Raise ValueError nếu:
+       - không có tool tên đó
+       - thiếu tham số bắt buộc
+       - tham số sai kiểu (so với "properties")
+       Trả về kết quả của tool nếu hợp lệ.
+    """
+    # TODO
+    pass
+
+# ---------- Tự kiểm ----------
+assert dispatch("get_weather", {"city": "Hà Nội"}) == "Hà Nội: 30°C, nắng"
+assert dispatch("get_weather", {"city": "Hà Nội", "units": "C"}) == "Hà Nội: 30°C, nắng"
+
+for bad_call in [
+    ("get_weather", {}),                  # thiếu city
+    ("get_weather", {"city": 123}),       # city sai kiểu
+    ("unknown_tool", {}),                 # tool không tồn tại
+]:
+    try:
+        dispatch(*bad_call)
+        raise AssertionError(f"Đáng lẽ phải raise ValueError: {bad_call}")
+    except ValueError:
+        pass
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def get_weather(city, units="F"):
+    return f"{city}: 30°C, nắng"
+
+TOOLS = {
+    "get_weather": {
+        "required": ["city"],
+        "properties": {"city": str, "units": str},
+        "func": get_weather,
+    },
+}
+
+def dispatch(name, args):
+    """Call a tool by name with args (dict). Raise ValueError if:
+       - there is no tool with that name
+       - a required argument is missing
+       - an argument has the wrong type (compared with "properties")
+       Return the tool's result if valid.
+    """
+    # TODO
+    pass
+
+# ---------- Self-check ----------
+assert dispatch("get_weather", {"city": "Hà Nội"}) == "Hà Nội: 30°C, nắng"
+assert dispatch("get_weather", {"city": "Hà Nội", "units": "C"}) == "Hà Nội: 30°C, nắng"
+
+for bad_call in [
+    ("get_weather", {}),                  # missing city
+    ("get_weather", {"city": 123}),       # city has the wrong type
+    ("unknown_tool", {}),                 # tool does not exist
+]:
+    try:
+        dispatch(*bad_call)
+        raise AssertionError(f"Expected a ValueError: {bad_call}")
+    except ValueError:
+        pass
+print("OK!")</code></pre>
+    </div>
+
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <div class="lang-vi">
+      <pre><code>def dispatch(name, args):
+    tool = TOOLS.get(name)
+    if tool is None:
+        raise ValueError(f"Không có tool tên {name}")
+    for field in tool["required"]:
+        if field not in args:
+            raise ValueError(f"Thiếu tham số bắt buộc: {field}")
+    for field, value in args.items():
+        expected = tool["properties"].get(field)
+        if expected is not None and not isinstance(value, expected):
+            raise ValueError(f"Tham số {field} sai kiểu")
+    return tool["func"](**args)</code></pre>
+      </div>
+      <div class="lang-en">
+      <pre><code>def dispatch(name, args):
+    tool = TOOLS.get(name)
+    if tool is None:
+        raise ValueError(f"No tool named {name}")
+    for field in tool["required"]:
+        if field not in args:
+            raise ValueError(f"Missing required argument: {field}")
+    for field, value in args.items():
+        expected = tool["properties"].get(field)
+        if expected is not None and not isinstance(value, expected):
+            raise ValueError(f"Argument {field} has the wrong type")
+    return tool["func"](**args)</code></pre>
+      </div>
+      <p><span class="lang-vi">Đối chiếu với pipeline của OpenHands (slide 24): lookup → validate → execute. Bạn vừa viết đúng phiên bản tối giản.</span><span class="lang-en">Compare with the OpenHands pipeline (slide 24): lookup → validate → execute. You have just written the minimal version.</span></p>
+    </details>
+
+    <h3><span class="lang-vi">D2 · Thêm tool thứ hai (bonus)</span><span class="lang-en">D2 · Add a second tool (bonus)</span></h3>
+    <p><span class="lang-vi">Thêm tool <code>add_numbers(a, b)</code> vào <code>TOOLS</code> và viết 2 test: một test gọi đúng, một test sai kiểu (ví dụ <code>a="5"</code>) phải raise <code>ValueError</code>.</span><span class="lang-en">Add an <code>add_numbers(a, b)</code> tool to <code>TOOLS</code> and write two tests: one that calls it correctly, and one with the wrong type (for example <code>a="5"</code>) that must raise <code>ValueError</code>.</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem gợi ý</span><span class="lang-en">See hint</span></summary>
+      <pre><code>TOOLS["add_numbers"] = {
+    "required": ["a", "b"],
+    "properties": {"a": (int, float), "b": (int, float)},
+    "func": lambda a, b: a + b,
+}</code></pre>
+      <p><span class="lang-vi">Lưu ý: <code>isinstance(value, (int, float))</code> hoạt động với tuple kiểu — nếu bạn chọn cách khác cũng được, miễn test đúng.</span><span class="lang-en">Note: <code>isinstance(value, (int, float))</code> works with a tuple of types — if you choose another approach that is fine too, as long as the tests pass.</span></p>
+    </details>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><a href="../exams/0002-exam.html"><span class="lang-vi">← Exam 02</span><span class="lang-en">← Exam 02</span></a> · <a href="../lessons/0003-tool-use.html"><span class="lang-vi">Ôn lại Bài 03</span><span class="lang-en">Review Lesson 03</span></a> · <a href="../exams/0004-exam.html"><span class="lang-vi">Exam 04 — Quản lý ngữ cảnh →</span><span class="lang-en">Exam 04 — Context Management →</span></a></p>
+    <p><span class="lang-vi">Chưa đạt 85%? Làm lại từ đầu — mỗi lần làm lại là một lần nhớ sâu hơn.</span><span class="lang-en">Below 85%? Start over — every retake deepens the memory.</span></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

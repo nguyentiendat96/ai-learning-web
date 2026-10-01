@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 09 · Training 1: Supervised Fine-Tuning (SFT) — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Bài 09</div>
+    <h1>Training 1: Supervised Fine-Tuning (SFT)</h1>
+    <p class="subtitle">Biến những lần agent làm việc — được ghi lại — thành trọng số của model. Giải thích từ con số 0, kèm ví dụ cụ thể và thực hành tự kiểm. Theo buổi 4b (Lecture 08: Supervised Fine-Tuning for Agents — Yueqi Song).</p>
+    <p class="lesson-meta"><span>~25 phút</span><span>7 câu hỏi tương tác</span><span>3 bài thực hành tự kiểm</span><span>Nguồn: lecture-08-sft.pdf</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#sft-la-gi">SFT là gì — và vì sao phải cập nhật trọng số</a></li>
+      <li><a href="#trajectory">Từ trajectory đến chuỗi token</a></li>
+      <li><a href="#loss-mask">Loss masking — model học từ chỗ nào</a></li>
+      <li><a href="#chon-du-lieu">Chọn trajectory để dạy</a></li>
+      <li><a href="#mot-format">Một format cho nhiều bộ dữ liệu</a></li>
+      <li><a href="#chay-training">Chạy training thật — và biết là nó hiệu quả</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">📝 Exam của bài này</div>
+    <p>Làm <a href="../exams/0009-exam.html"><strong>Exam 09</strong></a> để nhớ chắc — nhiều câu hỏi + bài tập code có test tự chạy, làm lại được nhiều lần. Mục tiêu: đúng ≥ 85%.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bạn không cần nền ML, không cần GPU, và không phải nộp bài cho ai. Bài này trả lời một câu hỏi duy nhất: <strong>làm sao để model học được cách hành xử của một agent giỏi — bằng cách xem lại những lần agent làm việc?</strong></p>
+    <p>Mục 1–6 là phần chính, đọc tuần tự (mục 2 và 3 là phần khó nhất, đọc chậm). Mục 7 là các hiểu lầm hay gặp. Mục 8 bạn tự làm rồi <strong>mở đáp án để tự kiểm</strong>. Mục 9 là quiz bấm chọn, có giải thích ngay. Mục 10 gom từ khóa và trang slide để tra lại.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="sft-la-gi">
+    <h2>SFT là gì — và vì sao phải cập nhật trọng số</h2>
+
+    <p>Hãy tưởng tượng bạn vừa nhận một <strong>nhân viên mới</strong> và muốn người đó làm việc theo cách của công ty. Bạn có ba cách, xếp từ nhẹ tới nặng:</p>
+
+    <ol>
+      <li><strong>Dán giấy nhớ lên màn hình</strong> — nhắc ngay lúc đang làm. Hiệu lực tức thì, nhưng màn hình đầy giấy thì rối, và bạn phải tự quyết định nhắc cái gì.</li>
+      <li><strong>Viết vào sổ tay quy trình</strong> — để đó, ai cần thì mở ra. Nhưng phải có người viết, chọn lọc, và cập nhật nó.</li>
+      <li><strong>Cho đi học nghề vài tháng</strong> — sau đó phản xạ đổi hẳn. Làm nhanh hơn, không cần nhắc gì thêm. Nhưng đào tạo lâu, và bạn không mở đầu người đó ra xem "đã học được gì".</li>
+    </ol>
+
+    <p>Ba cách này đúng là ba nơi có thể thay đổi hành vi của một agent — và slide 4 xếp chúng thành bảng:<sup><a href="#src-slide4">slide 4</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Nơi thay đổi</th><th>Ví dụ đời thường</th><th>Được gì</th><th>Mất gì</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Context window</strong><br><span class="badge">trong prompt</span></td>
+          <td>Dán giấy nhớ lên màn hình nhân viên</td>
+          <td>Trung thực với chuyện vừa xảy ra; sửa được trong vài giây</td>
+          <td>Tốn chỗ, nhiễu, không tự quyết định được cái gì quan trọng</td>
+        </tr>
+        <tr>
+          <td><strong>External artifacts</strong><br><span class="badge">ngoài model</span></td>
+          <td>Viết sổ tay quy trình (SOP), file ghi chú, skill</td>
+          <td>Mở ra xem được, sửa được, tìm lại được, mang sang người khác được</td>
+          <td>Phải có ai đó tạo ra, chọn lọc, bảo trì</td>
+        </tr>
+        <tr>
+          <td><strong>Model weights</strong><br><span class="badge">bài này</span></td>
+          <td>Cho đi học nghề — phản xạ đổi hẳn</td>
+          <td>Chạy nhanh hơn; hành vi đổi trên phạm vi rộng</td>
+          <td>Cập nhật chậm (mỗi lần đổi tốn cả một lần train); mờ đục; gắn chết với model đó</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Slide 4 gói gọn điều hấp dẫn nhất của hàng thứ ba:</p>
+
+    <blockquote>
+      <p>"Change the weights once and every call after that gets the new behavior, with nothing extra in the prompt."</p>
+      <cite>— slide 4. Nghĩa là: chỉnh trọng số một lần, mọi lần gọi sau đó đều có hành vi mới, không cần thêm gì vào prompt.</cite>
+    </blockquote>
+
+    <p>Hai hàng đầu cập nhật trong vài giây. Hàng thứ ba tốn một lần train mỗi khi muốn đổi — và bạn <em>không mở trọng số ra xem được cái gì đã thay đổi</em>, cũng không mang thay đổi đó sang model khác được.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Model &amp; weights</div>
+        <h3>Trọng số là gì?</h3>
+        <p>Model là một mạng nơ-ron khổng lồ; <strong>trọng số (weights)</strong> là hàng trăm tỷ con số bên trong quyết định mọi câu nó viết. "Học" = chỉnh những con số đó. Cứ nhớ: <em>trọng số là trí nhớ tay nghề</em>.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Token</div>
+        <h3>Token là gì?</h3>
+        <p>Model không thấy chữ cái — nó thấy <strong>token</strong>: những mảnh chữ nhỏ. Câu <code>test_login đang fail</code> có thể bị cắt thành vài token như <code>test</code>, <code>_login</code>, <code> đang</code>, <code> fail</code>. Model đọc và viết từng token một.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Inference</div>
+        <h3>Chạy (inference) là gì?</h3>
+        <p>Là lúc model đang phục vụ — viết câu trả lời cho bạn. Phân biệt với <strong>training</strong>: lúc chỉnh trọng số. Cùng một model, hai chế độ hoàn toàn khác nhau.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Checkpoint</div>
+        <h3>Checkpoint là gì?</h3>
+        <p>Một bản lưu trọng số tại một thời điểm. "Chọn checkpoint" = chọn bản lưu nào để đem đi dùng hoặc train tiếp. Bạn sẽ gặp từ này ở mục 6.</p>
+      </div>
+    </div>
+
+    <p><strong>Vậy SFT là gì?</strong> SFT = <em>supervised fine-tuning</em> — "tinh chỉnh có giám sát".</p>
+    <ul>
+      <li><strong>Supervised</strong> (có giám sát): mỗi bước đều kèm "đáp án" — bước tiếp theo phải viết gì. Khác với RL (reinforcement learning) chỉ cho một điểm số cho cả lần chạy.</li>
+      <li><strong>Fine-tuning</strong> (tinh chỉnh): chỉnh nhẹ một model đã học nền, chứ không dạy từ đầu.</li>
+    </ul>
+
+    <p>Cách làm rất trực tiếp: lấy những lần agent làm việc <em>đã được ghi lại</em> (mục 2), đưa model xem, và chỉnh trọng số để lần sau nó viết ra đúng những gì bản ghi có. Slide 1 tóm gọn cả bài bằng một dòng: <strong>"Turning recorded trajectories into weights"</strong> — biến bản ghi thành trọng số.</p>
+
+    <h3>Một mảnh ghép: SFT nằm ở đâu trong cả quá trình?</h3>
+    <p>Một model lớn ngày nay được luyện qua nhiều giai đoạn nối tiếp. Slide 6 kể câu chuyện đó bằng con số thật:<sup><a href="#src-slide6">slide 6</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Giai đoạn</th><th>Quy mô (slide 6)</th><th>Dạy cái gì</th><th>Ví dụ đời thường</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Pre-training</strong></td><td>20T token (Nemotron 3 Ultra)</td><td>Ngôn ngữ và kiến thức thế giới</td><td>Đọc cả một thư viện</td></tr>
+        <tr><td><strong>Mid-training</strong></td><td>1,43T token (K2 Horizon)</td><td>Kiến thức nền, chuyên sâu hơn</td><td>Đọc giáo trình chuyên ngành</td></tr>
+        <tr><td><strong>SFT</strong> — bài này</td><td>332B token (K2 Horizon)</td><td>Hành vi cụ thể theo ví dụ mẫu</td><td>Học nghề 1-1 với thầy</td></tr>
+        <tr><td><strong>RL</strong></td><td>Rollout + điểm thưởng, không có corpus cố định</td><td>Tự luyện bằng điểm số</td><td>Ra trận thi đấu</td></tr>
+      </tbody>
+    </table>
+
+    <p>Đơn vị cho dễ hình dung: <strong>1T</strong> = một nghìn tỷ token, <strong>1B</strong> = một tỷ token. Vậy 20T là 20.000 tỷ token, còn SFT chỉ 332 tỷ. Slide ghi nhận xét quan trọng: đi xuống một bậc là <em>ít token hơn</em>, nhưng mỗi token <em>được chăm chút hơn</em>.</p>
+
+    <div class="callout">
+      <div class="callout-title">Cold start — vì sao phải SFT trước khi RL</div>
+      <p>Kimi K3 nói thẳng trong báo cáo: <em>"The SFT stage establishes a high-quality cold-start policy for the subsequent RL stage."</em> — giai đoạn SFT tạo ra một điểm xuất phát chất lượng cao cho RL phía sau. ("Policy" = cách model ra quyết định; "cold start" = khởi động khi chưa có gì.)</p>
+      <p>Ở Kimi K3, model học <strong>cách gọi tool và cách hoàn thành task dài ngay trong SFT</strong>, trước khi RL bắt đầu. Giống như dạy bơi: bạn không ném người chưa biết bơi xuống hồ rồi cho điểm — bạn dạy động tác cơ bản trước, rồi mới cho thi đấu.</p>
+      <p>Có người sẽ hỏi: vậy sao không RL luôn cho nhanh? DeepSeek-R1-Zero từng chạy RL trực tiếp trên base model, không SFT. Nhưng model kế tiếp của họ — R1 — <strong>đưa SFT trở lại</strong>: bắt đầu từ vài nghìn ví dụ được chọn lọc, vì câu trả lời của R1-Zero trộn lẫn nhiều ngôn ngữ và rất khó đọc. Bài học: SFT không chỉ dạy <em>nội dung</em>, nó dạy cả <em>cách trình bày</em>.<sup><a href="#src-slide7">slide 7</a></sup></p>
+    </div>
+
+    <p>Để thấy hai giai đoạn khác nhau ở đâu, đây là bảng so sánh của slide 8:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Supervised Fine-Tuning</th><th>Reinforcement Learning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Học từ đâu</td><td>Trajectory được ghi lại — ai làm cũng được</td><td>Rollout của chính nó, chấm bằng tín hiệu thưởng</td></tr>
+        <tr><td>Tín hiệu học</td><td>Một đích cho <em>từng token</em></td><td>Một con số cho <em>cả lần chạy</em></td></tr>
+        <tr><td>Cần gì</td><td>Dữ liệu và GPU</td><td>Môi trường sống, sandbox, điểm thưởng kiểm được</td></tr>
+        <tr><td>Giỏi ở</td><td>Tool call, format, task dài</td><td>Mài sắc thứ model <em>đã biết làm</em></td></tr>
+        <tr><td>Kẹt khi</td><td>Ví dụ mẫu sai, hẹp, hoặc dùng hết</td><td>Điểm xuất phát quá yếu, hoặc thưởng không kiểm được</td></tr>
+      </tbody>
+    </table>
+
+    <p>RL sẽ có bài riêng (bài 10 — RL căn bản). Còn bây giờ, hãy trả lời câu hỏi trung tâm của SFT: <strong>dữ liệu để học trông như thế nào?</strong></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="trajectory">
+    <h2>Từ trajectory đến chuỗi token</h2>
+
+    <p>Một <strong>trajectory</strong> (còn gọi là <em>trace</em>; khi nói về lần model tự chạy thì gọi là <em>rollout</em>) là <strong>bản ghi đầy đủ của một lần agent làm việc</strong>: đề bài, từng lượt suy nghĩ và hành động của agent, từng kết quả môi trường trả về, cho tới lượt kết thúc.</p>
+
+    <p>Slide 3 lấy ví dụ từ SWE-Gym: agent nhận một issue và được phát hai tool trong một sandbox — <code>bash</code> và một trình sửa file. Nó tạo ra suy nghĩ, lệnh, và những kết quả mà lệnh trả về. Điểm đặc biệt: <strong>test của chính repository quyết định run đó thành công hay không</strong> — không cần người chấm.<sup><a href="#src-slide3">slide 3</a></sup></p>
+
+    <pre><code>system     │ "Bạn là coding agent. Bạn có 2 tool: bash, str_replace."
+user       │ "test_login đang fail. Sửa giúp."
+assistant  │ &lt;think&gt;Chạy pytest xem lỗi trước.&lt;/think&gt;
+           │ &lt;tool_call&gt;bash(cmd="pytest -q")&lt;/tool_call&gt;
+tool       │ "3 failed, 41 passed"
+assistant  │ &lt;think&gt;Test so sánh số thực (float) bị sai.&lt;/think&gt;
+           │ &lt;tool_call&gt;str_replace(...)&lt;/tool_call&gt;
+tool       │ "tests pass"
+   …       │ …
+assistant  │ "Đã sửa xong."   ← submit, kết thúc
+</code></pre>
+
+    <p>Để ý nhịp điệu: <strong>assistant</strong> (agent làm gì đó) rồi <strong>tool</strong> (môi trường trả về gì đó), lặp đi lặp lại. Đây đúng là cặp <em>action / observation</em> bạn đã học ở bài 01 — giờ nó được ghi lại thành dữ liệu.</p>
+
+    <h3>Bốn thứ trajectory dạy model</h3>
+    <p>Slide 5 liệt kê chính xác những gì model hấp thụ từ dữ liệu này:<sup><a href="#src-slide5">slide 5</a></sup></p>
+    <ol>
+      <li><strong>Cách viết một tool call mà harness này chạy được.</strong> Đúng cú pháp, đúng tên tool, đúng tham số. Đây là lý do lớn nhất khiến SFT quan trọng với agent.</li>
+      <li><strong>Cách tiếp tục khi hội thoại đã dài.</strong> Vì những trajectory nó học đều dài — nó học luôn sự kiên nhẫn.</li>
+      <li><strong>Kết quả tool trông như thế nào</strong> — để nó <em>chờ</em> kết quả trả về, thay vì tự viết ra kết quả.</li>
+      <li><strong>Và mọi thứ khác có trong dữ liệu:</strong> lời bình thừa, lệnh lặp lại, một cách giải trong khi có nhiều cách cũng đúng.</li>
+    </ol>
+
+    <p>Điểm thứ tư là con dao hai lưỡi — tôi sẽ quay lại nó ở mục 4. Còn bây giờ, một câu hỏi: model đọc trajectory bằng cách nào?</p>
+
+    <h3>Chat template — biến hội thoại thành một chuỗi</h3>
+    <p>Trong máy, hội thoại là một danh sách các tin nhắn có ghi <em>role</em> (system / user / assistant / tool). Nhưng model chỉ ăn được <strong>một chuỗi token duy nhất</strong>. <strong>Chat template</strong> là hàm làm việc chuyển đổi đó: nó viết danh sách tin nhắn ra thành một chuỗi, và chèn các <em>special token</em> ở mỗi ranh giới.</p>
+
+    <p>Special token là token đặc biệt: cả cụm ký tự như <code>&lt;|im_start|&gt;</code> là <strong>một token duy nhất</strong>, đóng vai trò dấu mốc — "một lượt mới bắt đầu, role là assistant". Slide 11 cho xem kết quả sau khi render:<sup><a href="#src-slide11">slide 11</a></sup></p>
+
+    <pre><code>LƯỢT USER — mask = 0 (chỉ là context)
+&lt;|im_start|&gt;user↵ test_login đang fail. Sửa giúp.↵ &lt;|im_end|&gt;
+
+LƯỢT ASSISTANT — mask = 1 (tính loss)
+&lt;|im_start|&gt;assistant↵ &lt;think&gt;Chạy pytest xem lỗi.&lt;/think&gt;↵
+&lt;tool_call&gt;bash(cmd="pytest -q")&lt;/tool_call&gt;↵ &lt;|im_end|&gt;
+└──────────── phần model phải tự viết ra ────────────┘
+
+KẾT QUẢ TOOL — mask = 0 (chỉ là context)
+&lt;|im_start|&gt;tool↵ 3 failed, 41 passed↵ &lt;|im_end|&gt;
+
+(↵ = xuống dòng; mình viết gọn trên một dòng cho dễ nhìn)
+</code></pre>
+
+    <p>Mỗi ranh giới trong bản ghi gốc — chỗ system hết, chỗ user bắt đầu — đều trở thành <em>một template token</em>. Slide 11 nói: "Feed the trajectory through the template and you get one string of tokens." — cho trajectory qua template, bạn được một chuỗi token duy nhất.</p>
+
+    <div class="callout">
+      <div class="callout-title">Hình dung cho dễ nhớ</div>
+      <p>Template giống như <strong>khuôn in phụ đề phim</strong>. Cùng một cuộc nói chuyện, nhưng phải in ra đúng khuôn: ai đang nói, câu bắt đầu ở đâu, câu kết thúc ở đâu. Model chỉ đọc được bản đã in theo khuôn đó — nên nếu lúc dạy in một khuôn, lúc chạy in khuôn khác, model sẽ "đọc" một thứ na ná mà nó chưa từng thấy. Mục 6 sẽ cho bạn thấy hậu quả.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="loss-mask">
+    <h2>Loss masking — model học từ chỗ nào</h2>
+
+    <p>Đây là phần cốt lõi nhất của bài. Đọc chậm mục này, mọi thứ phía sau sẽ dễ hơn.</p>
+
+    <h3>Loss là gì?</h3>
+    <p><strong>Loss</strong> là "điểm phạt" cho câu model viết ra. Training là quá trình chỉnh trọng số để điểm phạt nhỏ dần. Cụ thể hơn: model luôn đoán token tiếp theo; trainer so token nó đoán với token thật trong bản ghi, và phạt nếu đoán lệch.</p>
+
+    <p>Ví dụ cụ thể. Trong dữ liệu, tại một thời điểm model đã thấy: <code>The test compares floats. Fix it.</code> và bản ghi nói token tiếp theo là <code>Use</code> (của câu "Use math.isclose."). Trainer hỏi model: "Bạn gán xác suất bao nhiêu cho token <code>Use</code>?"</p>
+    <ul>
+      <li>Nếu model gán 0,02 (2%) → loss cao.</li>
+      <li>Nếu model gán 0,9 (90%) → loss thấp.</li>
+    </ul>
+    <p>Sau đó trọng số được chỉnh để lần sau xác suất đó cao hơn một chút. Làm điều này với <em>mọi token</em> trong phần assistant của <em>mọi trajectory</em>, hàng trăm tỷ lần. Slide 12 viết công thức bằng ký hiệu:<sup><a href="#src-slide12">slide 12</a></sup></p>
+
+    <pre><code>L(θ) = − Σ  log pθ( x_t | x_&lt;t )
+        t: m_t = 1
+
+Dịch: với mỗi vị trí token t mà bit mask m_t = 1,
+lấy xác suất model gán cho token thật x_t khi biết mọi token trước nó,
+lấy log, cộng lại, đổi dấu. Càng nhỏ càng tốt.
+</code></pre>
+
+    <p>Và slide kết luận bằng một câu quan trọng: <em>"Minimizing it raises the probability of each recorded action, given everything before it."</em> — tối thiểu hóa loss tức là nâng xác suất của từng hành động đã ghi, trong đúng bối cảnh trước nó.</p>
+
+    <h3>Vì sao chỉ tính loss trên phần assistant?</h3>
+    <p>Câu trả lời nằm ở dòng chữ này trên slide 12: <strong>"Observations are conditioning context, not prediction targets."</strong> — observation là <em>ngữ cảnh điều kiện</em>, không phải <em>đích dự đoán</em>.</p>
+
+    <p>Ba lý do, giải thích theo ví dụ dạy nấu ăn bằng video:</p>
+    <ol>
+      <li><strong>Model sẽ không bao giờ phải tự viết ra chúng lúc chạy.</strong> Tin nhắn của user đến từ user; kết quả tool đến từ môi trường. Giống phần "nguyên liệu có sẵn trên bàn" trong video — học viên không cần học cách <em>phát ra</em> nguyên liệu.</li>
+      <li><strong>Chấm điểm phần không phải do mình viết là vô nghĩa</strong> — và còn tệ hơn: nó dạy model thói tự bịa kết quả tool. Slide 5 nói rõ model cần học kết quả tool trông như thế nào <em>để chờ</em> kết quả, chứ không phải để tự viết ra.</li>
+      <li><strong>Bối cảnh vẫn được giữ nguyên.</strong> Mask = 0 không có nghĩa là xóa. Token vẫn nằm trong chuỗi để model dùng làm điều kiện; chỉ là dự đoán của model tại vị trí đó không bị chấm.</li>
+    </ol>
+
+    <p>Slide 19 nói thêm một điều đáng suy nghĩ: chưa có thí nghiệm công bố nào thay đổi mask cho agent SFT rồi đo kết quả. Các thí nghiệm cẩn thận về mask đều là <em>single-turn instruction tuning</em> — không phải agent. Trường hợp duy nhất mà việc <em>không</em> mask prompt lại giúp ích có đặc điểm: prompt rất dài, câu trả lời rất ngắn, và dữ liệu ít. Agent trajectory thì ngược lại cả ba điều. Slide gọi đây là thí nghiệm rẻ ở quy mô 8B mà "vẫn đang nằm đó, chưa ai chạy".<sup><a href="#src-slide19">slide 19</a></sup> Đây là một câu hỏi mở của ngành — không phải chỗ để bạn lo lắng.</p>
+
+    <h3>Mask được dựng ra thế nào?</h3>
+    <p>Slide 13 mô tả ba bước:<sup><a href="#src-slide13">slide 13</a></sup></p>
+    <ol class="steps">
+      <li><strong>Render</strong> — template viết hội thoại thành một chuỗi, đồng thời ghi lại: đoạn assistant bắt đầu ở ký tự nào, kết thúc ở đâu.</li>
+      <li><strong>Tokenize</strong> — các vị trí ký tự đó chuyển thành vị trí token.</li>
+      <li><strong>Mask</strong> — token nằm trong đoạn assistant nhận bit 1, mọi thứ khác nhận bit 0.</li>
+    </ol>
+    <p>Slide có một câu đáng nhớ: <em>"By the time training starts, the roles are gone. The trainer sees the string and the bits, nothing else."</em> — khi training bắt đầu, khái niệm "role" biến mất; trainer chỉ thấy chuỗi token và dãy bit.</p>
+
+    <h3>Token kết thúc lượt — chi tiết sinh tử</h3>
+    <p>Slide 15 chỉ ra hai điều tưởng nhỏ mà cực kỳ quan trọng:<sup><a href="#src-slide15">slide 15</a></sup></p>
+    <ul>
+      <li><strong>Role header</strong> như <code>&lt;|im_start|&gt;assistant</code> được harness cấp sẵn lúc chạy — nó <em>không bao giờ</em> là đích để model học.</li>
+      <li><strong>Token kết thúc lượt</strong> thì ngược lại: model phải <em>tự sinh ra</em> nó, nên nó <em>phải</em> nằm trong mask. Slide cảnh báo thẳng: nếu không, "the model may not learn to stop" — model không học được cách dừng.</li>
+    </ul>
+
+    <p>Vì sao phải cẩn thận đến vậy? Vì "kết thúc lượt" không phải một chuyện, mà là <strong>ba chuyện khác nhau</strong>:</p>
+    <ol>
+      <li>kết thúc tin nhắn này,</li>
+      <li>bàn giao cho một tool,</li>
+      <li>kết thúc cả task.</li>
+    </ol>
+    <p>Template của Kimi K3 tách ba sự kiện đó bằng các token riêng, ví dụ có <code>[end_of_msg]</code>. Nếu gộp chung một token, model khó phân biệt "tôi nói xong câu này" với "tôi xong cả việc".</p>
+
+    <h3>Khối suy nghĩ (reasoning) — hai công tắc đặt riêng</h3>
+    <p>Nhiều agent có khối suy nghĩ trước khi hành động, ví dụ <code>&lt;think&gt;The assert compares floats.&lt;/think&gt;</code>. Với khối này có <strong>hai câu hỏi hoàn toàn tách biệt</strong>:<sup><a href="#src-slide16">slide 16</a></sup></p>
+    <ul>
+      <li><strong>Nó có nằm trong context không?</strong> — Nếu có, nó giúp giải thích hành động phía sau, làm điều kiện tốt hơn cho dự đoán.</li>
+      <li><strong>Nó có được train không?</strong> — Nếu có, nó trở thành <em>văn phong model tự viết</em>.</li>
+    </ul>
+    <p>Ví dụ thực tế: Nemotron giữ reasoning bị cắt do ngân sách (budget-truncated) trong context, nhưng <strong>mask phần cắt nhân tạo đó ra khỏi loss</strong>. Hình dung: bạn cho học sinh để lại giấy nháp trong tập, nhưng không chấm điểm giấy nháp — và chắc chắn không chấm cái dòng "hết chỗ viết" do bạn tự gạch vào.</p>
+
+    <h3>Cân lại bên trong lượt assistant</h3>
+    <p>Ngay cả khi đã chỉ train phần assistant, vẫn còn một vấn đề: <em>phần nào trong đó được tính nhiều hơn?</em> Slide 17 nói về một paper (BalanceSFT): reasoning dài sẽ <strong>chi phối loss</strong>, trong khi cái bạn thực sự cần đúng lại là <strong>tool call ngắn</strong>.<sup><a href="#src-slide17">slide 17</a></sup></p>
+    <ul>
+      <li><strong>SSB</strong> — một trọng số <em>học được</em>, cân lại token reasoning với token tool call trong loss.</li>
+      <li><strong>HDR</strong> — lấy mẫu lại các ví dụ khó.</li>
+    </ul>
+    <p>Kết quả paper báo: cân lại giúp nhiều hơn trên multi-turn so với single-turn, trên cả hai base model.</p>
+
+    <h3>Samples vs tokens — một cái bẫy âm thầm</h3>
+    <p>Slide 18 kể một câu chuyện rất đời: người ta cân bằng hỗn hợp dữ liệu bằng cách <em>đếm ví dụ</em>. Nhưng loss được tính <em>theo token</em>. Và các trace STEM / coding dài hơn hẳn — nên chúng chiếm gần hết token.<sup><a href="#src-slide18">slide 18</a></sup></p>
+
+    <p>Ví dụ tự nghĩ cho dễ hình dung: bạn chia 100 trajectory lập trình và 100 trajectory toán cho "công bằng". Nhưng trace lập trình dài gấp 10 lần → lập trình chiếm khoảng 90% số token. Nhìn bằng con số ví dụ thì "công bằng", nhìn bằng token thì không hề.</p>
+
+    <blockquote>
+      <p>"Whatever you balance by counting trajectories, check what it turned into in tokens."</p>
+      <cite>— slide 18. Cân bằng bằng cách đếm trajectory thì phải kiểm tra lại xem nó thành ra bao nhiêu token.</cite>
+    </blockquote>
+
+    <h3>Ba framework, cùng một quyết định</h3>
+    <p>Nếu sau này bạn đọc code train thật, đây là bảng để không bị lạc. Cả ba framework đều làm <em>cùng một việc</em> — chỉ khác chỗ đặt công tắc:<sup><a href="#src-slide14">slide 14</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Framework</th><th>Bạn đặt gì</th><th>Mask được tạo ra thế nào</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>TRL</strong> (SFTTrainer)</td>
+          <td><code>assistant_only_loss=True</code></td>
+          <td>Template tự đánh dấu các đoạn assistant khi render (cần marker <code>{% generation %}</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Axolotl</strong></td>
+          <td><code>roles_to_train</code>, <code>train_on_eos</code></td>
+          <td>Tìm role header của từng lượt trong chuỗi đã render</td>
+        </tr>
+        <tr>
+          <td><strong>LLaMA-Factory</strong></td>
+          <td><code>train_on_prompt</code>, <code>mask_history</code></td>
+          <td>Gắn nhãn cả lượt là train-hoặc-bỏ qua, ngay khi encode</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Slide 14 kết: "Same decision in all three. Only TRL puts it in the template." — cùng một quyết định, chỉ khác TRL đặt nó ngay trong template. Còn <code>train_on_eos</code> của Axolotl chính là công tắc cho token kết thúc lượt bạn vừa đọc ở trên.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="chon-du-lieu">
+    <h2>Chọn trajectory để dạy</h2>
+
+    <p>Bạn đã biết dữ liệu trông như thế nào. Giờ là câu hỏi khó hơn: <strong>lấy trajectory từ đâu, và giữ cái nào?</strong> Slide 21 gói hai câu hỏi đó vào một bảng hai chiều:<sup><a href="#src-slide21">slide 21</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Ai chạy task?</th><th>Bạn giữ gì?</th><th>Tên gọi</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Một model <strong>mạnh hơn</strong> chạy</td>
+          <td>Chỉ giữ những run <strong>đạt test</strong></td>
+          <td><strong>Plain distillation</strong> — SWE-Gym, Nemotron, OT-Agent</td>
+        </tr>
+        <tr>
+          <td><strong>Chính model</strong> tự chạy</td>
+          <td>Chỉ giữ những run <strong>đạt test</strong></td>
+          <td><strong>Expert iteration</strong> — MAI; sẽ học kỹ ở bài sau</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Slide nhận xét: phần lớn dữ liệu SFT cho agent nằm ở ô trên — model mạnh hơn viết trajectory tốt hơn học trò, và test của chính task khiến việc giữ run tốt trở nên rẻ. Còn ô dưới là nơi model tự tạo dữ liệu cho mình; lặp lại vòng đó mãi thì gọi là <em>expert iteration</em>.</p>
+
+    <h3>Distillation — học từ thầy mạnh hơn</h3>
+    <p>Ví dụ cụ thể nhất trong bài (slide 22): GPT-4o và Claude được cho chạy các task của SWE-Gym; <strong>491 run</strong> vượt qua test của repository. Một model Qwen 32B được fine-tune <em>chỉ trên 491 run đó</em>. Kết quả: điểm trên cả hai bộ SWE-Bench tăng hơn <strong>mười điểm</strong>.<sup><a href="#src-slide22">slide 22</a></sup></p>
+    <p>491 lần chạy — không phải hàng triệu. Đó là lý do distillation hấp dẫn: chất lượng và độ sạch quan trọng hơn số lượng khổng lồ.</p>
+
+    <h3>Thêm run hay thêm task?</h3>
+    <p>Đây là một trong những bài học thực nghiệm rõ nhất của slide. Hai thí nghiệm bổ sung cho nhau:</p>
+    <ul>
+      <li><strong>Slide 23:</strong> giữ nguyên bộ task, chỉ tăng số trajectory lấy mẫu cho mỗi task. Accuracy vẫn đang tăng thì... hết ngân sách. Họ còn task để dùng, nhưng hết compute để chạy thêm.<sup><a href="#src-slide23">slide 23</a></sup></li>
+      <li><strong>Slide 28:</strong> cả hai đường cong xuất phát từ cùng một tập 10K. Đường "thêm run của cùng task" <em>phẳng dần</em>. Đường "thêm task mới" <em>tiếp tục leo</em>.<sup><a href="#src-slide28">slide 28</a></sup></li>
+    </ul>
+    <p>Ví dụ đời thường: ôn thi bằng cách làm lại đề cũ mười lần. Lần thứ hai có ích; lần thứ mười gần như không. Làm thêm đề mới mới mở rộng được vùng hiểu biết.</p>
+
+    <h3>Run đạt test vẫn có thể là dữ liệu độc</h3>
+    <p>Đây là slide khiến tôi thích nhất bài này (slide 24): mọi run trên slide <em>đều đã vượt test</em>, nhưng nhìn kỹ cách chúng làm thì thấy ba hành vi xấu:<sup><a href="#src-slide24">slide 24</a></sup></p>
+    <ul>
+      <li><strong>read, never edited</strong> — đọc rất nhiều mà không sửa gì;</li>
+      <li><strong>edit–test loop</strong> — sửa rồi chạy test, lặp đi lặp lại suốt gần hết các lượt;</li>
+      <li><strong>print( trong patch cuối</strong> — để lại lệnh debug trong bản sửa cuối cùng.</li>
+    </ul>
+    <p>Slide nói thẳng: những run này "would teach undesirable behaviors if used directly as SFT data" — sẽ dạy hành vi không mong muốn nếu dùng thẳng làm dữ liệu SFT. Vì sao? Vì <strong>loss sao chép mọi hành động, tốt hay không</strong>. Train trên những run đó thì model học cả đống lộn xộn lẫn cách sửa.</p>
+
+    <h3>Bộ lọc theo hình dạng — cái bẫy đếm lượt</h3>
+    <p>Vậy lọc thế nào? Slide 25 kể một câu chuyện cảnh tỉnh: bộ lọc tốt nhất trong thí nghiệm đó chỉ đơn giản là <strong>đếm số lượt và loại mọi run ngắn hơn 5</strong>. Nhưng: "Turn count says how much work a run took, not whether the work was any good." — số lượt cho biết run <em>tốn bao nhiêu công</em>, không cho biết công đó <em>tốt hay không</em>.<sup><a href="#src-slide25">slide 25</a></sup></p>
+    <p>Hệ quả: một bản sửa sạch trong 4 lượt bị loại. Một mớ lộn xộn 40 lượt được giữ. Trung bình thì bộ lọc vẫn giúp — nhưng nó sai ở cả hai đầu.</p>
+
+    <h3>Chọn thầy — đừng tin bảng xếp hạng</h3>
+    <p>Slide 26: trong năm model được thử làm thầy, GPT-5.3-Codex mạnh nhất <em>trên chính các benchmark</em>. Nhưng các run của nó lại tạo ra <strong>học trò yếu nhất</strong>.<sup><a href="#src-slide26">slide 26</a></sup></p>
+    <p>Bảng xếp hạng đã chỉ sai chỗ cần nhìn. Cách làm đúng rất thực dụng: thử hai thầy, giữ học trò tốt hơn — chi phí so ra vẫn rẻ.</p>
+
+    <h3>Chọn nguồn task — đòn bẩy lớn nhất</h3>
+    <p>Slide 27 nói một câu nên in ra dán tường: <strong>"The choice of task source changed results the most."</strong> — việc chọn nguồn task thay đổi kết quả nhiều nhất trong mọi thứ họ thử.<sup><a href="#src-slide27">slide 27</a></sup></p>
+    <ul>
+      <li>Các nguồn khác nhau giúp các benchmark khác nhau → hãy dành công sức ở đây trước khi tinh chỉnh bất cứ thứ gì khác.</li>
+      <li>Trộn 4–8 nguồn tốt nhất. Đi rộng hơn thế không giúp thêm.</li>
+    </ul>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="mot-format">
+    <h2>Một format cho nhiều bộ dữ liệu</h2>
+
+    <h3>Vấn đề: mỗi nhà một kiểu</h3>
+    <p>Mỗi bộ dữ liệu agent được một nhóm khác nhau xây, theo format của riêng họ (slide 31). Ví dụ cho cùng một trang web: có bộ lưu <strong>HTML</strong>, có bộ lưu <strong>accessibility tree</strong> (cây mô tả các thành phần giao diện). Muốn train trên hai bộ cùng lúc, bạn phải viết hai converter riêng.<sup><a href="#src-slide31">slide 31</a></sup></p>
+
+    <p>Với N bộ dữ liệu, cách làm "mỗi cặp một converter" phình rất nhanh:</p>
+
+    <pre><code>Không có format chung:
+  A ──[conv A→B]──► B        thêm C là thêm conv A→C, B→C, …
+  Số converter tăng theo SỐ CẶP dataset
+
+Có format chung (Agent Data Protocol):
+  A ──► ADP        ADP ──► harness OpenHands
+  B ──► ADP        ADP ──► harness SWE-Agent
+  C ──► ADP        ADP ──► harness AgentLab
+  Mỗi dataset convert MỘT lần, mỗi harness MỘT lần — không phải từng cặp
+</code></pre>
+
+    <h3>Một cách biểu diễn cho trajectory</h3>
+    <p>Agent Data Protocol (Song et al., 2026) làm đúng một việc: đọc mỗi dataset một lần và viết lại nó thành <strong>các action và observation có kiểu (typed)</strong>. Với trang web lúc nãy, giữ <em>cả</em> HTML lẫn accessibility tree — thay vì bắt chọn một.<sup><a href="#src-slide32">slide 32</a></sup></p>
+    <p>Slide 32 tóm bằng một câu đáng nhớ: "Each dataset converts once, each harness once, not once per pair." — mỗi dataset chuyển đổi một lần, mỗi harness một lần, chứ không phải mỗi cặp một lần. Giống như dùng một chuẩn ổ cắm chung (USB-C) rồi mua adapter cho từng thiết bị, thay vì đúc một sợi dây riêng cho từng cặp thiết bị.</p>
+
+    <h3>Render lại cho từng harness</h3>
+    <p>Dữ liệu đã thống nhất, nhưng chưa xong: vẫn phải <em>viết nó ra</em> theo đúng khuôn của harness bạn train. OpenHands, SWE-Agent và AgentLab nhận các action khác nhau — nên cùng một trajectory sẽ trông khác nhau ở mỗi nơi.<sup><a href="#src-slide33">slide 33</a></sup></p>
+    <p>Đây cũng là chỗ bạn đặt system prompt và quyết định làm gì khi context quá dài. Rồi phải <strong>kiểm tra lại kết quả render</strong>:</p>
+    <ul>
+      <li>tool call có parse được không?</li>
+      <li>mỗi call có đi kèm một suy nghĩ không?</li>
+      <li>cuộc hội thoại có kết thúc đúng cách không?</li>
+    </ul>
+    <p>Ba câu hỏi này nghe nhỏ, nhưng chúng là lưới an toàn cho toàn bộ pipeline dữ liệu của bạn.</p>
+
+    <h3>Vì sao trộn nhiều nguồn lại thắng</h3>
+    <p>Slide 34 kết thúc phần này bằng một kết quả đẹp: giữ nguyên harness, model, cách đánh giá — chỉ đổi hỗn hợp dữ liệu. Train trên hỗn hợp nhiều nguồn thì <strong>thắng cả bộ chuyên một lĩnh vực</strong>, ngay trên chính benchmark của lĩnh vực đó.<sup><a href="#src-slide34">slide 34</a></sup></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="chay-training">
+    <h2>Chạy training thật — và biết là nó hiệu quả</h2>
+
+    <h3>Những con số thật</h3>
+    <p>Bạn không cần chạy training để hiểu bài — nhưng nhìn qua cấu hình thật sẽ giúp mọi thứ bớt trừu tượng (slide 36):<sup><a href="#src-slide36">slide 36</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Model</th><th>Sequence (đã packing)</th><th>Batch</th><th>Learning rate</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Nemotron 3 Ultra</td><td>294.912, rồi 515.000</td><td>64</td><td>1,5e-5 → 1e-6</td></tr>
+        <tr><td>MAI (self-distillation)</td><td>128k</td><td>2.048</td><td>1,7e-5 → 5,2e-6, warmup 2%</td></tr>
+        <tr><td>K2 Horizon</td><td>512K, ba pha</td><td>—</td><td>giảm dần trên tập con chất lượng cao</td></tr>
+      </tbody>
+    </table>
+
+    <p>Ba từ cần biết để đọc bảng này:</p>
+    <ul>
+      <li><strong>Learning rate</strong> — "kích thước bước" chỉnh trọng số mỗi lần cập nhật. Đi nhanh quá thì lệch, chậm quá thì lâu. Để ý các con số đều <em>giảm dần</em> (mũi tên →): về cuối, người ta bước thật nhỏ để không phá những gì đã học.</li>
+      <li><strong>Batch</strong> — số ví dụ xử lý cùng lúc trước khi cập nhật một lần.</li>
+      <li><strong>Sequence</strong> — độ dài chuỗi token của mỗi lần train. Con số lớn đến mức đó là vì <em>packing</em>, ngay bên dưới.</li>
+    </ul>
+
+    <h3>Packing — nhồi nhiều hội thoại vào một sequence</h3>
+    <p>Training chạy trên các sequence độ dài cố định. Nếu mỗi sequence chỉ chứa một hội thoại ngắn thì phần còn lại bị đệm bằng khoảng trống vô ích. <strong>Packing</strong> nhồi nhiều hội thoại vào một sequence (slide 38):<sup><a href="#src-slide38">slide 38</a></sup></p>
+
+    <pre><code>Không packing (lãng phí):
+  [ run 19k ][      trống 34k      ][ run 8k ][    trống 45k    ]
+
+Có packing (ví dụ từ slide — mỗi pack dài 53k):
+  pack 1: [ run 19k | run 15k | run 11k | run 8k ]
+  pack 2: [ run 29k | run 17k | run 7k ]
+</code></pre>
+
+    <p>Ba quy tắc của họ, mỗi quy tắc đều có lý do:</p>
+    <ul>
+      <li>Mỗi hội thoại được xếp vào pack mà phần trống còn lại <em>vừa khít nhất</em>.</li>
+      <li><strong>Không hội thoại nào bị cắt hay chặt khúc</strong> — đây là lựa chọn có chủ đích để chống hallucination (model bịa).</li>
+      <li>Các prompt giống nhau bị giữ khỏi cùng một pack, và các pack được xáo trộn sau đó.</li>
+    </ul>
+
+    <h3>MoE — khi dữ liệu hẹp làm lệch "phân công"</h3>
+    <p>Các model frontier trong bài là <strong>mixture of experts (MoE)</strong> — model gồm nhiều "chuyên gia" con, mỗi input được định tuyến cho một số chuyên gia. Các model trong paper công khai thì thường là <em>dense</em> (mọi tham số đều dùng cho mọi input).<sup><a href="#src-slide37">slide 37</a></sup></p>
+    <p>Vấn đề (slide 37): fine-tune một MoE trên dữ liệu agent <em>hẹp</em> thì chỉ vài chuyên gia nhận gần hết token — phần còn lại của model bị bỏ quên. MAI xử lý bằng cách cân bằng routing rất mạnh trong giai đoạn SFT — <em>mạnh gấp nghìn lần</em> so với khi RL — và nâng dropout lên 0,15.</p>
+    <p>Hình dung: một công ty có nhiều tổ chuyên môn. Dồn hết một loại việc mới cho một tổ thì tổ đó quá tải, còn các tổ khác mất tay nghề.</p>
+
+    <h3>Template drift — lỗi im lặng đắt nhất</h3>
+    <p>Nhớ chiếc khuôn in phụ đề ở mục 2 chứ? Slide 39 nói về hậu quả khi bạn in hai khuôn khác nhau:<sup><a href="#src-slide39">slide 39</a></sup></p>
+    <blockquote>
+      <p>"The chat template should always match the format the model was trained with."</p>
+      <cite>— slide 39. Template lúc train phải trùng với template lúc phục vụ, <strong>đến từng dấu cách</strong>.</cite>
+    </blockquote>
+    <p>Cơ chế cụ thể rất tinh vi: render <em>cùng một trajectory</em> hai lần — một lần có tool message phía sau, một lần không — có thể cho ra <strong>hai chuỗi khác nhau</strong>. Khi một tool message được thêm vào, một khối suy nghĩ có điều kiện (conditional thinking block) thay đổi cả lượt assistant phía trước, khiến prefix không còn khớp nữa.</p>
+    <p>Đây là loại lỗi đáng sợ nhất: model vẫn chạy, vẫn viết ra chữ, chỉ là hành xử tệ đi — và không có thông báo lỗi nào.</p>
+
+    <h3>Bài kiểm tra đầu tiên: overfit 20 ví dụ</h3>
+    <p>Trước khi tin vào bất kỳ con số nào, slide 43 cho một mẹo cực thực dụng: <strong>thử overfit 20 ví dụ</strong>. Nếu loss không chịu giảm, lỗi nằm ở <em>phía trước</em> (upstream) — dữ liệu, template, hoặc code.<sup><a href="#src-slide43">slide 43</a></sup></p>
+    <p>Giống như trước khi tin cái cân, bạn đặt lên đó quả cân đã biết trọng lượng. Cân không khớp thì sửa cái cân, đừng ngồi đoán xem mình nặng bao nhiêu.</p>
+
+    <h3>Cái bẫy lớn: lúc train khác lúc chạy</h3>
+    <p>Đây là ý tưởng sâu nhất của mục này (slide 42, dẫn từ DAgger — Ross et al., 2011):<sup><a href="#src-slide42">slide 42</a></sup></p>
+    <ul>
+      <li><strong>Lúc train:</strong> trainer chấm <em>từng hành động một</em>, và luôn tiếp tục theo <em>run đã ghi</em>. Dù model đoán gì, câu tiếp theo vẫn là câu trong bản ghi.</li>
+      <li><strong>Lúc chạy thật:</strong> không có bản ghi nào cả. Mỗi hành động model làm <em>thay đổi thứ nó thấy tiếp theo</em>.</li>
+    </ul>
+
+    <pre><code>LÚC TRAIN — luôn bám theo bản ghi:
+  issue ──► edit A (bản ghi) ──► tests pass ──► submit    ✓ mỗi bước có đích
+
+LÚC CHẠY THẬT — không có bản ghi:
+  issue ──► edit B (model tự nghĩ) ──► tests FAIL ──► ???
+                                          ↑
+                       trạng thái chưa từng xuất hiện trong dữ liệu
+</code></pre>
+
+    <p>Chỉ cần một bước sửa khác đi, model đã lạc vào trạng thái mà <em>không training run nào từng đi qua</em>. Và slide nói câu chí mạng: "Low loss promised nothing about what happens there." — loss thấp không hứa hẹn gì về những chỗ như vậy.</p>
+    <p>Ví dụ đời thường: học sinh học thuộc lời giải mẫu. Đề lệch một chút là không biết xoay — dù khi làm đề mẫu thì "đúng" gần như tuyệt đối.</p>
+    <p><strong>DAgger</strong> (Dataset Aggregation) là hướng khắc phục kinh điển: cho học trò tự hành động, rồi nhờ thầy gán nhãn <em>ngay tại những trạng thái học trò thực sự đi tới</em>, và gom dữ liệu đó vào tập train. Lặp lại. Nói cách khác: đừng chỉ dạy ở con đường mẫu — hãy dạy ở cả những ngã rẽ mà học trò hay lạc vào.</p>
+
+    <h3>Đo trong harness đích — và đọc số cho đúng</h3>
+    <p>Sau bài kiểm tra overfit, cách đánh giá đúng là: <strong>chạy model trong một harness, trên các task có kết quả kiểm được</strong> (slide 43).</p>
+    <p>Hai lời nhắc khi đọc con số công bố:</p>
+    <ul>
+      <li>Đôi khi con số bạn thấy là <em>kết quả tốt nhất trong nhiều harness</em> — hãy đọc kỹ nó đến từ đâu.</li>
+      <li><strong>Chia tập dữ liệu phải khớp với điều bạn muốn nói.</strong> Muốn nói "giỏi trên task mới" thì giữ mọi run của cùng một task về cùng một phía. Muốn nói "tổng quát hóa sang repository mới" thì chia theo repository.</li>
+    </ul>
+    <p>Slide 44 bổ sung một điều đáng nhớ: trajectory thu trong một hệ thống sẽ dạy luôn <em>quy ước của hệ thống đó</em>, không chỉ dạy task. Vì vậy các lab thu thập dữ liệu <em>trên nhiều harness</em> — để tránh train ra một model chỉ giỏi trong đúng một môi trường.<sup><a href="#src-slide44">slide 44</a></sup></p>
+
+    <h3>Đo cả những thứ bạn không định cải thiện</h3>
+    <p>Slide 45: train vào một năng lực thì bạn <em>làm xê dịch các năng lực khác</em> — dù có đo hay không. Hỗn hợp dữ liệu là thứ kiểm soát điều này, và cân bằng bằng ví dụ không giống cân bằng bằng token.<sup><a href="#src-slide45">slide 45</a></sup></p>
+    <p>Nên: hãy đánh giá cả những thứ bạn không nhắm cải thiện. Ví dụ đời thường: uống thuốc đau đầu, hết đau đầu — nhưng nếu bạn không để ý thì không biết mình bị buồn ngủ cả chiều.</p>
+
+    <h3>Bàn giao cho RL</h3>
+    <p>Bài này khép lại bằng câu nối sang bài sau (slide 47):<sup><a href="#src-slide47">slide 47</a></sup></p>
+    <blockquote>
+      <p>"RL provides the most gains when the SFT model is selected with RL in mind."</p>
+      <cite>— slide 47. RL đem lại nhiều nhất khi checkpoint SFT được chọn <em>vì RL</em>, chứ không phải vì điểm SFT cao nhất.</cite>
+    </blockquote>
+    <ul>
+      <li>RL áp lên model <em>không hề có SFT</em> thì gần như không nhúc nhích base model.</li>
+      <li>Chỉ SFT mà thôi thì dừng lại khá xa so với khi có cả hai.</li>
+      <li>Công thức thắng cuộc: bắt đầu RL từ một checkpoint <em>cố tình không được train tới điểm số tốt nhất của chính nó</em>.</li>
+    </ul>
+    <p>Hình dung: chọn vận động viên không phải bằng bài kiểm tra động tác mẫu — người giỏi nhất ở bài mẫu chưa chắc là người học nhanh nhất khi thi đấu. SFT chỉ là <em>cold start</em>; chọn điểm xuất phát cho RL là một bài toán riêng, và đó là nội dung của các bài tiếp theo.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+    <p>Bốn chỗ người mới hay hiểu sai — đọc để tránh:</p>
+    <ol>
+      <li><strong>"SFT là dạy model kiến thức mới."</strong> — Không hẳn. SFT chủ yếu dạy <em>hành vi</em>: cách viết tool call mà harness chạy được, cách trình bày, cách kiên trì khi hội thoại dài. Nó giống "học nghề theo mẫu" hơn là "nạp từ điển".</li>
+      <li><strong>"Mask chỉ là chi tiết kỹ thuật nhỏ."</strong> — Ngược lại. Mask quyết định model học gì. Quên train token kết thúc lượt thì model không học được cách dừng. Train cả phần observation thì có thể dạy model thói tự bịa kết quả tool thay vì chờ.</li>
+      <li><strong>"Cứ nhiều dữ liệu là tốt."</strong> — Chạy đạt test chưa đủ: run dài lê thê, patch còn sót <code>print(</code>, hay vòng sửa–test vô tận vẫn có thể pass. Và thêm run của <em>cùng bộ task</em> sẽ bão hòa — muốn leo tiếp phải thêm task mới.</li>
+      <li><strong>"Model đứng đầu bảng xếp hạng là thầy tốt nhất."</strong> — Slide 26 cho thấy điều ngược lại: model mạnh nhất trên benchmark lại tạo ra học trò yếu nhất. Phải đo bằng kết quả của <em>học trò</em>, và thử vài thầy rồi giữ cái tốt hơn.</li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+    <p>Làm ra nháp (hoặc nhẩm) trước, rồi mới mở đáp án. Đáp án chỉ là <strong>gợi ý lập luận</strong> — không cần khớp từng chữ. Không có gì phải nộp cả.</p>
+
+    <h3>Bài 1 — Tự vẽ mask cho một trajectory</h3>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">Khởi động. Trong một trajectory, theo cách làm phổ biến, những token nào nhận loss?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Tất cả token — kể cả tin nhắn user và kết quả tool</button>
+        <button class="quiz-opt" data-key="b">Chỉ token của kết quả tool, vì đó là thông tin thật</button>
+        <button class="quiz-opt" data-key="c">Chỉ các role header như <code>&lt;|im_start|&gt;assistant</code></button>
+        <button class="quiz-opt" data-key="d">Token do assistant viết, gồm cả token kết thúc lượt; phần còn lại chỉ là context</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: lúc chạy thật, phần nào model phải tự viết ra?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Loss chỉ tính trên token của assistant (slide 12). Observation là <em>conditioning context</em> — điều kiện để dự đoán, không phải đích dự đoán. Và token kết thúc lượt cũng phải nằm trong mask, nếu không "the model may not learn to stop" (slide 15).</p>
+      </div>
+    </div>
+
+    <p>Giờ đến phần viết. Cho trajectory ngắn sau (mình đã lược cho dễ đọc):</p>
+
+    <pre><code>&lt;|im_start|&gt;system↵ Bạn là coding agent. Tools: bash, str_replace. &lt;|im_end|&gt;
+&lt;|im_start|&gt;user↵ test_login đang fail, sửa giúp. &lt;|im_end|&gt;
+&lt;|im_start|&gt;assistant↵ &lt;think&gt;Chạy pytest để xem lỗi.&lt;/think&gt;↵
+&lt;tool_call&gt;bash(cmd="pytest -q")&lt;/tool_call&gt; &lt;|im_end|&gt;
+&lt;|im_start|&gt;tool↵ 3 failed, 41 passed &lt;|im_end|&gt;
+&lt;|im_start|&gt;assistant↵ &lt;think&gt;So sánh float bị sai.&lt;/think&gt;↵
+&lt;tool_call&gt;str_replace(...)&lt;/tool_call&gt; &lt;|im_end|&gt;
+</code></pre>
+
+    <p>Trả lời bốn câu: (a) phần nào nhận loss? (b) <code>&lt;|im_end|&gt;</code> của lượt assistant cuối có trong mask không — vì sao? (c) dòng <code>3 failed, 41 passed</code> có nên train không — vì sao? (d) khối <code>&lt;think&gt;</code> có hai công tắc nào cần quyết định?</p>
+
+    <details>
+      <summary>Xem đáp án gợi ý</summary>
+      <ul>
+        <li><strong>(a)</strong> Chỉ hai lượt assistant: system, user, và lượt tool đều mask = 0. Nếu bạn chọn train cả khối <code>&lt;think&gt;</code>, thì phần trong think cũng nhận bit 1 — nhưng đó là một lựa chọn có ý thức (xem câu d).</li>
+        <li><strong>(b)</strong> Có — bắt buộc là 1. Model phải tự sinh token kết thúc lượt; nếu nó bị mask = 0, model không bao giờ học được cách dừng, và có thể viết mãi không thôi.</li>
+        <li><strong>(c)</strong> Không — nó là observation, tức conditioning context. Nếu train trên nó, model có thể học thói <em>tự viết ra kết quả tool</em> thay vì chờ tool trả về.</li>
+        <li><strong>(d)</strong> Công tắc 1: khối suy nghĩ có <em>giữ trong context</em> không? (thường có — nó giải thích hành động phía sau). Công tắc 2: nó có <em>được train</em> không? Nếu train, nó trở thành văn phong model tự viết. Slide 16 nói hai công tắc này đặt riêng, và Nemotron giữ reasoning bị cắt ngân sách trong context nhưng mask phần cắt nhân tạo khỏi loss.</li>
+        <li><strong>Lưu ý thêm:</strong> slide 19 nói chưa có thí nghiệm công bố nào thay đổi mask cho agent SFT rồi đo kết quả. Nên đây không phải bài có một đáp án duy nhất — mà là chỗ bạn nên <em>nói rõ giả định của mình</em>.</li>
+      </ul>
+    </details>
+
+    <h3>Bài 2 — Ba run của cùng một task</h3>
+    <p>Đây chính là câu hỏi thảo luận trên slide 29. Ba run của cùng một task vừa được ghi lại, cả ba đều đạt test:<sup><a href="#src-slide29">slide 29</a></sup></p>
+    <ul>
+      <li><strong>A.</strong> Một run ngắn — giải quyết issue trong 4 lượt.</li>
+      <li><strong>B.</strong> Một run dài — sửa sai một lần, thấy test fail, rồi sửa lại cho đúng.</li>
+      <li><strong>C.</strong> Một run giải quyết issue sau <em>mười một lần thử mà không thay đổi gì</em>.</li>
+    </ul>
+    <p>Quyết định: giữ run nào? Với những run bạn giữ, hành động nào mang loss? Và bộ lọc "loại run dưới 5 lượt" sẽ sai ở chỗ nào?</p>
+
+    <details>
+      <summary>Xem đáp án gợi ý</summary>
+      <p>Không có đáp án tuyệt đối — slide cố ý để mở. Dưới đây là hướng lập luận:</p>
+      <ul>
+        <li><strong>A (4 lượt, sạch):</strong> giữ. Ngắn, đúng, không hành vi thừa.</li>
+        <li><strong>B (dài, sai rồi tự sửa):</strong> đây là run chứa <em>hành vi phục hồi</em> — thứ cực kỳ quý khi chạy thật (xem mục 6, chuyện train khác chạy). Nhưng nếu giữ nguyên, loss sẽ sao chép cả bước sửa sai. Một hướng suy nghĩ: bước sai nằm trong ngữ cảnh "test vừa fail", nên nó dạy model <em>cách sửa sau khi sai</em> — nhiều người chọn giữ. Điều bắt buộc là bạn phải nhận ra mặt trái của nó.</li>
+        <li><strong>C (11 lần thử vô ích):</strong> đáng loại — loss sẽ dạy thói thử vô định. Nếu vẫn muốn dùng, phải xử lý riêng (ví dụ chỉ giữ đoạn thực sự giải quyết).</li>
+        <li><strong>Bộ lọc min-turns sai ở cả hai đầu:</strong> nó <em>loại A</em> (4 lượt, sạch) và <em>giữ C</em> (dài, lãng phí). Đúng như slide 25 nói: số lượt cho biết run tốn bao nhiêu công, không cho biết công đó tốt hay không.</li>
+      </ul>
+    </details>
+
+    <h3>Bài 3 — Truy lỗi khi mang model ra thật</h3>
+    <p>Tình huống: bạn fine-tune một model, loss giảm rất đẹp. Mang vào harness thật để chạy thì tool call <em>không bao giờ parse được</em>. Nêu ba chỗ nên kiểm tra trước tiên, theo thứ tự.</p>
+
+    <details>
+      <summary>Xem đáp án gợi ý</summary>
+      <ol>
+        <li><strong>Template lúc train vs lúc serve.</strong> Render cùng một trajectory hai lần — một lần có tool message phía sau, một lần không — rồi so từng ký tự, kể cả dấu cách. Kiểm tra xem có conditional thinking block nào làm đổi lượt assistant phía trước không (slide 39). Đây là nghi phạm số một.</li>
+        <li><strong>Bài kiểm tra overfit 20 ví dụ.</strong> Nếu loss không chịu giảm trên 20 ví dụ, lỗi nằm ở upstream: dữ liệu, template, hoặc code — đừng đi tinh chỉnh hyperparameter (slide 43).</li>
+        <li><strong>Kiểm tra kết quả render theo đúng checklist của mục 5:</strong> tool call có parse không, mỗi call có kèm suy nghĩ không, hội thoại kết thúc đúng cách không (slide 33).</li>
+        <li><strong>Xét nguồn dữ liệu:</strong> trajectory thu trong một harness dạy luôn quy ước của harness đó. Nếu dữ liệu đến từ OpenHands mà bạn chạy SWE-Agent, cách viết action có thể khác nhau (slide 44).</li>
+      </ol>
+      <p>Điểm cần nhớ: cả bốn bước đều là kiểm tra <em>trước khi</em> tin vào bất kỳ con số nào khác.</p>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu — làm nhanh để chắc chắn mình đã nắm bài.</p>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">1. Đâu là khác biệt cốt lõi giữa SFT và RL?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">SFT cần GPU, còn RL thì không cần</button>
+        <button class="quiz-opt" data-key="b">SFT học từ trajectory được ghi lại, mỗi token có một đích; RL học từ rollout của chính nó, cả lần chạy chỉ nhận một điểm số</button>
+        <button class="quiz-opt" data-key="c">SFT chỉ dùng cho chatbot; RL chỉ dùng cho agent</button>
+        <button class="quiz-opt" data-key="d">RL không cần môi trường, còn SFT mới cần môi trường</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: để ý <em>tín hiệu học</em> của mỗi bên — từng token hay cả lần chạy?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 8: SFT học từ "recorded trajectories, whoever produced them" với "a target for every token"; RL học từ "its own rollouts, scored by a reward signal" với "one number per rollout". RL còn cần nhiều thứ hơn, không ít hơn: môi trường sống, sandbox, điểm thưởng kiểm được.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question">2. Điền hai chỗ trống:</p>
+      <p class="fib-sentence">Loss chỉ được tính trên các token do <span class="fib" data-answer="assistant" data-placeholder="…"></span> viết ra. Và token <span class="fib" data-answer="stop|eos|end|dừng|kết thúc" data-placeholder="…"></span> kết thúc lượt cũng phải nằm trong mask, nếu không model không học được cách dừng.</p>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">3. Vì sao kết quả tool (observation) thường bị mask khỏi loss?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Vì chúng quá dài so với phần assistant</button>
+        <button class="quiz-opt" data-key="b">Vì chúng do model khác viết nên không đáng tin</button>
+        <button class="quiz-opt" data-key="c">Vì đó là ngữ cảnh điều kiện — model phải chờ tool trả về, không phải tự viết ra</button>
+        <button class="quiz-opt" data-key="d">Vì chúng không nằm trong chuỗi token sau khi render</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: slide 12 có một câu rất gọn về observation.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> "Observations are conditioning context, not prediction targets." Chúng vẫn nằm trong chuỗi token (không bị xóa), nhưng dự đoán tại vị trí đó không bị chấm. Slide 5 nói thêm: model cần học kết quả tool trông như thế nào <em>để chờ</em> kết quả, chứ không phải để tự viết ra.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">4. Một run được giữ vào tập SFT vì test pass. Dấu hiệu nào cho thấy nó vẫn có thể là dữ liệu xấu?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Run chỉ có 4 lượt</button>
+        <button class="quiz-opt" data-key="b">Run sửa–chạy test lặp đi lặp lại nhiều lượt và để lại <code>print(</code> trong patch cuối</button>
+        <button class="quiz-opt" data-key="c">Run có một bước sai rồi tự phát hiện và sửa lại</button>
+        <button class="quiz-opt" data-key="d">Run có suy nghĩ trước mỗi lần gọi tool</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: slide 24 kể ba hành vi xấu trong những run <em>đã pass</em>.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 24: mọi run trên slide đều đã vượt test, nhưng một run sửa–test lặp mãi và một run để lại <code>print(</code> trong patch cuối — "would teach undesirable behaviors if used directly as SFT data". Vì loss sao chép <em>mọi</em> hành động, tốt hay không. Còn 4 lượt ngắn gọn thì không phải dấu hiệu xấu.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">5. Bạn giữ nguyên bộ task, chỉ tăng số trajectory lấy mẫu cho mỗi task. Kết quả thường ra sao?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Accuracy tăng mãi theo số run</button>
+        <button class="quiz-opt" data-key="b">Accuracy giảm vì dữ liệu trùng lặp</button>
+        <button class="quiz-opt" data-key="c">Không thay đổi gì cả</button>
+        <button class="quiz-opt" data-key="d">Tăng chậm dần rồi bão hòa — muốn leo tiếp phải thêm task mới</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: slide 28 có hai đường cong, cùng xuất phát từ tập 10K.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 28: đường "thêm run của cùng task" phẳng dần; đường "thêm task mới" tiếp tục leo. Slide 23 cho thấy điều này theo một cách khác: accuracy vẫn đang tăng thì hết ngân sách <em>compute để chạy thêm run</em>, chứ không phải hết task.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">6. Template drift gây ra chuyện gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Chuỗi token lúc train khác chuỗi lúc serve — dù chỉ khác whitespace — nên model gặp prefix chưa từng thấy</button>
+        <button class="quiz-opt" data-key="b">Model tự đổi template của chính nó trong lúc chạy</button>
+        <button class="quiz-opt" data-key="c">Template bị xóa khỏi repo sau khi train xong</button>
+        <button class="quiz-opt" data-key="d">Tool call bị dịch sang ngôn ngữ khác</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: slide 39 nói template phải khớp "down to the whitespace".</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 39: template lúc train phải trùng template lúc serve, đến từng dấu cách. Render cùng một trajectory hai lần — có và không có tool message phía sau — có thể cho ra hai chuỗi khác nhau, vì một conditional thinking block làm đổi cả lượt assistant phía trước, khiến prefix không còn khớp.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <p>Đọc lướt bảng này một lần trước khi rời bài:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Supervised fine-tuning (SFT)</strong></td><td>Dạy model bằng ví dụ mẫu: mỗi token trong phần trả lời có "đáp án"; chỉnh trọng số để model bắt chước.</td></tr>
+        <tr><td><strong>Pre-training / Mid-training</strong></td><td>Hai giai đoạn trước SFT: học ngôn ngữ và kiến thức nền trên lượng token khổng lồ (20T rồi 1,43T trong ví dụ slide 6).</td></tr>
+        <tr><td><strong>RL (reinforcement learning)</strong></td><td>Giai đoạn sau SFT: model tự chạy (rollout), cả lần chạy nhận một điểm số, học để điểm cao hơn.</td></tr>
+        <tr><td><strong>Cold start</strong></td><td>Điểm xuất phát cho RL do SFT tạo ra — "high-quality cold-start policy".</td></tr>
+        <tr><td><strong>Trajectory (trace, rollout)</strong></td><td>Bản ghi đầy đủ một lần agent làm việc: các lượt assistant xen kẽ kết quả môi trường trả về.</td></tr>
+        <tr><td><strong>Chat template</strong></td><td>Hàm render danh sách tin nhắn (có role) thành một chuỗi token, chèn special token ở mỗi ranh giới.</td></tr>
+        <tr><td><strong>Special token</strong></td><td>Token đặc biệt như <code>&lt;|im_start|&gt;</code>, <code>&lt;|im_end|&gt;</code> — một token duy nhất đóng vai trò dấu mốc.</td></tr>
+        <tr><td><strong>Loss</strong></td><td>"Điểm phạt" cho dự đoán của model; training = chỉnh trọng số để loss nhỏ dần.</td></tr>
+        <tr><td><strong>Loss masking</strong></td><td>Một bit cho mỗi token: 1 = được tính loss, 0 = chỉ là context. Quyết định model học từ chỗ nào.</td></tr>
+        <tr><td><strong>Assistant-only loss</strong></td><td>Cách đặt phổ biến: chỉ tính loss trên token do assistant viết (TRL: <code>assistant_only_loss=True</code>).</td></tr>
+        <tr><td><strong>Stop / EOS token</strong></td><td>Token kết thúc lượt do model phải tự sinh — bắt buộc nằm trong mask, nếu không model không học được cách dừng.</td></tr>
+        <tr><td><strong>Reasoning block</strong></td><td>Khối suy nghĩ như <code>&lt;think&gt;</code>; hai công tắc riêng: giữ trong context? và có train không?</td></tr>
+        <tr><td><strong>Distillation</strong></td><td>Dùng trajectory do model mạnh hơn chạy, chỉ giữ các run đạt, rồi fine-tune học trò trên đó.</td></tr>
+        <tr><td><strong>Expert iteration</strong></td><td>Model tự chạy task, giữ run đạt, lặp lại — model tự tạo dữ liệu cho mình.</td></tr>
+        <tr><td><strong>Packing</strong></td><td>Nhồi nhiều hội thoại vào một sequence độ dài cố định thay vì đệm khoảng trống; không cắt hội thoại.</td></tr>
+        <tr><td><strong>Template drift</strong></td><td>Template lúc train lệch template lúc serve (dù chỉ whitespace) → prefix model nhận không khớp với lúc học.</td></tr>
+        <tr><td><strong>DAgger</strong></td><td>Ý tưởng thu dữ liệu tại những trạng thái chính học trò đi tới, nhờ thầy gán nhãn ở đó, rồi lặp lại.</td></tr>
+        <tr><td><strong>Agent Data Protocol</strong></td><td>Một cách biểu diễn chung cho trajectory (typed actions/observations), rồi render riêng cho từng harness.</td></tr>
+        <tr><td><strong>MoE (mixture of experts)</strong></td><td>Model gồm nhiều "chuyên gia"; dữ liệu hẹp làm routing lệch, vài chuyên gia nhận gần hết token.</td></tr>
+        <tr><td><strong>TRL / Axolotl / LLaMA-Factory</strong></td><td>Ba framework train SFT phổ biến, mỗi cái có cờ riêng để điều khiển mask.</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li id="src-slide3"><span id="src-slide5"></span>Trajectory của một lần sửa bug (issue + tool bash/file editor trong sandbox; test của repository quyết định thành công) — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=3">slide 3</a>; SWE-Gym §4.2 (Pan et al., 2024). Bốn thứ trajectory dạy model — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=5">slide 5</a>.</li>
+      <li id="src-slide4">Ba nơi cập nhật hành vi: context window / external artifacts / model weights, kèm ưu nhược điểm — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=4">slide 4</a>.</li>
+      <li id="src-slide6">Pipeline pre-training 20T → mid-training 1,43T → SFT 332B → RL — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=6">slide 6</a> (Nemotron 3 Ultra; K2 Horizon).</li>
+      <li id="src-slide7">Cold start trước RL; Kimi K3; câu chuyện DeepSeek-R1-Zero và R1 — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=7">slide 7</a>. Bảng SFT và RL đặt cạnh nhau — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=8">slide 8</a>.</li>
+      <li id="src-slide11">Chat template áp lên trajectory: một chuỗi token, special token ở mỗi ranh giới — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=11">slide 11</a>.</li>
+      <li id="src-slide12"><span id="src-slide13"></span>Loss chỉ trên token assistant; công thức; mask 1 bit; "observations are conditioning context" — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=12">slide 12</a>. Cách dựng mask: Render → Tokenize → Mask — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=13">slide 13</a>.</li>
+      <li id="src-slide14">Masking trong TRL / Axolotl / LLaMA-Factory — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=14">slide 14</a>; bảng cờ chi tiết (backup) — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=49">slide 49</a>.</li>
+      <li id="src-slide15"><span id="src-slide16"></span>Token kết thúc lượt; "the model may not learn to stop"; ba sự kiện end-of-turn của Kimi K3 — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=15">slide 15</a>. Mask khối reasoning, hai công tắc, ví dụ Nemotron — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=16">slide 16</a>.</li>
+      <li id="src-slide17"><span id="src-slide18"></span>BalanceSFT: SSB và HDR; reasoning dài chi phối loss — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=17">slide 17</a>. Samples vs tokens (MAI-Thinking-1) — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=18">slide 18</a>.</li>
+      <li id="src-slide19">Bài toán mở: chưa có thí nghiệm công bố thay đổi mask cho agent SFT (WIT; Instruction Modelling) — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=19">slide 19</a>.</li>
+      <li id="src-slide21"><span id="src-slide22"></span><span id="src-slide23"></span>Nguồn trajectory: distillation vs expert iteration — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=21">slide 21</a>. SWE-Gym: 491 run đạt, Qwen 32B, SWE-Bench tăng hơn 10 điểm — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=22">slide 22</a>. Bão hòa khi thêm trajectory cùng task — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=23">slide 23</a>.</li>
+      <li id="src-slide24"><span id="src-slide25"></span><span id="src-slide26"></span><span id="src-slide27"></span><span id="src-slide28"></span><span id="src-slide29"></span>Hành vi không mong muốn trong những run đã đạt test — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=24">slide 24</a>. Bộ lọc theo số lượt và cái bẫy của nó — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=25">slide 25</a>. Chọn teacher: GPT-5.3-Codex mạnh nhất nhưng học trò yếu nhất — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=26">slide 26</a>. Chọn nguồn task; trộn 4–8 nguồn — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=27">slide 27</a>. Thêm run cùng task vs thêm task mới — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=28">slide 28</a>. Thảo luận ba run A/B/C — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=29">slide 29</a>.</li>
+      <li id="src-slide31"><span id="src-slide32"></span><span id="src-slide33"></span><span id="src-slide34"></span>Dị biệt format giữa các dataset (HTML vs accessibility tree) — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=31">slide 31</a>. Một cách biểu diễn chung — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=32">slide 32</a>; Agent Data Protocol (Song et al., 2026, ICLR oral). Render theo harness — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=33">slide 33</a>. Diversity thắng task-specific — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=34">slide 34</a>.</li>
+      <li id="src-slide36"><span id="src-slide37"></span><span id="src-slide38"></span><span id="src-slide39"></span><span id="src-slide40"></span>Cấu hình SFT thật của Nemotron / MAI / K2 Horizon — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=36">slide 36</a>. Expert routing khi SFT MoE — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=37">slide 37</a>. Packing — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=38">slide 38</a>. Template drift — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=39">slide 39</a>. Artifacts đã công bố (model card, W&amp;B, checkpoint) — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=40">slide 40</a>.</li>
+      <li id="src-slide42"><span id="src-slide43"></span><span id="src-slide44"></span><span id="src-slide45"></span>Train/run mismatch và DAgger (Ross et al., 2011) — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=42">slide 42</a>. Evaluation: overfit 20 ví dụ, chạy trong harness đích, chia tập đúng — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=43">slide 43</a>. Robustness across harnesses — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=44">slide 44</a>. Regressions ngoài lĩnh vực đích — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=45">slide 45</a>.</li>
+      <li id="src-slide47">Bàn giao cho RL: chọn checkpoint SFT với RL trong đầu — <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf#page=47">slide 47</a>.</li>
+      <li>Toàn bộ slide gốc: <a href="https://www.cmu-agents.com/slides/lecture-08-sft.pdf">lecture-08-sft.pdf</a> (Supervised Fine-Tuning for Agents — Yueqi Song, Language Technologies Institute, CMU 11-768).</li>
+      <li>Tài liệu kỹ thuật tham khảo thêm: <a href="https://huggingface.co/docs/transformers/chat_templating">Transformers — chat templating</a>; <a href="https://huggingface.co/docs/trl/sft_trainer">TRL — SFTTrainer</a>; <a href="https://docs.axolotl.ai">Axolotl docs</a>; <a href="https://github.com/hiyouga/LLaMA-Factory">LLaMA-Factory</a>; DAgger — <a href="https://arxiv.org/abs/1011.0686">arXiv:1011.0686</a>.</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài tiếp theo:</strong> Training 2 — Reinforcement Learning căn bản: rollout, reward, và vì sao SFT một mình dừng lại sớm.</p>
+    <p>Còn chỗ chưa rõ? Đừng cố đi tiếp — ghi lại câu hỏi, rồi quay lại đọc chậm đúng mục đó. Phần lớn sẽ sáng ra ở lần đọc thứ hai. Điều quan trọng nhất của bài này không phải nhớ hết, mà là tự trả lời được: <em>"model này đang học từ token nào, và vì sao?"</em></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

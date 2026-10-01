@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 05 · Skills &amp; Memory — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Bài 05</div>
+    <h1>Skills &amp; Memory</h1>
+    <p class="subtitle">Làm sao agent giỏi dần lên mà không phải bắt đầu lại từ đầu — và nó cất bài học vào đâu.</p>
+    <p class="lesson-meta"><span>~25 phút</span><span>6 câu hỏi tương tác</span><span>Nguồn: lecture-04</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#vi-sao">Vì sao agent cần nhớ — và nhớ ở đâu</a></li>
+      <li><a href="#kinh-nghiem">Kinh nghiệm nào đáng lưu</a></li>
+      <li><a href="#bo-nho">Bộ nhớ ngắn hạn &amp; bộ nhớ dài hạn</a></li>
+      <li><a href="#hoc-tu-trai-nghiem">Học từ trải nghiệm: reflection &amp; skill induction</a></li>
+      <li><a href="#skill">Skill — gói kỹ năng tái sử dụng</a></li>
+      <li><a href="#vong-doi">Vòng đời &amp; khi nào nên dùng</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">📝 Exam của bài này</div>
+    <p>Làm <a href="../exams/0005-exam.html"><strong>Exam 05</strong></a> để nhớ chắc — nhiều câu hỏi + bài tập code có test tự chạy, làm lại được nhiều lần. Mục tiêu: đúng ≥ 85%.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bài này <strong>không cần nền ML</strong>. Cứ đọc tuần tự, chậm cũng được. Đến mục 8, bạn tự làm bài rồi <strong>mở đáp án để tự kiểm</strong> — không phải nộp cho ai cả. Mục 10 có bảng từ khóa kèm số trang để bạn tra lại slide gốc khi cần.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="vi-sao">
+    <h2>Vì sao agent cần nhớ — và nhớ ở đâu</h2>
+
+    <p>Hãy tưởng tượng một nhân viên mới: mỗi sáng thức dậy là quên sạch mọi thứ đã học hôm qua. Hôm thứ Hai bạn dạy họ cách in hóa đơn. Thứ Ba họ lại hỏi "in hóa đơn thế nào ạ?". Thứ Tư cũng vậy. Bạn sẽ không thuê người đó lâu.</p>
+
+    <p>Nhưng đó gần như chính xác là cách một agent đang chạy. Mỗi phiên làm việc mới, context trống trơn — agent bắt đầu lại từ số 0. Lecture này nói về cách sửa điều đó: <em>How agents improve without starting over</em> — làm sao agent giỏi lên mà không phải làm lại từ đầu.<sup><a href="#src-p2">[1]</a></sup></p>
+
+    <p>Hãy xem hai việc mà một agent mua sắm được giao, ở hai thời điểm khác nhau (slide 2):</p>
+
+    <pre><code>TASK 1  "Thêm tai nghe Sony vào wish list của tôi"
+  goto store → tìm ô search → fill("sony headphones") → click Search
+             → mở kết quả Sony → Add to Wish List
+
+TASK 2  "Khoảng giá của bàn phím không dây là bao nhiêu?"
+  goto store → tìm ô search → fill("wireless keyboards") → click Search
+             → đọc giá các kết quả → báo min–max
+
+            └──────────── giống hệt nhau ────────────┘   └── khác nhau ──┘</code></pre>
+
+    <p>Hai mục tiêu khác nhau, nhưng <strong>phần giữa thì giống hệt nhau</strong>: mở store, tìm ô tìm kiếm, gõ từ khóa, bấm Search. Slide gọi đó là <em>shared task structure</em> — cấu trúc dùng chung. Và cấu trúc này <em>lặp lại rất nhiều</em> trong công việc của agent.</p>
+
+    <p>Nếu agent không nhớ gì, task 2 sẽ phải tự mò lại ô tìm kiếm từ đầu — như nhân viên mất trí nhớ ở trên. Nếu agent nhớ được "muốn tìm sản phẩm thì làm 4 bước này", task 2 nhanh và chắc hơn hẳn.</p>
+
+    <p>Bài giảng đặt ra ba câu hỏi xuyên suốt, và bài học này sẽ trả lời từng câu:</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Câu hỏi 1 · Representation</div>
+        <h3>Lưu dưới dạng gì?</h3>
+        <p>Cấu trúc dùng chung đó nên là <strong>text</strong> (lời hướng dẫn) hay <strong>code</strong> (đoạn chương trình chạy được)?</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Câu hỏi 2 · Induction</div>
+        <h3>Rút ra bằng cách nào?</h3>
+        <p>Làm sao agent <strong>tự nhận ra</strong> phần lặp lại từ trải nghiệm của chính nó?</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Câu hỏi 3 · Lifecycle</div>
+        <h3>Giữ, sửa, quên khi nào?</h3>
+        <p>Khi nào lấy ra dùng, khi nào kiểm tra lại, sửa, hay xóa hẳn?</p>
+      </div>
+    </div>
+
+    <h3>Ba nơi có thể cất kinh nghiệm</h3>
+
+    <p>Kinh nghiệm của agent có thể được "cập nhật" vào ba nơi khác nhau (slide 3). Mỗi nơi có cái được và cái mất:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Nơi lưu</th><th>Cách làm</th><th>Ưu điểm</th><th>Nhược điểm</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Context window</strong><br>(bài giảng trước)</td>
+          <td>Nhét mọi thứ vào cuộc hội thoại đang chạy</td>
+          <td>Trung thực với đúng những gì đã xảy ra</td>
+          <td>Tốn kém, ồn (nhiều thứ không liên quan), và <em>không tự biết điều gì quan trọng</em></td>
+        </tr>
+        <tr>
+          <td><strong>External artifacts</strong><br>(bài này)</td>
+          <td>Viết ra ngoài: file ghi chú, database, gói skill</td>
+          <td>Đọc lại được, sửa được, tra cứu được, mang sang môi trường khác được</td>
+          <td>Phải tự rút ra, tự chọn lọc, tự bảo trì</td>
+        </tr>
+        <tr>
+          <td><strong>Model weights</strong><br>(bài về SFT)</td>
+          <td>Fine-tune — học thẳng vào bộ não của model</td>
+          <td>Suy luận nhanh hơn, đổi hành vi trên phạm vi rộng</td>
+          <td>Cập nhật chậm, mờ đục (không đọc được "nó học gì"), gắn chết với một model</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Một cách hình dung ba nơi này:</p>
+
+    <pre><code>        Trải nghiệm của agent (một episode)
+                      │
+        ┌─────────────┼──────────────────┐
+        ▼             ▼                  ▼
+  CONTEXT WINDOW  EXTERNAL ARTIFACT   MODEL WEIGHTS
+  (bàn làm việc)  (sổ tay, file, DB)  (tay nghề của model)
+  giữ nguyên      đọc lại / sửa /     phản xạ nhanh
+  những gì        mang đi được        nhưng khó sửa,
+  đã xảy ra       nhưng phải bảo trì  cập nhật chậm</code></pre>
+
+    <p>Ví von cho dễ nhớ: <strong>context window là mặt bàn làm việc</strong> — chỉ để được những gì đang dùng, hết ca là dọn sạch. <strong>External artifact là sổ tay và tủ hồ sơ</strong> — bền, tra cứu được, đưa cho đồng nghiệp được. <strong>Model weights là tay nghề của chính bạn</strong> — nhanh như phản xạ, nhưng muốn sửa một thói quen thì lâu và khó.</p>
+
+    <div class="callout">
+      <div class="callout-title">Câu hỏi xuyên suốt của bài</div>
+      <p>Slide 3 kết thúc bằng đúng một câu hỏi: <em>"What experience is worth turning into an external artifact?"</em> — Kinh nghiệm nào <strong>đáng</strong> để biến thành thứ lưu bên ngoài? Cả bài này là một chuỗi câu trả lời cho câu đó: đừng lưu tất cả, hãy lưu thứ sẽ còn dùng lại.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="kinh-nghiem">
+    <h2>Kinh nghiệm nào đáng lưu</h2>
+
+    <p>Lecture chia trải nghiệm của agent thành ba loại (slide 4). Mỗi loại đáng lưu trong một tình huống khác nhau:</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Episode</div>
+        <h3>Toàn bộ một lần làm việc</h3>
+        <p>Mọi quan sát và mọi hành động, theo đúng thứ tự đã xảy ra. Đáng lưu khi <strong>sản phẩm, giá cả, hay trình tự chính xác</strong> sẽ còn quan trọng lần sau.</p>
+        <p><em>Ví dụ:</em> log đầy đủ phiên agent mua tai nghe Sony hôm qua, gồm cả giá và cách thanh toán.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Fact</div>
+        <h3>Một sự thật ngắn</h3>
+        <p>Một câu về thế giới, đáng lưu khi nó <strong>lặp lại ở nhiều việc sau</strong> hoặc có thể <strong>cập nhật</strong> khi thế giới đổi.</p>
+        <p><em>Ví dụ:</em> "Cửa hàng này chỉ hiển thị giá ở trang sản phẩm."</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Skill</div>
+        <h3>Một quy trình tái sử dụng</h3>
+        <p>Một chuỗi hành động đáng lưu khi <strong>các việc sau sẽ lặp lại đúng khuôn đó</strong>.</p>
+        <p><em>Ví dụ:</em> "Để tìm sản phẩm: gõ vào ô search → bấm Search → mở kết quả."</p>
+      </div>
+    </div>
+
+    <p>Điểm chung của cả ba: chúng đều được <strong>rút ra từ một episode</strong> — từ một lần làm việc cụ thể. Một episode có thể sinh ra nhiều thứ:</p>
+
+    <pre><code>Episode (toàn bộ trace)
+  │  "hôm nay: mở store → gõ 'sony headphones' → bấm Search →
+  │   mở kết quả → Add to Wish List → thấy giá 349 đô"
+  │
+  ├─► FACT   "store này chỉ hiện giá ở trang sản phẩm"
+  └─► SKILL  "tìm sản phẩm = gõ ô search → bấm Search → mở kết quả"</code></pre>
+
+    <h3>Memory khác skill ở đâu?</h3>
+
+    <p>Slide 5 tách hai khái niệm này ra cho rõ:</p>
+
+    <ul>
+      <li><strong>Memory</strong> (bộ nhớ): thông tin lưu lại <em>từ chính tương tác của agent</em>. Ví dụ: món hàng đã mua lần trước.</li>
+      <li><strong>Skill</strong> (kỹ năng): kiến thức tái sử dụng <em>về cách hành động</em> — có thể là text, code, hoặc cả hai. Ví dụ: checklist release do một người viết.</li>
+      <li><strong>Induced skill</strong> (kỹ năng tự rút ra): skill mà <em>chính agent</em> rút ra từ những lần tìm kiếm thành công của nó.</li>
+    </ul>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Memory</th><th>Skill</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Trả lời câu hỏi</td><td>"Chuyện gì đã xảy ra?"</td><td>"Nên làm thế nào?"</td></tr>
+        <tr><td>Nguồn</td><td>Tương tác của chính agent</td><td>Người viết, hoặc agent tự rút ra</td></tr>
+        <tr><td>Ví dụ</td><td>"Khách B thích trả lời bằng tiếng Anh"</td><td>"Quy trình xử lý hoàn trả: 4 bước"</td></tr>
+        <tr><td>Đáng lưu khi</td><td>Sự thật còn dùng lại, hoặc cần cập nhật</td><td>Công việc lặp lại theo một chuẩn cố định</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Một câu để phân biệt nhanh</div>
+      <p>Nếu nó trả lời được câu hỏi <strong>"cái gì / chuyện gì"</strong> → thường là memory. Nếu nó trả lời câu hỏi <strong>"làm thế nào"</strong> và có thể đưa cho agent khác dùng lại → thường là skill.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="bo-nho">
+    <h2>Bộ nhớ ngắn hạn &amp; bộ nhớ dài hạn</h2>
+
+    <p>Đây là chỗ dễ hiểu lầm nhất, nên tôi nói chậm.</p>
+
+    <p><strong>Bộ nhớ ngắn hạn</strong> (short-term memory) chính là <em>context window</em> — cửa sổ ngữ cảnh của phiên làm việc hiện tại. Nó chứa cuộc hội thoại, các quan sát, kết quả tool… tất cả những gì model đang "nhìn thấy" ngay lúc này. Ưu điểm: tức thì, chính xác với những gì vừa xảy ra. Nhược điểm: có giới hạn, tốn tiền theo lượng token, và — quan trọng nhất — <em>nó không phân biệt được đâu là thông tin quan trọng</em>. Mọi thứ nằm đó với sức nặng như nhau.</p>
+
+    <p><strong>Bộ nhớ dài hạn</strong> (long-term memory) nằm ở bên ngoài: file, database, ghi chú, gói skill. Nó không tự nhiên có — agent phải <em>chủ động ghi vào</em> và <em>chủ động đọc ra</em>. Và đây là điểm cốt lõi của slide 17: <strong>việc đọc/ghi đó là những function call do chính agent phát ra</strong> — giống như bạn quyết định rút sổ tay ra ghi một dòng, hay lật sổ tìm lại.<sup><a href="#src-p17">[2]</a></sup></p>
+
+    <pre><code>   AGENT (model trong vòng lặp)
+     │                            ▲
+     │ function call:             │ function call:
+     │ memory.add("...")          │ memory.search("...")
+     ▼                            │
+  ┌──────────────────────────────────────────┐
+  │  BỘ NHỚ NGOÀI: file / database           │
+  │  notes.md · lessons/ · skills/           │
+  └──────────────────────────────────────────┘
+     ▲
+     │ người cũng đọc và sửa được bằng tay</code></pre>
+
+    <p>Vì sao điều này quan trọng? Vì nó giải thích cả ba nhược điểm của việc "nhét hết vào context": context có hạn, context tốn kém, và context không tự chọn lọc. Bộ nhớ ngoài cho phép agent (và cả bạn) quyết định <em>cái gì đáng nhớ</em>, rồi tra cứu lại đúng lúc cần.</p>
+
+    <h3>Ví dụ cụ thể: sửa bug xong, ghi lại một bài học</h3>
+
+    <p>Đây là ví dụ tôi tự dựng để bạn thấy rõ cơ chế (số bước là con số minh họa, không phải kết quả nghiên cứu):</p>
+
+    <pre><code>PHIÊN 1 — thứ Hai
+  1. Agent chạy pytest → "1 failed: test_export"
+     (test so sánh "2026-09-21 00:00" với "2026-09-20 17:00")
+  2. Agent đọc test, phát hiện một bên dùng datetime.now() (giờ máy),
+     một bên dùng giờ UTC
+  3. Sửa: luôn dùng datetime.now(timezone.utc)
+  4. pytest → passed
+  5. Agent ghi vào notes/bai-hoc.md:
+     "Test liên quan thời gian: luôn dùng UTC, đừng dùng
+      datetime.now() trần — lệch múi giờ sẽ làm test đỏ."
+
+PHIÊN 2 — thứ Sáu, context mới hoàn toàn
+  1. pytest → "1 failed: test_invoice", cùng dạng lệch múi giờ
+  2. Agent đọc notes/bai-hoc.md → gặp lại bài học cũ
+  3. Sửa đúng chỗ sau vài bước, thay vì mò lại từ đầu</code></pre>
+
+    <p>Để ý: thứ được lưu không phải là <em>đáp án</em> ("sửa dòng 42"), mà là <em>bài học dùng lại được</em> ("gặp dạng lỗi này thì làm gì"). Đó là điểm mấu chốt của cả bài — và mục 4 sẽ đào sâu.</p>
+
+    <h3>Quản lý bộ nhớ: ADD, UPDATE, DELETE, NOOP</h3>
+
+    <p>Bộ nhớ ngoài không chỉ để ghi thêm. Nếu chỉ ADD mãi, bộ nhớ sẽ đầy những mục mâu thuẫn nhau, và agent không biết tin cái nào. Slide 18 mô tả bốn quyết định khi có thông tin mới đến:<sup><a href="#src-p18">[3]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Quyết định</th><th>Khi nào</th><th>Ví dụ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>ADD</strong></td><td>Chưa có gì giống đã lưu</td><td>"Tôi thích trả lời ngắn gọn" → thêm mới</td></tr>
+        <tr><td><strong>UPDATE</strong></td><td>Thông tin mới <em>thay đổi</em> một mục cũ</td><td>Tuần sau: "Từ giờ trả lời chi tiết hơn nhé" → sửa mục cũ, không thêm mục mâu thuẫn</td></tr>
+        <tr><td><strong>DELETE</strong></td><td>Thông tin mới <em>phủ định</em> một mục cũ</td><td>"Thực ra cứ gửi email thoải mái, không cần hỏi tôi nữa" → xóa quy tắc cũ</td></tr>
+        <tr><td><strong>NOOP</strong></td><td>Đã có sẵn trong bộ nhớ, hoặc không liên quan</td><td>Nghe lại "tôi tên Nam" lần thứ hai → không làm gì</td></tr>
+      </tbody>
+    </table>
+
+    <p>Bốn lựa chọn này nghe đơn giản, nhưng chúng là lý do khiến bộ nhớ "sạch" theo thời gian. Một bộ nhớ không bao giờ xóa sẽ dần trở thành một đống ghi chú cũ kỹ — đúng thứ mà mục 6 (vòng đời) sẽ bàn tiếp.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hoc-tu-trai-nghiem">
+    <h2>Học từ trải nghiệm: reflection &amp; skill induction</h2>
+
+    <p>Bộ nhớ chỉ là cái kho. Câu hỏi thật là: làm sao biến một trải nghiệm thành thứ <em>dùng được cho lần sau</em>? Lecture đưa ra vài cơ chế, và chúng ta sẽ đi qua ba cơ chế quan trọng nhất.</p>
+
+    <h3>Reflection — viết lại bài học, không phải lưu đáp án</h3>
+
+    <p>Slide 19 mô tả vòng lặp <strong>Reflexion</strong>: thử làm → chấm kết quả → viết reflection → thử lại.<sup><a href="#src-p19">[4]</a></sup></p>
+
+    <pre><code>   ┌────────────────────────────────────────────────┐
+   │                                                │
+   ▼                                                │
+ thử làm ──► chấm kết quả ──► reflection ──► thử lại
+              (đúng / sai)     viết bài học</code></pre>
+
+    <p>Ví dụ thật từ slide: agent được hỏi <em>"Một loạt trận đánh nào diễn ra ngày 28/10/1776 gần White Plains, New York?"</em></p>
+
+    <pre><code>LẦN 1:  trả lời "Battle of White Plains"  → SAI
+        (đề hỏi một LOẠT trận, agent chỉ đưa tên MỘT trận)
+
+REFLECTION:
+        "...đề hỏi một loạt trận đánh, nhưng tôi chỉ đưa tên một trận...
+         lần sau tôi sẽ trả lời kèm bối cảnh rộng hơn, ví dụ tên
+         của cả chiến dịch..."
+
+LẦN 2:  trả lời "The New York and New Jersey campaign"  → ĐÚNG</code></pre>
+
+    <p>Điểm đáng chú ý: thứ được sinh ra ở giữa không phải là câu trả lời đúng, mà là <strong>một bài học về cách làm</strong> — "khi đề hỏi một chuỗi sự kiện, trả lời ở mức chiến dịch, không phải một sự kiện lẻ". Lần sau gặp dạng đề tương tự, bài học đó vẫn dùng được, còn đáp án cũ thì không.</p>
+
+    <p>Ví von đời thường: sau một ván cờ thua, bạn không cần nhớ lại toàn bộ 40 nước đi. Bạn rút ra một câu: "mình hay mất bình tĩnh khi bị tấn công sớm". Câu đó mới là thứ giúp bạn thắng ván sau. Reflection là <em>bản nén</em> của trải nghiệm — giữ lại phần dùng được.</p>
+
+    <h3>Skill induction — từ việc lặp lại thành kỹ năng</h3>
+
+    <p>Cơ chế thứ hai: <strong>skill induction</strong> — nhìn vào <em>nhiều</em> episode và rút ra phần hành động lặp lại. Slide 26–27 (Agent Workflow Memory) cho một ví dụ rất cụ thể:</p>
+
+    <pre><code>Episode gốc:
+  "Cho tôi số review của cửa hàng có nhắc tới từ 'satisfied'"
+  click("Marketing") → click("All Reviews") → fill(757, "satisfied")
+  → click("Search") → send_msg_to_user("2")
+
+Rút ra workflow:
+  Task:    Search for reviews matching "{term}"
+  Actions: click("All Reviews")
+           fill(757, "{term}")
+           click("Search")</code></pre>
+
+    <p>Để ý chữ <code>{term}</code>: phần thay đổi được (từ khóa) được biến thành <strong>biến</strong>, còn phần lặp lại giữ nguyên. Nhờ vậy workflow dùng được cho mọi từ khóa, không chỉ "satisfied".</p>
+
+    <p>Prompt induction của AWM (slide 27) có mấy ràng buộc, và mỗi ràng buộc đều có lý do — đáng để bạn đọc kỹ:</p>
+
+    <ul>
+      <li><em>"find the repetitive subset of actions across multiple tasks"</em> — chỉ lấy phần <strong>lặp lại qua nhiều task</strong>. Lý do: lặp lại mới đáng đóng gói; việc một lần thì không.</li>
+      <li><em>"each workflow should have at least two steps"</em> — ít nhất hai bước. Lý do: một bước thì chưa đủ đáng để trở thành một skill riêng.</li>
+      <li><em>"do not generate similar or overlapping workflows"</em> — không tạo các workflow trùng nhau. Lý do: bộ nhớ đầy bản sao sẽ gây nhiễu khi tra cứu (và mục 6 sẽ cho thấy lấy về quá nhiều còn làm kết quả tệ đi).</li>
+      <li><em>"represent the non-fixed elements with descriptive variable names"</em> — đặt tên biến có nghĩa. Lý do: <code>{term}</code> dễ hiểu hơn <code>{x1}</code>, cả với agent lẫn với người đọc lại.</li>
+    </ul>
+
+    <p>Và có một sự thật cần chấp nhận: <strong>lúc lưu, bạn chưa biết skill đó có đáng không</strong>. Slide 43 nói: phần thưởng của task 1 chỉ cho biết task 1 có thành công hay không — nó <em>không</em> cho biết việc lưu lại một phần lời giải có ích hay không. Chỉ một task sau đó mới chứng minh được điều này. Vì vậy khi dạy agent biết rút skill, người ta phải thưởng cho nó cả việc <em>skill được tái sử dụng</em>, không chỉ việc task xong (SAGE/AgeMem, slide 43 — kết quả trên AppWorld test-normal: chỉ thưởng kết quả 55.4; cả hai task thành công 56.6; skill được tái sử dụng thành công 60.7).<sup><a href="#src-p43">[5]</a></sup></p>
+
+    <h3>Text hay code?</h3>
+
+    <p>Đây là câu hỏi số 1 của bài giảng. Slide 29 so sánh hai cách lưu một skill:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Skill dạng text</th><th>Skill dạng code</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Cách dùng</td><td>Là gợi ý; agent tự đọc rồi tự phát từng bước</td><td>Là một tool gọi được: <code>search_product('595', 'sony bluetooth headphones')</code></td></tr>
+        <tr><td>Ưu điểm</td><td>Linh hoạt — agent điều chỉnh theo trang trước mặt</td><td>Kiểm thử được trước khi lưu; gọi skill này từ skill khác (phân tầng); một lời gọi thay nhiều bước model</td></tr>
+        <tr><td>Nhược điểm</td><td>Không tăng tốc: agent vẫn phải tự bấm từng bước, tự sao chép và sửa</td><td>Cứng nhắc: làm đúng y như viết, kể cả khi trang đã đổi</td></tr>
+      </tbody>
+    </table>
+
+    <p>Con số từ slide 33 (thí nghiệm trên các trang web có cấu trúc lặp lại, trung bình 5 trang WebArena) cho thấy đánh đổi này rất rõ:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Không memory</th><th>Skill dạng text</th><th>Skill dạng code</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Mức hoàn thành (checkpoints reached) ↑</td><td>41.3</td><td>59.5</td><td><strong>80.2</strong></td></tr>
+        <tr><td>Số bước mỗi task ↓</td><td>24.5</td><td>20.6</td><td><strong>15.0</strong></td></tr>
+      </tbody>
+    </table>
+
+    <p>Đọc bảng này thế nào: <strong>text skill chủ yếu giúp làm ĐÚNG hơn; code skill giúp cả đúng hơn lẫn NHANH hơn</strong>. Slide 32 còn cho một ví dụ sốc hơn: một task mua sắm mà không có memory chạm giới hạn 50 bước, đến khi có code skill chỉ còn 4 bước.</p>
+
+    <p>Nhưng code không phải lúc nào cũng thắng. Slide 34 kể chuyện: một skill <code>sort_listings</code> rút ra trên một website (bấm vào dropdown để sắp xếp) đem sang target.com thì hỏng — vì ở đó chức năng sắp xếp mở ra một sidebar. Skill rút từ nơi này <em>không tự động đúng</em> ở nơi khác. Giải pháp được nhắc tới (PolySkill, slide 35): viết phần phối hợp một lần, còn mỗi website tự cài đặt các hành động nguyên thủy theo cách của nó.</p>
+
+    <p>Vì code skill có thể chạy và kiểm tra được, người ta còn <strong>lint và test nó trước khi nhận vào bộ nhớ</strong> (slide 31). Ví dụ từ SkillWeaver: một hàm được sinh ra nhưng có cảnh báo</p>
+
+    <pre><code>WARNING: tham số 'color' được khai báo nhưng không dùng trong thân hàm</code></pre>
+
+    <p>Agent sửa lại bằng cách thêm đúng đoạn xử lý tham số đó, rồi mới lưu. Đây là lợi thế lớn của code so với text: có thể kiểm tra tự động trước khi dùng.</p>
+
+    <h3>Bài học từ thất bại — và một cạm bẫy</h3>
+
+    <p>Slide 38 kể một ca thất bại rất đáng học (ReasoningBank): agent nhận đề <em>"Cho tôi tên đầy đủ của tai nghe Bluetooth Sony, và khoảng giá của các model"</em>.</p>
+
+    <pre><code>Agent làm: search "Bluetooth headphones Sony"
+  → 5.578 kết quả từ MỌI gian hàng của store, 12 kết quả/trang
+  → next page → next page → next page → ...
+  → hết giới hạn bước, chưa gửi được gì cho người dùng.
+
+Bài học rút ra (3 chiến lược):
+  1. "Search query optimization" — truy vấn mơ hồ chôn đáp án dưới
+     hàng nghìn kết quả; hãy thu hẹp truy vấn trước khi duyệt.
+  2. "Adjust number of items displayed per page" — 12/trang khiến
+     mỗi lần "next" tốn một bước mà chẳng được bao nhiêu.
+  3. "Use filters available" — bộ lọc danh mục ở sidebar thu hẹp
+     danh sách mà không cần lật trang.</code></pre>
+
+    <p>Ba chiến lược này <em>không phải</em> là đáp án cho đề bài cũ. Chúng là bài học cho mọi đề bài sau. Đó lại đúng là tinh thần của reflection ở trên.</p>
+
+    <p>Tuy nhiên, slide 39 lưu ý một điều tinh tế: <strong>thất bại giúp ích nhiều khi rút ra chiến lược, nhưng ít hữu ích hơn khi lưu cả trajectory hay workflow</strong> (các nghiên cứu Synapse và AWM cho kết quả như vậy). Có thể hiểu là: một trace thất bại dài dễ trở thành "ví dụ về điều không nên làm" mơ hồ, còn một chiến lược nén gọn thì dùng được ngay.</p>
+
+    <p>Còn về chất lượng của bộ chấm (judge) — slide 40: dù bộ chấm thật không hoàn hảo, người ta thử thay bằng các bộ chấm mô phỏng từ "chuẩn xác như oracle" xuống "may rủi như tung đồng xu", và kết quả là <strong>hiệu suất vẫn cải thiện trong một khoảng rộng các mức độ chính xác</strong>. Bạn không cần một bộ chấm hoàn hảo để bắt đầu; nhưng chất lượng bộ chấm vẫn có ảnh hưởng.</p>
+
+    <div class="callout">
+      <div class="callout-title">Tạm kết mục này</div>
+      <p>Ba cơ chế học từ trải nghiệm: <strong>reflection</strong> (viết bài học cho lần sau), <strong>skill induction</strong> (nén phần lặp lại thành workflow có biến), và <strong>bài học từ thất bại</strong> (rút chiến lược, đừng lưu cả trace). Chọn text hay code là một đánh đổi — và cả hai đều cần được chọn lọc, kiểm tra, bảo trì.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="skill">
+    <h2>Skill — gói kỹ năng tái sử dụng</h2>
+
+    <p>Hãy bắt đầu bằng hình ảnh từ slide 8: một người phải gõ <em>cùng một đoạn hướng dẫn</em> vào mọi cuộc trò chuyện review pull request:</p>
+
+    <pre><code>Please check this Python code using:
+- Black formatting with 88-char line limit
+- Ruff linting with our custom rules
+- Type hints for all public APIs
+- Google-style docstrings
+- Pytest for all new functions</code></pre>
+
+    <p>Gõ lần thứ nhất: bình thường. Lần thứ mười: mệt. Lần thứ một trăm: phí thời gian, và dễ quên một dòng. <strong>Khi bạn thấy mình lặp lại cùng một hướng dẫn cho agent từ ba lần trở lên — đó là lúc nên biến nó thành skill.</strong></p>
+
+    <p>Định nghĩa gọn: <strong>skill là một gói file (hướng dẫn + script + tài liệu + template) cho một công việc lặp lại theo một chuẩn cố định.</strong> Slide 8 liệt kê ví dụ: thêm test, review pull request, nâng cấp dependency. Bạn có thể nghĩ thêm: viết release notes, quy trình deploy, checklist trước khi merge.</p>
+
+    <p>Ví von: skill giống như <strong>quy trình chuẩn (SOP) của một chuỗi cà phê</strong>. Nhân viên mới không tự đoán cách pha; họ đọc quy trình. Nhưng quy trình đó không nằm trong đầu ai cả — nó là một tài liệu, ai cũng mở ra đọc được, sửa được, và mang sang chi nhánh khác được. Skill của agent cũng vậy.</p>
+
+    <h3>Một skill gồm những gì?</h3>
+
+    <pre><code>python-review/
+├── SKILL.md          # bắt buộc: hướng dẫn + metadata (YAML)
+├── scripts/          # tùy chọn: code chạy được
+├── references/       # tùy chọn: tài liệu tra cứu
+└── assets/           # tùy chọn: template, tài nguyên</code></pre>
+
+    <p>File bắt buộc là <code>SKILL.md</code>. Nó có hai phần: <strong>metadata YAML</strong> ở đầu (tên, mô tả, các từ khóa kích hoạt) và <strong>phần thân Markdown</strong> (hướng dẫn chi tiết). Ví dụ từ slide 9:</p>
+
+    <pre><code>---
+name: python-review
+description: This skill should be used when the user asks to
+  "review Python code", "check Python style", "lint Python",
+  or mentions code quality.
+triggers:
+  - python review
+  - code review
+  - lint python
+---
+# Python Code Review
+Review Python code using company standards...</code></pre>
+
+    <p>Để ý cách viết <code>description</code>: nó mô tả <strong>khi nào nên dùng</strong>, chứ không chỉ "skill này làm gì". Lý do rất thực tế: description là thứ duy nhất agent <em>luôn luôn</em> nhìn thấy (xem phần dưới). Nếu nó viết mơ hồ, agent sẽ không bao giờ biết mình cần nạp skill đó.</p>
+
+    <h3>Progressive disclosure — nạp dần theo tầng</h3>
+
+    <p>Đây là ý hay nhất của lecture này về mặt thiết kế. Nếu mỗi skill đều bắt agent đọc hết từ đầu đến cuối, thì 20 skill là ngộp context. Giải pháp: <strong>chỉ nạp những gì cần, khi cần</strong>. Slide 9–11 mô tả ba tầng:<sup><a href="#src-p9">[6]</a></sup></p>
+
+    <pre><code>TẦNG 1 · name + description        ← luôn nằm trong context (rẻ)
+   │  agent thấy skill có liên quan
+   ▼
+TẦNG 2 · SKILL.md (phần thân)      ← nạp khi skill được kích hoạt
+   │  agent cần chi tiết hơn
+   ▼
+TẦNG 3 · scripts/, references/     ← chỉ nạp khi agent thực sự đọc</code></pre>
+
+    <p>Cụ thể từng tầng, theo đúng ví dụ python-review của slide 11:</p>
+
+    <ol class="steps">
+      <li><strong>System prompt</strong> chứa <em>danh mục</em> skill — chỉ tên và mô tả. Trong Hermes, cả danh mục này tốn khoảng 3k token.</li>
+      <li>Khi thấy liên quan, agent gọi <code>skill_view('python-review')</code> — phần thân SKILL.md (các bước review) quay về như một kết quả tool.</li>
+      <li>Nếu cần kiểm tra thật, agent chạy <code>python scripts/run_checks.py src/</code> trong terminal — chỉ <em>kết quả</em> (các cảnh báo của Black và Ruff) quay về context; còn code của script thì <em>không bao giờ</em> vào context.</li>
+      <li>Chỉ khi model cần, nó mới gọi <code>skill_view('python-review', 'references/docstring-style.md')</code> để lấy đúng tài liệu về docstring.</li>
+    </ol>
+
+    <p>Ví von: <strong>thư viện</strong>. Bạn không mang cả thư viện về nhà. Bạn xem mục lục (tầng 1), lấy đúng cuốn sách cần (tầng 2), rồi tra đúng trang cần (tầng 3). Nhờ vậy, một agent có thể có hàng trăm skill mà context vẫn nhẹ.</p>
+
+    <p>Trong system prompt, danh mục đó trông như thế này (rút gọn từ slide 10):</p>
+
+    <pre><code>## Skills
+Before replying, scan the skills below. If a skill matches or is even
+partially relevant to your task, you MUST load it with skill_view(name)
+and follow its instructions. ...
+
+&lt;available_skills&gt;
+  code-quality:
+    - python-review: This skill should be used when the user asks to
+      "review Python code", "check Python style", "lint Python"...
+  workflow:
+    - submit-task: When the task is complete, take the required steps to
+      submit the solution. DO NOT submit without invoking this skill.
+&lt;/available_skills&gt;</code></pre>
+
+    <p>Chú ý hai chữ <strong>MUST</strong> và <strong>DO NOT</strong> — người thiết kế phải viết mạnh tay như vậy để agent không tự ý bỏ qua skill. Đây là một ví dụ nhỏ cho thấy "dạy agent" nhiều khi là "viết hướng dẫn đủ rõ", chứ không phải thay đổi model.</p>
+
+    <h3>Skill từ đâu ra?</h3>
+
+    <p>Slide 14 liệt kê ba nguồn:<sup><a href="#src-p14">[7]</a></sup></p>
+
+    <ul>
+      <li><strong>Bundled</strong> — đi kèm harness, như bộ skill mặc định.</li>
+      <li><strong>Được cài hoặc được viết</strong> — một người viết cho công việc của mình, đưa vào repository (ví dụ dưới <code>.agents/skills/</code>), hoặc cài từ repository/registry khác.</li>
+      <li><strong>Do agent tự tạo</strong> — agent tự viết gói skill. Hermes có tool <code>skill_manage</code> để tạo, sửa, xóa; OpenHands có lệnh <code>/skill-creator</code> để phác thảo một skill từ chính workflow agent vừa làm xong. Con người có thể duyệt trước khi nó được dùng.</li>
+    </ul>
+
+    <p>Và đây là lời khuyên thực dụng từ OpenHands: <strong>đừng viết skill từ số 0.</strong> Hãy tạo nó ngay sau khi agent vừa hoàn thành một workflow mà bạn muốn lặp lại — rồi thử nó vài lần.</p>
+
+    <p>Slide 6 tóm tắt hai con đường tạo skill thành một bảng đối chiếu:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Skills as instructions</th><th>Skills as learning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ai tạo?</td><td>Một người hoặc tổ chức</td><td>Chính agent</td></tr>
+        <tr><td>Nguồn</td><td>Chuyên môn, chính sách, tài liệu có sẵn</td><td>Episode và kết quả của chính nó</td></tr>
+        <tr><td>Điểm mạnh</td><td>Ý định rõ ràng, biết rõ nguồn gốc</td><td>Hoạt động được cả khi kỹ năng phải được <em>khám phá</em> qua tương tác</td></tr>
+        <tr><td>Gánh nặng chính</td><td>Thời gian của chuyên gia để viết và bảo trì</td><td>Chấm kết quả, kiểm chứng, chọn lọc</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Skill có thật sự giúp không?</h3>
+
+    <p>Slide 12–13 dẫn kết quả của SkillsBench — bộ đánh giá gồm <strong>87 task thật thuộc 8 lĩnh vực</strong>, với các cặp task–skill được con người chọn lọc (18 cấu hình model–harness × 87 task, so sánh "không skill" với "có skill").<sup><a href="#src-p13">[8]</a></sup></p>
+
+    <p>Kết quả chính, nguyên văn theo slide:</p>
+
+    <ul>
+      <li>Skill do con người viết <strong>nâng tỉ lệ pass trung bình từ 33.9% lên 50.5%</strong>.</li>
+      <li><strong>Skill tập trung thì lợi hơn</strong>: các task có 1–3 skill cải thiện nhiều hơn task có từ 4 skill trở lên; nhóm có SKILL.md ngắn cũng cho mức cải thiện lớn hơn.</li>
+      <li>Nhưng <strong>skill vẫn làm hại ở 13 trong 87 task</strong> — một skill có thể <em>lấn át một chiến lược mặc định tốt hơn</em>.</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">Bài học thực dụng từ con số này</div>
+      <p>Ba điều rút ra: (1) skill có ích trung bình, nhưng không phải viên đạn bạc; (2) <strong>ít mà tập trung</strong> tốt hơn nhiều mà loãng — đừng nhồi 5 skill vào một việc; (3) hãy viết SKILL.md ngắn gọn, và <em>đo kết quả</em> để biết skill nào đang giúp, skill nào đang hại.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="vong-doi">
+    <h2>Vòng đời &amp; khi nào nên dùng</h2>
+
+    <p>Một skill hay một mục bộ nhớ không phải "viết xong là xong". Slide 25 mô tả vòng đời đầy đủ:<sup><a href="#src-p25">[9]</a></sup></p>
+
+    <pre><code>LEARN   episode ──► judge ──► induce ──► admit ──► ┐
+                                                  │
+                                                  ▼
+                                               MEMORY
+                                                  │
+USE     act ◄── retrieve ◄── select ◄─────────────┘
+         │
+         ▼
+MAINTAIN outcomes ──► add / repair / retire ──► memory (quay lại)</code></pre>
+
+    <p>Ba pha, nói bằng lời:</p>
+
+    <ol class="steps">
+      <li><strong>LEARN</strong> — có một episode, <em>chấm</em> xem kết quả đúng hay sai, <em>rút ra</em> (induce) một bài học/skill, rồi <em>nhận vào</em> (admit) bộ nhớ. Chỉ nhận những gì đã qua kiểm tra.</li>
+      <li><strong>USE</strong> — khi có task mới: <em>chọn</em> (select) và <em>lấy về</em> (retrieve) kinh nghiệm liên quan, rồi hành động. Kết quả lại sinh ra outcome mới.</li>
+      <li><strong>MAINTAIN</strong> — nhìn vào các outcome: <em>thêm</em> (add) cái mới, <em>sửa</em> (repair) cái lệch, <em>loại bỏ</em> (retire) cái không còn dùng. Rồi quay lại bộ nhớ.</li>
+    </ol>
+
+    <h3>Bảo trì trong thực tế: ca study của OpenHands</h3>
+
+    <p>Slide 15 kể một ca rất cụ thể — OpenHands chạy một skill review kiểu <code>python-review</code> trên <em>mọi</em> pull request trong repo của chính họ, và bảo trì nó theo một vòng lặp:</p>
+
+    <pre><code>review skill  ──►  ghi log mỗi lần chạy  ──►  chấm điểm mỗi lần chạy
+      ▲                                                │
+      │                                                ▼
+  sửa SKILL.md  ◄──  tìm lỗi lặp lại  ◄───────────────┘</code></pre>
+
+    <ul>
+      <li><strong>Chấm điểm:</strong> sau khi mỗi PR được merge, một model judge đếm xem <em>bao nhiêu gợi ý của agent được con người giữ lại</em>. Đây là một cách đo rất thông minh — không cần hỏi ai, chỉ cần nhìn vào hành vi thật.</li>
+      <li><strong>Tìm lỗi lặp lại:</strong> một model đọc ghi chú các lần chạy và chỉ ra những lỗi hay gặp: bỏ qua quy ước của repo (khoảng 15% số lần) và duyệt một PR có lỗi nghiêm trọng (khoảng 10%).</li>
+      <li><strong>Sửa SKILL.md:</strong> cũng model đó soạn bản sửa — yêu cầu thay đổi mỗi khi phát hiện lỗi nghiêm trọng, và kiểm tra một gợi ý với repo trước khi đăng nó.</li>
+    </ul>
+
+    <p>Để ý: không có bước nào là "viết lại model". Toàn bộ việc cải thiện diễn ra ở <strong>artifact</strong> — đúng tinh thần của bài giảng.</p>
+
+    <h3>Khi nào nên sửa, khi nào nên quên?</h3>
+
+    <p>Slide 42 và 41 cho hai tín hiệu rõ ràng:</p>
+
+    <ul>
+      <li><strong>Mục không còn được dùng thì nên loại bỏ.</strong> TroVE (slide 42) loại bỏ bất kỳ hàm nào được dùng ít hơn <code>½ · log₁₀(n)</code> lần, với <code>n</code> là số ví dụ đã thấy. Ví dụ n = 1000 thì ngưỡng là 1,5 — hàm dùng 0 hoặc 1 lần sẽ bị loại. Ngưỡng tăng dần khi agent thấy nhiều ví dụ hơn: càng trưởng thành, tiêu chuẩn càng cao.</li>
+      <li><strong>Mục có hại thì phải sửa hoặc bỏ.</strong> Slide 42 nhắc tới kết quả "Not All Skills Help": một skill giúp loại việc này lại làm hại loại việc khác. Còn SkillsBench cho thấy skill làm hại ở 13/87 task — một skill có thể lấn át chiến lược mặc định tốt hơn.</li>
+      <li><strong>Đừng lấy về quá nhiều.</strong> Slide 41: lấy thêm kinh nghiệm có thể làm <em>hiệu suất giảm</em> — cả với bộ nhớ tự rút ra (ReasoningBank) lẫn với skill do người chọn (SkillsBench). Hai lý do được nêu: một số kinh nghiệm không liên quan, và agent có giới hạn về việc nó có thể "để ý" tới bao nhiêu thứ cùng lúc. Ví von: nhét 20 tờ ghi chú vào tay trước khi làm bài — nhiều quá hóa rối.</li>
+    </ul>
+
+    <h3>Khi nào nên dùng memory/skill?</h3>
+
+    <p>Tổng hợp cả bài thành bốn câu hỏi bạn có thể tự hỏi trước khi quyết định lưu gì:</p>
+
+    <ol class="steps">
+      <li><strong>Việc này có lặp lại không?</strong> Việc một lần → đừng làm skill, chỉ cần context là đủ.</li>
+      <li><strong>Quy trình có ổn định không?</strong> Nếu còn đổi liên tục → dùng text skill (linh hoạt), hoặc chờ cho nó ổn định rồi hãy đóng gói thành code.</li>
+      <li><strong>Có cách kiểm tra kết quả không?</strong> Test chạy được, output so sánh được → agent tự kiểm và tự nhận skill. Còn tính đúng/sai mang tính chuẩn mực, rủi ro cao → cần con người duyệt.</li>
+      <li><strong>Ai bảo trì nó?</strong> Không ai → nó sẽ mục. Hãy coi mỗi skill là một tài liệu sống, có người chịu trách nhiệm.</li>
+    </ol>
+
+    <p>Slide 45 chia việc giữa người và agent theo đúng bốn câu hỏi đó:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Quyết định</th><th>Nên để CON NGƯỜI làm khi…</th><th>Nên để AGENT làm khi…</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Viết / rút ra skill</td><td>Chính sách đã biết trước</td><td>Kỹ năng phải được khám phá qua tương tác</td></tr>
+        <tr><td>Kiểm tra và nhận vào</td><td>Đúng/sai mang tính chuẩn mực hoặc rủi ro cao</td><td>Kết quả chạy được và kiểm tra rẻ</td></tr>
+        <tr><td>Chọn và dùng</td><td>Ngoại lệ hiếm, cần phán đoán theo ngữ cảnh</td><td>Việc lặp lại và có phản hồi rõ ràng</td></tr>
+        <tr><td>Bảo trì</td><td>Cần một người chịu trách nhiệm</td><td>Sai lệch hiện ra trong kết quả và sửa được</td></tr>
+      </tbody>
+    </table>
+
+    <p>Cuối cùng, slide 44 để lại ba câu hỏi mở — bạn có thể tự trả lời sau khi học xong bài này: (1) Bạn sẽ lưu cái gì dưới dạng episode, fact, bài học, text skill, hay code — và vì sao? (2) Khi nào nên xóa một skill? Khi nào nên sửa? (3) Tỉ lệ hợp lý giữa công sức của người và của agent trong việc tạo và dùng skill là bao nhiêu?</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+
+    <ol>
+      <li>
+        <strong>"Bộ nhớ của agent = lịch sử chat."</strong>
+        <p>Không hẳn. Lịch sử chat chỉ là bộ nhớ <em>ngắn hạn</em> — nó biến mất khi phiên kết thúc. Bộ nhớ <em>dài hạn</em> là file, database, gói skill nằm bên ngoài, và agent phải chủ động đọc/ghi bằng function call. Đây chính là điểm khác biệt cốt lõi của bài này.</p>
+      </li>
+      <li>
+        <strong>"Cứ lưu càng nhiều càng tốt."</strong>
+        <p>Ngược lại. Lấy về quá nhiều kinh nghiệm có thể làm hiệu suất <em>giảm</em> (slide 41); skill làm hại ở 13/87 task trong SkillsBench; và một bộ nhớ chỉ ADD mãi sẽ đầy mâu thuẫn. Bộ nhớ tốt là bộ nhớ <em>được chọn lọc, sửa chữa, và dọn dẹp</em> — không phải bộ nhớ to nhất.</p>
+      </li>
+      <li>
+        <strong>"Skill chỉ là một đoạn prompt dài dán vào."</strong>
+        <p>Không. Một skill là <em>gói file</em>: SKILL.md bắt buộc, kèm scripts/, references/, assets/ tùy chọn. Nó được nạp theo ba tầng (progressive disclosure), có thể chứa code chạy được và được lint/test trước khi nhận vào bộ nhớ. Đoạn prompt dán vào chỉ tương đương... tầng 2 của một skill rất đơn giản.</p>
+      </li>
+      <li>
+        <strong>"Agent học = model tự cập nhật trọng số."</strong>
+        <p>Không phải trong bài này. Ở đây "học" diễn ra ở <em>artifact bên ngoài</em>: file ghi chú, gói skill — những thứ đọc được, sửa được, mang đi được. Cập nhật model weights là con đường thứ ba (fine-tune/SFT), chậm hơn, mờ đục hơn, và gắn chết với một model. Đó là lý do lecture chọn đi con đường artifact.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+
+    <p>Làm ra nháp (hoặc nhẩm) trước, rồi mới mở đáp án. Đáp án chỉ là gợi ý — điều quan trọng là <strong>cách lập luận</strong>, không phải khớp từng chữ.</p>
+
+    <h3>Khởi động 30 giây</h3>
+    <p>Điền vào chỗ trống:</p>
+    <p class="fib-sentence">Agent đọc và ghi bộ nhớ ngoài bằng các <span class="fib" data-answer="function calls|function call|tool calls|tool call|lời gọi hàm|lời gọi công cụ" data-placeholder="?"></span> do chính nó phát ra. Còn file bắt buộc phải có trong một gói skill tên là <span class="fib" data-answer="skill.md" data-placeholder="?"></span>.</p>
+
+    <div class="exercise">
+      <h3>Bài 1 — Phân loại kinh nghiệm</h3>
+      <p>Một agent chăm sóc khách hàng của cửa hàng online, sau một tuần làm việc, có năm thứ sau. Với mỗi thứ, hãy nói: nó là <strong>episode, fact, hay skill</strong>? Và nên lưu ở đâu?</p>
+      <ol>
+        <li>Log đầy đủ cuộc trò chuyện với khách A hôm thứ Hai: mọi tin nhắn, mọi hành động agent đã làm.</li>
+        <li>"Khách ở EU hay hỏi về phí hoàn trả."</li>
+        <li>"Quy trình xử lý hoàn trả: kiểm tra mã đơn → xác nhận lý do → tạo phiếu → gửi email xác nhận."</li>
+        <li>"Khách B thích được trả lời bằng tiếng Anh."</li>
+        <li>"Hệ thống này không xem được ảnh khách gửi — phải xin mô tả bằng chữ."</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>1 — Episode.</strong> Đây là toàn bộ trace của một lần làm việc. Chỉ đáng lưu nếu chi tiết chính xác còn quan trọng (ví dụ: khách đang khiếu nại, cần đối chiếu lại từng tin nhắn). Nếu không, lưu cả trace chỉ làm ồn bộ nhớ.</li>
+          <li><strong>2 — Fact.</strong> Một sự thật ngắn về nhóm khách hàng. Lưu vào memory; cập nhật nếu dữ liệu thay đổi.</li>
+          <li><strong>3 — Skill.</strong> Một quy trình lặp lại theo chuẩn cố định → đóng thành gói skill (SKILL.md với các bước).</li>
+          <li><strong>4 — Memory (fact về một người cụ thể).</strong> Lưu vào memory. Khi khách đổi sở thích → UPDATE, không thêm mục mâu thuẫn.</li>
+          <li><strong>5 — Fact về môi trường.</strong> Rất đáng lưu vì nó lặp lại ở mọi cuộc trò chuyện. Có thể để trong memory, hoặc viết hẳn vào hướng dẫn vận hành để mọi phiên đều biết.</li>
+        </ul>
+        <p><em>Tự kiểm:</em> nếu câu trả lời của bạn trả lời được "chuyện gì đã xảy ra / sự thật gì" → memory (episode hoặc fact). Nếu nó là "làm thế nào, theo thứ tự nào" → skill.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 2 — Viết một SKILL.md tối thiểu</h3>
+      <p>Chọn <em>một</em> việc bạn (hoặc agent của bạn) lặp lại nhiều lần: viết báo cáo tuần, review code Python, chuẩn bị deploy, viết release notes… Hãy viết một SKILL.md ngắn gồm:</p>
+      <ul>
+        <li><code>name</code> và <code>description</code> — trong description phải nói rõ <strong>khi nào nên dùng</strong> (như ví dụ python-review).</li>
+        <li>Phần thân: các bước làm, một mục "cạm bẫy", và một điều kiện dừng ("xong khi nào").</li>
+        <li>Ghi chú: thứ gì nên để trong <code>scripts/</code>, thứ gì nên để trong <code>references/</code>?</li>
+      </ul>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p>Ví dụ cho việc "báo cáo tuần":</p>
+        <pre><code>---
+name: weekly-report
+description: Dùng khi cần viết báo cáo tuần cho nhóm, hoặc khi được
+  yêu cầu "tổng hợp tuần này", "weekly update".
+---
+# Báo cáo tuần
+
+## Các bước
+1. Liệt kê việc đã hoàn thành, kèm mã ticket nếu có.
+2. Mỗi việc: 1 câu kết quả — không kể lể quá trình.
+3. Nêu 1–3 rủi ro / việc đang bị chặn, kèm người cần hỗ trợ.
+4. Kế hoạch tuần sau: tối đa 3 việc ưu tiên.
+5. Định dạng: Tuần → Hoàn thành → Đang chặn → Tuần sau.
+
+## Cạm bẫy
+- Đừng liệt kê mọi việc nhỏ — nhóm chỉ đọc phần thay đổi.
+- Số liệu phải lấy từ nguồn thật (ticket, commit), không ước lượng.
+
+## Dừng khi
+Báo cáo đủ 4 mục, mỗi mục không quá 5 dòng.</code></pre>
+        <p><em>scripts/</em> có thể chứa một script kéo commit/ticket trong tuần. <em>references/</em> có thể chứa tài liệu về định dạng báo cáo chuẩn của công ty. Còn <em>assets/</em> có thể chứa template Markdown.</p>
+        <p><em>Checklist tự kiểm:</em></p>
+        <ul>
+          <li>Description có nói rõ <strong>khi nào dùng</strong>, kèm vài từ khóa mà người dùng thật sẽ gõ không?</li>
+          <li>Phần thân có ngắn không? (SkillsBench: SKILL.md ngắn cho mức cải thiện lớn hơn.)</li>
+          <li>Các bước có <strong>kiểm tra được</strong> không — tức là người khác đọc xong biết ngay mình làm đúng hay sai?</li>
+          <li>Có điều kiện dừng không? (Không có, agent sẽ không biết lúc nào ngừng.)</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 3 — Reflection sau một lần thất bại</h3>
+      <p>Tình huống: agent được giao <em>"Tìm màn hình 27 inch rẻ nhất trên trang X"</em>. Nó search với từ khóa "monitor" → 300 kết quả → lật từng trang → hết giới hạn bước, không trả lời được gì.</p>
+      <p>Hãy viết:</p>
+      <ol>
+        <li>Một đến hai bài học dạng "lần sau gặp X thì làm Y".</li>
+        <li>Bài học đó nên lưu dưới dạng gì (fact / lesson / text skill / code skill), và ở đâu?</li>
+        <li>Khi nào nên sửa hoặc xóa nó?</li>
+        <li>Có nên lưu cả trace thất bại không? Vì sao?</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ol>
+          <li><strong>Bài học.</strong> "Khi tìm sản phẩm trên trang X, đừng bắt đầu bằng từ khóa chung — thu hẹp truy vấn (kèm kích thước/thương hiệu) trước khi duyệt." Và: "Ưu tiên bộ lọc của trang thay vì lật từng trang." (Đây đúng là dạng chiến lược mà ReasoningBank rút ra ở slide 38.)</li>
+          <li><strong>Dạng và nơi lưu.</strong> Đây là <em>bài học/chiến lược</em> — lưu dạng text trong memory (một file ghi chú, mục lesson). Chưa nên đóng thành code skill ngay: trang X có thể đổi cấu trúc, và bài học còn đang được kiểm chứng. Khi nào nó lặp lại và ổn định, hãy nâng cấp thành code skill để chạy nhanh hơn.</li>
+          <li><strong>Khi nào sửa/xóa.</strong> Sửa khi trang X đổi cách sắp xếp/tìm kiếm, hoặc khi phát hiện bài học áp dụng sai cho một loại sản phẩm khác. Xóa khi nó không còn được dùng tới (kiểu ngưỡng của TroVE) hoặc khi nó đã được "nâng cấp" thành một skill code tốt hơn.</li>
+          <li><strong>Trace thất bại?</strong> Thường <em>không</em> cần lưu cả trace: nó dài, ồn, và slide 39 cho thấy thất bại giúp ích ít hơn khi lưu dạng trajectory/workflow — trong khi rút thành chiến lược thì giúp nhiều. Nếu vẫn muốn giữ, hãy nén nó lại thành vài dòng "đã thử gì, hỏng ở đâu".</li>
+        </ol>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu — làm nhanh để chắc chắn mình đã nắm bài. Chọn đáp án, đúng thì hiện giải thích.</p>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">1. Theo lecture, ba nơi có thể "cập nhật" agent từ trải nghiệm là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Sensors, actuators, reward</button>
+        <button class="quiz-opt" data-key="b">Episode, fact, skill</button>
+        <button class="quiz-opt" data-key="c">Context window, external artifacts (file/DB), model weights</button>
+        <button class="quiz-opt" data-key="d">Prompt, harness, sandbox</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: một nơi thuộc bài giảng trước, một nơi là bài này, một nơi thuộc bài về SFT.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 3 so sánh ba nơi: context window (trung thực nhưng tốn, ồn, không biết điều gì quan trọng), external artifacts (đọc lại/sửa/tra cứu/mang đi được, nhưng phải rút ra và bảo trì), và model weights (nhanh, đổi hành vi rộng, nhưng chậm cập nhật và mờ đục). Episode/fact/skill là <em>các loại kinh nghiệm</em>, không phải nơi lưu.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">2. Câu <em>"Cửa hàng này chỉ hiển thị giá ở trang sản phẩm"</em> thuộc loại kinh nghiệm nào?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Fact</button>
+        <button class="quiz-opt" data-key="b">Episode</button>
+        <button class="quiz-opt" data-key="c">Skill</button>
+        <button class="quiz-opt" data-key="d">Reward</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nó là "chuyện gì đã xảy ra", hay "một sự thật ngắn", hay "cách làm"?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 4 xếp đây là một <strong>fact</strong>: một sự thật ngắn, đáng lưu nếu nó lặp lại ở các việc sau hoặc có thể cập nhật. Episode là toàn bộ trace của một lần làm việc; skill là quy trình tái sử dụng; reward là tín hiệu đánh giá — không phải một trong ba loại kinh nghiệm này.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">3. Điều gì đúng về <strong>external artifacts</strong> (file, database) so với context window?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Giữ được chi tiết trung thực hơn hẳn context</button>
+        <button class="quiz-opt" data-key="b">Không cần bảo trì gì cả</button>
+        <button class="quiz-opt" data-key="c">Tự động làm model thông minh hơn</button>
+        <button class="quiz-opt" data-key="d">Đọc lại được, sửa được, tra cứu được, mang sang môi trường khác được</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: lợi thế nằm ở chỗ nó nằm bên ngoài và có thể mở ra xem.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 3: external artifacts có lợi thế inspectable, editable, retrievable, portable — đọc lại, sửa, tra cứu, mang đi được. Đổi lại, chúng <em>phải được rút ra, chọn lọc và bảo trì</em> — nên phương án "không cần bảo trì" sai. Còn "trung thực hơn hẳn" là ưu điểm của context window, không phải của artifact.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">4. Trong <strong>progressive disclosure</strong>, phần nào của một skill <em>luôn luôn</em> nằm trong context?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Toàn bộ nội dung SKILL.md</button>
+        <button class="quiz-opt" data-key="b">Tên và mô tả (metadata)</button>
+        <button class="quiz-opt" data-key="c">Mọi file trong references/</button>
+        <button class="quiz-opt" data-key="d">Kết quả chạy của các script</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: tầng rẻ nhất, chỉ đủ để agent biết skill nào cần nạp.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 9–11: tầng 1 là <em>name + description</em> — luôn nạp, và cả danh mục skill trong Hermes tốn khoảng 3k token. Phần thân SKILL.md chỉ nạp khi skill được kích hoạt; các file trong scripts/ và references/ chỉ nạp khi agent thực sự đọc chúng.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">5. Lấy về <strong>quá nhiều</strong> kinh nghiệm (over-retrieval) có thể gây ra điều gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Không ảnh hưởng gì đến kết quả</button>
+        <button class="quiz-opt" data-key="b">Luôn làm agent chính xác hơn</button>
+        <button class="quiz-opt" data-key="c">Chỉ tốn thêm token, kết quả không đổi</button>
+        <button class="quiz-opt" data-key="d">Hiệu suất có thể giảm đi</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nghĩ tới việc nhét quá nhiều ghi chú vào tay trước khi làm bài.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 41: lấy thêm kinh nghiệm có thể làm hiệu suất <em>giảm</em> — cả trong ReasoningBank lẫn SkillsBench. Hai lý do được nêu: một số kinh nghiệm không liên quan (giới hạn của bộ nhớ), và agent có giới hạn về việc nó có thể "để ý" tới bao nhiêu thứ cùng lúc.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">6. Code skill khác text skill ở điểm nào?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Chạy được như tool, kiểm thử được, một lời gọi thay nhiều bước — nhưng dễ vỡ khi môi trường đổi</button>
+        <button class="quiz-opt" data-key="b">Text skill luôn cho kết quả chính xác hơn code skill</button>
+        <button class="quiz-opt" data-key="c">Code skill không bao giờ cần sửa lại</button>
+        <button class="quiz-opt" data-key="d">Text skill không cần agent làm gì cả</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: một bên linh hoạt nhưng thủ công, một bên nhanh nhưng cứng nhắc.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 29 và 36: code skill executable, composable, efficient — chạy được như tool, gọi skill này từ skill khác, và một lời gọi thay nhiều bước model; nhưng nó brittle, làm đúng y như viết kể cả khi trang đã đổi (ví dụ <code>sort_listings</code> hỏng khi đem sang target.com, slide 34). Text skill thì linh hoạt nhưng không tăng hiệu quả — agent vẫn tự phát từng bước.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+
+    <p>Các thuật ngữ của bài, kèm trang slide gốc để bạn tra lại khi cần:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th><th>Trang</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Memory</td><td>Thông tin agent lưu lại từ chính trải nghiệm của nó để dùng về sau.</td><td>4–5</td></tr>
+        <tr><td>Short-term memory</td><td>Bộ nhớ ngắn hạn — nằm trong context window của phiên hiện tại.</td><td>3, 17</td></tr>
+        <tr><td>Long-term memory</td><td>Bộ nhớ dài hạn — file, database, artifact bên ngoài; agent đọc/ghi bằng tool call.</td><td>17</td></tr>
+        <tr><td>External artifact</td><td>Thứ lưu bên ngoài (ghi chú, file, skill) — đọc lại, sửa, tra cứu, mang đi được.</td><td>3</td></tr>
+        <tr><td>Episode</td><td>Toàn bộ trace một lần làm việc: mọi quan sát và hành động.</td><td>4</td></tr>
+        <tr><td>Fact</td><td>Một sự thật ngắn, lặp lại được, có thể cập nhật.</td><td>4</td></tr>
+        <tr><td>Skill</td><td>Kiến thức tái sử dụng về cách hành động — text, code, hoặc cả hai.</td><td>4–5</td></tr>
+        <tr><td>Authored skill</td><td>Skill do người/tổ chức viết, từ chuyên môn có sẵn.</td><td>6, 8</td></tr>
+        <tr><td>Induced skill</td><td>Skill do agent tự rút ra từ episode và kết quả của chính nó.</td><td>5–6</td></tr>
+        <tr><td>Reflection</td><td>Chấm kết quả rồi viết lại bài học cho lần sau.</td><td>19</td></tr>
+        <tr><td>Skill induction</td><td>Rút phần hành động lặp lại từ nhiều task thành skill/workflow có biến.</td><td>24, 26–27</td></tr>
+        <tr><td>Workflow memory</td><td>Kho workflow rút ra từ nhiều episode, tái dùng cho task sau.</td><td>26–28</td></tr>
+        <tr><td>Progressive disclosure</td><td>Nạp dần: chỉ tên + mô tả nằm sẵn; phần còn lại nạp khi cần.</td><td>9–11</td></tr>
+        <tr><td>SKILL.md</td><td>File bắt buộc của một skill: metadata YAML + hướng dẫn Markdown.</td><td>9</td></tr>
+        <tr><td>Skill lifecycle</td><td>learn → use → maintain: rút ra, dùng, rồi thêm/sửa/loại bỏ.</td><td>25</td></tr>
+        <tr><td>Over-retrieval</td><td>Lấy về quá nhiều kinh nghiệm khiến kết quả tệ đi.</td><td>41</td></tr>
+        <tr><td>Consolidation</td><td>Dọn bộ nhớ định kỳ: gộp, sửa, loại bỏ mục ít dùng.</td><td>42</td></tr>
+        <tr><td>Judge</td><td>Bộ chấm kết quả (người hoặc model) để quyết định đúng/sai.</td><td>19, 40</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li id="src-p2">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=2">tr. 2</a>: cấu trúc dùng chung giữa các task, và ba câu hỏi của bài (representation · induction · lifecycle).</li>
+      <li id="src-p3">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=3">tr. 3</a>: ba nơi cập nhật agent — context window, external artifacts, model weights (ưu/nhược từng nơi).</li>
+      <li id="src-p4">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=4">tr. 4</a>: ba loại kinh nghiệm — episode, fact, skill.</li>
+      <li id="src-p5">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=5">tr. 5</a>: memory vs skill vs induced skill.</li>
+      <li id="src-p6">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=6">tr. 6</a>: hai con đường tạo skill — instructions (người viết) và learning (agent tự rút ra).</li>
+      <li id="src-p8">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=8">tr. 8</a>: skill là gì; ví dụ đoạn hướng dẫn review Python lặp lại ở mọi PR.</li>
+      <li id="src-p9">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=9">tr. 9</a>: cấu trúc gói skill (SKILL.md + scripts/references/assets) và bảng progressive disclosure.</li>
+      <li id="src-p10">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=10">tr. 10</a>: danh mục skill trong system prompt (names + descriptions).</li>
+      <li id="src-p11">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=11">tr. 11</a>: nạp skill bằng tool — <code>skill_view</code>, chạy script, đọc references; danh mục ≈3k token trong Hermes.</li>
+      <li id="src-p12">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=12">tr. 12</a>: SkillsBench — 87 task thật, 8 lĩnh vực, 18 cấu hình model–harness.</li>
+      <li id="src-p13">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=13">tr. 13</a>: 33.9% → 50.5%; skill tập trung (1–3) và SKILL.md ngắn lợi hơn; skill làm hại ở 13/87 task.</li>
+      <li id="src-p14">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=14">tr. 14</a>: ba nguồn skill package — bundled, được viết/cài, do agent tạo (<code>skill_manage</code>, <code>/skill-creator</code>); lời khuyên của OpenHands.</li>
+      <li id="src-p15">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=15">tr. 15</a>: ca bảo trì skill review — log, chấm điểm, tìm lỗi lặp lại (~15%, ~10%), sửa SKILL.md.</li>
+      <li id="src-p17">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=17">tr. 17</a>: quản lý bộ nhớ ngoài — đọc/ghi là function call do agent tự phát ra (MemGPT).</li>
+      <li id="src-p18">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=18">tr. 18</a>: xử lý xung đột bộ nhớ — ADD / UPDATE / DELETE / NOOP (Mem0).</li>
+      <li id="src-p19">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=19">tr. 19</a>: Reflexion — attempt → evaluator → reflection → retry; ví dụ White Plains.</li>
+      <li id="src-p25">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=25">tr. 25</a>: vòng đời skill — learn / use / maintain.</li>
+      <li id="src-p26">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=26">tr. 26</a>: rút skill dạng text — Agent Workflow Memory (ví dụ review "satisfied").</li>
+      <li id="src-p27">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=27">tr. 27</a>: prompt induction của AWM — ràng buộc và biến hóa các phần thay đổi.</li>
+      <li id="src-p29">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=29">tr. 29</a>: text skill vs code skill — ưu/nhược từng loại.</li>
+      <li id="src-p31">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=31">tr. 31</a>: lint/test code skill trước khi nhận vào bộ nhớ (SkillWeaver).</li>
+      <li id="src-p33">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=33">tr. 33</a>: số liệu text vs code — checkpoints 41.3 → 59.5 → 80.2; số bước 24.5 → 20.6 → 15.0.</li>
+      <li id="src-p34">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=34">tr. 34</a>: skill rút trên một website có thể hỏng trên website khác (target.com).</li>
+      <li id="src-p38">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=38">tr. 38</a>: ca thất bại của ReasoningBank — 5.578 kết quả, hết giới hạn bước, ba chiến lược rút ra.</li>
+      <li id="src-p39">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=39">tr. 39</a>: thất bại giúp ích nhiều với chiến lược, ít hơn với trajectory/workflow.</li>
+      <li id="src-p41">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=41">tr. 41</a>: cái giá của over-retrieval.</li>
+      <li id="src-p42">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=42">tr. 42</a>: consolidation — TroVE loại hàm dùng ít hơn ½·log₁₀(n) lần.</li>
+      <li id="src-p43">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=43">tr. 43</a>: giá trị của một skill chỉ lộ ra khi nó được tái dùng — SAGE/AgeMem, 55.4 / 56.6 / 60.7.</li>
+      <li id="src-p45">Lecture 04 — <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf#page=45">tr. 45</a>: chia việc giữa người và agent — author / verify / select / maintain.</li>
+    </ol>
+
+    <p><strong>Nguồn chính:</strong> <a href="https://www.cmu-agents.com/slides/lecture-04-memory-and-skills.pdf">lecture-04-memory-and-skills.pdf</a> — Daniel Fried, 11-768: AI Agents, buổi "Memory and Skills".</p>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài tiếp theo:</strong> 06 · Planning — agent lập kế hoạch cho công việc dài hơi (slide cuối của lecture-04 cũng ghi: <em>Next Class: Planning</em>).</p>
+    <p>Vẫn còn chỗ chưa rõ? Đừng cố đi tiếp — ghi lại câu hỏi rồi hỏi ngay trong chat.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

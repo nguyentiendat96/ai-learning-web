@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 07 · Coding Agents — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Bài 07</div>
+    <h1>Coding Agents</h1>
+    <p class="subtitle">Vì sao code là domain mà agent mạnh lên nhanh nhất, model code được luyện ra sao, và vì sao "sửa một dòng" khó hơn "viết cả hàm" — theo buổi 3b (Lecture 06: Agents for Coding and Software Development).</p>
+    <p class="lesson-meta"><span>~25 phút</span><span>6 câu hỏi tương tác</span><span>3 bài thực hành tự kiểm</span><span>Nguồn: lecture-06-coding-agents.pdf</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#vi-sao">Vì sao coding agent là domain quan trọng nhất</a></li>
+      <li><a href="#luyen-model">Code model được luyện thế nào</a></li>
+      <li><a href="#danh-gia">Đánh giá code sinh ra</a></li>
+      <li><a href="#vong-lap">Từ một hàm đến cả repository</a></li>
+      <li><a href="#sua-file">Sửa file khó hơn viết mới</a></li>
+      <li><a href="#swe-bench">SWE-bench, harness, và cách luyện agent</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">📝 Exam của bài này</div>
+    <p>Làm <a href="../exams/0007-exam.html"><strong>Exam 07</strong></a> để nhớ chắc — nhiều câu hỏi + bài tập code có test tự chạy, làm lại được nhiều lần. Mục tiêu: đúng ≥ 85%.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bài này giải thích từ đầu, không cần nền ML. Bạn chỉ cần nhớ hai thứ từ các bài trước: <strong>agent là một model nằm trong một vòng lặp</strong> (bài 01–02) và <strong>harness là phần mềm chạy vòng lặp đó</strong>. Cứ đọc tuần tự. Đến mục 8, bạn tự làm bài rồi <strong>mở đáp án để tự kiểm</strong> — không phải nộp cho ai cả.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="vi-sao">
+    <h2>Vì sao coding agent là domain quan trọng nhất</h2>
+
+    <p>Trong danh sách domain của khóa học — coding agents (buổi 3b), computer use agents (buổi 4a), deep research agents (buổi 5b) — code được dạy đầu tiên. Không phải ngẫu nhiên. Đây là nơi agent tiến bộ nhanh nhất, sản phẩm chín nhất, và cũng là nơi bài học rút ra được áp cho các domain khác.</p>
+
+    <p>Slide 2 chia coding agent thành <strong>ba mức trưởng thành</strong>. Đây là cách phân loại bạn sẽ gặp lại suốt bài:</p>
+
+    <pre><code> MỨC 1 · viết code           MỨC 2 · sửa repository       MỨC 3 · làm development
+ ─────────────────           ──────────────────────       ────────────────────────
+ prompt ──► code             issue + repo                 yêu cầu ──► code
+ (một lần completion)        ──► tìm ──► sửa ──► test     ──► review ──► deploy
+                             ◄──── lặp ─────┘             ──► theo dõi ──► bảo trì</code></pre>
+
+    <ul>
+      <li><strong>Mức 1 — viết code (single completion).</strong> Bạn đưa một prompt, model trả về một đoạn code, hết. Giống tính năng gợi ý code trong editor. Không có vòng lặp.</li>
+      <li><strong>Mức 2 — sửa repository.</strong> Model nhận một issue và cả repository, phải <em>tìm</em> file liên quan, <em>sửa nhiều file</em>, rồi <em>chạy test</em> để kiểm. Đây là nơi vòng lặp agent bắt đầu.</li>
+      <li><strong>Mức 3 — làm development.</strong> Không chỉ sửa bug: nhận yêu cầu, viết code, review, quyết định release, deploy, theo dõi, bảo trì — cả vòng đời phần mềm (slide 61).</li>
+    </ul>
+
+    <h3>Vì sao code là domain "nóng" nhất</h3>
+
+    <p>Bốn lý do. Tôi xếp theo mức độ quan trọng:</p>
+
+    <ol>
+      <li>
+        <p><strong>Code là nơi agent tự kiểm được.</strong> Chạy test xong là biết đúng hay sai — tín hiệu rõ ràng, không cần con người phán. Nghĩ mà xem: kiểm tra một bài luận "hay chưa" rất khó, còn kiểm tra một hàm "đúng chưa" thì chạy vài dòng test là xong. Nhờ vậy agent có thể tự sửa mình trong vòng lặp. Đây là lý do sâu xa nhất khiến code là domain tiến nhanh nhất.</p>
+        <p>Ví dụ đời thường: làm bài tập có đáp án ở cuối sách thì bạn tiến bộ nhanh hơn nhiều so với làm bài chỉ có người chấm cuối kỳ. Code chính là loại bài tập "có đáp án" đó — đáp án tên là <em>test</em>.</p>
+      </li>
+      <li>
+        <p><strong>Code là cách agent chạm vào mọi thứ khác.</strong> Muốn agent đặt vé máy bay, phân tích bảng dữ liệu, dựng một trang web — cuối cùng vẫn phải có code chạy phía sau. Code không chỉ là một domain; nó là <em>đôi tay</em> của phần lớn agent khác.</p>
+      </li>
+      <li>
+        <p><strong>Thời gian của lập trình viên không nằm ở việc gõ code.</strong> Slide 62 dẫn một khảo sát 5.928 ngày làm việc tự khai của kỹ sư Microsoft (Meyer et al., 2019): chỉ <strong>15%</strong> thời gian là đọc/viết code và test; 85% còn lại là họp, email, debug, chạy test, review, viết tài liệu, giúp đồng nghiệp, học, nghỉ. Nếu agent chỉ giúp gõ code nhanh hơn thì nó chỉ chạm 15% — cơ hội lớn nằm ở phần còn lại. Đó là lý do slide 63 liệt kê cả một "họ" task: sửa bug, viết thư viện, sinh test, sửa CI, bảo trì dài hạn.<sup><a href="#src-thoigian">[1]</a></sup></p>
+      </li>
+      <li>
+        <p><strong>Code là nơi có nhiều thước đo tốt.</strong> Test pass, build xanh, benchmark công khai — đo được thì cải thiện được. Các domain khác (viết nội dung, thiết kế) khó đo hơn nhiều.</p>
+      </li>
+    </ol>
+
+    <h3>Ba nguyên liệu của một coding agent</h3>
+
+    <p>Slide 3 gói gọn một agent thành ba thứ: <strong>prompt · tools · LLM</strong>. Bạn đã gặp cả ba ở các bài trước, giờ ghép lại:</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Prompt</div>
+        <h3>Lời giao việc + ngữ cảnh</h3>
+        <p>Issue, quy tắc của dự án, các file đã đọc, kết quả test trước đó. Bài 04 nói về cách quản lý khối ngữ cảnh này.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Tools</div>
+        <h3>Đọc, sửa, chạy</h3>
+        <p>Tìm code (<code>rg</code>, <code>cat</code>), sửa file, chạy test và build. Bài 03 nói về tool use nói chung.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">LLM</div>
+        <h3>Model viết code</h3>
+        <p>Phần "não" quyết định làm gì tiếp. Phần lớn bài này nói về nó — và về cách nó được luyện.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Và…</div>
+        <h3>Vòng lặp (harness)</h3>
+        <p>Ba nguyên liệu trên chỉ thành "agent" khi có vòng lặp nối chúng lại: hành động → quan sát → hành động. Đây là chỗ slide 54 gọi là <em>harness</em>.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">Câu chốt của mục này</div>
+      <p>Một coding agent không phải "ChatGPT biết viết code". Nó là <strong>một model code + bộ tool + vòng lặp</strong>, và điều làm nó mạnh là <em>nó tự kiểm được bằng cách chạy code thật</em>. Ghi nhớ câu đó, cả bài sẽ nối vào nó.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="luyen-model">
+    <h2>Code model được luyện thế nào</h2>
+
+    <p>Ở bài 02, bạn biết LLM sinh văn bản bằng cách đoán token tiếp theo. Nhưng một model viết code tốt không chỉ là model chat đọc thêm code. Slide 6 chia quá trình luyện thành ba chặng:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Chặng</th><th>Làm gì</th><th>Vì sao riêng cho code</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Pre-training</strong></td><td>Luyện trên kho văn bản khổng lồ, có cả code</td><td>Học cú pháp, API, idiom của hàng chục ngôn ngữ</td></tr>
+        <tr><td><strong>Mid-training</strong></td><td>Tiếp tục luyện với tỉ lệ code cao hơn, ngữ cảnh dài hơn</td><td>Chuyên hóa dần thành model code mà không mất khả năng chung</td></tr>
+        <tr><td><strong>RL post-training</strong></td><td>Luyện bằng phần thưởng lấy từ việc chạy code</td><td>Học "suy luận tới lời giải", không chỉ học cú pháp</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Pre-training — học từ code và văn bản</h3>
+
+    <p>Slide 7 (dẫn từ dự án OLMo, Groeneveld et al., 2024) nêu ba nguyên tắc:</p>
+
+    <ul>
+      <li><strong>Trộn nguồn.</strong> Web, văn bản kỹ thuật, toán, source code, tài liệu. Vì sao cần trộn? Vì model code vẫn phải đọc hiểu mô tả yêu cầu, đọc tài liệu thư viện, đọc thông báo lỗi — toàn là văn bản.</li>
+      <li><strong>Giữ cấu trúc.</strong> Thụt lề, ranh giới file, API, quan hệ giữa văn bản và code. Ví dụ: docstring nằm ngay trên hàm — model phải học được mối quan hệ "mô tả ở trên ↔ code ở dưới". Nếu bạn xé file thành các câu rời rạc, thông tin đó biến mất.</li>
+      <li><strong>Đánh giá trong lúc luyện.</strong> Hai loại thước đo: <em>held-out loss theo từng domain</em> (model đoán token giỏi đến đâu trên dữ liệu chưa thấy) và <em>bài tập coding chức năng</em> (model có giải được bài không). Hai thứ khác nhau: đoán token giỏi không tự động có nghĩa là giải được bài. Giống như chép chính tả đúng chưa chắc viết được đoạn văn.</li>
+    </ul>
+
+    <p>Slide 8 (dẫn từ StarCoder) nói về <strong>làm sạch dữ liệu</strong> — phần ít được nhắc nhưng cực kỳ quan trọng:</p>
+
+    <ul>
+      <li><strong>Lọc theo ngôn ngữ và nguồn:</strong> bỏ code do máy sinh hàng loạt, file lỗi encoding, nội dung lặp vô giá trị.</li>
+      <li><strong>Khử trùng lặp (deduplicate):</strong> fork, thư viện "vendored" (bản sao thư viện nhúng trong dự án), file gần giống nhau, lời giải bị copy.</li>
+      <li><strong>Kiểm soát nguồn gốc:</strong> ghi lại license, ngày, lựa chọn opt-out, lọc dữ liệu nhạy cảm.</li>
+      <li><strong>Chống rò rỉ (leakage):</strong> chia tập train/test theo repository hoặc theo họ bài toán; khử nhiễm (decontaminate) các bài thi.</li>
+    </ul>
+
+    <p>Vì sao phải khử trùng lặp và chống rò rỉ? Hai lý do rất đời thường. Thứ nhất, nếu cùng một đoạn code xuất hiện một nghìn lần, model sẽ <em>học thuộc</em> nó thay vì học cách viết code như thế. Thứ hai, nếu đề thi đã nằm sẵn trong tập luyện thì điểm thi là điểm giả — giống như cho học sinh làm đề trước rồi khen "em giỏi".</p>
+
+    <p>Slide 10 cho một con số cụ thể: <strong>StarCoderBase</strong> — 15,5 tỷ tham số, luyện trên 1 nghìn tỷ token (1T tokens), hơn 80 ngôn ngữ, dữ liệu gồm source code, issue, commit, notebook. Xu hướng quan sát được: hầu hết ngôn ngữ đều tốt lên khi tăng số token luyện. (Nhắc lại: "tham số" là các trọng số model học được; "token" là mảnh text — mục sau nói kỹ.)</p>
+
+    <h3>Token hóa code — vì sao khoảng trắng là token</h3>
+
+    <p>Đây là phần thú vị nhất của bài, và cũng là phần dễ bỏ qua nhất.</p>
+
+    <p>Model không nhìn thấy chữ cái như bạn. Nó nhìn thấy <strong>token</strong> — mảnh text đã được cắt sẵn. Một token có thể là cả từ, một phần của từ, hoặc vài ký tự. Với code, slide 9 (dẫn StarCoder §5.3 và StarCoder2) mô tả cách tokenizer làm việc qua bốn điểm:</p>
+
+    <ul>
+      <li>Tokenizer học bằng <strong>byte-level BPE</strong> trên cả code lẫn văn xuôi. (BPE là thuật toán gộp dần những cặp ký tự hay đi cùng nhau thành một token — cứ gộp cặp xuất hiện nhiều nhất, lặp lại.)</li>
+      <li><strong>Identifier có thể trải qua nhiều token.</strong> Một tên hàm dài như <code>calculate_monthly_interest</code> có thể bị cắt thành vài mảnh. Đây là một lý do kỹ thuật khiến model đôi khi "gõ nhầm" giữa tên biến: nó đang ghép các mảnh.</li>
+      <li><strong>Khoảng trắng mang cú pháp và nội dung.</strong> Trong Python, thụt lề <em>là</em> cú pháp. Trong chuỗi ký tự, dấu cách <em>là</em> nội dung. Không được xóa.</li>
+      <li><strong>Gộp chuỗi khoảng trắng hay gặp thành token.</strong> Thay vì trả một token cho mỗi dấu cách, tokenizer gộp cả cụm — ví dụ token "xuống dòng + ba dấu cách".</li>
+    </ul>
+
+    <p>Slide 9 đưa một ví dụ rất cụ thể. Đây là dòng code nguồn và cách nó bị cắt token (ký hiệu <code>·</code> = dấu cách, <code>↵</code> = xuống dòng, <code>|</code> = ranh giới token):</p>
+
+    <pre><code>Nguồn (2 dòng code):  if·ready:↵····return·value↵
+Token (7 mảnh):        if | ·ready | : | ↵··· | ·return | ·value | ↵
+
+· = dấu cách     ↵ = xuống dòng     | = ranh giới token</code></pre>
+
+    <p>Nhìn kỹ chỗ thụt lề: bốn dấu cách <em>không</em> bị cắt thành bốn token. Token thứ tư là <code>↵···</code> — xuống dòng kèm ba dấu cách. Dấu cách thứ tư dính luôn vào chữ tiếp theo thành <code>·return</code>. Đếm thử theo cách "mỗi dấu cách một token" thì đoạn này tốn 13 mảnh; cách gộp chỉ tốn 7. Gần một nửa.<sup><a href="#src-token">[2]</a></sup></p>
+
+    <div class="callout">
+      <div class="callout-title">Vì sao điều này quan trọng</div>
+      <ul>
+        <li><strong>Ngữ cảnh chứa được nhiều code hơn.</strong> Ít token hơn cho cùng một file nghĩa là nhét được nhiều file hơn vào context window — nối thẳng vào bài 04.</li>
+        <li><strong>Model "thấy" được thụt lề.</strong> Vì thụt lề là token, model phân biệt được khối code này nằm trong khối kia — điều kiện để hiểu Python, YAML.</li>
+        <li><strong>Sửa code phải tái tạo đúng từng khoảng trắng.</strong> Trong Python, một dấu cách sai có thể đổi nghĩa chương trình. Đây là một lý do kỹ thuật khiến "sửa" khó hơn "viết mới" — mục 5 sẽ nói tiếp.</li>
+      </ul>
+    </div>
+
+    <h3>Mid-training — trộn code, text, toán</h3>
+
+    <p>Pre-training xong, model vẫn cần một chặng nữa: <strong>mid-training</strong>. Slide 11 nói: tiếp tục luyện với tỉ lệ code cao hơn, nhưng <em>giữ lại</em> text và toán. Ví dụ được dẫn: <strong>Code Llama</strong> — từ Llama 2, luyện thêm 500 tỷ token cho các bản 7B, 13B và 34B.</p>
+
+    <p>Vì sao không "dồn hết" cho code? Slide 12 (bảng trích từ Qwen2.5-Coder, Hui et al., 2024) trả lời bằng số:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Tỉ lệ code / text / toán</th><th>Điểm code (Common code)</th><th>Toán (MATH)</th><th>Kiến thức chung (MMLU)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>100 / 0 / 0</td><td>49.8</td><td>10.3</td><td>23.8</td></tr>
+        <tr><td>70 / 20 / 10</td><td>48.3</td><td>33.2</td><td>62.9</td></tr>
+      </tbody>
+    </table>
+
+    <p>Đọc bảng này rất thú vị: khi bớt code một chút để thêm text và toán, điểm code gần như đứng yên (49.8 → 48.3, giảm 1.5) trong khi điểm toán tăng gấp ba (10.3 → 33.2) và kiến thức chung tăng gần gấp ba (23.8 → 62.9). Đổi rất hời.</p>
+
+    <p>Vì sao? Vì một coding agent vẫn phải <em>nói chuyện</em> với con người: đọc issue viết vội, hiểu tài liệu, giải thích vì sao nó sửa như vậy. Một model chỉ giỏi cú pháp mà quên đọc hiểu sẽ sửa sai yêu cầu. Giống học sinh chuyên Toán vẫn phải học Văn — không phải để viết văn hay, mà để <em>đọc đề</em>.</p>
+
+    <h3>Ngữ cảnh dài — nhìn sang file bên cạnh</h3>
+
+    <p>Slide 13 đưa một tình huống rất thật. Ba file liên quan nhau:</p>
+
+    <ul>
+      <li><code>types.py</code> — định nghĩa <code>Result.value</code> có thể là <code>None</code>;</li>
+      <li><code>worker.py</code> — truyền <code>Result</code> đi tiếp;</li>
+      <li><code>caller.py</code> — cần hoàn thành nốt phần kiểm tra null.</li>
+    </ul>
+
+    <p>Muốn sửa <code>caller.py</code> cho đúng, model phải biết chuyện gì xảy ra ở <code>types.py</code>. Nhìn mỗi <code>caller.py</code> thì không thể biết. Vì vậy mid-training cho model học trên <strong>chuỗi file liên quan</strong> — cùng đường dẫn, cùng phụ thuộc — và trên chuỗi dài hơn. Qwen2.5-Coder luyện từ 8K lên 32K token; kỹ thuật YaRN kéo tiếp lên 128K. Và phải kiểm tra lại ba thứ: hoàn thành code xuyên file, infilling, và <em>khả năng giữ ngữ cảnh ngắn</em> — kéo dài ngữ cảnh không được làm hỏng prompt ngắn.</p>
+
+    <h3>Infilling — học cách đọc cả hai phía</h3>
+
+    <p>Model ngôn ngữ cổ điển chỉ đọc <em>một chiều</em>: cho phần đứng trước, đoán token tiếp theo. Nhưng trong editor thật, bạn thường cần điền vào <em>giữa</em>. Slide 14 ví dụ:</p>
+
+    <pre><code>def is_positive(x: int) -&gt; ____:
+    return x &gt; 0</code></pre>
+
+    <p>Chỗ trống là kiểu trả về. Nếu chỉ đọc phần trước, model phải đoán mò. Nhưng phần code <em>phía sau</em> — <code>return x &gt; 0</code> — chính là bằng chứng cho đáp án <code>bool</code>. Đọc được cả hai phía thì dễ hơn hẳn.</p>
+
+    <p>Slide 15 (dẫn InCoder, Fried et al.) giải thích cách luyện. Khi huấn luyện, người ta lấy một file, cắt ra ba phần <em>prefix / span / suffix</em>, rồi xếp lại thành:</p>
+
+    <pre><code>Luyện:     prefix [M0] suffix [M0] span [END]
+Dùng:      prefix [M0] suffix [M0]  ──►  sinh ra span</code></pre>
+
+    <p><code>[M0]</code> là một "sentinel token" — ký hiệu đánh dấu chỗ trống. Nếu có nhiều lỗ, mỗi lỗ có sentinel riêng để model biết mảnh nào thuộc vị trí nào. Nhờ luyện kiểu này, model làm được nhiều việc "không cần dạy riêng": hoàn thành code, suy ra kiểu dữ liệu, viết comment, đổi tên biến.</p>
+
+    <p>Hiệu quả của việc nhìn suffix, số liệu từ slide 16 (bài kiểm tra infilling dựng từ HumanEval, đo % hàm hoàn thành qua được test):</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Cách làm</th><th>Có dùng suffix không?</th><th>Một dòng</th><th>Nhiều dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Đoán trái → phải · 1 ứng viên</td><td>Không</td><td>48.2%</td><td>24.9%</td></tr>
+        <tr><td>Đoán trái → phải · 10 ứng viên, chỉ xếp hạng lại</td><td>Chỉ để chọn</td><td>54.9%</td><td>28.2%</td></tr>
+        <tr><td>Infilling có mặt nạ nhân quả</td><td>Dùng để sinh</td><td><strong>69.0%</strong></td><td><strong>38.6%</strong></td></tr>
+      </tbody>
+    </table>
+
+    <p>Khoảng cách 48.2% → 69.0% cho thấy: đọc được code phía sau là lợi thế lớn, nhất là với các đoạn nhiều dòng. Và slide 17 trả lời câu hỏi "học infilling có làm hỏng khả năng viết code theo kiểu thường không?" — với cùng ngân sách 52 tỷ token, mục tiêu có mặt nạ nhân quả đạt pass@1 <em>cao hơn</em> chút trên cả HumanEval (8.0 so với 6.0) và MBPP (10.9 so với 8.9). Học điền vào giữa không hại gì; thậm chí tốt hơn.<sup><a href="#src-infilling">[3]</a></sup></p>
+
+    <p>Vì sao điều này quan trọng với agent? Vì <strong>sửa code chính là một bài infilling</strong>: bạn thay một đoạn nằm giữa file, phải tôn trọng cả phần trên lẫn phần dưới. Slide 18 còn liệt kê các tín hiệu khác mà model học được từ code: commit diff (code trước + thông điệp commit → code sau), diagnostics (code lỗi + thông báo lỗi → bản sửa), tests (chương trình + kết quả test → phần thưởng), và execution traces (chương trình → các dòng đã chạy + trạng thái). Code là loại dữ liệu đặc biệt: nó kèm theo cả <em>lịch sử sửa chữa của chính nó</em>.</p>
+
+    <div class="callout">
+      <div class="callout-title">Tóm mục 2 trong một câu</div>
+      <p>Model code được luyện ba chặng — pre-training trên code + text đã làm sạch, mid-training trộn tỉ lệ hợp lý và kéo dài ngữ cảnh, rồi RL bằng phần thưởng chạy được code — và ngay từ khâu cắt token, "khoảng trắng" đã được đối xử như nội dung quan trọng.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="danh-gia">
+    <h2>Đánh giá code sinh ra</h2>
+
+    <p>Câu hỏi trung tâm của mục này: <strong>làm sao biết một đoạn code do model viết là "tốt"?</strong> Trả lời được câu này thì mới luyện được, so sánh được, và cải thiện được. Slide 19–27 dẫn bạn đi từ cách ngây thơ nhất đến cách mạnh nhất.</p>
+
+    <h3>Cách ngây thơ: so chữ với bài mẫu</h3>
+
+    <p>Cách đầu tiên ai cũng nghĩ tới: <strong>exact match</strong> — code sinh ra có giống hệt bài giải mẫu không? Và <strong>BLEU-4</strong> — đo tỉ lệ trùng các cụm n-gram token, kèm hình phạt nếu bài quá ngắn (mượn từ ngành dịch máy).</p>
+
+    <p>Slide 20 cho một ví dụ làm sáng tỏ vấn đề. Đề bài: viết hàm kiểm tra số nguyên <code>x</code> có dương không. Bài giải mẫu: <code>return x &gt; 0</code>.</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Bài làm của model</th><th>Hành vi thật</th><th>Kết luận</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>return x &gt;= 0</code> — khác một ký tự</td><td>Sai tại <code>x = 0</code></td><td>Khác chữ, và quả thật sai</td></tr>
+        <tr><td><code>return not (x &lt;= 0)</code> — viết rất khác</td><td>Đúng với mọi số nguyên</td><td>Khác chữ, nhưng <strong>đúng</strong></td></tr>
+      </tbody>
+    </table>
+
+    <p>Bài học: <strong>giống chữ không có nghĩa là đúng, khác chữ không có nghĩa là sai.</strong> So khớp văn bản giống như chấm điểm một bài toán bằng cách so chữ viết với đáp án — bạn học sinh giải bằng cách khác mà vẫn đúng sẽ bị điểm thấp oan, còn bạn chép y hệt đáp án nhưng chép nhầm dấu cũng được điểm cao.</p>
+
+    <h3>Hiểu cấu trúc và ngữ nghĩa</h3>
+
+    <p>Hai hướng cải tiến, đi từ nông đến sâu:</p>
+
+    <ul>
+      <li><strong>CodeBLEU</strong> (slide 21, Ren et al., 2020) — không chỉ so token, mà so cả <em>cấu trúc</em>: cây cú pháp, luồng dữ liệu. Hai đoạn code viết khác nhau nhưng cùng "hình dạng" sẽ được điểm cao hơn.</li>
+      <li><strong>CodeBERTScore</strong> (slide 22, Zhou et al., EMNLP 2023) — mã hóa prompt và từng đoạn code thành vector, so các vector token theo ngữ cảnh, ghép cặp tốt nhất rồi tính precision / recall / F-score. Nói đơn giản: thay vì so <em>chữ</em>, nó so <em>ý nghĩa gần đúng</em>.</li>
+    </ul>
+
+    <p>Cả hai vẫn chỉ là ước lượng. Muốn biết code đúng hay không, cách duy nhất chắc chắn là <strong>chạy nó</strong>.</p>
+
+    <h3>Cách mạnh nhất: chạy thử</h3>
+
+    <p>Slide 23 mô tả quy trình — gọi là <strong>đánh giá bằng thực thi (functional evaluation)</strong>. Lấy ứng viên <code>is_positive(x): return x &gt;= 0</code>, cho chạy trong một môi trường cô lập (isolated runtime, có giới hạn thời gian và bộ nhớ) với ba test case:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Đầu vào</th><th>Kết quả thật</th><th>Kết quả mong đợi</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>−1</td><td>False</td><td>False</td><td>đạt</td></tr>
+        <tr><td>0</td><td>True</td><td>False</td><td><strong>fail</strong></td></tr>
+        <tr><td>1</td><td>True</td><td>True</td><td>đạt</td></tr>
+      </tbody>
+    </table>
+
+    <p>Kết luận: "zero is not positive" — số 0 không phải số dương. Chỉ một test case bắt được lỗi mà mắt người đọc lướt qua. Đây là sức mạnh của việc chạy code: nó kiểm <em>hành vi</em>, không kiểm hình thức.</p>
+
+    <p>Nhưng đừng thần thánh hóa. Slide 24 liệt kê cả hai mặt:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Lợi ích</th><th>Hạn chế</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Chấp nhận nhiều cách viết đúng khác nhau</td><td>Test hữu hạn có thể bỏ sót hành vi sai</td></tr>
+        <tr><td>Phát hiện lỗi ngữ nghĩa qua thực thi</td><td>Cần test đáng tin, cần dependency, cần môi trường cô lập</td></tr>
+        <tr><td>So đúng theo hành vi quan sát được</td><td>Tốn thời gian và cần môi trường chạy ổn định</td></tr>
+      </tbody>
+    </table>
+
+    <p>Hình dung: một bài kiểm lái xe gồm ba tuyến cố định. Qua được ba tuyến đó thì được cấp bằng — nhưng không chứng minh bạn lái giỏi ở mọi con đường. Và nếu người ra đề sai thì kết quả sai theo. Test hữu hạn chỉ trả lời được đúng những câu nó hỏi.</p>
+
+    <h3>Benchmark chuẩn: HumanEval, CodeContests, pass@k</h3>
+
+    <ul>
+      <li><strong>HumanEval</strong> (slide 25): 164 hàm Python. Đề là docstring, model viết phần thân; chấm bằng unit test ẩn. Nhỏ nhưng là thước đo kinh điển.</li>
+      <li><strong>CodeContests</strong> (slide 25): các bài thi lập trình thi đấu, gồm bài kiểu Codeforces. Đề là cả một phát biểu bài toán, model phải viết <em>cả chương trình</em>; chấm bằng biên dịch + chạy test.</li>
+      <li><strong>pass@k</strong> (slide 26): xác suất để <em>ít nhất một</em> trong k lần sinh vượt qua toàn bộ test. Ví dụ dễ hiểu: pass@10 = 50% nghĩa là cho model thử 10 lần, một nửa số bài sẽ được giải ít nhất một lần. Vì model sinh ngẫu nhiên, "thử nhiều lần" là một chiến lược thật, có đo đạc hẳn hoi.</li>
+    </ul>
+
+    <h3>Yêu cầu phi chức năng</h3>
+
+    <p>Slide 27 nhắc một điều người mới hay quên: code đúng chưa đủ. Yêu cầu "làm cho code này chạy nhanh hơn" cũng là một bài toán, và cách chấm khác hẳn:</p>
+
+    <ul>
+      <li><strong>Hiệu năng:</strong> chạy test + đo thời gian chạy → điểm là <em>speedup</em> (nhanh hơn bao nhiêu lần).</li>
+      <li><strong>Độ trễ / tài nguyên:</strong> so với các bản sửa mẫu của con người → điểm <strong>DiffBLEU</strong>.</li>
+      <li><strong>Bảo trì / bảo mật:</strong> kiểm tra tĩnh (static checks) + độ khớp với bản sửa mẫu → <strong>CodeQL × DiffBLEU</strong>.</li>
+    </ul>
+
+    <p>Slide này dẫn bộ <strong>NoFunEval</strong> (Singhal et al., 2024) gồm <strong>397 bài sửa code</strong> thuộc loại này. Vì sao quan trọng? Vì món ăn ngon nhưng nấu ba tiếng và bừa hết mọi cái nồi thì nhà hàng vẫn không dùng được. Trong công việc thật, tốc độ, an toàn, dễ bảo trì thường quan trọng ngang với "chạy ra đúng kết quả".</p>
+
+    <h3>Học từ kết quả test (RL)</h3>
+
+    <p>Slide 28 mô tả vòng lặp luyện bằng phần thưởng thực thi (dẫn DeepCoder, Luo et al., 2025):</p>
+
+    <ol class="steps">
+      <li>Lấy bài toán, model sinh nhiều lời giải — mỗi lời giải gồm phần suy luận và phần code cuối.</li>
+      <li>Chạy code cuối trong môi trường thực thi.</li>
+      <li>Pass / fail → phần thưởng.</li>
+      <li>Cập nhật model: làm những lời giải được thưởng trở nên dễ sinh hơn.</li>
+      <li>Sinh lại với model mới, lặp tiếp.</li>
+    </ol>
+
+    <p>Slide 29 cho một ví dụ để thấy "phần thưởng thực thi" dạy được gì. Bài toán: tính tổng 1 + … + n, với n có thể tới 10<sup>12</sup>.</p>
+
+    <ul>
+      <li>Cách ngây thơ — cộng từng số (<code>sum(range(n + 1))</code>) — đúng nhưng quá chậm với n lớn. Không được thưởng.</li>
+      <li>Cách tốt — ghép cặp hai đầu, rút ra công thức <code>n * (n + 1) // 2</code>, kiểm tra với 0 và 1 — đúng và nhanh. Được thưởng.</li>
+      <li>Cách "nhớ nhầm công thức" — <code>n * (n - 1) // 2</code> — sai ngay từ n = 1. Không được thưởng.</li>
+    </ul>
+
+    <p>Điểm cần nhớ: model học được <em>suy luận hướng tới lời giải</em>, không chỉ học cú pháp. Và chỉ một lỗi chép công thức nhỏ cũng đủ làm sai — nên bước chạy thử không bao giờ được bỏ.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="vong-lap">
+    <h2>Từ một hàm đến cả repository</h2>
+
+    <p>Mục 3 nói về sinh một hàm. Công việc thật thì khác: bạn có một repository, một issue mô tả triệu chứng, và không ai chỉ cho bạn file nào đang sai. Slide 32 gọi đây là bước chuyển từ <strong>single-step coding</strong> sang <strong>agentic coding</strong>:</p>
+
+    <pre><code>Single-step:   prompt ──► suy luận + code ──► chấm điểm đáp án
+
+Agentic:       issue + các file có sẵn
+                  │
+                  ▼
+               [TÌM] ──► [SỬA] ──► [CHẠY TEST] ──► (lặp đến khi xong) ──► patch + bằng chứng</code></pre>
+
+    <p>Slide 33 gọi vòng lặp này bằng ba chữ: <strong>localize → edit → verify</strong> (định vị → sửa → kiểm chứng). Nếu chưa đạt, agent không sửa test — nó <em>sửa giả thuyết của chính mình</em>.</p>
+
+    <pre><code> [ LOCALIZE ] ───► [ EDIT ] ───► [ VERIFY ] ───► đạt? ───► xong
+      ▲                                │
+      │                                │ chưa đạt
+      └────── sửa giả thuyết ◄─────────┘</code></pre>
+
+    <h3>Ví dụ xương sống: lỗi "retries = 0"</h3>
+
+    <p>Slide 34–36 kể một câu chuyện nhỏ nhưng chứa gần như toàn bộ bài học của mục này. Repository có ba file: <code>cli.py</code>, <code>config.py</code>, <code>test_config.py</code>. Triệu chứng: người dùng đặt số lần thử lại là <strong>0</strong> (nghĩa là "không thử lại"), nhưng hệ thống lại thử lại <strong>3</strong> lần.</p>
+
+    <p><strong>Bước 1 — Localize.</strong> Agent không đoán. Nó chạy <code>rg 'retries' buggy_config.py</code> (rg là lệnh tìm kiếm text, bạn có thể hình dung như Ctrl+F nhưng chạy trong terminal) và tìm thấy dòng nghi phạm:</p>
+
+    <pre><code>return config.get("retries") or 3</code></pre>
+
+    <p>Rồi nó <em>tái hiện lỗi</em> trước khi sửa:</p>
+
+    <pre><code>$ RETRY_MODULE=buggy_config python3 -m unittest test_config.RetryTests.test_zero
+AssertionError: 3 != 0
+FAILED (failures=1)</code></pre>
+
+    <p>Thấy chưa? Test khẳng định "phải bằng 0" mà thực tế ra 3. Giờ thì chắc chắn lỗi nằm ở đâu, và cần sửa <em>điều kiện</em> chứ không phải sửa test.</p>
+
+    <div class="callout">
+      <div class="callout-title">Vì sao dòng đó sai? — "falsy" trong Python</div>
+      <p>Trong Python, một số giá trị được coi là "falsy" (tạm dịch: quy về sai) khi dùng trong điều kiện: <code>0</code>, <code>""</code> (chuỗi rỗng), <code>[]</code> (danh sách rỗng), <code>None</code>, <code>False</code>. Câu <code>x or y</code> trả về <code>y</code> nếu <code>x</code> falsy. Nên <code>config.get("retries") or 3</code> biến <em>mọi</em> giá trị falsy thành 3 — kể cả số 0 hợp lệ.</p>
+      <p>Ví dụ đời thường: bạn đặt bàn và nói "0 người lớn, 2 trẻ em", nhân viên nghe "0 người lớn" thành "chưa nói gì" nên tự điền mặc định 3 người lớn. Lỗi không nằm ở con số 0 — nó nằm ở chỗ không phân biệt "không có giá trị" với "giá trị bằng 0".</p>
+    </div>
+
+    <p><strong>Bước 2 — Edit.</strong> Slide 35 cho thấy thay đổi:</p>
+
+    <pre><code># Trước — mọi giá trị falsy đều chọn mặc định
+return config.get("retries") or 3
+
+# Sau — số 0 tường minh được giữ nguyên
+value = config.get("retries")
+return 3 if value is None else value</code></pre>
+
+    <p>Chú ý cách sửa: tách "thiếu giá trị" (<code>None</code>) ra khỏi "giá trị bằng 0". Đây là kiểu sửa điển hình của người có kinh nghiệm — và cũng là kiểu infilling đã nói ở mục 2: sửa một đoạn nằm giữa file, phải giữ nguyên phần xung quanh.</p>
+
+    <p><strong>Bước 3 — Verify.</strong> Slide 36 chạy toàn bộ test, không chỉ test vừa sửa:</p>
+
+    <pre><code>$ python3 -m unittest -v test_config
+missing   →  3   PASS
+None      →  3   PASS
+zero      →  0   PASS
+positive  →  2   PASS
+Ran 4 tests: OK</code></pre>
+
+    <p>Bốn trường hợp, không phải một. Ba trường hợp sau là để chắc rằng bản sửa <em>không làm hỏng hành vi cũ</em>. Trong nghề này người ta gọi đó là <strong>regression</strong> — thứ mà mục 6 sẽ gặp lại với tên gọi chính thức.</p>
+
+    <p><strong>Kiểm nhanh:</strong> điền vào chỗ trống — trong bản sửa, điều kiện để dùng giá trị mặc định là <code>value is ____</code>.</p>
+    <p class="fib-sentence"><span class="fib" data-answer="none|None" data-placeholder="…"></span></p>
+
+    <h3>Vì sao verify là siêu năng lực</h3>
+
+    <p>Điều đáng chú ý: agent không cần đúng ngay lần đầu. Nó chỉ cần <em>phát hiện được mình sai</em> — và trong code, việc đó rẻ: chạy test là biết. Đây chính là lý do ở mục 1 tôi nói code là domain "nóng" nhất.</p>
+
+    <p>Hãy so với một công việc không có thước đo: viết một bản đề xuất. Agent viết xong, hay hay dở không ai biết ngay, sửa mãi không biết dừng. Còn ở đây: chạy test, đỏ thì sửa, xanh thì xong. Vòng lặp có điểm dừng khách quan.</p>
+
+    <h3>Một lựa chọn khác: workflow cố định (Agentless)</h3>
+
+    <p>Slide 37 giới thiệu một hướng ngược lại với vòng lặp tự do: <strong>Agentless</strong> (Xia et al.). Thay vì để model tự quyết mỗi bước, Agentless dùng một quy trình cố định: định vị → sửa → kiểm chứng theo các bước được thiết kế sẵn. Ít quyết định hơn, khó "lạc đường" hơn, dễ đoán và rẻ hơn.</p>
+
+    <p>Điều này nối tiếp bài 06 (ba mức cam kết: workflow → plan-then-execute → replan): không phải cứ tự do hơn là tốt hơn. Và nó dẫn thẳng tới chủ đề lớn của mục 6 — <em>harness</em>.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="sua-file">
+    <h2>Sửa file khó hơn viết mới</h2>
+
+    <p>Nghe có vẻ ngược đời. Viết cả hàm mới dài 30 dòng, sửa một dòng trong hàm cũ — chẳng phải cái sau dễ hơn sao? Không. Và hiểu vì sao là chìa khóa để hiểu cả mục này.</p>
+
+    <h3>Vì sao sửa khó hơn viết</h3>
+
+    <p>Slide 5 nói gọn một câu: <em>editing — condition on both sides</em> (sửa — phải điều kiện hóa trên cả hai phía). Cụ thể hơn, có năm khó khăn chồng lên nhau:</p>
+
+    <ol>
+      <li><strong>Phải tìm đúng chỗ trước đã.</strong> Viết mới thì bạn biết viết vào đâu. Sửa thì phải localize trong một repository có thể hàng nghìn file — như mò kim trong đống rơm, trừ khi bạn biết theo dấu dữ liệu.</li>
+      <li><strong>Phải khớp chính xác văn bản xung quanh.</strong> Công cụ sửa file thường hoạt động kiểu "tìm đoạn cũ, thay đoạn mới". Nếu đoạn cũ không khớp từng ký tự — kể cả khoảng trắng — lệnh thất bại.</li>
+      <li><strong>Phải không phá code khác.</strong> Sửa xong, mọi hành vi cũ phải còn nguyên. Đây là ràng buộc mà "viết mới" không có.</li>
+      <li><strong>Đích có thể mơ hồ.</strong> Cùng một dòng <code>return x</code> xuất hiện ba lần trong file — thay dòng nào? Công cụ cần đủ ngữ cảnh để phân biệt.</li>
+      <li><strong>Phải tái tạo đúng khoảng trắng và phong cách.</strong> Nhớ lại mục 2: thụt lề là token mang cú pháp. Một dấu cách sai trong Python có thể đổi nghĩa chương trình.</li>
+    </ol>
+
+    <p>Ví dụ đời thường: viết một câu mới vào bản nháp thì dễ. Sửa một câu trong bản hợp đồng đã in thì bạn phải khớp từng chữ xung quanh, không được làm sai nghĩa điều khoản khác, và không được để lại vết mực lem. Cùng một "câu văn", hai mức độ khó hoàn toàn khác.</p>
+
+    <h3>Bộ tool: chỉ một cái shell là đủ?</h3>
+
+    <p>Slide 39 kể về <strong>mini-SWE-agent</strong> — một harness cho model đúng <em>một</em> giao diện: shell. Model tự chọn lệnh, harness chạy lệnh đó và trả về ba thứ: <em>output, exit status, timeout</em>. (Exit status là mã số lệnh trả về — 0 là thành công, khác 0 là lỗi. Timeout là giới hạn thời gian chạy để một lệnh treo không làm chết cả phiên.)</p>
+
+    <p>Chỉ với shell, agent làm được hết:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Việc</th><th>Lệnh tiêu biểu</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Đọc / tìm code</td><td><code>rg</code>, <code>cat</code>, <code>find</code></td></tr>
+        <tr><td>Sửa file</td><td><code>sed</code>, script Python, <code>patch</code></td></tr>
+        <tr><td>Kiểm chứng</td><td><code>pytest</code>, lệnh build</td></tr>
+      </tbody>
+    </table>
+
+    <p>Vì sao một giao diện duy nhất lại đủ? Vì shell vốn đã là "bộ chuyển đổi vạn năng" của máy tính — muốn làm gì cũng có lệnh. Và model đã thấy vô số lệnh shell trong dữ liệu luyện. Đây là bài học lớn: <strong>harness đơn giản vẫn có thể rất mạnh</strong>.</p>
+
+    <h3>Bốn cách nói "sửa chỗ này" (edit formats)</h3>
+
+    <p>Slide 40–42 liệt kê bốn cách model có thể diễn đạt một thay đổi. Đọc kỹ bảng này, vì đây là phần "cơ bắp" của coding agent:</p>
+
+    <p><strong>1. Dùng lệnh shell (sed / awk / script Python).</strong> Ví dụ đổi giá trị trong file cấu hình:</p>
+
+    <pre><code>sed 's/^RETRIES = 3$/RETRIES = 5/' settings.py &gt; settings.new
+mv settings.new settings.py</code></pre>
+
+    <p>Ưu: linh hoạt, làm được cả loạt thay đổi trên nhiều file. Nhược: phải viết đúng biểu thức, dễ sai nếu văn bản không như tưởng.</p>
+
+    <p><strong>2. Gửi cả file mới (whole file).</strong> Model viết lại toàn bộ nội dung file. Đơn giản để áp dụng — không cần khớp gì cả. Nhược điểm: lặp lại cả phần không đổi (tốn token) và có rủi ro viết lại nhầm phần không liên quan. Các tool dùng cách này: Pi <code>write</code>, OpenCode <code>write</code>, OpenHands <code>create</code>.</p>
+
+    <p><strong>3. Tìm và thay (search / replace).</strong> Model gửi "đoạn cũ" và "đoạn mới". Gọn, tiết kiệm — nhưng cần đoạn cũ <em>khớp duy nhất</em>:</p>
+
+    <pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; SEARCH
+RETRIES = 3
+=======
+RETRIES = 5
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; REPLACE</code></pre>
+
+    <p>Các tool dùng cách này: OpenHands, Pi, OpenCode <code>edit</code>. Rủi ro: nếu "đoạn cũ" xuất hiện ở nhiều chỗ, tool không biết thay chỗ nào — hoặc tệ hơn, thay nhầm chỗ.</p>
+
+    <p><strong>4. Unified diff / patch.</strong> Đây là định dạng chuẩn của nghề lập trình. Bản đầy đủ ghi cả số dòng và ngữ cảnh:</p>
+
+    <pre><code>--- a/settings.py
++++ b/settings.py
+@@ -1,2 +1,2 @@
+-RETRIES = 3
++RETRIES = 5
+ TIMEOUT = 30</code></pre>
+
+    <p>Dòng <code>@@ -1,2 +1,2 @@</code> nói vị trí và độ dài đoạn: bản cũ bắt đầu từ dòng 1 gồm 2 dòng, bản mới cũng vậy. Dấu <code>-</code> là dòng bị bỏ, dấu <code>+</code> là dòng thêm vào, dòng không dấu là ngữ cảnh giữ nguyên. Aider dùng biến thể <em>bỏ số dòng hunk</em> cho gọn. Còn Codex dùng định dạng "file-operation patch" — nói thao tác theo tên file, có ngữ cảnh, không cần đếm dòng:</p>
+
+    <pre><code>*** Begin Patch
+*** Update File: settings.py
+@@
+-RETRIES = 3
++RETRIES = 5
+ TIMEOUT = 30
+*** End Patch</code></pre>
+
+    <h3>Vì sao định dạng lại quan trọng đến vậy</h3>
+
+    <p>Đây có lẽ là con số đáng nhớ nhất của cả bài. Slide 43 dẫn một thí nghiệm của Aider trên <strong>89 bài refactoring Python</strong> (việc: chuyển một method trong class lớn ra thành hàm độc lập, rồi kiểm cú pháp và tính toàn vẹn của code). Cùng một model — GPT-4 Turbo (gpt-4-1106-preview) — chỉ đổi cách diễn đạt bản sửa:</p>
+
+    <blockquote>
+      <p>SEARCH / REPLACE: 20% &nbsp;·&nbsp; Simplified unified diff: <strong>61%</strong></p>
+      <cite>— Aider, benchmark refactoring (slide 43): cùng model, khác định dạng sửa file</cite>
+    </blockquote>
+
+    <p>Gấp ba lần. Cùng một bộ não, chỉ đổi cách "nói" bản sửa.<sup><a href="#src-format">[4]</a></sup></p>
+
+    <p>Nếu bạn còn nhớ định nghĩa harness ở bài 02–04 — prompt + tools + vòng lặp + quản lý ngữ cảnh — thì định dạng sửa file nằm trong phần "tools + prompt". Con số 20% → 61% chính là bằng chứng định lượng cho câu: <strong>harness quan trọng ngang với model</strong>. Mục 6 sẽ khai thác ý này đến cùng.</p>
+
+    <h3>Tìm đúng chỗ để sửa</h3>
+
+    <p>Quay lại khó khăn số 1: localize. Slide 44 đưa một chiến lược hai bước rất thực dụng:</p>
+
+    <ul>
+      <li><strong>Bắt đầu từ triệu chứng.</strong> Tìm theo từ khóa liên quan — một cái flag, một loader, một vòng lặp retry đều có thể là nghi phạm. Ví dụ: <code>rg 'retries' .</code></li>
+      <li><strong>Đi theo giá trị.</strong> Đừng chỉ tìm tên biến; hãy lần theo <em>dòng chảy của giá trị</em>: giá trị đi vào từ đâu (config input) → chỗ nào đọc nó lần đầu → logic đặt mặc định nằm ở đâu → chỗ nào số 0 biến thành số 3. Mỗi câu trả lời thu hẹp phạm vi.</li>
+    </ul>
+
+    <p>Slide 45 (dẫn LocAgent, Chen et al., 2025) nâng cấp chiến lược này bằng <strong>đồ thị phụ thuộc</strong>. Với issue "zero biến thành three", đồ thị cho thấy: <code>config.py</code> có hàm <code>retry_count(config)</code>; <code>cli.py</code> có <code>configure_client</code> gọi nó; <code>test_config.py</code> kiểm ba trường hợp zero / None / missing; <code>client.py</code> dùng kết quả trong vòng lặp retry. Nhìn đồ thị là thấy ngay "khu phố" liên quan — thay vì đọc từng file một.</p>
+
+    <p>Vì sao tìm theo tên không đủ? Vì tên có thể trùng ở nhiều nơi, còn <em>quan hệ</em> thì không. Giống như tìm một người trong thành phố: hỏi "ai tên Nam" thì ra hàng trăm người, nhưng hỏi "ai là người chuyển tiền cho công ty X" thì ra đúng một.</p>
+
+    <div class="callout">
+      <div class="callout-title">Mở rộng: giao diện web cũng là "file"</div>
+      <p>Slide 55–59 cho thấy vòng localize–edit–verify áp cả cho frontend. Ví dụ slide 58: form cho lưu tên rỗng. Sửa <code>value.length</code> thành <code>value.trim().length</code> — kiểm tra độ dài sau khi bỏ khoảng trắng. Kiểm chứng không chỉ bằng test mà bằng <em>hành vi trên trình duyệt</em>: gõ → bấm → xem trạng thái lưu, chụp ảnh màn hình để xem lỗi có hiển thị rõ cạnh ô Name không. Có hai kiểu tool: <strong>browser agent</strong> (model tự chọn từng thao tác) và <strong>script Playwright</strong> (model viết một kịch bản kiểm tra lặp lại được: <code>fill()</code>, <code>click()</code>, <code>expect()</code>, <code>screenshot()</code>).</p>
+      <p>Và một câu đáng ghim từ slide 59: <em>"một tấm ảnh trong issue không biến việc so ảnh thành tiêu chí chấm điểm."</em> Ảnh giúp hiểu vấn đề; thước đo vẫn là hành vi chạy được.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="swe-bench">
+    <h2>SWE-bench, harness, và cách luyện agent</h2>
+
+    <p>Đã có model, có vòng lặp, có edit format. Câu hỏi còn lại: làm sao biết một coding agent <em>giỏi thật</em>, và làm sao luyện nó giỏi lên? Đây là nội dung slide 46–54, phần "cơm áo" của cả buổi giảng.</p>
+
+    <h3>SWE-bench là gì và vì sao nó khó</h3>
+
+    <p><strong>SWE-bench</strong> (Jimenez et al.) lấy các issue thật từ những repository Python phổ biến, đưa cho agent cả issue lẫn repository ở đúng thời điểm trước khi issue được sửa, và yêu cầu agent tạo ra một <strong>patch</strong>. Cách chấm gồm hai phần (slide 47):</p>
+
+    <ul>
+      <li><strong>Fail → pass:</strong> các test lẽ ra phải fail trước bản sửa — giờ phải pass. Đây là "yêu cầu sửa" đã được đáp ứng.</li>
+      <li><strong>Pass → pass:</strong> các test vốn đã pass — phải tiếp tục pass. Đây là "hành vi cũ được giữ nguyên".</li>
+    </ul>
+
+    <p>Vì sao SWE-bench khó? Năm lý do, xếp theo độ khó tăng dần:</p>
+
+    <ol>
+      <li><strong>Phải định vị trong repository lớn.</strong> Không ai chỉ file nào. Ở bài toán localization (slide 64, CodeScout 2026), agent phải đoán đúng file, đúng module, đúng hàm — và điểm là F1 ở cả ba mức. Điểm quan trọng: <em>bản patch đúng không được đưa vào làm manh mối</em>; agent phải tự tìm.</li>
+      <li><strong>Không được phá hành vi cũ.</strong> Sửa đúng chỗ nhưng làm hỏng chỗ khác là fail. Đây là ràng buộc pass → pass.</li>
+      <li><strong>Test bị ẩn.</strong> Agent không thấy test chấm điểm, nên không thể "học tủ". Nó phải giải bài toán thật, không phải đoán đáp án.</li>
+      <li><strong>Issue viết bằng ngôn ngữ tự nhiên, thường mơ hồ.</strong> "Ứng dụng thỉnh thoảng treo khi lưu" — người viết issue không biết nguyên nhân, nếu biết họ đã sửa rồi.</li>
+      <li><strong>Môi trường phải chạy được.</strong> Cài dependency, đúng phiên bản, chạy được test — với repository thật, việc này không nhỏ. Slide 48 vì vậy nhấn: phải <em>kiểm tra môi trường trước</em> khi thu thập dữ liệu luyện.</li>
+    </ol>
+
+    <p>Ví dụ đời thường để hình dung độ khó: bạn được giao "cái máy in thỉnh thoảng kẹt giấy, sửa đi", trong một tòa nhà 5.000 phòng, và sau khi sửa phải chắc chắn 100 thiết bị khác vẫn chạy. Đó gần đúng là SWE-bench.</p>
+
+    <h3>Tạo ra task luyện được: SWE-Gym và SWE-smith</h3>
+
+    <p>Muốn luyện agent, cần <em>rất nhiều</em> task chạy được. Issue thật thì có hạn, nên người ta chế thêm. Slide 48 (SWE-Gym) định nghĩa một <strong>task chạy được</strong> gồm ba phần:</p>
+
+    <ul>
+      <li><strong>Trạng thái đầu:</strong> file + dependency + lệnh chạy test.</li>
+      <li><strong>Issue:</strong> hành vi mong muốn + cách tái hiện.</li>
+      <li><strong>Kiểm tra:</strong> bug phải fail trước; bản sửa phải khôi phục hành vi đúng.</li>
+    </ul>
+
+    <p>Còn slide 51–52 (SWE-smith, Yang et al., 2025) mô tả cách <strong>tiêm bug nhân tạo</strong> để nhân số lượng task lên: chuẩn bị một bản chạy tốt → <em>sửa code, không sửa test</em> → giữ lại những ca mà test mới bắt đầu fail. Ví dụ cụ thể từ slide 52:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Trạng thái</th><th>Code</th><th>Kết quả test</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Bản gốc (baseline)</td><td><code>return 3 if value is None else value</code></td><td>4 pass</td></tr>
+        <tr><td>Đã tiêm bug</td><td><code>return 3 if not value else value</code></td><td>3 pass · 1 fail</td></tr>
+        <tr><td>Khôi phục</td><td>quay lại dòng gốc</td><td>4 pass</td></tr>
+      </tbody>
+    </table>
+
+    <p>Vì sao "sửa code, không sửa test" là nguyên tắc sắt? Vì test là <em>nguồn sự thật</em> của task. Nếu bạn bẻ test cho khớp với code sai, bạn đang dạy agent "làm hài lòng đề bài hỏng" — một thói quen tai hại khi gặp đề thật. Giống như huấn luyện viên sửa đồng hồ bấm giây cho khớp thành tích, thay vì sửa học trò chạy nhanh hơn.</p>
+
+    <p>Slide 53 nhắc thêm: các ngôn ngữ khác nhau có cách chạy khác nhau — Python dùng <code>pyproject.toml</code> + <code>pytest</code>, TypeScript dùng <code>package.json</code> + <code>npm test</code>, Rust dùng <code>Cargo.toml</code> + <code>cargo test</code>. Nguyên tắc: <strong>đọc cấu hình dự án trước khi chọn lệnh build/test</strong>. Đừng đoán — nhìn bếp trước khi nấu.</p>
+
+    <h3>Học từ nhiều bước — và bài toán "lỗi muộn"</h3>
+
+    <p>Slide 49 (R2E-Gym, Jain et al., 2025) nói về luyện RL cho chuỗi hành động dài. Có một chi tiết phân biệt tinh tế:</p>
+
+    <ul>
+      <li><strong>Hành động của agent là mục tiêu luyện</strong> — tìm file, quyết định sửa gì, chạy test hay kết thúc.</li>
+      <li><strong>Kết quả tool chỉ là ngữ cảnh</strong> — danh sách file tìm được, patch đã áp, output test. Không phải thứ để "học thuộc".</li>
+      <li><strong>Phần thưởng đến ở cuối:</strong> sửa được hay không. Và đây là vấn đề: <em>một thất bại ở cuối không chỉ ra được quyết định nào ở giữa đã sai.</em></li>
+    </ul>
+
+    <p>Ví dụ: một đội bóng thua 0–1. Không ai biết ngay là do đường chuyền sai ở phút 20, do thay người ở phút 70, hay do chiến thuật từ đầu. Trong học tăng cường người ta gọi đó là bài toán <strong>credit assignment</strong> (phân bổ công – lỗi). Agent cũng vậy: patch cuối cùng fail, nhưng lỗi có thể nằm ở bước tìm file (chọn sai file), ở bước sửa (sửa sai dòng), hay ở bước kiểm (bỏ qua test). Cả một chuỗi đúng, chỉ một bước sai — mà tín hiệu thưởng chỉ có một con số ở cuối.</p>
+
+    <p>Slide 50 bổ sung hướng xử lý: thay vì chỉ sinh một lời giải, cho model sinh nhiều phương án rồi dùng một <strong>learned verifier</strong> (bộ chấm học được) để chọn phương án tốt nhất — đổi compute lúc suy luận lấy độ chính xác. (Nhớ lại pass@k ở mục 3: sinh nhiều rồi chọn là chiến lược có cơ sở.)</p>
+
+    <h3>Harness + model — hai nửa của một năng lực</h3>
+
+    <p>Đây là phần kết tinh của cả bài. Slide 54 định nghĩa:</p>
+
+    <blockquote>
+      <p><strong>Harness = prompts + tools + agent loop + context management</strong></p>
+      <cite>— slide 54. Chính là bốn thứ bạn đã học ở bài 02 (vòng lặp), bài 03 (tools), bài 04 (ngữ cảnh).</cite>
+    </blockquote>
+
+    <p>Và slide 54 kể một xu hướng luyện model mới: <strong>multi-harness training</strong> — cùng một model (cùng trọng số) được chạy trong nhiều harness khác nhau (ví dụ OpenHands, OpenCode, Codex), mỗi harness có prompt, tool, vòng lặp, cách quản lý ngữ cảnh riêng; kết quả patch được chấm bằng test; rồi các "trajectory" (đường đi của agent) và phần thưởng được dùng để cập nhật model. Nemotron 3 Ultra dùng tiêu chuẩn <em>ít nhất 2 harness cho mỗi phân bố task</em>; Polar thì để các harness "bản địa" gọi chung một proxy API của model.</p>
+
+    <p>Vì sao phải luyện nhiều harness? Vì một model chỉ biết làm việc trong <em>một</em> kiểu khung là model mong manh. Giống một nhân viên chỉ làm được khi có đúng chiếc bàn quen thuộc: đổi văn phòng là loay hoay. Luyện qua nhiều harness buộc model học phần <em>bản chất</em> của công việc — tìm, sửa, kiểm — chứ không học thuộc cách gọi tool của riêng một khung.</p>
+
+    <p>Ghép lại với các bằng chứng đã gặp, ta có bài học lớn nhất của buổi 3b:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Bằng chứng</th><th>Nói lên điều gì</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Cùng GPT-4 Turbo: SEARCH/REPLACE 20% → unified diff 61% (slide 43)</td><td>Đổi <em>định dạng</em> trong harness, kết quả đổi gấp ba</td></tr>
+        <tr><td>mini-SWE-agent: harness chỉ có shell vẫn mạnh (slide 39)</td><td>Harness đơn giản, đúng thiết kế, vẫn hiệu quả</td></tr>
+        <tr><td>Agentless: workflow cố định vẫn cạnh tranh (slide 37)</td><td>Không cần vòng lặp tự do tối đa để đạt kết quả tốt</td></tr>
+        <tr><td>Multi-harness training (slide 54)</td><td>Chính người luyện model cũng coi harness là biến số phải luyện cùng</td></tr>
+      </tbody>
+    </table>
+
+    <p>Kết luận thực dụng: khi bạn đánh giá một coding agent — "con này giỏi hay dở" — bạn đang đánh giá <strong>model + harness</strong> như một thể thống nhất. Khi nó fail, đừng vội kết luận "model kém"; rất có thể chỉ là định dạng sửa file chưa tốt, tool chưa phù hợp, hoặc ngữ cảnh bị quản lý kém.<sup><a href="#src-harness">[5]</a></sup></p>
+
+    <h3>Nhìn ra ngoài: các loại task khác</h3>
+
+    <p>Slide 63 xếp các task phát triển phần mềm thành một bảng — mỗi loại có <em>artifact</em> (sản phẩm nộp), <em>môi trường chấm</em>, và <em>độ dài hơi</em> khác nhau:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Task</th><th>Sản phẩm</th><th>Chấm bằng</th><th>Độ dài hơi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Sửa bug (repair)</td><td>Patch</td><td>Repository / test hồi quy</td><td>Một issue</td></tr>
+        <tr><td>Tạo thư viện</td><td>Bản cài đặt</td><td>Scaffold / test của package</td><td>Nhiều hàm</td></tr>
+        <tr><td>Sinh test</td><td>Test mới</td><td>So bản lỗi với bản đã sửa / khả năng phân biệt</td><td>Một hành vi</td></tr>
+        <tr><td>Sửa CI</td><td>Code hoặc cấu hình</td><td>Workflow / các check bắt buộc</td><td>Một lần build</td></tr>
+        <tr><td>Tiến hóa (evolution)</td><td>Các thay đổi tích lũy</td><td>Ứng dụng chạy dài hạn / milestone + hồi quy</td><td>Nhiều task phụ thuộc</td></tr>
+      </tbody>
+    </table>
+
+    <p>Vài ví dụ cụ thể từ slide 64–72 để bạn hình dung phạm vi:</p>
+
+    <ul>
+      <li><strong>Sửa CI (slide 69):</strong> build đỏ vì chạy trên Node 16, còn package yêu cầu Node ≥ 18 (<code>npm ci: EBADENGINE</code>). Bản sửa: đổi cấu hình <code>setup-node</code> sang <code>node-version: '20'</code>. Một bài "sửa code hoặc cấu hình" điển hình — không phải lúc nào bug cũng nằm trong code ứng dụng.</li>
+      <li><strong>Tạo ứng dụng (slide 65, ViBench):</strong> 15 app dạng "zero-to-one" (làm mới hoàn toàn), 45 app dạng "vibe-on-ref" (mở rộng một MVP có sẵn), 45 app dạng "vibe-on-vibe" (mở rộng chính MVP mà agent đã làm trước đó). Chấm bằng kịch bản test trình duyệt do con người viết.</li>
+      <li><strong>Viết thư viện (slide 66):</strong> Commit0 đưa khung thư viện với các hàm còn thiếu thân, kèm tài liệu và test; agent phải cài đặt rồi chạy test tích hợp. ProgramBench thì cho một bản tham chiếu chạy được, agent "thăm dò" đầu vào → quan sát đầu ra rồi viết bản cài đặt khớp hành vi — thiết kế bên trong có thể khác, miễn hành vi khớp.</li>
+    </ul>
+
+    <p>Slide 70–72 trả lời câu hỏi: luyện trên một họ task có giúp chuyển sang họ task khác không? Bảng kết quả (chọn lọc, model 32B, cùng ngân sách suy luận):</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Benchmark</th><th>Loại task</th><th>Model gốc 32B</th><th>Sau luyện (Hybrid-Gym 32B)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>SWE-bench Verified</td><td>Sửa bug</td><td>7</td><td><strong>32.4</strong></td></tr>
+        <tr><td>SWT-Bench Verified</td><td>Sinh test</td><td>9.01</td><td><strong>16.86</strong></td></tr>
+        <tr><td>Commit0 Lite</td><td>Xây thư viện</td><td>8.34</td><td><strong>13.45</strong></td></tr>
+      </tbody>
+    </table>
+
+    <p>Điểm đáng chú ý: luyện trên hỗn hợp task giúp cải thiện <em>cả ba</em> họ task, không chỉ họ được luyện nhiều nhất. Các kỹ năng nền — tìm code, sửa, kiểm chứng — chuyển được từ task này sang task khác.</p>
+
+    <h3>Hướng mới: model đoán trước kết quả chạy code</h3>
+
+    <p>Slide 73–79 mở một hướng nghiên cứu thú vị. Một agent hiện tại có hai vai: <strong>policy</strong> π(a | h) — chọn hành động dựa trên lịch sử; và một <strong>world model</strong> p(o | h, a) — đoán kết quả của hành động đó. Hiện tại agent phải <em>chạy thật</em> để biết kết quả. Nếu model đoán được, nó có thể chọn hành động tốt hơn mà không cần chạy hết mọi thứ.</p>
+
+    <p>Nhưng đoán sai thì nguy hiểm. Slide 75 cho một ví dụ rất hay:</p>
+
+    <pre><code>items = [1]
+alias = items
+alias.append(2)
+result = len(items)</code></pre>
+
+    <p>Thực thi thật: <code>items = [1, 2]</code>, <code>alias = [1, 2]</code>, <code>result = 2</code> — vì <code>alias</code> và <code>items</code> trỏ vào <em>cùng một</em> danh sách (tham chiếu chung), không phải hai bản sao. Một model đoán sai kiểu "alias là bản sao" sẽ tưởng <code>result = 1</code> — và đó chính là lỗi dự đoán mà slide muốn cảnh báo.</p>
+
+    <p>Slide 76 cho thấy hậu quả: có hai bản sửa A (đúng) và B (sai). Model đoán "A sẽ fail, B sẽ pass" → nó chọn B và vứt A. Chỉ cần world model sai một lần là quyết định sai. Slide 79 để mở bốn câu hỏi: đoán giỏi hơn có ra quyết định tốt hơn không? Chi phí (thời gian, token, số lần chạy thật) có giảm không? Bối cảnh mới thì sao? Và khi nào nên chạy thật thay vì đoán? (Slide 77–78 dẫn các hướng như CWM và Code World Models / GIF-MCTS.)</p>
+
+    <div class="callout">
+      <div class="callout-title">Tóm mục 6 trong một câu</div>
+      <p>SWE-bench chấm agent bằng hai câu hỏi — "sửa được chưa?" (fail → pass) và "có phá gì không?" (pass → pass); muốn luyện thì cần task chạy được (SWE-Gym, SWE-smith); và kết quả cuối cùng phụ thuộc cả model lẫn harness — nên cả hai được thiết kế và luyện cùng nhau.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+
+    <p>Bốn hiểu lầm hay gặp nhất khi mới làm quen với coding agent:</p>
+
+    <ol>
+      <li>
+        <p><strong>"Model giỏi là đủ — harness chỉ là phụ kiện."</strong> — Không. Cùng một model GPT-4 Turbo, chỉ đổi định dạng sửa file, tỉ lệ thành công nhảy từ 20% lên 61% (slide 43). mini-SWE-agent với harness chỉ có shell vẫn mạnh (slide 39). Và chính các nhóm luyện model cũng luyện qua nhiều harness (slide 54). Harness và model là hai nửa của một năng lực.</p>
+      </li>
+      <li>
+        <p><strong>"So khớp code với bài mẫu là đánh giá được."</strong> — Không. <code>return x &gt;= 0</code> khác bài mẫu đúng một ký tự nhưng sai ở <code>x = 0</code>; <code>return not (x &lt;= 0)</code> viết khác hẳn nhưng lại đúng (slide 20). Giống chữ ≠ đúng, khác chữ ≠ sai. Muốn biết đúng hay không thì phải chạy — mà chạy thì cũng chỉ biết đúng với những test đã có (slide 24).</p>
+      </li>
+      <li>
+        <p><strong>"Test pass nghĩa là xong việc."</strong> — Chưa. Slide 61 nói thẳng: <em>"a test pass is one step, not the release decision"</em> — test pass là một bước, không phải quyết định phát hành. Còn pass → pass (không phá hành vi cũ), còn yêu cầu phi chức năng (nhanh hơn, an toàn hơn, dễ bảo trì — slide 27), còn review, deploy, theo dõi, đường lùi. Một chiếc xe qua được kiểm định khí thải chưa chắc đã đủ an toàn để chở người.</p>
+      </li>
+      <li>
+        <p><strong>"Sửa một dòng thì dễ hơn viết cả hàm."</strong> — Không hẳn. Sửa phải tìm đúng chỗ, khớp chính xác văn bản xung quanh, không phá code khác, và tái tạo đúng khoảng trắng. Cộng thêm: cách diễn đạt bản sửa cũng quan trọng bậc nhất (20% so với 61%). Sửa một câu trong hợp đồng đã ký khó hơn viết câu mới trong bản nháp — vì bạn còn phải tôn trọng toàn bộ phần còn lại.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+
+    <p>Ba bài dưới đây làm ra nháp trước, rồi mới mở đáp án. Đáp án chỉ là gợi ý — điều quan trọng là <strong>cách lập luận</strong> của bạn.</p>
+
+    <div class="exercise">
+      <h3>Bài 1 — Bóc một bug "falsy" theo vòng localize → edit → verify</h3>
+      <p><strong>Đề bài:</strong> Bạn được giao một issue: "Khách hàng chọn 'không phân trang' (page size = 0) nhưng hệ thống vẫn trả về 20 dòng mỗi trang." Trong repository có file <code>paging.py</code>:</p>
+      <pre><code>def page_size(cfg):
+    return cfg.get("page_size") or 20</code></pre>
+      <p>Hãy viết ra:</p>
+      <ol>
+        <li><strong>Localize:</strong> bạn làm gì để chắc chắn lỗi nằm ở dòng này (chứ không phải chỗ khác)?</li>
+        <li><strong>Edit:</strong> viết hai dòng code thay thế.</li>
+        <li><strong>Verify:</strong> liệt kê bốn trường hợp cần chạy, và kết quả mong đợi của từng trường hợp.</li>
+        <li><strong>Giải thích:</strong> một câu — vì sao <code>or</code> là sai ở đây?</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>Localize:</strong> tìm theo tên khóa: <code>rg 'page_size' .</code> để thấy mọi chỗ dùng nó; rồi <em>tái hiện lỗi</em> bằng cách chạy test truyền <code>page_size = 0</code> và xem nó trả về 20. Khi test đỏ đúng như triệu chứng, bạn đã định vị được chỗ cần sửa. (Nếu chưa có test cho ca này, viết test trước — nhớ nguyên tắc "sửa code, không sửa test" đã nói ở mục 6 chỉ áp cho <em>tiêm bug</em>; còn khi tái hiện lỗi thật thì thêm test mới là việc đúng.)</li>
+          <li><strong>Edit:</strong>
+            <pre><code>value = cfg.get("page_size")
+return 20 if value is None else value</code></pre>
+          </li>
+          <li><strong>Verify:</strong> (a) không có khóa <code>page_size</code> → 20; (b) <code>page_size = 0</code> → 0 (ca vừa sửa); (c) <code>page_size = 20</code> → 20; (d) <code>page_size = 5</code> → 5. Và chạy cả bộ test để chắc không làm hỏng gì khác (regression).</li>
+          <li><strong>Giải thích:</strong> <code>or</code> coi mọi giá trị falsy — trong đó có số 0 hợp lệ — là "không có giá trị", nên số 0 bị thay bằng mặc định; cần phân biệt "thiếu" (<code>None</code>) với "bằng 0".</li>
+        </ul>
+        <p>Nếu bạn tự nghĩ ra thêm ca "page_size = -1" thì càng tốt — câu hỏi tiếp theo sẽ là: giá trị âm nên bị từ chối hay hiểu là "không giới hạn"? Đó là quyết định <em>hành vi</em>, không phải cú pháp.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 2 — Chọn cách sửa file (edit format)</h3>
+      <p><strong>Đề bài:</strong> Với mỗi tình huống, chọn một cách diễn đạt bản sửa phù hợp — <em>gửi cả file (whole file)</em>, <em>tìm/thay (search-replace)</em>, <em>unified diff</em>, hay <em>script shell (sed/Python)</em> — và nói ra rủi ro chính của cách bạn chọn.</p>
+      <ol>
+        <li>Đổi một dòng <code>TIMEOUT = 30</code> thành <code>TIMEOUT = 60</code> trong file dài 400 dòng; dòng này chỉ xuất hiện một lần.</li>
+        <li>Viết lại toàn bộ một file cấu hình 15 dòng (đổi hầu hết nội dung).</li>
+        <li>Đổi tên hàm <code>getUser</code> thành <code>fetchUser</code> ở 40 file khác nhau.</li>
+        <li>Đổi <code>return x</code> thành <code>return x + 1</code> trong một file mà dòng <code>return x</code> xuất hiện ba lần giống hệt nhau.</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>(1) Search-replace hoặc unified diff.</strong> Thay đổi nhỏ, mục tiêu duy nhất → hai cách đều gọn và an toàn. Rủi ro: nếu chuỗi tìm kiếm không khớp <em>từng ký tự</em> (khoảng trắng, dấu nháy) thì lệnh thất bại — nhưng thất bại thì vô hại, còn hơn thay nhầm.</li>
+          <li><strong>(2) Whole file.</strong> File ngắn, đổi nhiều → viết lại cả file là đơn giản nhất. Rủi ro: lặp lại phần không đổi (tốn token) và có thể vô tình bỏ sót một dòng cũ quan trọng; với file ngắn thì rủi ro này nhỏ.</li>
+          <li><strong>(3) Script shell (sed / Python) chạy trên nhiều file.</strong> Search-replace đơn lẻ không phủ 40 file; whole-file 40 lần thì phí và dễ sai. Rủi ro: script có thể thay cả những chỗ không nên thay (ví dụ tên hàm trùng trong chuỗi ký tự hoặc comment) — nên chạy thử khô (dry-run) hoặc kiểm tra bằng <code>rg</code> sau khi chạy.</li>
+          <li><strong>(4) Cần thêm ngữ cảnh để phân biệt.</strong> Đoạn cũ không duy nhất → search-replace trần rất nguy hiểm: nó có thể thay cả ba chỗ, hoặc thay sai chỗ. Cách đúng: kèm thêm các dòng xung quanh để đoạn tìm trở nên duy nhất, hoặc dùng diff có ngữ cảnh (và nếu công cụ hỗ trợ, có số dòng). Nếu sau khi thêm ngữ cảnh vẫn còn hai chỗ giống nhau, phải đọc code để hiểu chỗ nào đúng về mặt <em>ngữ nghĩa</em> — đây là lúc agent cần "hiểu", không chỉ cần "khớp".</li>
+        </ul>
+        <p>Điểm chung: chọn format là bài toán đánh đổi giữa <em>gọn</em> và <em>chắc</em>. Và nhớ con số 20% → 61%: lựa chọn này không nhỏ.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 3 — Tự thiết kế một task luyện kiểu SWE-smith</h3>
+      <p><strong>Đề bài:</strong> Chọn một hàm nhỏ bất kỳ (tự nghĩ cũng được, ví dụ hàm tính phí giao hàng). Hãy thiết kế một task luyện gồm bốn phần, đúng theo tinh thần slide 48 và 51–52:</p>
+      <ol>
+        <li><strong>Baseline chạy tốt:</strong> code + 4 test đều pass (viết ra 4 ca kiểm).</li>
+        <li><strong>Tiêm bug:</strong> sửa <em>code</em>, không sửa test — sao cho đúng một test fail.</li>
+        <li><strong>Bằng chứng ba trạng thái:</strong> trước / sau khi tiêm / sau khi khôi phục.</li>
+        <li><strong>Kiểm tra môi trường:</strong> một câu — làm sao chắc task này chạy được trước khi đem đi luyện?</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p>Ví dụ với hàm tính phí giao hàng (miễn phí khi đơn từ 100 trở lên):</p>
+        <pre><code>def shipping_fee(total, is_member):
+    if total &gt;= 100:
+        return 0
+    return 0 if is_member else 5</code></pre>
+        <ul>
+          <li><strong>Baseline — 4 test pass:</strong> (a) total = 99, không phải member → 5; (b) total = 100 → 0 (đúng biên); (c) total = 150 → 0; (d) total = 50, là member → 0.</li>
+          <li><strong>Tiêm bug:</strong> đổi <code>total &gt;= 100</code> thành <code>total &gt; 100</code>. Test (b) — đúng ca biên — bắt đầu fail: nhận 5 thay vì 0. Ba test còn lại vẫn pass.</li>
+          <li><strong>Ba trạng thái:</strong> trước: 4 pass · sau tiêm: 3 pass + 1 fail · khôi phục: 4 pass. Đúng ba dòng bằng chứng như slide 52.</li>
+          <li><strong>Kiểm tra môi trường:</strong> chạy baseline một lần trên máy sạch (đúng phiên bản, đủ dependency) và xác nhận "4 pass" <em>trước khi</em> tiêm bug — nếu baseline đã không chạy được thì mọi kết quả sau đó vô nghĩa (slide 48: validate the environment before collecting trajectories).</li>
+        </ul>
+        <p>Tự kiểm thêm: bug của bạn có phải loại "sửa code, không sửa test" không? Nếu bạn thấy mình đang chỉnh test cho khớp code sai — làm lại từ đầu. Và nếu bug khó tới mức chính bạn không sửa được sau 10 phút, hãy tiêm bug dễ hơn: task luyện cần độ khó vừa phải, không cần hóc búa.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu, bấm chọn — đúng thì hiện giải thích, sai thì hiện gợi ý để thử lại.</p>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">1. Đâu là lý do sâu xa nhất khiến code trở thành domain mà agent tiến bộ nhanh nhất?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Vì code được viết bằng tiếng Anh nên model dễ đọc</button>
+        <button class="quiz-opt" data-key="b">Vì chạy test cho tín hiệu đúng/sai khách quan — agent tự kiểm được mình trong vòng lặp</button>
+        <button class="quiz-opt" data-key="c">Vì lập trình viên sẵn sàng chấp nhận code chất lượng thấp</button>
+        <button class="quiz-opt" data-key="d">Vì file code thường nhỏ và dễ đọc</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nghĩ tới chuyện agent biết mình sai mà không cần con người phán.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Code là "bài tập có đáp án ở cuối sách": test chạy ra kết quả, build xanh hay đỏ — tín hiệu rõ ràng, rẻ, không cần con người. Nhờ đó vòng lặp localize → edit → verify có điểm dừng khách quan, và agent tự sửa mình được. Đây cũng là lý do RL từ kết quả test hoạt động tốt trong domain code (slide 28).</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">2. Vì sao tokenizer của model code gộp chuỗi khoảng trắng thành một token (kiểu <code>↵···</code>), thay vì trả một token cho mỗi dấu cách?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Để giấu thụt lề khỏi model cho gọn</button>
+        <button class="quiz-opt" data-key="b">Vì khoảng trắng không mang ý nghĩa gì trong code</button>
+        <button class="quiz-opt" data-key="c">Để không phí một token cho mỗi dấu cách — cùng một file tốn ít token hơn, vẫn giữ nguyên thụt lề như nội dung</button>
+        <button class="quiz-opt" data-key="d">Để file code nặng ít hơn trên ổ đĩa</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: đếm lại ví dụ ở mục 2 — 13 mảnh so với 7 mảnh.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 9: gộp các cụm khoảng trắng hay gặp thành token để không tiêu một token cho mỗi dấu cách. Ví dụ <code>if·ready:↵····return·value↵</code> tốn 7 token thay vì 13. Lợi ích kép: cùng ngữ cảnh chứa được nhiều code hơn, và thụt lề vẫn là token mang cú pháp — model vẫn "thấy" được cấu trúc khối.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">3. Thí nghiệm của Aider trên 89 bài refactoring cho kết quả: cùng GPT-4 Turbo, SEARCH/REPLACE đạt 20% còn simplified unified diff đạt 61%. Bài học chính là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Cách diễn đạt bản sửa (edit format) là một phần của năng lực agent — đổi format, kết quả đổi gấp ba</button>
+        <button class="quiz-opt" data-key="b">Unified diff luôn tốt nhất trong mọi tình huống</button>
+        <button class="quiz-opt" data-key="c">Model không quan trọng, chỉ harness quan trọng</button>
+        <button class="quiz-opt" data-key="d">SEARCH/REPLACE là định dạng vô dụng, không nên dùng</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: điều duy nhất thay đổi trong thí nghiệm là gì?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Biến duy nhất bị đổi là định dạng diễn đạt bản sửa — cùng model, cùng bài. Kết quả 20% → 61% cho thấy harness (prompt + tools + loop + context) là một nửa của năng lực, không phải phụ kiện. Các phương án b và d sai vì quá tuyệt đối: mỗi format có điểm mạnh yếu (mục 5); phương án c sai vì model vẫn quan trọng — bài học là <em>cả hai</em> cùng quan trọng.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">4. mini-SWE-agent chỉ cho model một giao diện duy nhất là shell (chạy lệnh, không tool riêng cho từng việc) mà vẫn đạt kết quả tốt. Bài học rút ra là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Model càng lớn thì càng không cần tool</button>
+        <button class="quiz-opt" data-key="b">Shell là công cụ duy nhất đáng dùng trong mọi domain</button>
+        <button class="quiz-opt" data-key="c">Phải viết thật nhiều tool chuyên biệt thì harness mới mạnh</button>
+        <button class="quiz-opt" data-key="d">Harness đơn giản vẫn có thể rất mạnh — nên đánh giá agent phải đánh giá cả model lẫn harness</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: slide 39 và slide 54 nói gì về "harness = prompts + tools + agent loop + context management"?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Một giao diện shell đã đủ để đọc (<code>rg</code>, <code>cat</code>, <code>find</code>), sửa (<code>sed</code>, Python, <code>patch</code>) và kiểm (<code>pytest</code>, build). Sự tồn tại của mini-SWE-agent, Agentless và thí nghiệm Aider cùng dẫn tới một kết luận: kết quả của agent là tích của model <em>và</em> harness — không thể chỉ nhìn một phía.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">5. Trong cách chấm của SWE-bench, phần <strong>pass → pass</strong> kiểm tra điều gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Rằng agent đã sửa đúng test mới được thêm vào</button>
+        <button class="quiz-opt" data-key="b">Rằng bản sửa không làm hỏng hành vi vốn đã hoạt động tốt</button>
+        <button class="quiz-opt" data-key="c">Rằng patch đúng định dạng unified diff</button>
+        <button class="quiz-opt" data-key="d">Rằng agent làm xong ngay ở lần thử thứ hai</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: fail → pass là "sửa được cái cần sửa"; vậy pass → pass là gì?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 47: fail → pass là "yêu cầu sửa đã được đáp ứng", pass → pass là "hành vi cũ được giữ nguyên" (regression check). Một bản sửa chỉ đúng khi vượt qua <em>cả hai</em> — sửa được bug mới mà phá hành vi cũ thì vẫn fail. Đây cũng là lý do ví dụ retries ở mục 4 phải chạy cả bốn test, không chỉ test của ca zero.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">6. Slide 49 nói: "một thất bại ở cuối không chỉ ra được quyết định nào ở giữa đã sai". Ý này quan trọng thế nào khi luyện coding agent bằng RL?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Nghĩa là phải dừng luyện ngay khi agent fail lần đầu</button>
+        <button class="quiz-opt" data-key="b">Nghĩa là không nên cho agent chạy test ở bước cuối</button>
+        <button class="quiz-opt" data-key="c">Nghĩa là phần thưởng cuối cùng (sửa được hay không) khó quy trách nhiệm cho từng bước — bài toán credit assignment</button>
+        <button class="quiz-opt" data-key="d">Nghĩa là chỉ cần thưởng cho hành động tìm kiếm file, không cần thưởng cho bản sửa</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: tín hiệu thưởng chỉ có một con số ở cuối chuỗi, còn chuỗi thì dài.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Cả chuỗi có thể đúng, chỉ một bước sai — nhưng phần thưởng chỉ nói "fail". Model phải tự suy ra lỗi nằm ở bước tìm file, bước sửa, hay bước kiểm. Đây là bài toán credit assignment (giống đội bóng thua 0–1 mà không biết lỗi ở đường chuyền nào). Vì vậy slide 49 tách rõ: hành động của agent là mục tiêu luyện, còn output tool chỉ là ngữ cảnh.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <p>Đọc lướt bảng này một lần trước khi rời bài:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Coding agent</td><td>Agent làm việc với code: viết, sửa repository, chạy test — ở mức cao nhất là cả vòng đời phần mềm.</td></tr>
+        <tr><td>Pre-training / Mid-training / RL post-training</td><td>Ba chặng luyện model code: học từ kho code + text, chuyên hóa với tỉ lệ code cao hơn, rồi luyện bằng phần thưởng chạy code.</td></tr>
+        <tr><td>Token / BPE</td><td>Mảnh text mà model nhìn thấy; BPE là thuật toán gộp cặp ký tự hay đi cùng nhau thành token.</td></tr>
+        <tr><td>Whitespace-run tokens</td><td>Gộp cụm khoảng trắng (xuống dòng + thụt lề) thành một token — không phí một token cho mỗi dấu cách, mà vẫn giữ thụt lề làm nội dung.</td></tr>
+        <tr><td>Infilling</td><td>Điền vào khoảng trống giữa file, dùng cả prefix lẫn suffix; luyện bằng sentinel token kiểu <code>[M0]</code>.</td></tr>
+        <tr><td>Functional evaluation</td><td>Chấm code bằng cách chạy nó trong môi trường cô lập rồi so kết quả với test.</td></tr>
+        <tr><td>Exact match / BLEU-4 / CodeBLEU / CodeBERTScore</td><td>Các cách so code với bài mẫu, từ so chữ đến so cấu trúc và ngữ nghĩa — đều không thay thế được việc chạy thử.</td></tr>
+        <tr><td>HumanEval / CodeContests / pass@k</td><td>Hai benchmark kinh điển; pass@k = xác suất có ít nhất một trong k lần sinh vượt qua toàn bộ test.</td></tr>
+        <tr><td>NoFunEval / DiffBLEU</td><td>Bộ 397 bài sửa code phi chức năng (nhanh hơn, an toàn hơn…); DiffBLEU đo độ khớp với bản sửa mẫu.</td></tr>
+        <tr><td>Localize → edit → verify</td><td>Vòng lặp xương sống của agentic coding: định vị → sửa → kiểm chứng (kèm regression).</td></tr>
+        <tr><td>Patch</td><td>Sản phẩm nộp của agent: tập thay đổi trên repository.</td></tr>
+        <tr><td>Edit format</td><td>Cách diễn đạt bản sửa: whole file, search/replace, unified diff, file-operation patch, hay script shell.</td></tr>
+        <tr><td>Unified diff</td><td>Định dạng patch chuẩn: file + số dòng + ngữ cảnh; dấu <code>-</code> bỏ, <code>+</code> thêm.</td></tr>
+        <tr><td>Harness</td><td>prompts + tools + agent loop + context management — khung chạy agent.</td></tr>
+        <tr><td>SWE-bench</td><td>Benchmark issue thật: chấm bằng fail → pass (sửa được) và pass → pass (không phá gì).</td></tr>
+        <tr><td>SWE-Gym / SWE-smith</td><td>Cách tạo task luyện chạy được: môi trường + issue + kiểm tra; và cách tiêm bug vào code (không sửa test).</td></tr>
+        <tr><td>Credit assignment</td><td>Vấn đề quy trách nhiệm: phần thưởng ở cuối chuỗi không chỉ ra bước nào sai.</td></tr>
+        <tr><td>mini-SWE-agent / Agentless</td><td>Hai ví dụ cho thấy harness đơn giản (shell-only) và workflow cố định vẫn rất mạnh.</td></tr>
+        <tr><td>Multi-harness training</td><td>Luyện cùng một model qua nhiều harness để nó không phụ thuộc vào một khung cụ thể.</td></tr>
+        <tr><td>World model cho code</td><td>Model đoán trước kết quả chạy code (ví dụ đoán <code>result</code> sau khi alias bị sửa) — giúp chọn hành động, nhưng đoán sai thì quyết định sai.</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li id="src-muc">Ba mức coding agent (viết code → sửa repository → làm development) và ba nguyên liệu prompt · tools · LLM — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=2">slide 2</a>–<a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=3">3</a>; "editing — condition on both sides" — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=5">slide 5</a>; vòng đời phần mềm và "a test pass is one step, not the release decision" — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=61">slide 61</a>.</li>
+      <li id="src-thoigian">Thời gian lập trình viên: chỉ 15% là đọc/viết code và test (Meyer et al., 2019, Table 2, 5.928 ngày làm việc tự khai của Microsoft) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=62">slide 62</a>; bảng so sánh các họ task (repair / library / test generation / CI repair / evolution) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=63">slide 63</a>.</li>
+      <li id="src-luyen">Ba chặng luyện (pre-training, mid-training, RL post-training) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=6">slide 6</a>; trộn nguồn, giữ cấu trúc, đánh giá theo domain (OLMo, Groeneveld et al., 2024) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=7">slide 7</a>; lọc, khử trùng lặp, provenance, chống rò rỉ (StarCoder) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=8">slide 8</a>; StarCoderBase 15,5B tham số / 1T token / 80+ ngôn ngữ (Li et al., 2023) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=10">slide 10</a>; mid-training và Code Llama thêm 500B token (Rozière et al., 2023) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=11">slide 11</a>; bảng trộn code/text/toán (Qwen2.5-Coder, Hui et al., 2024) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=12">slide 12</a>; ngữ cảnh dài 8K → 32K, YaRN 128K, ví dụ types.py → worker.py → caller.py — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=13">slide 13</a>.</li>
+      <li id="src-token">Token hóa code: byte-level BPE, identifier trải nhiều token, whitespace-run tokens, ví dụ <code>if·ready:↵····return·value↵</code> (StarCoder §5.3; StarCoder2 tokenizer) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=9">slide 9</a>.</li>
+      <li id="src-infilling">Infilling: ví dụ <code>is_positive</code> — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=14">slide 14</a>; sentinel <code>[M0]</code> và định dạng luyện (InCoder, Fried et al., 2022/ICLR 2023) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=15">slide 15</a>; bảng giá trị của suffix (48.2% / 54.9% / 69.0% và 24.9% / 28.2% / 38.6%) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=16">slide 16</a>; so sánh mục tiêu luyện (6.0/8.9 so với 8.0/10.9, ngân sách 52B token) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=17">slide 17</a>; các tín hiệu khác: commit diff, diagnostics, tests, execution traces — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=18">slide 18</a>. Bài InCoder: <a href="https://arxiv.org/abs/2204.05999">arXiv:2204.05999</a>.</li>
+      <li id="src-danhgia">Exact match, BLEU-4, ví dụ <code>return x &gt; 0</code> / <code>x &gt;= 0</code> / <code>not (x &lt;= 0)</code> (Yin &amp; Neubig, ACL 2017; CodeBLEU, Ren et al., 2020) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=20">slide 20</a>; CodeBLEU — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=21">slide 21</a>; CodeBERTScore (Zhou et al., EMNLP 2023) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=22">slide 22</a>; chạy thử trong runtime cô lập — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=23">slide 23</a>; ưu / nhược của execution checks (EvalPlus) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=24">slide 24</a>; HumanEval (164 hàm Python) và CodeContests — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=25">slide 25</a>; pass@k — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=26">slide 26</a>; yêu cầu phi chức năng, NoFunEval 397 bài, DiffBLEU, CodeQL (Singhal et al., 2024) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=27">slide 27</a>; RL từ kết quả test (DeepCoder, Luo et al., 2025) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=28">slide 28</a>; ví dụ tổng 1 + … + n tới 10<sup>12</sup> — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=29">slide 29</a>–<a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=30">30</a>. HumanEval: <a href="https://arxiv.org/abs/2107.03374">arXiv:2107.03374</a>.</li>
+      <li id="src-vonglap">Single-step so với agentic coding — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=32">slide 32</a>; vòng localize → edit → verify (SWE-agent) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=33">slide 33</a>; ví dụ "retries = 0" — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=34">slide 34</a>–<a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=36">36</a>; Agentless (Xia et al.) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=37">slide 37</a>. SWE-agent: <a href="https://arxiv.org/abs/2405.15793">arXiv:2405.15793</a>; Agentless: <a href="https://arxiv.org/abs/2407.01489">arXiv:2407.01489</a>.</li>
+      <li id="src-format">Shell-only toolset (mini-SWE-agent) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=39">slide 39</a>; sửa bằng sed — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=40">slide 40</a>; whole file so với search/replace — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=41">slide 41</a>; unified diff và Codex patch — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=42">slide 42</a>; benchmark refactoring 89 bài, GPT-4 Turbo 20% so với 61% — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=43">slide 43</a>. Bài viết của Aider về unified diffs: <a href="https://aider.chat/2023/12/21/unified-diffs.html">aider.chat/2023/12/21/unified-diffs.html</a>; mini-SWE-agent: <a href="https://github.com/SWE-agent/mini-swe-agent">github.com/SWE-agent/mini-swe-agent</a>.</li>
+      <li id="src-tim">Tìm code theo triệu chứng và đi theo giá trị — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=44">slide 44</a>; đồ thị phụ thuộc (LocAgent, Chen et al., 2025) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=45">slide 45</a>.</li>
+      <li id="src-swebench">SWE-bench: fail → pass và pass → pass (Jimenez et al.) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=47">slide 47</a>; task chạy được (SWE-Gym) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=48">slide 48</a>; RL cho chuỗi sửa nhiều bước, "a late failure does not identify which earlier decision was wrong" (R2E-Gym, Jain et al., 2025) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=49">slide 49</a>; learned-verifier (SWE-Gym, Pan et al., 2024) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=50">slide 50</a>; tiêm bug, sửa code không sửa test (SWE-smith, Yang et al., 2025) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=51">slide 51</a>–<a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=52">52</a>; đa ngôn ngữ (Multi-SWE-bench, SWE-bench Multilingual) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=53">slide 53</a>. SWE-bench: <a href="https://arxiv.org/abs/2310.06770">arXiv:2310.06770</a>.</li>
+      <li id="src-harness">Harness = prompts + tools + agent loop + context management; multi-harness training (Nemotron 3 Ultra, Polar) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=54">slide 54</a>. StarCoder: <a href="https://arxiv.org/abs/2305.06161">arXiv:2305.06161</a>; Code Llama: <a href="https://arxiv.org/abs/2308.12950">arXiv:2308.12950</a>; Qwen2.5-Coder: <a href="https://arxiv.org/abs/2409.12186">arXiv:2409.12186</a>.</li>
+      <li id="src-mo-rong">Frontend: browser agent so với script Playwright — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=56">slide 56</a>–<a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=57">57</a>; ví dụ sửa <code>value.length</code> → <code>value.trim().length</code> — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=58">slide 58</a>; "một tấm ảnh trong issue không biến so ảnh thành tiêu chí chấm điểm" — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=59">slide 59</a>. Localization, F1 ở ba mức (CodeScout, 2026) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=64">slide 64</a>; tạo app (ViBench) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=65">slide 65</a>; thư viện (Commit0, ProgramBench) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=66">slide 66</a>; bảo trì (SWE-Milestone) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=67">slide 67</a>; sinh test (SWT-Bench, Mündler et al., 2024) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=68">slide 68</a>; sửa CI (Node 16 so với yêu cầu ≥ 18, LCA CI Builds Repair) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=69">slide 69</a>; học kỹ năng cho task mới — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=70">slide 70</a>; chuyển giao giữa các họ task (Hybrid-Gym 32B: 7 → 32.4; 9.01 → 16.86; 8.34 → 13.45) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=72">slide 72</a>.</li>
+      <li id="src-worldmodel">Policy π(a|h) và world model p(o|h,a) — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=74">slide 74</a>; ví dụ alias <code>items</code> / <code>alias</code> — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=75">slide 75</a>; khi dự đoán sai dẫn tới chọn nhầm patch — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=76">slide 76</a>; CWM — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=77">slide 77</a>; Code World Models / GIF-MCTS — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=78">slide 78</a>; bốn câu hỏi mở — <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf#page=79">slide 79</a>.</li>
+      <li>Slide gốc đầy đủ: <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf">lecture-06-coding-agents.pdf</a> (bản trên web: <a href="https://www.cmu-agents.com/slides/lecture-06-coding-agents.pdf">cmu-agents.com/slides/lecture-06-coding-agents.pdf</a>). Buổi giảng: 3b · Domains 1: Coding Agents — Graham Neubig, 10/09/2026 (slide cuối: buổi sau là Domains 2 — GUI Agents).</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài tiếp theo:</strong> 08 · Computer Use Agents — buổi 4a (lecture-07), nơi vòng localize–edit–verify được áp lên màn hình thay vì file code.</p>
+    <p>Chưa rõ chỗ nào? Đừng cố đi tiếp — ghi lại câu hỏi, mở lại slide tương ứng ở mục 10, và thử tự trả lời trước khi đọc lại bài.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

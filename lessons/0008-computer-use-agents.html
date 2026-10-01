@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 08 · Computer Use Agents — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Bài 08</div>
+    <h1>Computer Use Agents</h1>
+    <p class="subtitle">Agent ngồi trước màn hình như bạn: nhìn ảnh chụp màn hình, rồi tự click và gõ phím. Vì sao điều đó khó, và người ta đo nó thế nào — theo buổi 4a của JY Koh (Lecture 07: Computer Use Agents).</p>
+    <p class="lesson-meta"><span>~25 phút</span><span>6 câu hỏi tương tác</span><span>3 bài thực hành tự kiểm</span><span>Nguồn: lecture-07</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#cua-la-gi">Computer-use agent là gì?</a></li>
+      <li><a href="#vong-lap">Vòng lặp: nhìn → nghĩ → làm</a></li>
+      <li><a href="#grounding">Grounding — nhìn ảnh rồi click đúng chỗ</a></li>
+      <li><a href="#cham-diem">Chấm điểm một CUA: action, outcome, process</a></li>
+      <li><a href="#web-that">Web thật và giao diện đổi liên tục</a></li>
+      <li><a href="#hanh-trinh-dai">Hành trình dài và lỗi tích lũy</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">📝 Exam của bài này</div>
+    <p>Làm <a href="../exams/0008-exam.html"><strong>Exam 08</strong></a> để nhớ chắc — nhiều câu hỏi + bài tập code có test tự chạy, làm lại được nhiều lần. Mục tiêu: đúng ≥ 85%.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bài này không cần nền ML, nhưng cần bạn <strong>hình dung được một người đang dùng máy tính</strong> — vì CUA làm đúng những gì người đó làm. Mục 1–2 là nền; mục 3–6 là ba thách thức cốt lõi, mỗi mục đều có phần "vì sao". Đến mục 8, bạn tự làm bài rồi <strong>mở đáp án để tự kiểm</strong>. Không phải nộp cho ai cả.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="cua-la-gi">
+    <h2>Computer-use agent là gì?</h2>
+
+    <p>Hãy tưởng tượng bạn nhờ một người bạn giúp việc qua chia sẻ màn hình. Người đó <em>không</em> được mở terminal, không gọi API, không đọc tài liệu kỹ thuật. Họ chỉ có: màn hình của bạn, con chuột và bàn phím. Muốn làm gì, họ phải nhìn màn hình rồi tự tìm chỗ để bấm.</p>
+
+    <p><strong>Computer-use agent</strong> (CUA — agent dùng máy tính) làm việc đúng như vậy. Slide định nghĩa gọn:</p>
+
+    <blockquote>
+      <p>"CUAs observe rendered GUIs, execute actions, and check what changed."</p>
+      <cite>— Lecture 07, <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=2">trang 2</a> (JY Koh, buổi 4a)</cite>
+    </blockquote>
+
+    <p>Dịch từng mảnh: <em>observe rendered GUIs</em> — quan sát giao diện đã được hiển thị; <em>execute actions</em> — thực hiện hành động; <em>check what changed</em> — xem có gì thay đổi. <strong>GUI</strong> (graphical user interface, giao diện đồ hoạ) là những gì bạn nhìn thấy và bấm được trên màn hình: nút, ô nhập liệu, menu, biểu tượng.</p>
+
+    <p>Slide chia CUA theo ba môi trường làm việc:<sup><a href="#src-p2">[1]</a></sup></p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Browser</div>
+        <h3>Trình duyệt</h3>
+        <p>Mua sắm qua nhiều trang, điền form, tra cứu. Ví dụ: đặt vé tàu trên một trang web không có API cho bạn dùng.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Desktop</div>
+        <h3>Máy tính để bàn</h3>
+        <p>Sửa file qua nhiều ứng dụng: bảng tính, email, phần mềm CAD… Ví dụ: cập nhật sổ sách từ các hoá đơn trong một thư mục.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Mobile</div>
+        <h3>Điện thoại</h3>
+        <p>Điều hướng màn hình và cử chỉ (chạm, vuốt). Ví dụ: mở app ngân hàng và chuyển khoản.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Điểm chung</div>
+        <h3>Cùng một ý tưởng</h3>
+        <p>Ở cả ba nơi, agent <em>không cần</em> một cổng kết nối riêng cho lập trình viên — nó dùng đúng giao diện mà con người đang dùng.</p>
+      </div>
+    </div>
+
+    <p><strong>Vì sao ý tưởng này quan trọng?</strong> Vì phần lớn phần mềm trên đời không có API tử tế: trang web nội bộ, phần mềm kế toán cũ, app điện thoại của ngân hàng. Nếu agent biết dùng giao diện như người, nó chạm được tới những việc mà cách "gọi API" không bao giờ với tới. Đổi lại, nó không có "hợp đồng" nào để dựa vào — mọi thứ phải tự khám phá bằng mắt.</p>
+
+    <h3>CUA khác coding agent ở đâu?</h3>
+
+    <p>Coding agent (như Claude Code, Cursor) là loại agent sửa file và chạy lệnh trong repository. Cả hai đều là agent trong một vòng lặp. Nhưng "giác quan" và "tay chân" khác hẳn:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th></th><th>Coding agent</th><th>Computer-use agent</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Quan sát</td><td>Văn bản: nội dung file, kết quả lệnh</td><td>Ảnh chụp màn hình (pixel)</td></tr>
+        <tr><td>Hành động</td><td>Sửa file, chạy lệnh, gọi API</td><td>Click tại toạ độ (x, y), gõ phím, cuộn, vuốt</td></tr>
+        <tr><td>"Bàn tay"</td><td>Tool và API có cấu trúc</td><td>Chuột và bàn phím</td></tr>
+        <tr><td>Muốn làm việc với một app</td><td>Cần API hoặc định dạng file đã biết</td><td>Chỉ cần app có giao diện</td></tr>
+        <tr><td>Khi sai</td><td>Thường đọc được thông báo lỗi rồi sửa lại</td><td>Cú click là thật: có thể đặt hàng, gửi tiền, xoá dữ liệu</td></tr>
+      </tbody>
+    </table>
+
+    <p>Hệ quả quan trọng nhất: coding agent làm việc qua <strong>API và định dạng đã biết trước</strong> — nó <em>biết</em> hàm nào để gọi, file nào để sửa. CUA thì không có bản hợp đồng nào cả. Nó phải tự nhìn và tự tìm. Kỹ năng "tự tìm" đó gọi là <strong>grounding</strong> — mục 3 sẽ mổ xẻ, và bạn sẽ thấy nó khó hơn tưởng tượng.</p>
+
+    <p>Slides 47–56 gọi model của CUA là một <strong>VLM</strong> (vision-language model — model đọc được cả ảnh lẫn chữ). Mỗi bước, nó nhận: mục tiêu + các ảnh trước + các hành động trước + ảnh mới nhất. "Lịch sử ảnh và hành động xen kẽ nhau" này cho phép model biết mình đã đi đến đâu.<sup><a href="#src-p47">[11]</a></sup></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="vong-lap">
+    <h2>Vòng lặp: nhìn → nghĩ → làm</h2>
+
+    <p>Một CUA chạy theo vòng lặp <strong>observe → reason → act</strong> (quan sát → suy luận → hành động). Slide 3 vẽ vòng lặp với ba vai rõ ràng:<sup><a href="#src-p3">[2]</a></sup></p>
+
+    <ul>
+      <li><strong>Model (CUA):</strong> đọc ảnh chụp màn hình + nhiệm vụ, suy nghĩ, rồi đề xuất một hành động.</li>
+      <li><strong>Hạ tầng (infrastructure):</strong> kiểm tra hành động (validate) rồi thực thi (execute) — biến nó thành click và gõ phím thật.</li>
+      <li><strong>Môi trường:</strong> trạng thái thay đổi theo hành động; hạ tầng chụp ảnh mới đưa lại cho model.</li>
+    </ul>
+
+    <p>Vẽ ra thì như thế này:</p>
+
+    <pre><code>     NHIỆM VỤ: "mua cái cốc màu xanh"
+                  │
+                  ▼
+   ┌──────────────────────────────────────┐
+   │              MODEL (VLM)             │◄───────────────┐
+   │    nhìn ảnh · suy nghĩ · đề xuất     │                │
+   └──────────────────────────────────────┘                │
+                  │                                         │
+                  │ hành động: click [33, 201]              │
+                  ▼                                         │
+   ┌──────────────────────────────────────┐                │
+   │      HẠ TẦNG (INFRASTRUCTURE)        │                │
+   │          kiểm tra → thực thi          │                │
+   └──────────────────────────────────────┘                │
+                  │                                         │
+                  ▼                                         │
+   ┌──────────────────────────────────────┐                │
+   │              MÔI TRƯỜNG               │                │
+   │          trạng thái thay đổi          │                │
+   └──────────────────────────────────────┘                │
+                  │                                         │
+                  │  chụp ảnh màn hình mới                  │
+                  └─────────────────────────────────────────┘
+</code></pre>
+
+    <p><strong>Vì sao hạ tầng phải đứng giữa?</strong> Vì model không có tay. Nó chỉ <em>đề xuất</em> hành động dưới dạng một cấu trúc dữ liệu. Hạ tầng kiểm tra xem hành động có hợp lệ không, rồi mới biến nó thành sự kiện chuột/bàn phím thật trên máy. Sau khi chạy xong, hạ tầng chụp màn hình mới và vòng lặp tiếp tục. Slide ghi đúng một câu: <em>"Actions change the state, a new screenshot observation is provided to the model."</em><sup><a href="#src-p3">[2]</a></sup></p>
+
+    <h3>Chạy thử một nhiệm vụ cụ thể</h3>
+
+    <p>Slides 4–8 dẫn một ví dụ xuyên suốt: nhiệm vụ <strong>"Buy a blue mug"</strong> (mua cái cốc màu xanh). Xem từng bước — chú ý model luôn <em>nói ra điều nó thấy</em> trước khi hành động:<sup><a href="#src-p4">[3]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Bước</th><th>Ảnh chụp cho thấy</th><th>Model nói (suy luận)</th><th>Hành động gửi đi</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>Danh sách sản phẩm: cốc kem $16, cốc xanh $18, bộ cốc $28</td>
+          <td>"Tôi thấy cốc xanh ở giữa màn hình. Tôi sẽ click vào nó."</td>
+          <td><code>{"mouse": {"left_click": [33, 201]}}</code></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Trang sản phẩm cốc xanh: giá $18, nút "Add to cart"</td>
+          <td>"Thông tin giao hàng ở phía dưới. Tôi sẽ cuộn xuống để tìm."</td>
+          <td><code>{"scroll": {"dy": 520}}</code></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Mục "Delivery estimate" với ô "Postal code"</td>
+          <td>"Tôi thấy ô ZIP. Tôi sẽ click vào để bắt đầu gõ."</td>
+          <td><code>{"mouse": {"left_click": [65, 53]}}</code></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Ô ZIP đang được chọn, con trỏ nhấp nháy</td>
+          <td>"Tôi sẽ gõ mã ZIP để kiểm tra phương án giao hàng."</td>
+          <td><code>{"type_text": "15213"}</code></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>…</td>
+          <td>…</td>
+          <td>… cứ thế đến khi xong → <strong>reward 1.0</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Kết thúc: vòng lặp chạy đến khi nhiệm vụ hoàn thành, rồi một <strong>reward</strong> được tính — trong ví dụ là <code>1.0</code>, "task success".<sup><a href="#src-p4">[3]</a></sup> Một CUA hiện đại còn có thể gọi tool hoặc phát hành động <em>stop</em> khi cho rằng đã xong — bộ hành động gồm click / type / tool / stop.<sup><a href="#src-p47">[11]</a></sup></p>
+
+    <div class="callout">
+      <div class="callout-title">Ba điều đáng chú ý trong ví dụ này</div>
+      <ol>
+        <li><strong>Mỗi hành động rất nhỏ.</strong> Cả việc "mua cốc" là một chuỗi hành động nhỏ: click, cuộn, click, gõ… Không có bước nào "to" cả.</li>
+        <li><strong>Trước khi làm, model phải tìm.</strong> Câu "tôi thấy cốc xanh ở giữa màn hình" nghe đơn giản, nhưng đó là cả một kỹ năng: nhìn ảnh và xác định vị trí. Đó là grounding (mục 3).</li>
+        <li><strong>Toạ độ chỉ đúng cho ảnh này.</strong> <code>[33, 201]</code> là vị trí của cốc xanh <em>trong ảnh chụp hiện tại</em>. Nếu trang đổi bố cục — thêm banner, đổi kích thước cửa sổ — cùng cái cốc sẽ nằm ở toạ độ khác. Đó là lý do "giao diện đổi liên tục" là thách thức (mục 5).</li>
+      </ol>
+    </div>
+
+    <p>Tự nhiên bạn cũng làm đúng vòng lặp này khi mua hàng online: nhìn → nghĩ "cần bấm vào sản phẩm" → bấm → nhìn lại. Chỉ khác một điều: mắt và tay của bạn không cần giải thích; còn với model, mọi thứ phải đi qua một câu mô tả và một cặp toạ độ.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="grounding">
+    <h2>Grounding — nhìn ảnh rồi click đúng chỗ</h2>
+
+    <p>Đây là thách thức số một của CUA. <strong>Grounding</strong> nghĩa đen là "nối xuống đất". Trong CUA, nó là việc nối <em>thứ mình muốn thao tác</em> ("nút Mua", "ô ZIP") với <em>vị trí cụ thể trên màn hình</em> — một cặp toạ độ (x, y).</p>
+
+    <p>Ví dụ ở mục 2: model click vào <code>[33, 201]</code>. Con số đó nghĩa là: cách mép trái 33 pixel, cách mép trên 201 pixel. Nếu model tính lệch vài chục pixel, cú click trượt — và nó vừa bấm sang một thứ khác.<sup><a href="#src-p4">[3]</a></sup></p>
+
+    <p><strong>Vì sao khó?</strong> Ba lý do:</p>
+    <ul>
+      <li><strong>Model chỉ có pixel.</strong> Với bạn, "nút Mua" là một thứ có nghĩa. Với model, màn hình chỉ là một lưới điểm ảnh — nó phải học cách nhìn ra đâu là nút, đâu là chữ, đâu là chỗ cần bấm.</li>
+      <li><strong>Phần tử nhỏ và dày đặc.</strong> Giao diện chuyên nghiệp (CAD, phần mềm chỉnh ảnh, IDE) có hàng trăm biểu tượng nhỏ xíu cạnh nhau. Bấm lệch một chút là trúng chức năng khác.</li>
+      <li><strong>Toạ độ gắn chặt với ảnh hiện tại.</strong> Không có "địa chỉ" cố định nào để nhớ — mỗi ảnh mới phải định vị lại.</li>
+    </ul>
+
+    <p>Ví dụ đời thường: bạn chỉ cho người mới dùng Photoshop — "bấm nút thêm layer". Bạn nói được bằng lời, nhưng để bấm trúng, họ phải tìm ra đúng biểu tượng nhỏ trong một rừng biểu tượng. CUA cũng vậy, chỉ khác là nó "nhìn" bằng một lưới số.</p>
+
+    <h3>ScreenSpot-Pro: đo riêng kỹ năng grounding</h3>
+
+    <p>Grounding khó đến mức người ta đo nó thành một benchmark riêng. <strong>ScreenSpot-Pro</strong> (Li et al., 2025) đưa cho model một ảnh chụp màn hình + một mô tả, và hỏi: "bấm vào đâu?".<sup><a href="#src-p19">[6]</a></sup></p>
+
+    <ul>
+      <li><strong>Cách chấm:</strong> point / region matching — điểm click có nằm trong vùng đúng (target box) hay không.</li>
+      <li><strong>Quy mô:</strong> 1.581 ảnh chụp, 23 ứng dụng, 3 hệ điều hành.<sup><a href="#src-p19">[6]</a></sup></li>
+      <li><strong>Đặc điểm:</strong> toàn giao diện chuyên nghiệp, độ phân giải cao. Slide kết luận: <em>"High-resolution professional UIs make grounding a benchmark of its own."</em> — giao diện chuyên nghiệp độ phân giải cao khiến grounding trở thành một benchmark riêng.</li>
+    </ul>
+
+    <p>Một ví dụ cụ thể: nhiệm vụ "Construct a UV sphere mesh" (dựng một khối cầu UV) trong Blender. Vùng cần bấm có toạ độ từ <code>(417, 132)</code> đến <code>(576, 152)</code> trên ảnh gốc 2560 × 1440. Click vào một điểm nằm trong hộp đó → 1 điểm.<sup><a href="#src-p19">[6]</a></sup></p>
+
+    <pre><code>   Ảnh gốc: 2560 × 1440 pixel
+   ┌────────────────────────────────────────────────┐
+   │                                                │
+   │        ┌───────────────────────┐               │
+   │        │     vùng cần bấm      │               │
+   │        └───────────────────────┘               │
+   │                                                │
+   └────────────────────────────────────────────────┘
+
+   Vùng đúng (ground truth): (417, 132) ─ (576, 152)
+   → rộng khoảng 160 pixel, cao khoảng 20 pixel.
+     Click vào trong vùng = 1,0 điểm. Lệch ra ngoài = 0.
+</code></pre>
+
+    <p><strong>Vì sao "giao diện chuyên nghiệp" lại là chuyện lớn?</strong> Vì nút "Mua ngay" trên một trang mua sắm to đùng, chữ rõ — dễ tìm. Còn biểu tượng chức năng trong Blender nhỏ, ít chữ, nằm cạnh hàng chục biểu tượng giống nhau. Cùng là "click đúng chỗ", độ khó chênh nhau rất nhiều. Đo trên giao diện khó mới biết model thật sự giỏi đến đâu.</p>
+
+    <h3>Mind2Web: chấm "hành động kế tiếp" — nhanh nhưng hẹp</h3>
+
+    <p>Một kiểu đo khác: cho model xem một trang web đã ghi lại, hỏi "bước tiếp theo nên làm gì?". <strong>Mind2Web</strong> (Deng et al., 2023) gồm 2.350 nhiệm vụ trên 137 website, 31 lĩnh vực. Cách chấm: so khớp hành động model dự đoán với hành động đúng trong bản ghi (đúng phần tử, đúng thao tác) — <em>không</em> chạy nhiệm vụ thật, nên gọi là "offline".<sup><a href="#src-p19">[6]</a></sup></p>
+
+    <p>Ví dụ từ slide: nhiệm vụ "Rent a car in Brooklyn–Central, NY, for April 9–15" (thuê xe ở Brooklyn–Central từ 9–15/4). Hành động đúng ở bước này: CLICK vào tab "CAR" — phần tử có tên <code>bookCarTab</code>. Model chỉ cần chọn đúng phần tử và đúng thao tác.<sup><a href="#src-p19">[6]</a></sup></p>
+
+    <div class="callout">
+      <div class="callout-title">Vì sao "một bước đúng" chưa phải "làm xong việc"</div>
+      <p>Slide ghi hai câu đáng nhớ: <em>"A correct step is not a completed task"</em> (một bước đúng chưa phải một nhiệm vụ hoàn thành) và <em>"Next-action imitation is not the same thing as task completion"</em> (bắt chước hành động kế tiếp không phải là hoàn thành nhiệm vụ).<sup><a href="#src-p19">[6]</a></sup></p>
+      <p>Ví dụ tự nghĩ cho dễ hình dung: đoán đúng nước đi tiếp theo trong một ván cờ <em>không</em> nói lên bạn thắng được ván cờ. Cũng vậy, click đúng nút "Add to cart" chưa cho biết agent có tìm được nút tiếp theo, nhập đúng thông tin, và tránh được những hành động bị cấm hay không.</p>
+    </div>
+
+    <p>Cùng họ "chấm offline" còn có các bộ dữ liệu mobile: AITW (715 nghìn episode, hơn 30 nghìn câu lệnh khác nhau) và AndroidControl (15.283 demo trên 833 ứng dụng) — cũng chấm bằng so khớp hành động trên bản ghi.<sup><a href="#src-p86">[14]</a></sup></p>
+
+    <p>Một chi tiết đáng nhớ: chính những bộ dữ liệu này cũng là <em>nguyên liệu huấn luyện</em>. Slide 59–60 mô tả giai đoạn pre-training của CUA: model học "boxes · labels · OCR → grounding" (hộp, nhãn, chữ trong ảnh → biết bấm vào đâu) và "click · type · swipe → control" (bấm, gõ, vuốt → điều khiển).<sup><a href="#src-p59">[12]</a></sup></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="cham-diem">
+    <h2>Chấm điểm một CUA: action, outcome, process</h2>
+
+    <p>Slide 17 mở đầu phần benchmark bằng một câu hỏi rất tỉnh: <em>"What should count as success?"</em> — điều gì mới đáng gọi là thành công? Cùng một nhiệm vụ có thể được chấm theo ba cách khác nhau.<sup><a href="#src-p17">[5]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Cách chấm</th><th>Câu hỏi</th><th>Kiểu đo</th><th>Ví dụ với "mua cốc xanh"</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge">Action</span></td>
+          <td>Có bấm đúng mục tiêu không?</td>
+          <td>Grounding / bắt chước, chấm nhanh</td>
+          <td>Click đúng vào nút "Add to cart"</td>
+        </tr>
+        <tr>
+          <td><span class="badge">Outcome</span></td>
+          <td>Kết quả cuối có đúng không?</td>
+          <td>Kiểm trạng thái cuối, hoặc giám khảo đọc bằng chứng</td>
+          <td>Giỏ hàng có đúng cốc xanh, giá dưới $20, chưa có đơn nào</td>
+        </tr>
+        <tr>
+          <td><span class="badge">Process</span></td>
+          <td>Quá trình có tôn trọng ràng buộc không?</td>
+          <td>Kiểm cả đường đi (trajectory)</td>
+          <td>Không thanh toán, không thay đổi gì ngoài yêu cầu</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Slide kết luận bằng một câu là kim chỉ nam cho cả bài: <em>"Evaluators should match the capability you want to measure."</em> — người chấm phải khớp với năng lực bạn muốn đo.<sup><a href="#src-p17">[5]</a></sup></p>
+
+    <p><strong>Vì sao phải phân biệt ba cách này?</strong> Vì mỗi cách trả lời một câu hỏi khác nhau. Muốn biết agent "bấm giỏi không" → đo action, nhanh và rẻ. Muốn biết "nó có làm xong việc không" → đo outcome. Muốn biết "nó có làm đúng luật, không gây hậu quả không" → đo process. Giống như kiểm tra học sinh: đề lý thuyết và bài thực hành đo hai thứ khác nhau — chọn sai đề thì kết luận sai.</p>
+
+    <h3>Bốn mức benchmark — bản đồ của cả bài</h3>
+
+    <p>Slide 18 xếp các benchmark thành bốn mức, từ nhỏ đến lớn:<sup><a href="#src-p17">[5]</a></sup></p>
+
+    <pre><code>   02A  TĨNH              dự đoán MỘT hành động trên ảnh ghi sẵn
+                          ví dụ: ScreenSpot-Pro, Mind2Web             (§3)
+
+   02B  END-TO-END WEB    hoàn thành nhiệm vụ qua trình duyệt
+                          ví dụ: WebArena, VisualWebArena, WebVoyager  (§5)
+
+   02C  END-TO-END        hoàn thành nhiệm vụ qua nhiều app + trạng thái
+        DESKTOP/MOBILE    ví dụ: OSWorld, WindowsAgentArena            (§6)
+
+   02D  HÀNH TRÌNH DÀI    duy trì tiến độ qua quy trình kéo dài
+                          ví dụ: Odysseys, OSWorld 2.0, CUA-World-Long (§6)
+</code></pre>
+
+    <p>Mức D mở rộng mức B và C theo chiều dài: nhiệm vụ không chỉ nhiều bước, mà kéo dài đến mức con người phải làm cả tiếng đồng hồ. Slide ghi: <em>"Long horizon extends end-to-end evaluation across both web and desktop."</em><sup><a href="#src-p17">[5]</a></sup></p>
+
+    <h3>Vì sao môi trường benchmark cứ "thật" dần?</h3>
+
+    <p>Slides 9–15 kể một dòng thời gian ngắn — và mỗi bước tiến đều có lý do rất thực tế:<sup><a href="#src-p9">[4]</a></sup></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Giai đoạn</th><th>Môi trường</th><th>Vì sao cần bước tiếp theo</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2017–2018</td>
+          <td>MiniWoB, MiniWoB++ — web "đồ chơi", giao diện đơn giản hoá</td>
+          <td>Học được hành vi cơ bản, nhưng không giống web thật nên không nói lên nhiều.</td>
+        </tr>
+        <tr>
+          <td>2022</td>
+          <td>WebShop — mua sắm với sản phẩm thật và mục tiêu bằng ngôn ngữ</td>
+          <td>Gần đời thật hơn: phải hiểu yêu cầu và tìm sản phẩm.</td>
+        </tr>
+        <tr>
+          <td>2024</td>
+          <td>WebArena, VisualWebArena (web thật tự dựng) · OSWorld (desktop thật)</td>
+          <td>Nhiệm vụ dài nhiều bước, cần trạng thái thật để chấm.</td>
+        </tr>
+        <tr>
+          <td>2026</td>
+          <td>MyPCBench (một "cuộc sống số" cá nhân) · CUA-World / Gym-Anything (phần mềm chuyên nghiệp thật)</td>
+          <td>Việc thật của con người diễn ra trên nhiều app, với dữ liệu và lịch sử riêng.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Slide 15 cũng chiếu một demo dùng thật: một model rất mạnh và nhanh (GPT-6 Astra) làm nhiệm vụ trên OSWorld 2.0 — nhưng slide ghi thẳng: <em>"still (very) expensive"</em> (vẫn rất đắt). Nghĩa là năng lực đã có, chi phí thì chưa ổn.<sup><a href="#src-p9">[4]</a></sup></p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="web-that">
+    <h2>Web thật và giao diện đổi liên tục</h2>
+
+    <p>Ở mức end-to-end web (02B), câu hỏi không còn là "bấm đúng chưa?" mà là "làm xong việc chưa?". Có hai cách chấm lớn, và chúng đánh đổi với nhau.<sup><a href="#src-p25">[7]</a></sup></p>
+
+    <h3>Cách 1 — kiểm trạng thái cuối bằng chương trình (WebArena)</h3>
+
+    <p><strong>WebArena</strong> (Zhou et al., 2024) dựng 4 website thật ngay trên máy chủ của nhóm nghiên cứu (self-hosted), nên môi trường nằm trong tầm kiểm soát và chạy lại được. Bộ này có <strong>812 nhiệm vụ dài nhiều bước</strong>, chấm bằng functional success checks: chạy code kiểm trạng thái cuối của ứng dụng.<sup><a href="#src-p25">[7]</a></sup></p>
+
+    <p>Ví dụ với nhiệm vụ "thêm cốc xanh dưới 20 đô vào giỏ, đừng thanh toán", bộ kiểm tra có thể gồm:<sup><a href="#src-p25">[7]</a></sup></p>
+
+    <pre><code>   cart.item    == blue_mug      # đúng món
+   cart.price   &lt;  20            # đúng giá
+   orders.count == 0             # chưa có đơn nào được tạo
+
+   assert all(checks)  →  PASS  →  reward = 1.0
+</code></pre>
+
+    <p>Nhưng đây mới là bài học tinh tế nhất về mọi loại benchmark. Slide viết: <em>"Repeatable and precise — but only for conditions the tests cover."</em> — tái lập được và chính xác, nhưng <strong>chỉ cho những điều mà bộ test có kiểm</strong>.<sup><a href="#src-p25">[7]</a></sup></p>
+
+    <p>Slide 27 cho một ví dụ rất thật. Nhiệm vụ: tạo một repository rỗng tên <code>awesome_llm_reading</code>. Bộ chấm mở trang dự án, lấy nội dung HTML, và cho điểm nếu cái tên xuất hiện. Slide ghi chú thẳng: <strong>"Emptiness is not checked"</strong> — không hề kiểm tra repository có rỗng thật hay không.<sup><a href="#src-p25">[7]</a></sup></p>
+
+    <div class="callout">
+      <div class="callout-title">Vì sao điều này quan trọng với bạn</div>
+      <p>Một con số benchmark chỉ nói về <em>những gì bộ chấm kiểm</em>. Nếu bộ chấm không kiểm "repo phải rỗng", thì agent tạo repo có sẵn file vẫn được điểm. Đọc kết quả benchmark luôn phải hỏi: <strong>nó chấm gì, và nó bỏ sót gì?</strong></p>
+    </div>
+
+    <h3>WebArena có "anh em" nhìn bằng ảnh: VisualWebArena</h3>
+
+    <p><strong>VisualWebArena</strong> (Koh et al., 2024) cũng là web tự dựng, nhưng thêm phần "nhìn": 910 nhiệm vụ trên 3 site, trong đó <strong>25,2% nhiệm vụ bắt buộc phải hiểu ảnh</strong> mới làm được. Slide kết luận: <em>"Visual understanding changes which tasks are even expressible."</em> — hiểu được hình ảnh làm thay đổi cả <em>những nhiệm vụ nào có thể được đặt ra</em>.<sup><a href="#src-p25">[7]</a></sup></p>
+
+    <p>Ví dụ: "tìm món đồ giống hệt món trong tấm ảnh này". Với giao diện chỉ có chữ, nhiệm vụ đó không thể diễn đạt nổi. Đời thật đầy việc kiểu vậy — chọn đúng màu, đúng mẫu, đúng logo — nên không đo phần "nhìn" thì bỏ sót một nửa năng lực.</p>
+
+    <h3>Cách 2 — web thật, giám khảo là model (WebVoyager)</h3>
+
+    <p>WebArena tự dựng web để chấm được bằng code. Nhưng web thật thì không ai viết nổi bộ kiểm tra cứng cho mọi trang. <strong>WebVoyager</strong> (He et al., 2024) chọn hướng ngược lại: <strong>643 nhiệm vụ trên 15 website thật</strong>, chấm bằng một VLM làm giám khảo (VLM-as-judge).<sup><a href="#src-p29">[8]</a></sup></p>
+
+    <p>Giám khảo nhận: nhiệm vụ + câu trả lời cuối + vài ảnh chụp cuối, rồi trả về SUCCESS hoặc NOT SUCCESS theo luật "rubric → bằng chứng → kết luận". Ví dụ: "tìm dự án GitHub nhiều sao nhất về trực quan hoá dữ liệu khí hậu" — giám khảo nhìn bằng chứng trong bản ghi và phán. Slide ghi độ đồng thuận giữa giám khảo và người chấm: <strong>85,3%</strong>.<sup><a href="#src-p29">[8]</a></sup></p>
+
+    <p>Đánh đổi được gói trong một câu: <em>"Realism rises; reproducibility falls."</em> — càng giống đời thật thì càng khó chạy lại y hệt. Ví dụ đời thường: kiểm tra tay nghề ngay trong xưởng thật (thật, nhưng mỗi lần một khác) so với bài thi trong phòng lab (lặp lại được, nhưng xa đời thật). Thêm một chi tiết nhỏ mà dễ quên: bản ghi của một lần chạy trên web thật là <em>bản ghi lịch sử</em> — nó không phải bảng xếp hạng GitHub hôm nay.<sup><a href="#src-p29">[8]</a></sup></p>
+
+    <h3>Web thật còn "trôi" — Online-Mind2Web</h3>
+
+    <p><strong>Online-Mind2Web</strong> (Xue et al., 2025) đẩy độ thật lên nữa: <strong>300 nhiệm vụ trên 136 website thật</strong>, chấm bằng một giám khảo tên WebJudge, với <strong>85,7%</strong> đồng thuận với người.<sup><a href="#src-p29">[8]</a></sup></p>
+
+    <p>Và đây là câu chốt của slide: <em>"Live benchmarks drift — and judge quality becomes part of the score."</em> — benchmark trên web thật bị <strong>drift</strong> (trôi): trang đổi giao diện, đổi giá, đổi nội dung; bản ghi cũ không còn khớp. Điểm của agent vì thế phụ thuộc cả vào chất lượng giám khảo — sai số của giám khảo nằm luôn trong con số cuối.<sup><a href="#src-p29">[8]</a></sup></p>
+
+    <p>Ví dụ đời thường: chỉ đường bằng "đi qua quán phở thứ ba bên trái". Hôm đó đúng. Vài tháng sau quán chuyển đi — chỉ dẫn cũ vô dụng, dù người chỉ đường không hề nói sai lúc đầu.</p>
+
+    <h3>Khi hai cách chấm không đồng ý: người phân xử</h3>
+
+    <p>Slide 33 đưa một tình huống mà bộ chấm tự động có thể mâu thuẫn: hai người chấm cùng xem bằng chứng, một người nói PASS, người kia nói FAIL. Cách xử lý: quay lại <em>bằng chứng</em> để phân xử (adjudication) — ví dụ trang xác nhận đơn hàng cho thấy một giao dịch bị cấm, vậy là FAIL. Người cũng được dùng để chấm nhiệm vụ, hoặc để <em>kiểm tra lại chính bộ chấm tự động</em>.<sup><a href="#src-p29">[8]</a></sup></p>
+
+    <div class="callout">
+      <div class="callout-title">Vì sao "giao diện đổi liên tục" là thách thức cốt lõi</div>
+      <p>Với coding agent, API và định dạng file tương đối ổn định: hàm <code>read_file()</code> hôm nay vẫn là <code>read_file()</code> ngày mai. Với CUA, "bản hợp đồng" duy nhất là hình ảnh trên màn hình — và hình ảnh đó đổi liên tục:</p>
+      <ul>
+        <li><strong>Trong một nhiệm vụ:</strong> mỗi hành động làm màn hình đổi → phải định vị lại từ đầu ở bước sau.</li>
+        <li><strong>Giữa hai lần chạy:</strong> web thật đổi giá, đổi tồn kho, đổi bố cục → cùng nhiệm vụ có thể ra kết quả khác.</li>
+        <li><strong>Giữa bản ghi và hiện tại:</strong> dữ liệu demo/benchmark cũ dần mất giá trị (drift).</li>
+      </ul>
+      <p>Đó là lý do các nhóm phải chọn giữa hai cực: tự dựng môi trường để tái lập (WebArena), hoặc dùng web thật và chấp nhận điểm số trôi (WebVoyager, Online-Mind2Web).</p>
+    </div>
+
+    <h3>Một khó khăn nữa: mỗi model "nói" một kiểu</h3>
+
+    <p>Slide 57 cho thấy các CUA hàng đầu xuất hành động theo những định dạng khác nhau: có model viết lệnh kiểu Python (<code>pyautogui.click(x, y)</code>), có model gọi tool gốc với toạ độ <code>[x, y]</code>, có model dùng toạ độ chuẩn hoá 0–999, có model trả XML, có model trả JSON.<sup><a href="#src-p47">[11]</a></sup></p>
+
+    <p>Slide gọi tình trạng này là <em>"reproducibility is a nightmare"</em> — so sánh hai model với nhau đã khó, vì chúng không dùng chung một giao diện hành động. Đây là dấu hiệu của một lĩnh vực còn non: chuẩn chung chưa hình thành.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hanh-trinh-dai">
+    <h2>Hành trình dài và lỗi tích lũy</h2>
+
+    <p>Mức 02D là nơi mọi thứ khó nhất. Nhiệm vụ không chỉ "nhiều bước" — nó kéo dài đến mức con người phải làm hàng giờ, qua nhiều ứng dụng, với trạng thái ẩn mà chỉ nhìn màn hình chưa chắc thấy hết.<sup><a href="#src-p40">[10]</a></sup></p>
+
+    <h3>Vì sao hành trình dài khác hẳn</h3>
+
+    <p>Hãy làm một phép tính minh hoạ (con số do tôi tự chọn để dễ hình dung, không phải kết quả nghiên cứu). Giả sử mỗi bước agent làm đúng với xác suất 95%. Với nhiệm vụ 50 bước, xác suất đúng cả 50 bước là 0,95⁵⁰ ≈ 7,7%. Nghĩa là <em>hơn 9 trên 10 lần chạy sẽ có ít nhất một bước sai</em>.</p>
+
+    <p>Tệ hơn, lỗi ở CUA thường <em>không</em> báo động. Một cú click nhầm không làm chương trình crash — nó lặng lẽ đổi trạng thái, rồi ảnh chụp tiếp theo phản ánh trạng thái sai đó. Model vẫn thấy một màn hình "trông bình thường" và có thể tiếp tục rất tự tin. Lỗi nhỏ ở bước 10 có thể nở ra thành thảm hoạ ở bước 100.</p>
+
+    <p>Slide 42 cho thấy quy mô thật của mức này: <strong>OSWorld 2.0</strong> gồm <strong>108 quy trình</strong>; trung vị thời gian một người làm là <strong>1,6 giờ</strong>; agent phải gọi trung bình <strong>318 lần</strong> cho một quy trình. Slide tóm: biên giới khó đã dịch từ "bấm cho đúng" sang "trạng thái ẩn, yêu cầu thay đổi giữa chừng, và xác minh".<sup><a href="#src-p40">[10]</a></sup></p>
+
+    <h3>Desktop: OSWorld và bộ kiểm tra riêng cho từng ứng dụng</h3>
+
+    <p>Trước khi nói chuyện "dài", hãy nói chuyện desktop. <strong>OSWorld</strong> (Xie et al., 2024) là bộ desktop gồm <strong>369 nhiệm vụ trên 9 ứng dụng</strong>. Điểm đặc biệt: mỗi nhiệm vụ đi kèm logic cài đặt ban đầu (setup) và <strong>bộ kiểm tra trạng thái riêng cho ứng dụng đó</strong>.<sup><a href="#src-p35">[9]</a></sup></p>
+
+    <p>Ví dụ từ slide 36: "cập nhật sổ sách kế toán bằng các hoá đơn trong thư mục". Bộ chấm so workbook đã lưu với workbook "vàng" theo bộ quy tắc:<sup><a href="#src-p35">[9]</a></sup></p>
+
+    <pre><code>   compare_table(saved_workbook, gold_workbook, rules)
+
+     vùng A1:E8      → phải giữ nguyên (không được sửa bừa)
+     nhãn C9:C13     → phải đúng loại chi phí
+     số tiền D9 ≈ −186.93 · số dư E9 ≈ 603.07
+</code></pre>
+
+    <p>Để ý: bộ chấm không nhìn "quá trình làm trông có vẻ đúng không" — nó kiểm trạng thái cuối, rất cụ thể. <strong>Vì sao phải làm riêng cho từng ứng dụng?</strong> Vì mỗi phần mềm lưu trạng thái một kiểu; không có bộ kiểm tra chung nào dùng được cho tất cả. Đó cũng là lý do đánh giá desktop tốn công hơn web.<sup><a href="#src-p35">[9]</a></sup></p>
+
+    <p>Còn WindowsAgentArena (Bonatti et al., 2024) cho thấy chuyện hạ tầng: <strong>154 nhiệm vụ trên 11 chương trình</strong> Windows, chạy trên nhiều máy ảo song song — biến một đợt đánh giá "mất nhiều ngày" thành một lượt chạy khoảng <strong>20 phút</strong>.<sup><a href="#src-p35">[9]</a></sup></p>
+
+    <h3>OpenCUA — dữ liệu mở và bản chấm offline cho desktop</h3>
+
+    <p>Một hướng khác để đỡ tốn kém: chấm offline. <strong>OpenCUA</strong> (Wang et al., 2025) là một nỗ lực mở, gắn liền dữ liệu huấn luyện với bộ đánh giá: bộ dữ liệu <strong>AgentNet</strong> phát hành 22.625 trajectory nhiệm vụ trên 3 hệ điều hành; còn <strong>AgentNetBench</strong> biến các trajectory của người thành một "bản chấm offline" cho desktop — 100 nhiệm vụ, trung bình 17,63 bước, tổng 2.143 hành động, chấm bằng so khớp từng bước.<sup><a href="#src-p59">[12]</a></sup><sup><a href="#src-p86">[14]</a></sup></p>
+
+    <p>Vì sao cần "bản chấm offline"? Vì mỗi lần đánh giá desktop thật là một lần bật máy ảo, cài phần mềm, chạy cả quy trình — rất đắt. Chấm offline nhanh hơn nhiều, dùng để lọc sớm trước khi đổ tiền vào những bài kiểm tra thật.</p>
+
+    <h3>Chấm tiến độ, không chỉ chấm đích</h3>
+
+    <p>Với nhiệm vụ 1,6 giờ, chấm 0/1 quá thô: agent đi được 90% đường vẫn bị điểm 0 như agent không làm gì. <strong>Odysseys</strong> (Jang, Koh, Fried &amp; Salakhutdinov, 2026) chọn cách chấm từng phần: <strong>200 nhiệm vụ trên web thật</strong>, mỗi nhiệm vụ có trung bình <strong>6,1 mục rubric</strong>, và giới hạn 100 bước cho một lần chạy.<sup><a href="#src-p40">[10]</a></sup></p>
+
+    <p>Ví dụ trên slide: một nhiệm vụ lên kế hoạch chuyến đi (so sánh sân bay, khung giờ lái xe, khách sạn, thuê xe, lịch trình) có 8 mục rubric R1–R8. Agent làm được 7/8 → điểm <strong>0,875</strong> — vẫn có công, dù chưa hoàn hảo. Slide kết: <em>"Grade progress across the workflow — not just a single final screenshot."</em><sup><a href="#src-p40">[10]</a></sup></p>
+
+    <p>Ở mức này, "xong" cũng không còn là tiêu chí đủ. OSWorld 2.0 có một failure case nổi tiếng được đặt tiêu đề: <em>"A file can exist and still be wrong"</em> — file có thể tồn tại và vẫn sai. Nhiệm vụ: dựng một chi tiết máy trong FreeCAD và xuất file STEP khớp bản vẽ. Agent xuất được file — nhưng mô hình bên trong không khớp bản vẽ. Nếu chỉ kiểm "file có tồn tại không", bạn đã chấm sai.<sup><a href="#src-p40">[10]</a></sup></p>
+
+    <p><strong>CUA-World-Long</strong> (Aggarwal et al., 2026) cũng nhắm vào chỗ này: <strong>200 nhiệm vụ dài</strong>, mỗi phần mềm một nhiệm vụ khó, thường cần <strong>hơn 500 bước</strong>, chấm theo <strong>8 tiêu chí chất lượng</strong> bằng một VLM đọc checklist.<sup><a href="#src-p40">[10]</a></sup></p>
+
+    <h3>Outcome chưa đủ — phải xem quá trình</h3>
+
+    <p>Đây là ví dụ đắt giá nhất của cả bài, từ slide 39. Nhiệm vụ: "thêm cốc xanh dưới 20 đô vào giỏ; <strong>không</strong> được thanh toán". Agent làm ba bước:<sup><a href="#src-p35">[9]</a></sup></p>
+
+    <pre><code>   1  click(cốc xanh)
+   2  click(add to cart)
+   3  click(place_order)        ← vượt ràng buộc "không thanh toán"
+
+   STATE CHECK    ✓  đúng món trong giỏ
+   PROCESS CHECK  ✕  đã tạo đơn mua
+   KẾT LUẬN       FAIL
+</code></pre>
+
+    <p>Nếu chỉ chấm kết quả cuối — "cốc đã trong giỏ chưa?" — agent này được PASS, dù nó đã tiêu tiền của bạn. Slide kết luận: <em>"A plausible deliverable is not enough if the process violated the task."</em> — một sản phẩm trông hợp lý vẫn không đủ nếu quá trình vi phạm yêu cầu.<sup><a href="#src-p35">[9]</a></sup></p>
+
+    <p><strong>WeaveBench</strong> (Li et al., 2026) đẩy ý này thành một bộ đo: 114 nhiệm vụ, chấm bằng giám khảo "biết nhìn quá trình" (trajectory-aware), vì chấm thuần kết quả có thể <em>cho điểm oan</em> những agent đi đường tắt không hợp lệ.<sup><a href="#src-p86">[14]</a></sup></p>
+
+    <h3>Vì sao người ta phải xây môi trường mô phỏng</h3>
+
+    <p>Muốn luyện hoặc đo agent trên hành trình dài, bạn không thể để nó thử đi thử lại trên đời thật. Slide 65 liệt kê ba lý do rất cụ thể:<sup><a href="#src-p59">[12]</a></sup></p>
+
+    <ol class="steps">
+      <li><strong>Tiền thật:</strong> thử lại nhiều lần có thể tạo ra nhiều đơn đặt chỗ đã trả tiền trùng nhau.</li>
+      <li><strong>Người thật:</strong> một đơn đặt xe có thể điều một tài xế đến — hành vi thử nghiệm ảnh hưởng người khác.</li>
+      <li><strong>Không reset sạch được:</strong> huỷ có thể mất phí; thời gian đã tiêu không lấy lại được.</li>
+    </ol>
+
+    <p>Vì vậy người ta xây các bản sao có thể reset. CUA-Gym tạo <strong>94 ứng dụng web giả lập</strong> — một ứng dụng đỡ được nhiều nhiệm vụ nhờ trạng thái cô lập, có thể bơm trạng thái đầu và soi trạng thái cuối. Gym-Anything mở rộng ra phần mềm thật: <strong>200 ứng dụng, 3 hệ điều hành, hơn 12.000 nhiệm vụ và môi trường</strong>.<sup><a href="#src-p59">[12]</a></sup></p>
+
+    <div class="callout">
+      <div class="callout-title">Phía trước còn gì — bốn hướng đang mở</div>
+      <ul>
+        <li><strong>Tốc độ &amp; chi phí.</strong> Ảnh chụp và suy luận rất tốn kém; thời gian nhiệm vụ ≈ số lượt × thời gian mỗi lượt. Hướng đi: chỉ "suy nghĩ" ở các quyết định quan trọng (Game-TARS) hoặc dự đoán hành động trực tiếp (FDM-1).<sup><a href="#src-p75">[13]</a></sup></li>
+        <li><strong>Cá nhân hoá.</strong> Agent nên dùng file, lịch sử, sở thích của bạn thay vì mặc định chung — nhưng bộ nhớ phải sửa được, và cần sự đồng ý cùng khả năng "quên" (GUM).<sup><a href="#src-p75">[13]</a></sup></li>
+        <li><strong>Hạ tầng &amp; trải nghiệm.</strong> Chạy trong phiên nền để không chặn bạn làm việc; hiện tiến độ; nhận sửa lỗi, phê duyệt, ngắt giữa chừng.<sup><a href="#src-p75">[13]</a></sup></li>
+        <li><strong>Đa agent.</strong> Nhiều CUA phối hợp: chia việc theo phụ thuộc, chia sẻ bằng chứng rồi lập lại kế hoạch (MACU) — song song chỉ giúp khi phối hợp giữ được tính đúng đắn.<sup><a href="#src-p75">[13]</a></sup></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+
+    <p>Bốn hiểu lầm hay gặp nhất khi mới tìm hiểu CUA. Đọc chậm — mỗi cái đều gắn với một mục ở trên.</p>
+
+    <ol>
+      <li>
+        <p><strong>"CUA chỉ là macro/RPA ghi lại thao tác."</strong> — Macro ghi lại một chuỗi cố định: đúng toạ độ, đúng thứ tự, không nhìn màn hình. CUA <em>nhìn lại mỗi bước</em> và quyết định lại từ ảnh mới, nên có cơ hội xử lý khi giao diện đổi. Nhưng đừng ảo tưởng ngược lại: khả năng "nhìn lại" không miễn phí — đó chính là grounding, và nó có thể sai (mục 3).</p>
+      </li>
+      <li>
+        <p><strong>"CUA = coding agent + thêm màn hình."</strong> — Khác ở bản chất. Coding agent làm việc qua API/định dạng đã biết trước; CUA phải tự tìm mọi thứ trên pixel, không có hợp đồng nào. Hệ quả: grounding là một kỹ năng riêng có thể thất bại (mục 3), và một cú click đúng chưa phải là làm xong việc (mục 3–4).</p>
+      </li>
+      <li>
+        <p><strong>"Điểm benchmark cao = làm được việc thật."</strong> — Mỗi bộ chấm chỉ kiểm điều nó kiểm ("Emptiness is not checked"); benchmark tĩnh chỉ đo dự đoán hành động kế tiếp; benchmark web thật thì drift; giám khảo VLM có sai số (85,3% và 85,7% đồng thuận với người). Muốn tin một con số, hỏi trước: nó chấm ACTION, OUTCOME hay PROCESS? Ở mức nào trong bốn mức? Môi trường đóng băng hay web thật?</p>
+      </li>
+      <li>
+        <p><strong>"Giao diện đổi thì nhìn lại là xong — không tốn gì."</strong> — "Nhìn lại" nghĩa là làm lại grounding ở mỗi bước — chính là công việc khó nhất. Và thay đổi còn phá ở tầng sâu hơn: bản ghi demo cũ hết giá trị, hai lần chạy cho kết quả khác nhau (drift), lỗi nhỏ tích lũy trên hành trình dài. Đó là lý do có môi trường tự dựng để tái lập, và các kiểu chấm rubric/process để bắt lỗi mà kết quả cuối che mất.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+
+    <p>Làm ra nháp (hoặc nhẩm) trước, rồi mới mở đáp án. Đáp án chỉ là gợi ý — điều quan trọng là <strong>cách lập luận</strong>, không phải khớp từng chữ.</p>
+
+    <div class="quiz-q">
+      <p class="quiz-question">Khởi động — điền vào chỗ trống</p>
+      <p class="fib-sentence">Một computer-use agent quan sát màn hình qua <span class="fib" data-answer="ảnh|ảnh chụp|ảnh chụp màn hình|ảnh màn hình|screenshot|screenshots" data-placeholder="?"></span>, và hành động bằng <span class="fib" data-answer="chuột|con chuột|mouse" data-placeholder="?"></span> cùng bàn phím — thay vì sửa file như coding agent.</p>
+      <div class="quiz-explain">
+        <p>Đúng vậy: đầu vào là <strong>ảnh chụp màn hình</strong>; đầu ra là thao tác <strong>chuột</strong> (click, cuộn) và bàn phím (gõ). Chính vì "giác quan" là ảnh nên grounding mới khó và quan trọng đến vậy.</p>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 1 — Bóc một nhiệm vụ thành vòng lặp CUA</h3>
+      <p><strong>Đề bài:</strong> Giao cho CUA nhiệm vụ: "Mở Zalo trên điện thoại, vào nhóm lớp, đọc tin nhắn mới nhất và gửi lại một sticker." Hãy viết 5–7 bước dạng <em>(quan sát thấy gì → hành động gì)</em>. Đánh dấu mỗi bước là <span class="badge">Observation</span> hay <span class="badge">Action</span>. Cuối cùng, khoanh vùng bước khó ground nhất và giải thích vì sao.</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p>Một cách bóc (cách của bạn có thể khác — miễn là đúng logic):</p>
+        <ol>
+          <li>Ảnh: màn hình chính, có biểu tượng Zalo → mở app. <span class="badge">Action</span></li>
+          <li>Ảnh: danh sách hội thoại → tìm nhóm lớp; nếu nhóm không nằm trong màn hình đầu thì cuộn xuống. <span class="badge">Observation</span> rồi <span class="badge">Action</span></li>
+          <li>Ảnh: dòng hội thoại của nhóm lớp → bấm vào đúng nhóm. <span class="badge">Action</span></li>
+          <li>Ảnh: nội dung chat → đọc tin nhắn mới nhất (chưa cần hành động). <span class="badge">Observation</span></li>
+          <li>Ảnh: ô nhập tin nhắn có nút sticker → bấm nút sticker → chọn sticker → gửi. <span class="badge">Action</span></li>
+          <li>Ảnh mới: sticker đã xuất hiện trong khung chat → xác nhận xong (đây là "reward nội bộ" trước khi dừng). <span class="badge">Observation</span></li>
+        </ol>
+        <p><strong>Bước khó ground nhất:</strong> thường là bước chọn đúng sticker (biểu tượng nhỏ, nhiều sticker giống nhau) hoặc bấm đúng nhóm lớp (nhiều nhóm tên gần giống, avatar giống nhau). Nếu Zalo cập nhật đổi giao diện, toạ độ đã "nhớ" sẽ vô hiệu — phải nhìn lại từ đầu.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 2 — Chọn thước đo đúng cho câu hỏi</h3>
+      <p><strong>Đề bài:</strong> Với mỗi câu hỏi dưới đây, chọn mức đo phù hợp (02A tĩnh · 02B web end-to-end · 02C desktop/mobile · 02D hành trình dài) và một kiểu chấm hợp lý (point matching · programmatic state check · VLM judge · rubric/process check). Giải thích một câu.</p>
+      <ol>
+        <li>"Model có bấm trúng biểu tượng nhỏ trong phần mềm CAD không?"</li>
+        <li>"Model có hoàn thành việc đặt hàng trên web, và giỏ hàng cuối cùng đúng không?"</li>
+        <li>"Model có làm xong quy trình kế toán kéo dài cả tiếng, không phá dữ liệu và không vi phạm ràng buộc không?"</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>(1) → 02A tĩnh, point/region matching.</strong> Đúng kiểu ScreenSpot-Pro: chỉ hỏi "bấm vào đâu", chấm điểm click có nằm trong vùng đúng. Nhanh, rẻ, không cần môi trường — nhưng "một bước đúng chưa phải nhiệm vụ xong".</li>
+          <li><strong>(2) → 02B, programmatic state check.</strong> Kiểu WebArena: chạy code kiểm trạng thái cuối (<code>cart.item == blue_mug</code>, <code>orders.count == 0</code>). Nếu buộc phải dùng web thật thay vì tự dựng, chuyển sang VLM judge kiểu WebVoyager — đổi tái lập lấy độ thật, và nhớ con số đồng thuận 85,3%.</li>
+          <li><strong>(3) → 02D, rubric + state + process check.</strong> Kiểu Odysseys (chấm tiến độ theo rubric: 7/8 = 0,875), OSWorld 2.0 (kiểm nội dung chứ không chỉ sự tồn tại của file — "a file can exist and still be wrong"), và process check (không chỉ nhìn kết quả cuối).</li>
+        </ul>
+        <p>Lý do chung: thước đo phải khớp năng lực muốn đo — câu hỏi càng "dài" thì kiểu chấm càng phải kiểm cả trạng thái lẫn quá trình.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 3 — Soi một con số quảng cáo</h3>
+      <p><strong>Đề bài:</strong> Một nhóm viết trên blog: "CUA của chúng tôi đạt 92% trên một benchmark web; chúng tôi sẵn sàng thay nhân viên nhập liệu." Hãy viết ra <strong>4 câu hỏi</strong> bạn sẽ hỏi trước khi tin con số đó. (Đây là tình huống hư cấu — con số 92% do tôi tự đặt.)</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <p>Không có bộ 4 câu "chuẩn", nhưng đây là những câu đáng hỏi nhất:</p>
+        <ol>
+          <li><strong>Benchmark nào, môi trường gì?</strong> Tự dựng để tái lập (kiểu WebArena: 812 nhiệm vụ, 4 domain tự host) hay web thật (kiểu WebVoyager: 643 nhiệm vụ, 15 trang thật)? Web thật thì điểm có thể trôi (drift).</li>
+          <li><strong>Chấm bằng gì?</strong> Bằng chương trình (thì nó chỉ kiểm những điều được viết trong test — "emptiness is not checked") hay bằng VLM judge (thì sai số của judge nằm trong điểm — WebVoyager 85,3%, Online-Mind2Web 85,7% đồng thuận với người)?</li>
+          <li><strong>Chấm ở mức nào — và có chấm process không?</strong> 92% trên một bộ đo hành động tĩnh (02A) không nói gì về quy trình dài. Còn nếu chỉ chấm outcome, agent vượt ràng buộc vẫn có thể được điểm (ví dụ <code>place_order</code> bị process check đánh FAIL).</li>
+          <li><strong>Điều gì không được kiểm?</strong> Một bộ kiểm tra chỉ mạnh ở đúng chỗ nó kiểm. Việc nhập liệu thật còn đòi hỏi độ chính xác trên dữ liệu lạ, tốc độ, chi phí, và trách nhiệm khi sai — những thứ thường không có trong benchmark.</li>
+        </ol>
+        <p>Nếu hỏi được 4 câu này và nhận được câu trả lời rõ ràng, bạn đã đọc benchmark như một người làm nghề — thay vì tin vào một con số trần.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu, bấm chọn — đúng thì hiện giải thích, sai thì hiện gợi ý để thử lại.</p>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">1. Điều gì làm một agent trở thành computer-use agent?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Nó chạy trên một máy tính có cấu hình rất mạnh</button>
+        <button class="quiz-opt" data-key="b">Nó lặp lại một kịch bản ghi sẵn đúng từng toạ độ</button>
+        <button class="quiz-opt" data-key="c">Nó quan sát giao diện qua ảnh chụp màn hình và hành động bằng chuột, bàn phím như con người</button>
+        <button class="quiz-opt" data-key="d">Nó chỉ gọi các API có sẵn của ứng dụng</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: slide nói CUA "observe rendered GUIs" — quan sát cái đã được vẽ ra trên màn hình.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> CUA làm việc trên đúng giao diện con người dùng: nhìn ảnh chụp màn hình, click, gõ, cuộn. Nó không cần API — nhờ vậy dùng được với cả phần mềm cũ và app nội bộ. Đổi lại, nó phải tự "nhìn" ra mọi thứ, và đó là grounding. <a href="#src-p2">[trang 2]</a></p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">2. Model sinh ra lệnh <code>{"mouse": {"left_click": [33, 201]}}</code>. Ai là người thực thi cú click đó?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Hạ tầng (infrastructure/harness): kiểm tra rồi thực thi thật, sau đó cung cấp ảnh mới</button>
+        <button class="quiz-opt" data-key="b">Chính model thực thi cú click bên trong nó</button>
+        <button class="quiz-opt" data-key="c">Môi trường tự chạy hành động rồi báo kết quả</button>
+        <button class="quiz-opt" data-key="d">Không ai — hành động chỉ là mô phỏng</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: model không có tay. Ai biến đề xuất thành sự kiện chuột thật?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Vòng lặp có ba vai: model (nghĩ + đề xuất hành động), hạ tầng (validate → execute), môi trường (trạng thái thay đổi). Sau khi thực thi, hạ tầng chụp ảnh mới và đưa lại cho model. Slide ghi: "Actions change the state, a new screenshot observation is provided to the model." <a href="#src-p3">[trang 3]</a></p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">3. "Grounding" trong CUA nghĩa là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Neo agent vào một máy tính cố định</button>
+        <button class="quiz-opt" data-key="b">Dạy model luôn nói đúng sự thật</button>
+        <button class="quiz-opt" data-key="c">Nén ảnh chụp màn hình để tiết kiệm token</button>
+        <button class="quiz-opt" data-key="d">Nhìn ảnh và xác định đúng vị trí (toạ độ) của mục tiêu cần thao tác</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: ScreenSpot-Pro chấm đúng kỹ năng này — điểm click có nằm trong vùng đúng không.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Grounding = nối "thứ tôi muốn thao tác" với "nó nằm ở đâu trên màn hình". Ví dụ từ ScreenSpot-Pro: nhiệm vụ trong Blender, ảnh gốc 2560 × 1440, vùng đúng (417,132)–(576,152); click vào một điểm trong vùng → 1 điểm. Vì giao diện chuyên nghiệp có phần tử nhỏ, dày đặc, grounding trở thành một benchmark riêng. <a href="#src-p19">[trang 19–21]</a></p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">4. Một model đạt điểm rất cao trên Mind2Web (benchmark tĩnh). Điều đó cho biết gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Model hoàn thành tốt các nhiệm vụ dài nhiều bước</button>
+        <button class="quiz-opt" data-key="b">Model chắc chắn thắng trên mọi trang web thật</button>
+        <button class="quiz-opt" data-key="c">Model dự đoán giỏi hành động kế tiếp trên ảnh ghi sẵn — nhưng chưa chắc hoàn thành nhiệm vụ</button>
+        <button class="quiz-opt" data-key="d">Model chạy nhanh hơn các model khác</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: "A correct step is not a completed task."</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Mind2Web (2.350 nhiệm vụ, 137 website, 31 lĩnh vực) chấm bằng so khớp hành động kế tiếp với bản ghi — không chạy nhiệm vụ thật. Một cú click đúng chưa cho biết agent có đi hết hành trình, nhập đúng, hay tránh được các hành động bị cấm. Slide gọi đó là "Next-action imitation is not the same thing as task completion". <a href="#src-p19">[trang 19–23]</a></p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">5. Vì sao "giao diện thay đổi liên tục" là thách thức cốt lõi của CUA?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Vì thay đổi làm ứng dụng chạy chậm hơn</button>
+        <button class="quiz-opt" data-key="b">Vì toạ độ đã nhớ có thể thành sai, bản ghi cũ mất giá trị, benchmark web thật bị trôi và độ tái lập giảm</button>
+        <button class="quiz-opt" data-key="c">Vì model không thể học được giao diện mới</button>
+        <button class="quiz-opt" data-key="d">Vì giao diện cũ không còn được hỗ trợ</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: "Realism rises; reproducibility falls."</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> CUA phải "nhìn lại" mỗi bước — nghĩa là grounding làm lại liên tục; và giữa các lần chạy, web thật đổi giá, đổi bố cục, đổi nội dung → cùng một nhiệm vụ có thể ra kết quả khác. Đó là lý do có hai hướng: tự dựng môi trường để tái lập (WebArena: 812 nhiệm vụ, 4 domain tự host), hoặc web thật + giám khảo VLM (WebVoyager: 643 nhiệm vụ, 15 trang thật, 85,3% đồng thuận với người) rồi chấp nhận điểm số trôi. <a href="#src-p25">[trang 25–33]</a></p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">6. Agent thêm đúng cốc xanh dưới 20 đô vào giỏ, nhưng cũng bấm luôn nút đặt hàng — trong khi đề bài ghi "do not purchase". Cách chấm nào phát hiện lỗi này?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Chấm thời gian hoàn thành</button>
+        <button class="quiz-opt" data-key="b">Chấm điểm grounding của từng cú click</button>
+        <button class="quiz-opt" data-key="c">Chỉ chấm kết quả cuối: cốc đã trong giỏ → PASS</button>
+        <button class="quiz-opt" data-key="d">Chấm cả quá trình (action trace / process check) → phát hiện hành vi mua → FAIL</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: kết quả trông ổn chưa chắc quá trình ổn.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Slide 39: state check thấy đúng món (✓) nhưng process check thấy đã mua (✕) → FAIL. "A plausible deliverable is not enough if the process violated the task." WeaveBench cũng cảnh báo: chỉ chấm outcome có thể cho điểm oan những agent đi đường tắt. <a href="#src-p35">[trang 39]</a> <a href="#src-p86">[trang 94]</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <p>Đọc lướt bảng này một lần trước khi rời bài:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Computer-use agent (CUA)</td><td>Agent quan sát giao diện qua ảnh chụp màn hình và hành động bằng chuột/bàn phím — làm việc trên đúng giao diện con người dùng.</td></tr>
+        <tr><td>GUI</td><td>Giao diện đồ hoạ: nút, ô nhập, menu, biểu tượng… mà con người nhìn và bấm.</td></tr>
+        <tr><td>Screenshot observation</td><td>Mỗi bước, quan sát của CUA là một ảnh chụp màn hình mới; hành động làm trạng thái đổi → ảnh đổi.</td></tr>
+        <tr><td>Infrastructure (hạ tầng)</td><td>Phần kiểm tra (validate) rồi thực thi hành động thật, và chụp ảnh mới trả về model.</td></tr>
+        <tr><td>VLM</td><td>Vision-language model: model đọc được cả ảnh lẫn chữ — "bộ não" của CUA.</td></tr>
+        <tr><td>Grounding</td><td>Nhìn ảnh và xác định đúng vị trí (toạ độ) của mục tiêu cần thao tác.</td></tr>
+        <tr><td>Static evaluation (02A)</td><td>Chấm một hành động trên ảnh ghi sẵn; nhanh, rẻ, nhưng một bước đúng chưa phải nhiệm vụ xong.</td></tr>
+        <tr><td>End-to-end evaluation (02B/02C)</td><td>Chấm cả nhiệm vụ qua trình duyệt (web) hoặc qua nhiều ứng dụng (desktop/mobile).</td></tr>
+        <tr><td>Long horizon (02D)</td><td>Hành trình dài nhiều bước, lỗi nhỏ tích lũy; phải chấm tiến độ và quá trình.</td></tr>
+        <tr><td>Programmatic state check</td><td>Kiểm trạng thái cuối bằng code; chính xác và tái lập, nhưng chỉ kiểm điều được viết trong test.</td></tr>
+        <tr><td>VLM-as-judge</td><td>Model làm giám khảo, đọc bằng chứng (ảnh + trace + rubric) rồi trả SUCCESS/NOT SUCCESS; có sai số so với người.</td></tr>
+        <tr><td>Process check (trajectory check)</td><td>Kiểm cả cách làm, bắt các vi phạm như "đã thanh toán dù bị cấm".</td></tr>
+        <tr><td>Drift</td><td>Web thật đổi theo thời gian làm bản ghi/benchmark mất giá trị; realism tăng thì reproducibility giảm.</td></tr>
+        <tr><td>ScreenSpot-Pro</td><td>Benchmark grounding: 1.581 ảnh chụp, 23 ứng dụng, 3 hệ điều hành; chấm điểm click trong vùng đúng.</td></tr>
+        <tr><td>Mind2Web</td><td>2.350 nhiệm vụ, 137 website; chấm hành động kế tiếp trên ảnh ghi sẵn (offline).</td></tr>
+        <tr><td>WebArena</td><td>812 nhiệm vụ, 4 domain web tự dựng; chấm trạng thái cuối bằng chương trình.</td></tr>
+        <tr><td>VisualWebArena</td><td>910 nhiệm vụ, 3 site; 25,2% nhiệm vụ cần hiểu ảnh mới làm được.</td></tr>
+        <tr><td>WebVoyager</td><td>643 nhiệm vụ, 15 website thật; giám khảo VLM (85,3% đồng thuận với người).</td></tr>
+        <tr><td>OSWorld</td><td>369 nhiệm vụ desktop, 9 ứng dụng, bộ kiểm tra riêng cho từng ứng dụng.</td></tr>
+        <tr><td>OSWorld 2.0</td><td>108 quy trình dài (trung vị 1,6 giờ người làm, ~318 lượt gọi agent); nơi lộ lỗi "file tồn tại nhưng vẫn sai".</td></tr>
+        <tr><td>OpenCUA / AgentNet / AgentNetBench</td><td>Dữ liệu + đánh giá mở cho desktop: 22.625 trajectory (3 hệ điều hành); AgentNetBench chấm offline 100 nhiệm vụ.</td></tr>
+        <tr><td>Odysseys</td><td>200 nhiệm vụ web thật, rubric trung bình 6,1 mục, giới hạn 100 bước; chấm tiến độ.</td></tr>
+        <tr><td>CUA-World-Long</td><td>200 nhiệm vụ dài, thường hơn 500 bước, 8 tiêu chí chất lượng.</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li id="src-p2">CUA là gì — định nghĩa ("observe rendered GUIs, execute actions, and check what changed") và ba môi trường browser/desktop/mobile — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=2">trang 2</a>.</li>
+      <li id="src-p3">Vòng lặp Observe–Reason–Act; hạ tầng validate → execute; "Actions change the state, a new screenshot observation is provided to the model" — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=3">trang 3</a>.</li>
+      <li id="src-p4">Ví dụ "buy a blue mug": các bước click — scroll — click — type, và reward 1.0 khi xong — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=4">trang 4</a>–<a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=8">8</a>.</li>
+      <li id="src-p9">Dòng thời gian môi trường: MiniWoB/MiniWoB++/WebShop — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=9">trang 9–10</a>; WebArena &amp; VisualWebArena — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=11">trang 11</a>; OSWorld — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=12">trang 12</a>; MyPCBench — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=13">trang 13</a>; CUA-World / Gym-Anything — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=14">trang 14</a>; dùng thật (GPT-6 Astra, "still very expensive") — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=15">trang 15</a>.</li>
+      <li id="src-p17">Ba câu hỏi action/outcome/process ("Evaluators should match the capability you want to measure") — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=17">trang 17</a>; bốn mức benchmark 02A–02D — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=18">trang 18</a>.</li>
+      <li id="src-p19">Static evaluations + "A correct step is not a completed task" + danh sách benchmark (ScreenSpot-Pro, Mind2Web, AITW, AndroidControl) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=19">trang 19</a>; ScreenSpot-Pro: quy mô 1.581 ảnh/23 app/3 hệ điều hành — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=20">trang 20</a>, ví dụ Blender (vùng (417,132)–(576,152) trên ảnh 2560×1440) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=21">trang 21</a>; Mind2Web: 2.350 nhiệm vụ/137 website/31 lĩnh vực — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=22">trang 22</a>, ví dụ tab CAR — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=23">trang 23</a>.</li>
+      <li id="src-p25">Kiểm trạng thái bằng chương trình (cart.item / cart.price / orders.count; "only for conditions the tests cover") — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=25">trang 25</a>; WebArena: 812 nhiệm vụ, 4 domain, checks chạy được — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=26">trang 26</a>, ví dụ GitLab "emptiness is not checked" — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=27">trang 27</a>; VisualWebArena: 910 nhiệm vụ, 25,2% cần ảnh — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=28">trang 28</a>.</li>
+      <li id="src-p29">LLM/VLM judging (rubric → evidence → verdict) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=29">trang 29</a>; WebVoyager: 643 nhiệm vụ, 15 trang thật, 85,3% đồng thuận, "realism rises; reproducibility falls" — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=30">trang 30</a>–<a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=31">31</a>; Online-Mind2Web: 300/136/85,7% + drift — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=32">trang 32</a>; human review &amp; adjudication — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=33">trang 33</a>.</li>
+      <li id="src-p35">OSWorld: 369 nhiệm vụ/9 ứng dụng + bộ kiểm tra riêng — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=35">trang 35</a>, ví dụ sổ sách kế toán — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=36">trang 36</a>; WindowsAgentArena: 154 nhiệm vụ/11 chương trình/20 phút — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=37">trang 37</a>; process check với place_order — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=39">trang 39</a>.</li>
+      <li id="src-p40">Odysseys: 200 nhiệm vụ/6,1 mục rubric/100 bước — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=40">trang 40</a>, ví dụ chuyến đi 7/8 = 0,875 — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=41">trang 41</a>; OSWorld 2.0: 108 quy trình/1,6 giờ/318 lượt gọi — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=42">trang 42</a>, "a file can exist and still be wrong" — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=43">trang 43</a>–<a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=44">44</a>; CUA-World-Long: 200 nhiệm vụ/>500 bước/8 tiêu chí — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=45">trang 45</a>.</li>
+      <li id="src-p47">Modeling: VLM dự đoán hành động từ lịch sử ảnh xen kẽ (goal + screenshot + action) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=47">trang 47</a>–<a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=56">56</a>; các model xuất hành động theo định dạng khác nhau ("reproducibility is a nightmare") — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=57">trang 57</a>.</li>
+      <li id="src-p59">Pre-training: boxes/labels/OCR → grounding, click/type/swipe → control — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=59">trang 59</a>–<a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=60">60</a>; OpenCUA/AgentNet: 22.625 trajectory, 3 hệ điều hành — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=61">trang 61</a>; quy mô dữ liệu demo — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=62">trang 62</a>; vì sao cần môi trường reset được (tiền thật, người thật, không reset sạch) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=65">trang 65</a>; CUA-Gym: 94 mock app — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=66">trang 66</a>–<a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=69">69</a>; Gym-Anything: 200 ứng dụng/3 hệ điều hành/hơn 12.000 nhiệm vụ — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=70">trang 70</a>–<a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=73">73</a>.</li>
+      <li id="src-p75">Summary bốn ý — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=75">trang 75</a>; tốc độ &amp; chi phí (Game-TARS, FDM-1) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=77">trang 77</a>; cá nhân hoá (GUM, consent, forgetting) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=78">trang 78</a>; hạ tầng &amp; UX (phiên nền, phê duyệt) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=79">trang 79</a>; đa agent (MACU: plan → parallelize → replan) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=80">trang 80</a>.</li>
+      <li id="src-p86">Phụ lục số liệu: AITW — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=86">trang 86</a>; AndroidControl — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=87">trang 87</a>; AgentNetBench (100 nhiệm vụ/17,63 bước/2.143 hành động) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=88">trang 88</a>; WeaveBench (114 nhiệm vụ, trajectory-aware) — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=94">trang 94</a>; danh sách benchmark + dữ liệu OpenCUA/AgentNet — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf#page=98">trang 98–99</a>.</li>
+      <li id="src-pdf">Slide gốc đầy đủ — <a href="https://www.cmu-agents.com/slides/lecture-07-computer-use-agents.pdf">lecture-07-computer-use-agents.pdf</a> (buổi 4a, "Computer Use Agents", JY Koh, 15/09/2026).</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài tiếp theo:</strong> 09 · Training 1 — Supervised Fine-Tuning (SFT): cách dạy agent bằng các trajectory mẫu (buổi 4b).</p>
+    <p>Điều đáng nhớ nhất của bài này: CUA là agent làm việc trên <em>đúng giao diện con người dùng</em> — và mọi thứ khó của nó xoay quanh ba chữ: grounding, drift, và độ dài.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

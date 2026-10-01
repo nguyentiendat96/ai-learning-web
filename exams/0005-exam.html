@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam 05 · Skills &amp; Memory — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Exam 05</div>
+    <h1><span class="lang-vi">Exam — Skills &amp; Memory</span><span class="lang-en">Exam — Skills &amp; Memory</span></h1>
+    <p class="subtitle"><span class="lang-vi">16 câu + 2 bài tập code. Làm lại được nhiều lần — mục tiêu: đúng ≥ 85%.</span><span class="lang-en">16 questions + 2 coding exercises. Retake as many times as you like — target: ≥ 85% correct.</span></p>
+    <p class="lesson-meta"><span>~40 phút / ~40 min</span><span><a href="../lessons/0005-skills-va-memory.html"><span class="lang-vi">← Ôn lại Bài 05</span><span class="lang-en">← Review Lesson 05</span></a></span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="exam-bar">
+    <span class="exam-progress">Đúng 0 / 13 câu tương tác</span>
+    <button class="exam-reset" type="button">Làm lại từ đầu</button>
+  </div>
+
+  <p><span class="lang-vi"><strong>Cách làm:</strong> phần A–B chấm điểm tự động; phần C–D tự kiểm bằng đáp án. Mục tiêu: <strong>≥ 85%</strong>.</span><span class="lang-en"><strong>How to use:</strong> parts A–B are graded automatically; parts C–D are self-checked against the answer keys. Target: <strong>≥ 85%</strong>.</span></p>
+
+  <!-- ================================================== -->
+  <section id="trac-nghiem">
+    <h2><span class="lang-vi">Phần A — Trắc nghiệm (10 câu)</span><span class="lang-en">Part A — Multiple choice (10 questions)</span></h2>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A1. Theo lecture, ba nơi có thể "cập nhật" agent từ trải nghiệm là gì?</span><span class="lang-en">A1. According to the lecture, what are the three places an agent can be "updated" from experience?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Episode, fact, skill</span><span class="lang-en">Episode, fact, skill</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Context window, external artifacts (file/DB), model weights</span><span class="lang-en">Context window, external artifacts (file/DB), model weights</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Prompt, harness, sandbox</span><span class="lang-en">Prompt, harness, sandbox</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Short-term, long-term, episodic</span><span class="lang-en">Short-term, long-term, episodic</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 3: context window (trung thực nhưng tốn, ồn, không tự biết điều gì quan trọng), external artifacts (đọc lại / sửa / tra cứu / mang đi được, nhưng phải rút ra và bảo trì), model weights (nhanh nhưng chậm cập nhật, mờ đục). Episode/fact/skill là <em>các loại kinh nghiệm</em>, không phải nơi lưu.</span><span class="lang-en">Slide 3: context window (faithful but expensive, noisy, doesn't know what matters on its own), external artifacts (can be re-read / edited / searched / carried around, but must be extracted and maintained), model weights (fast but slow to update, opaque). Episode/fact/skill are <em>kinds of experience</em>, not storage locations.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A2. Câu <em>"Để tìm sản phẩm: gõ vào ô search → bấm Search → mở kết quả"</em> thuộc loại kinh nghiệm nào?</span><span class="lang-en">A2. The sentence <em>"To find a product: type into the search box → click Search → open a result"</em> belongs to which kind of experience?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Episode</span><span class="lang-en">Episode</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Fact</span><span class="lang-en">Fact</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Reflection</span><span class="lang-en">Reflection</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Skill</span><span class="lang-en">Skill</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Skill là một quy trình tái sử dụng — trả lời câu hỏi "làm thế nào". Fact là một sự thật ngắn ("cửa hàng chỉ hiện giá ở trang sản phẩm"); episode là toàn bộ trace của một lần làm việc; reflection là cơ chế viết bài học, không phải một loại nội dung được lưu.</span><span class="lang-en">A skill is a reusable procedure — it answers "how to". A fact is a short truth ("the store only shows prices on the product page"); an episode is the full trace of one run; reflection is the mechanism that writes lessons, not a kind of stored content.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A3. Câu nào phân biệt đúng <strong>memory</strong> và <strong>skill</strong>?</span><span class="lang-en">A3. Which statement correctly distinguishes <strong>memory</strong> from <strong>skill</strong>?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Memory trả lời "chuyện gì đã xảy ra"; skill trả lời "nên làm thế nào"</span><span class="lang-en">Memory answers "what happened"; skill answers "how it should be done"</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Memory luôn ở dạng code; skill luôn ở dạng text</span><span class="lang-en">Memory is always code; skill is always text</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Memory chỉ do người viết; skill chỉ do agent tự rút ra</span><span class="lang-en">Memory is only written by humans; skills are only induced by the agent</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Memory nằm trong model weights; skill nằm trong context window</span><span class="lang-en">Memory lives in the model weights; skills live in the context window</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 5: memory trả lời "chuyện gì đã xảy ra?" (nguồn: tương tác của chính agent); skill trả lời "nên làm thế nào?" (do người viết, hoặc agent tự rút ra — induced skill). Skill có thể là text, code, hoặc cả hai — nên hai phương án còn lại đều sai.</span><span class="lang-en">Slide 5: memory answers "what happened?" (source: the agent's own interactions); skill answers "how should it be done?" (written by a human, or induced by the agent — an induced skill). A skill can be text, code, or both — so the other two options are wrong.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A4. Agent đọc và ghi bộ nhớ dài hạn bằng cách nào?</span><span class="lang-en">A4. How does the agent read and write long-term memory?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Harness tự động chèn toàn bộ file bộ nhớ vào prompt mỗi lượt</span><span class="lang-en">The harness automatically inserts the whole memory file into the prompt every turn</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Model weights được cập nhật lại sau mỗi phiên</span><span class="lang-en">The model weights are updated after every session</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Các function call do chính agent phát ra — ví dụ memory.add / memory.search</span><span class="lang-en">Through function calls the agent itself issues — e.g. memory.add / memory.search</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Người dùng copy-paste nội dung vào chat</span><span class="lang-en">The user copy-pastes content into the chat</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 17 (MemGPT): đọc/ghi bộ nhớ ngoài là những function call do chính agent phát ra — giống như tự rút sổ tay ra ghi một dòng, hay lật sổ tìm lại. Người cũng đọc và sửa file được bằng tay, nhưng agent không chờ ai làm hộ.</span><span class="lang-en">Slide 17 (MemGPT): reading/writing external memory consists of function calls the agent itself issues — like pulling out a notebook to jot a line, or flipping through it to find something again. A human can also read and edit the file by hand, but the agent doesn't wait for anyone to do it for it.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A5. Bộ nhớ đã lưu "thích trả lời ngắn gọn". Hôm nay người dùng nói: <em>"Từ giờ trả lời chi tiết hơn nhé."</em> Agent nên chọn thao tác nào?</span><span class="lang-en">A5. Memory already stores "prefers short answers". Today the user says: <em>"From now on, give me more detailed answers."</em> Which operation should the agent pick?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">ADD một mục mới và giữ cả hai mục để đầy đủ thông tin</span><span class="lang-en">ADD a new entry and keep both entries for completeness</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">UPDATE mục cũ — sửa giá trị, không thêm mục mâu thuẫn</span><span class="lang-en">UPDATE the old entry — change its value, don't add a conflicting entry</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">DELETE mục cũ rồi không lưu gì nữa</span><span class="lang-en">DELETE the old entry and store nothing instead</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">NOOP — vì thông tin này đã từng được nói tới</span><span class="lang-en">NOOP — because this information has been mentioned before</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 18: thông tin mới <em>thay đổi</em> một mục cũ → UPDATE, sửa giá trị tại chỗ. Nếu ADD, bộ nhớ sẽ có hai mục mâu thuẫn và agent không biết tin cái nào. DELETE dành cho thông tin <em>phủ định</em>; NOOP cho thông tin đã có sẵn y nguyên.</span><span class="lang-en">Slide 18: new information that <em>changes</em> an old entry → UPDATE, edit the value in place. If you ADD, memory ends up with two conflicting entries and the agent doesn't know which to trust. DELETE is for <em>negating</em> information; NOOP for information you already have exactly.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A6. Trong ví dụ skill <code>python-review</code>, agent chạy <code>python scripts/run_checks.py src/</code>. Cái gì quay về context?</span><span class="lang-en">A6. In the <code>python-review</code> skill example, the agent runs <code>python scripts/run_checks.py src/</code>. What comes back into context?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Toàn bộ code của run_checks.py để agent tự đọc</span><span class="lang-en">The entire run_checks.py source for the agent to read</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Cả code script lẫn kết quả kiểm tra</span><span class="lang-en">Both the script's code and the check results</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Chỉ kết quả — các cảnh báo của Black và Ruff; code script không bao giờ vào context</span><span class="lang-en">Only the results — Black and Ruff warnings; the script's code never enters context</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Không gì cả — mọi thứ chạy hoàn toàn ngoài context</span><span class="lang-en">Nothing — everything runs entirely outside context</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 11, tầng 3 của progressive disclosure: script chạy trong terminal, chỉ <em>kết quả</em> (cảnh báo Black/Ruff) quay về context. Code của script thì không bao giờ vào context — đó là cách giữ context nhẹ dù skill có nhiều script.</span><span class="lang-en">Slide 11, layer 3 of progressive disclosure: the script runs in the terminal, and only the <em>results</em> (Black/Ruff warnings) come back into context. The script's code never enters context — that's how the context stays light even when a skill has many scripts.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A7. SkillsBench (87 task thật, 8 lĩnh vực) cho kết quả nào sau đây?</span><span class="lang-en">A7. Which result did SkillsBench (87 real tasks, 8 domains) produce?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Skill vẫn làm hại ở 13 trong 87 task — một skill có thể lấn át chiến lược mặc định tốt hơn</span><span class="lang-en">Skills still hurt in 13 of 87 tasks — a skill can override a better default strategy</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Cài càng nhiều skill vào một việc thì kết quả càng tốt</span><span class="lang-en">The more skills installed for a task, the better the outcome</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">SKILL.md càng dài thì mức cải thiện càng lớn</span><span class="lang-en">The longer SKILL.md, the bigger the improvement</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Skill do con người viết không cải thiện được gì so với không dùng skill</span><span class="lang-en">Human-written skills improve nothing compared with using no skill</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 12–13: skill người viết nâng pass trung bình 33.9% → 50.5%; task có 1–3 skill cải thiện nhiều hơn task có 4+ skill; SKILL.md ngắn cũng lợi hơn. Nhưng skill vẫn làm hại ở 13/87 task — vì vậy phải đo kết quả để biết skill nào đang giúp, skill nào đang hại.</span><span class="lang-en">Slides 12–13: human-written skills raise the average pass rate from 33.9% → 50.5%; tasks with 1–3 skills improve more than tasks with 4+ skills; shorter SKILL.md files also help more. But skills still hurt in 13/87 tasks — so you must measure outcomes to know which skills help and which hurt.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A8. Bảng số slide 33 (không memory / text skill / code skill) cho kết luận nào?</span><span class="lang-en">A8. What conclusion does the slide 33 table (no memory / text skill / code skill) support?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Text skill nhanh hơn code skill</span><span class="lang-en">Text skills are faster than code skills</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Code skill chỉ giúp nhanh hơn, không giúp làm đúng hơn</span><span class="lang-en">Code skills only help speed, not correctness</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Số bước mỗi task giống nhau ở cả ba cột</span><span class="lang-en">The number of steps per task is the same in all three columns</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Text skill chủ yếu giúp làm đúng hơn; code skill giúp cả đúng hơn lẫn nhanh hơn</span><span class="lang-en">Text skills mainly improve correctness; code skills improve both correctness and speed</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 33: checkpoints 41.3 → 59.5 → 80.2 và số bước 24.5 → 20.6 → 15.0. Text skill nâng độ đúng nhưng không tăng tốc (agent vẫn tự phát từng bước); code skill nâng cả hai — có task từ 50 bước xuống còn 4 bước (slide 32).</span><span class="lang-en">Slide 33: checkpoints 41.3 → 59.5 → 80.2 and steps 24.5 → 20.6 → 15.0. Text skills raise correctness but don't speed things up (the agent still works out every step itself); code skills raise both — one task dropped from 50 steps to 4 (slide 32).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A9. Trong ví dụ Reflexion (White Plains), thứ được sinh ra giữa hai lần thử là gì?</span><span class="lang-en">A9. In the Reflexion example (White Plains), what is produced between the two attempts?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Câu trả lời đúng của lần thử đầu tiên</span><span class="lang-en">The correct answer to the first attempt</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Một bài học về cách làm — "đề hỏi một loạt sự kiện thì trả lời ở mức chiến dịch"</span><span class="lang-en">A lesson about method — "when a question asks about a series of events, answer at the campaign level"</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Một bản sao đầy đủ của trace episode</span><span class="lang-en">A full copy of the episode trace</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Trọng số mới của model</span><span class="lang-en">New model weights</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Slide 19: reflection không sinh ra đáp án, mà sinh ra <em>bài học dùng lại được</em> cho dạng đề tương tự. Đáp án cũ ("Battle of White Plains") thì không giúp gì cho câu hỏi sau — còn bài học "trả lời ở mức chiến dịch" thì có.</span><span class="lang-en">Slide 19: reflection doesn't produce an answer; it produces a <em>reusable lesson</em> for similar question types. The old answer ("Battle of White Plains") doesn't help with the next question — but the lesson "answer at the campaign level" does.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A10. Vòng đời của memory/skill (slide 25) gồm ba pha nào?</span><span class="lang-en">A10. The memory/skill lifecycle (slide 25) has which three phases?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Train → test → deploy</span><span class="lang-en">Train → test → deploy</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Prompt → tool → reward</span><span class="lang-en">Prompt → tool → reward</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Đọc → ghi → xóa</span><span class="lang-en">Read → write → delete</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">LEARN → USE → MAINTAIN</span><span class="lang-en">LEARN → USE → MAINTAIN</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">LEARN: episode → chấm (judge) → rút ra (induce) → nhận vào (admit). USE: chọn (select) → lấy về (retrieve) → hành động. MAINTAIN: nhìn outcome → thêm / sửa / loại bỏ (add / repair / retire) → quay lại bộ nhớ.</span><span class="lang-en">LEARN: episode → judge → induce → admit. USE: select → retrieve → act. MAINTAIN: look at the outcome → add / repair / retire → back into memory.</span></p></div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="dien-khuyet">
+    <h2><span class="lang-vi">Phần B — Điền khuyết (3 câu)</span><span class="lang-en">Part B — Fill in the blank (3 questions)</span></h2>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B1. Tầng 1 của progressive disclosure gồm những gì?</span><span class="lang-en">B1. What does layer 1 of progressive disclosure contain?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Ở tầng 1, thứ luôn nằm trong context là <strong>tên</strong> và</span><span class="lang-en">At layer 1, what always sits in context is the skill's <strong>name</strong> and its</span> <span class="fib" data-answer="mô tả|description|mo ta|mô tả ngắn" data-placeholder="?"></span> <span class="lang-vi">của skill.</span><span class="lang-en">.</span></p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B2. Con số đáng nhớ của SkillsBench.</span><span class="lang-en">B2. SkillsBench's memorable number.</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Dù trung bình có ích, skill vẫn <strong>làm hại</strong> ở</span><span class="lang-en">Though helpful on average, skills still <strong>hurt</strong> in</span> <span class="fib" data-answer="13" data-placeholder="?"></span> <span class="lang-vi">trong 87 task.</span><span class="lang-en">of 87 tasks.</span></p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B3. Ngưỡng dọn dẹp của TroVE.</span><span class="lang-en">B3. TroVE's cleanup threshold.</span></p>
+      <p class="fib-sentence"><span class="lang-vi">TroVE loại bỏ mục được dùng ít hơn ½·log₁₀(n) lần. Với n = 1000, ngưỡng đó bằng</span><span class="lang-en">TroVE retires items used fewer than ½·log₁₀(n) times. With n = 1000, that threshold equals</span> <span class="fib" data-answer="1.5|1,5" data-placeholder="?"></span>.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tinh-huong">
+    <h2><span class="lang-vi">Phần C — Tình huống &amp; phân tích (3 câu)</span><span class="lang-en">Part C — Scenarios &amp; analysis (3 questions)</span></h2>
+
+    <p><strong>C1.</strong> <span class="lang-vi">Bộ nhớ hiện tại của agent:</span><span class="lang-en">The agent's current memory:</span></p>
+    <table class="mapping">
+      <thead>
+        <tr><th>key</th><th>value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ten</code></td><td><span class="lang-vi">"Người dùng tên Nam"</span><span class="lang-en">"The user's name is Nam"</span></td></tr>
+        <tr><td><code>tra_loi</code></td><td><span class="lang-vi">"thích trả lời ngắn gọn"</span><span class="lang-en">"prefers short answers"</span></td></tr>
+        <tr><td><code>email</code></td><td><span class="lang-vi">"phải hỏi trước khi gửi email"</span><span class="lang-en">"must ask before sending email"</span></td></tr>
+      </tbody>
+    </table>
+    <p><span class="lang-vi">Bốn thông tin mới lần lượt đến. Với mỗi thông tin, agent nên chọn <strong>ADD, UPDATE, DELETE hay NOOP</strong>? Vì sao?</span><span class="lang-en">Four new pieces of information arrive one by one. For each, which should the agent choose — <strong>ADD, UPDATE, DELETE or NOOP</strong>? Why?</span></p>
+    <ol>
+      <li><span class="lang-vi">"Tôi tên Nam" (người dùng nhắc lại).</span><span class="lang-en">"My name is Nam" (the user repeats it).</span></li>
+      <li><span class="lang-vi">"Từ giờ trả lời chi tiết hơn nhé."</span><span class="lang-en">"From now on, answer in more detail."</span></li>
+      <li><span class="lang-vi">"Cứ gửi email thoải mái, không cần hỏi tôi nữa."</span><span class="lang-en">"Just send emails freely, no need to ask me anymore."</span></li>
+      <li><span class="lang-vi">"Tôi đang dùng Python 3.12."</span><span class="lang-en">"I'm using Python 3.12."</span></li>
+    </ol>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi">1 — <strong>NOOP</strong>: thông tin đã có sẵn trong bộ nhớ, không cần làm gì.</span><span class="lang-en">1 — <strong>NOOP</strong>: the information is already in memory; nothing to do.</span></li>
+        <li><span class="lang-vi">2 — <strong>UPDATE</strong> mục <code>tra_loi</code>: thông tin mới <em>thay đổi</em> mục cũ. Nếu ADD sẽ có hai mục mâu thuẫn.</span><span class="lang-en">2 — <strong>UPDATE</strong> the <code>tra_loi</code> entry: the new information <em>changes</em> the old entry. ADD would leave two conflicting entries.</span></li>
+        <li><span class="lang-vi">3 — <strong>DELETE</strong> mục <code>email</code>: thông tin mới <em>phủ định</em> quy tắc cũ. Giữ lại quy tắc đã bị hủy sẽ khiến agent làm sai.</span><span class="lang-en">3 — <strong>DELETE</strong> the <code>email</code> entry: the new information <em>negates</em> the old rule. Keeping a cancelled rule makes the agent act wrongly.</span></li>
+        <li><span class="lang-vi">4 — <strong>ADD</strong>: chưa có gì giống đã lưu, thêm mục mới.</span><span class="lang-en">4 — <strong>ADD</strong>: nothing similar is stored yet; add a new entry.</span></li>
+      </ul>
+      <p><span class="lang-vi"><em>Tự kiểm:</em> bộ nhớ chỉ ADD mãi sẽ đầy mục cũ kỹ và mâu thuẫn — bốn quyết định này là cách giữ nó "sạch" theo thời gian.</span><span class="lang-en"><em>Self-check:</em> memory that only ever ADDs fills up with stale, conflicting entries — these four decisions are how you keep it "clean" over time.</span></p>
+    </details>
+
+    <p><strong>C2.</strong> <span class="lang-vi">Agent được giao <em>"Cho tôi tên đầy đủ của tai nghe Bluetooth Sony và khoảng giá các model"</em>. Nó search "Bluetooth headphones Sony" → 5.578 kết quả từ mọi gian hàng, 12 kết quả/trang → lật trang liên tục → hết giới hạn bước, chưa gửi được gì cho người dùng.</span><span class="lang-en">An agent is asked: <em>"Give me the full name of Sony Bluetooth headphones and the price range across models"</em>. It searches "Bluetooth headphones Sony" → 5,578 results from every seller, 12 results/page → keeps flipping pages → hits the step limit, having sent nothing to the user.</span></p>
+    <p><span class="lang-vi">Hãy viết: (a) hai bài học dạng "lần sau gặp X thì làm Y"; (b) nên lưu chúng dạng gì, ở đâu; (c) có nên lưu cả trace thất bại không, vì sao?</span><span class="lang-en">Write: (a) two lessons of the form "next time X happens, do Y"; (b) what form to store them in and where; (c) should you also store the failed trace, and why?</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án gợi ý</span><span class="lang-en">See suggested answer</span></summary>
+      <ol>
+        <li><span class="lang-vi"><strong>Bài học</strong> (theo ba chiến lược slide 38): thu hẹp truy vấn trước khi duyệt — truy vấn mơ hồ chôn đáp án dưới hàng nghìn kết quả; dùng bộ lọc của trang thay vì lật từng trang; cân nhắc tăng số kết quả mỗi trang, vì 12/trang khiến mỗi lần "next" tốn một bước mà chẳng được bao nhiêu.</span><span class="lang-en"><strong>Lessons</strong> (following slide 38's three strategies): narrow the query before browsing — a vague query buries the answer under thousands of results; use the site's filters instead of flipping page by page; consider raising results per page, since 12/page makes every "next" cost a step for very little gain.</span></li>
+        <li><span class="lang-vi"><strong>Dạng và nơi lưu:</strong> đây là bài học/chiến lược → lưu dạng text trong memory (một mục lesson trong file ghi chú). Chưa cần đóng thành code skill ngay: trang còn có thể đổi cấu trúc. Khi chiến lược lặp lại và ổn định, hãy nâng cấp thành code skill để chạy nhanh hơn.</span><span class="lang-en"><strong>Form and place:</strong> this is a lesson/strategy → store it as text in memory (a lesson entry in a notes file). No need to package it as a code skill yet: the site may still change structure. Once the strategy repeats and stabilises, upgrade it to a code skill for speed.</span></li>
+        <li><span class="lang-vi"><strong>Trace thất bại?</strong> Thường <em>không</em> nên lưu cả trace: nó dài và ồn, và slide 39 cho thấy thất bại giúp ích nhiều khi rút ra chiến lược, ít hơn khi lưu cả trajectory/workflow. Nếu vẫn muốn giữ, hãy nén thành vài dòng "đã thử gì, hỏng ở đâu".</span><span class="lang-en"><strong>Failed trace?</strong> Usually <em>not</em> worth storing in full: it's long and noisy, and slide 39 shows failures help much more when distilled into strategies, less when storing the whole trajectory/workflow. If you still want to keep it, compress it into a few lines: "what was tried, where it broke".</span></li>
+      </ol>
+    </details>
+
+    <p><strong>C3.</strong> <span class="lang-vi">Một skill <code>python-review</code> gồm: <code>SKILL.md</code> (metadata + hướng dẫn), <code>scripts/run_checks.py</code>, <code>references/docstring-style.md</code>. Agent đang review một PR. Cái gì nằm trong context ở từng thời điểm?</span><span class="lang-en">A <code>python-review</code> skill consists of: <code>SKILL.md</code> (metadata + instructions), <code>scripts/run_checks.py</code>, <code>references/docstring-style.md</code>. The agent is reviewing a PR. What is in context at each point?</span></p>
+    <ol>
+      <li><span class="lang-vi">Trước khi skill được kích hoạt.</span><span class="lang-en">Before the skill is triggered.</span></li>
+      <li><span class="lang-vi">Sau khi agent gọi <code>skill_view('python-review')</code>.</span><span class="lang-en">After the agent calls <code>skill_view('python-review')</code>.</span></li>
+      <li><span class="lang-vi">Sau khi agent chạy <code>python scripts/run_checks.py src/</code>.</span><span class="lang-en">After the agent runs <code>python scripts/run_checks.py src/</code>.</span></li>
+      <li><span class="lang-vi">Khi agent gọi <code>skill_view('python-review', 'references/docstring-style.md')</code>.</span><span class="lang-en">When the agent calls <code>skill_view('python-review', 'references/docstring-style.md')</code>.</span></li>
+    </ol>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi">1 — Chỉ <strong>tên + mô tả</strong> (tầng 1) trong danh mục skill của system prompt; cả danh mục tốn khoảng 3k token trong Hermes.</span><span class="lang-en">1 — Only the <strong>name + description</strong> (layer 1) in the system prompt's skill catalogue; the whole catalogue costs about 3k tokens in Hermes.</span></li>
+        <li><span class="lang-vi">2 — <strong>Phần thân SKILL.md</strong> (các bước review) quay về như một kết quả tool.</span><span class="lang-en">2 — The <strong>body of SKILL.md</strong> (the review steps) comes back as a tool result.</span></li>
+        <li><span class="lang-vi">3 — Chỉ <strong>kết quả</strong>: các cảnh báo của Black và Ruff. Code của script <em>không bao giờ</em> vào context.</span><span class="lang-en">3 — Only the <strong>results</strong>: Black and Ruff warnings. The script's code <em>never</em> enters context.</span></li>
+        <li><span class="lang-vi">4 — Chỉ đúng tài liệu <code>docstring-style.md</code> được yêu cầu.</span><span class="lang-en">4 — Only the requested <code>docstring-style.md</code> document.</span></li>
+      </ul>
+      <p><span class="lang-vi"><em>Vì sao thiết kế vậy?</em> Nhờ nạp dần theo tầng, một agent có thể có hàng trăm skill mà context vẫn nhẹ — như xem mục lục thư viện, lấy đúng cuốn sách cần, rồi tra đúng trang.</span><span class="lang-en"><em>Why this design?</em> Thanks to layered loading, an agent can have hundreds of skills while the context stays light — like checking a library's index, pulling the right book, then turning to the right page.</span></p>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="code">
+    <h2><span class="lang-vi">Phần D — Bài tập code (2 bài)</span><span class="lang-en">Part D — Coding exercises (2 exercises)</span></h2>
+
+    <h3><span class="lang-vi">D1 · apply_memory_op — bốn quyết định của bộ nhớ</span><span class="lang-en">D1 · apply_memory_op — the four memory decisions</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam05_d1.py</code>, viết <code>TODO</code>, chạy để thấy <code>OK!</code>. Đây chính là ADD / UPDATE / DELETE / NOOP ở slide 18, dạng thu nhỏ.</span><span class="lang-en">Copy into <code>exam05_d1.py</code>, fill in the <code>TODO</code>, and run until you see <code>OK!</code>. This is exactly ADD / UPDATE / DELETE / NOOP from slide 18, in miniature.</span></p>
+    <div class="lang-vi">
+    <pre><code>def apply_memory_op(store, op):
+    """Áp dụng một memory operation lên store rồi trả về store.
+
+    store: list các dict dạng {"key": ..., "value": ...}
+    op:    dict dạng {"op": "ADD" | "UPDATE" | "DELETE" | "NOOP",
+                      "key": ..., "value": ...}
+
+    Quy tắc:
+      - ADD    : key chưa có  → thêm mục mới
+                 key đã có    → không làm gì (không tạo mục trùng)
+      - UPDATE : key đã có    → đổi value của mục đó
+                 key chưa có  → thêm mục mới (coi như ADD)
+      - DELETE : key đã có    → xóa mục đó
+                 key chưa có  → không làm gì
+      - NOOP   : không làm gì
+    op khác bốn loại trên → raise ValueError.
+    """
+    # TODO
+    pass
+
+# ---------- Tự kiểm ----------
+def fresh():
+    return [
+        {"key": "ten", "value": "Nam"},
+        {"key": "tra_loi", "value": "ngắn gọn"},
+    ]
+
+base = fresh()
+
+# 1) NOOP: không đổi gì
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "NOOP", "key": "ten", "value": "Nam"}) == base
+
+# 2) ADD mục mới
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "ADD", "key": "ngon_ngu", "value": "Python"}) == base + [
+    {"key": "ngon_ngu", "value": "Python"}
+]
+
+# 3) ADD trùng key: không thêm mục thứ hai
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "ADD", "key": "ten", "value": "Nam"}) == base
+assert len(store) == 2
+
+# 4) UPDATE: sửa giá trị, không thêm mục
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "UPDATE", "key": "tra_loi", "value": "chi tiết"}) == [
+    {"key": "ten", "value": "Nam"},
+    {"key": "tra_loi", "value": "chi tiết"},
+]
+
+# 5) UPDATE key chưa có: thêm mới
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "UPDATE", "key": "mui_gio", "value": "UTC+7"}) == base + [
+    {"key": "mui_gio", "value": "UTC+7"}
+]
+
+# 6) DELETE: xóa mục
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "DELETE", "key": "ten"}) == [
+    {"key": "tra_loi", "value": "ngắn gọn"}
+]
+
+# 7) DELETE key không tồn tại: không lỗi, không đổi
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "DELETE", "key": "khong_co"}) == base
+
+# 8) op lạ: phải raise ValueError
+try:
+    apply_memory_op([dict(m) for m in base], {"op": "REPLACE", "key": "x", "value": "y"})
+    raise AssertionError("Đáng lẽ phải raise ValueError")
+except ValueError:
+    pass
+
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def apply_memory_op(store, op):
+    """Apply one memory operation to the store and return the store.
+
+    store: list of dicts like {"key": ..., "value": ...}
+    op:    dict like {"op": "ADD" | "UPDATE" | "DELETE" | "NOOP",
+                      "key": ..., "value": ...}
+
+    Rules:
+      - ADD    : key not present → append a new entry
+                 key present     → do nothing (no duplicate entry)
+      - UPDATE : key present     → change that entry's value
+                 key not present → append a new entry (treat as ADD)
+      - DELETE : key present     → remove that entry
+                 key not present → do nothing
+      - NOOP   : do nothing
+    Any other op → raise ValueError.
+    """
+    # TODO
+    pass
+
+# ---------- Self-check ----------
+def fresh():
+    return [
+        {"key": "ten", "value": "Nam"},
+        {"key": "tra_loi", "value": "ngắn gọn"},
+    ]
+
+base = fresh()
+
+# 1) NOOP: nothing changes
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "NOOP", "key": "ten", "value": "Nam"}) == base
+
+# 2) ADD a new entry
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "ADD", "key": "ngon_ngu", "value": "Python"}) == base + [
+    {"key": "ngon_ngu", "value": "Python"}
+]
+
+# 3) ADD with a duplicate key: no second entry
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "ADD", "key": "ten", "value": "Nam"}) == base
+assert len(store) == 2
+
+# 4) UPDATE: change the value, add no entry
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "UPDATE", "key": "tra_loi", "value": "chi tiết"}) == [
+    {"key": "ten", "value": "Nam"},
+    {"key": "tra_loi", "value": "chi tiết"},
+]
+
+# 5) UPDATE a missing key: append a new entry
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "UPDATE", "key": "mui_gio", "value": "UTC+7"}) == base + [
+    {"key": "mui_gio", "value": "UTC+7"}
+]
+
+# 6) DELETE: remove the entry
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "DELETE", "key": "ten"}) == [
+    {"key": "tra_loi", "value": "ngắn gọn"}
+]
+
+# 7) DELETE a missing key: no error, no change
+store = [dict(m) for m in base]
+assert apply_memory_op(store, {"op": "DELETE", "key": "khong_co"}) == base
+
+# 8) unknown op: must raise ValueError
+try:
+    apply_memory_op([dict(m) for m in base], {"op": "REPLACE", "key": "x", "value": "y"})
+    raise AssertionError("Đáng lẽ phải raise ValueError")
+except ValueError:
+    pass
+
+print("OK!")</code></pre>
+    </div>
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <pre><code>def apply_memory_op(store, op):
+    kind = op["op"]
+
+    if kind == "NOOP":
+        return store
+
+    if kind == "ADD":
+        if not any(m["key"] == op["key"] for m in store):
+            store.append({"key": op["key"], "value": op["value"]})
+        return store
+
+    if kind == "UPDATE":
+        for m in store:
+            if m["key"] == op["key"]:
+                m["value"] = op["value"]
+                return store
+        store.append({"key": op["key"], "value": op["value"]})
+        return store
+
+    if kind == "DELETE":
+        store[:] = [m for m in store if m["key"] != op["key"]]
+        return store
+
+    raise ValueError(f"Unknown op: {kind}")</code></pre>
+      <p><span class="lang-vi">Đối chiếu slide 18: ADD cho thông tin mới, UPDATE khi thông tin mới <em>thay đổi</em> mục cũ, DELETE khi nó <em>phủ định</em> mục cũ, NOOP khi đã có sẵn. Bộ nhớ chỉ ADD mãi sẽ đầy mâu thuẫn — ba thao tác còn lại là thứ giữ nó sạch.</span><span class="lang-en">Compare with slide 18: ADD for new information, UPDATE when the new information <em>changes</em> the old entry, DELETE when it <em>negates</em> the old entry, NOOP when it's already there. Memory that only ever ADDs fills up with conflicts — the other three operations are what keep it clean.</span></p>
+    </details>
+
+    <h3><span class="lang-vi">D2 · Dọn bộ nhớ theo ngưỡng TroVE</span><span class="lang-en">D2 · Pruning memory by the TroVE threshold</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam05_d2.py</code>, viết <code>TODO</code>, chạy để thấy <code>OK!</code>. Mục ít được dùng thì bị loại — và càng trưởng thành (n càng lớn), tiêu chuẩn càng cao.</span><span class="lang-en">Copy into <code>exam05_d2.py</code>, fill in the <code>TODO</code>, and run until you see <code>OK!</code>. Items that are rarely used get retired — and the more mature the agent (the larger n), the higher the bar.</span></p>
+    <div class="lang-vi">
+    <pre><code>import math
+
+def retire_unused(store, use_counts, n):
+    """Trả về list MỚI chỉ giữ những mục còn hiệu lực.
+
+    Theo TroVE (slide 42): loại bỏ mục được dùng ít hơn ½·log10(n) lần.
+    - use_counts: dict key → số lần mục đó đã được dùng.
+    - Mục không có trong use_counts coi như dùng 0 lần.
+    """
+    # TODO: gợi ý — threshold = 0.5 * math.log10(n)
+    pass
+
+# ---------- Tự kiểm ----------
+mem = [
+    {"key": "hay_dung",  "value": "A"},
+    {"key": "vua_du",    "value": "B"},
+    {"key": "it_dung",   "value": "C"},
+    {"key": "chua_dung", "value": "D"},
+]
+counts = {"hay_dung": 5, "vua_du": 2, "it_dung": 1}
+
+# n = 1000 → ngưỡng 0.5 * log10(1000) = 1.5
+assert retire_unused(mem, counts, 1000) == [mem[0], mem[1]]
+
+# n = 100 → ngưỡng 1.0: mục dùng 1 lần vẫn được giữ
+assert retire_unused(mem, counts, 100) == [mem[0], mem[1], mem[2]]
+
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>import math
+
+def retire_unused(store, use_counts, n):
+    """Return a NEW list keeping only the entries still in effect.
+
+    Per TroVE (slide 42): retire items used fewer than ½·log10(n) times.
+    - use_counts: dict key → how many times that entry has been used.
+    - Entries missing from use_counts count as used 0 times.
+    """
+    # TODO: hint — threshold = 0.5 * math.log10(n)
+    pass
+
+# ---------- Self-check ----------
+mem = [
+    {"key": "hay_dung",  "value": "A"},
+    {"key": "vua_du",    "value": "B"},
+    {"key": "it_dung",   "value": "C"},
+    {"key": "chua_dung", "value": "D"},
+]
+counts = {"hay_dung": 5, "vua_du": 2, "it_dung": 1}
+
+# n = 1000 → threshold 0.5 * log10(1000) = 1.5
+assert retire_unused(mem, counts, 1000) == [mem[0], mem[1]]
+
+# n = 100 → threshold 1.0: items used once are still kept
+assert retire_unused(mem, counts, 100) == [mem[0], mem[1], mem[2]]
+
+print("OK!")</code></pre>
+    </div>
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <pre><code>import math
+
+def retire_unused(store, use_counts, n):
+    threshold = 0.5 * math.log10(n)
+    return [m for m in store if use_counts.get(m["key"], 0) &gt;= threshold]</code></pre>
+      <p><span class="lang-vi">Với n = 1000, ngưỡng là 1.5 — mục dùng 0 hoặc 1 lần bị loại. Với n = 100, ngưỡng là 1.0 — mục dùng 1 lần vẫn sống. Đúng tinh thần slide 42: ngưỡng tăng dần khi agent thấy nhiều ví dụ hơn.</span><span class="lang-en">With n = 1000 the threshold is 1.5 — items used 0 or 1 times are retired. With n = 100 the threshold is 1.0 — items used once survive. Exactly the spirit of slide 42: the bar rises as the agent sees more examples.</span></p>
+    </details>
+
+    <div class="callout">
+      <div class="callout-title"><span class="lang-vi">Nối với bài giảng</span><span class="lang-en">Connection to the lecture</span></div>
+      <p><span class="lang-vi">D1 là bốn quyết định ở slide 18 — cơ chế giữ bộ nhớ không đầy mục mâu thuẫn. D2 là consolidation kiểu TroVE (slide 42) — dọn những gì không còn được dùng. Cả hai đều là bảo trì <em>artifact</em>, không phải đổi model: đúng tinh thần "học mà không bắt đầu lại từ đầu".</span><span class="lang-en">D1 is the four decisions from slide 18 — the mechanism that keeps memory from filling up with conflicting entries. D2 is TroVE-style consolidation (slide 42) — clearing out what is no longer used. Both are <em>artifact</em> maintenance, not changing the model: exactly the spirit of "learning without starting over".</span></p>
+    </div>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><a href="../exams/0004-exam.html"><span class="lang-vi">← Exam 04</span><span class="lang-en">← Exam 04</span></a> · <a href="../lessons/0005-skills-va-memory.html"><span class="lang-vi">Ôn lại Bài 05</span><span class="lang-en">Review Lesson 05</span></a> · <a href="../exams/0006-exam.html"><span class="lang-vi">Exam 06 — Planning →</span><span class="lang-en">Exam 06 — Planning →</span></a></p>
+    <p><span class="lang-vi">Chưa đạt 85%? Làm lại từ đầu — mỗi lần làm lại là một lần nhớ sâu hơn.</span><span class="lang-en">Below 85%? Start over — every retake deepens the memory.</span></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 06 · Planning &amp; đa agent — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Bài 06</div>
+    <h1>Planning &amp; đa agent</h1>
+    <p class="subtitle">Vì sao task dài cần kế hoạch, Plan Mode hoạt động ra sao, và khi nào nhiều agent thật sự giúp ích — theo buổi 3a (Lecture 05: Planning and Task Decomposition).</p>
+    <p class="lesson-meta"><span>~25 phút</span><span>6 câu hỏi tương tác</span><span>3 bài thực hành tự kiểm</span><span>Nguồn: lecture-05-planning.pdf</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#task-dai">Vì sao task dài cần kế hoạch</a></li>
+      <li><a href="#plan-la-gi">Plan là gì? — và Plan Mode trong công cụ thật</a></li>
+      <li><a href="#chia-nho">Chia nhỏ task (decomposition)</a></li>
+      <li><a href="#nghi-vs-lam">Nghĩ khác làm — vì sao plan phải "chạm đất"</a></li>
+      <li><a href="#ba-muc">Ba mức cam kết: workflow → plan-then-execute → replan</a></li>
+      <li><a href="#da-agent">Đa agent: khi nào giúp, khi nào không</a></li>
+      <li><a href="#hieu-lam">Hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">📝 Exam của bài này</div>
+    <p>Làm <a href="../exams/0006-exam.html"><strong>Exam 06</strong></a> để nhớ chắc — nhiều câu hỏi + bài tập code có test tự chạy, làm lại được nhiều lần. Mục tiêu: đúng ≥ 85%.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bài này giải thích từ đầu, không cần nền ML. Cứ đọc tuần tự — mục 1 kể một câu chuyện thật từ slide, mục 2–6 là phần chính. Đến mục 8, bạn tự làm bài rồi <strong>mở đáp án để tự kiểm</strong>. Mục 9 là quiz bấm chọn có giải thích ngay. Không phải nộp cho ai cả.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="task-dai">
+    <h2>Vì sao task dài cần kế hoạch</h2>
+
+    <p>Bài 02 đã cho bạn vòng lặp ReAct: quan sát → hành động → quan sát → … Mỗi bước, model nhìn kết quả rồi quyết định bước kế tiếp. Với task vài ba bước, cách đó chạy tốt. Nhưng hãy giao nó một việc thật dài xem.</p>
+
+    <p><strong>Tình huống:</strong> phòng lab cần mua một máy trạm GPU. Việc giao cho agent gồm ba phần:</p>
+    <ul>
+      <li>so sánh cấu hình và giá giữa các trang web của nhiều nhà cung cấp (<em>vendor</em>);</li>
+      <li>đối chiếu từng cấu hình với yêu cầu kỹ thuật của cluster trên wiki nội bộ;</li>
+      <li>nộp đơn mua hàng (<em>purchase requisition</em>).</li>
+    </ul>
+
+    <p>Đây là điều đã xảy ra (slide 2) — tôi tóm lại thành bảng:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Bước</th><th>Chuyện xảy ra</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>15</td><td>Chốt cấu hình mong muốn: 2× RTX 6000, 128 GB RAM, nguồn 850 W</td></tr>
+        <tr><td>31</td><td>Đọc wiki: "rack chỉ nhận chassis 4U; mỗi slot có 1600 W"</td></tr>
+        <tr><td>giữa</td><td>Ngữ cảnh bị nén: <strong>128k → 14k token</strong> (chi tiết bị mất)</td></tr>
+        <tr><td>~200</td><td>Đã tìm bốn vendor: chỉ D đạt yêu cầu, nhưng thời gian giao hàng 20 tuần</td></tr>
+        <tr><td>201</td><td>Agent tự hỏi: "lấy D? tìm vendor thứ năm? hay nới lỏng yêu cầu?"</td></tr>
+        <tr><td>202</td><td>Vào cổng mua sắm → New requisition → <strong>Submit</strong></td></tr>
+      </tbody>
+    </table>
+
+    <p>Slide 2 rút ra ba điều, và cả ba đều đáng suy nghĩ:</p>
+    <ol>
+      <li><strong>Bốn cuộc tìm kiếm độc lập chạy chung một luồng, một ngữ cảnh.</strong> Đáng lẽ chúng có thể chạy riêng, nhưng agent cứ làm tuần tự trong một ngữ cảnh duy nhất — đến mức phải nén 128k token xuống còn 14k. Giống như bạn nhờ một người vừa gọi điện cho bốn nhà cung cấp vừa phải nhớ hết thông số trong đầu, không cho ghi ra giấy. Đến lúc cần so sánh, trí nhớ đã "nén" mất một nửa.</li>
+      <li><strong>Cả bốn trang đều trả lời, và không cái nào thật sự ổn.</strong> Thông tin quan trọng nhất — ràng buộc "4U, 1600 W" — lại xuất hiện ở bước 31, <em>sau</em> khi agent đã chốt cấu hình ở bước 15. Thông tin đến muộn là chuyện thường ở task dài.</li>
+      <li><strong>Nó vẫn chọn một phương án và nộp đơn.</strong> Ở bước 201, agent biết mình đang kẹt — nó tự hỏi đúng câu hỏi. Nhưng bước 202 là <em>Submit</em>: một bước không thể hoàn tác. Bí mà vẫn cam kết, thế là xong.</li>
+    </ol>
+
+    <p>Vấn đề không nằm ở trí thông minh của model. Ở bước 201 nó thậm chí đã nhận ra điều bất ổn. Vấn đề nằm ở chỗ task này có <strong>cấu trúc</strong>, mà cấu trúc đó không có chỗ nào để sống ngoài ngữ cảnh.</p>
+
+    <p>Slide 3 gọi tên bốn tính chất của task dài, và cả bốn đều có mặt trong ví dụ trên:</p>
+    <ul>
+      <li><strong>Song song (parallel)</strong> — bốn cuộc tìm kiếm không phụ thuộc nhau, đáng lẽ chạy đồng thời.</li>
+      <li><strong>Phụ thuộc (dependencies)</strong> — phải có spec của vendor rồi mới đối chiếu với wiki được.</li>
+      <li><strong>Thông tin đến muộn (information arrives later)</strong> — ràng buộc 4U/1600 W lộ ra khi đã đi được nửa đường.</li>
+      <li><strong>Bước không thể hoàn tác (irreversible step)</strong> — nộp đơn mua hàng rồi thì rất khó rút lại.</li>
+    </ul>
+
+    <p>Và còn một điều tinh tế hơn: <strong>bản thân đồ thị công việc cũng thay đổi</strong>. Khi cả bốn vendor đều không đạt, kế hoạch ban đầu không hề có nhánh nào để xử lý — phải thêm một cuộc tìm kiếm thứ năm. Nhìn task dưới dạng sơ đồ:</p>
+
+    <pre><code>  vendor A ──┐
+  vendor B ──┤                        ┌────────────────────────┐
+  vendor C ──┼──► đối chiếu ───────► │ chọn máy + nộp requisition │  ← KHÔNG thể hoàn tác
+  vendor D ──┘    với wiki           └────────────────────────┘
+                     ▲
+                     │
+              yêu cầu cluster:
+              rack 4U · slot 1600 W      nếu cả 4 vendor không đạt
+              (thông tin đến MUỘN)       → phải thêm vendor E  ← kế hoạch phải sửa
+</code></pre>
+
+    <p>Slide 3 gói lại thành bốn câu hỏi lớn — cũng chính là bản đồ của bài học này:</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Value · Giá trị</div>
+        <h3>Khi nào planning có ích?</h3>
+        <p>Và khi nào nó <em>có hại</em>? (Mục 5 và mục 7.)</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Representation · Biểu diễn</div>
+        <h3>Plan được viết ra dưới dạng nào?</h3>
+        <p>Ngôn ngữ tự nhiên, chương trình, hay ký hiệu hình thức? (Mục 2 và mục 4.)</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Commitment · Cam kết</div>
+        <h3>Plan được lập khi nào?</h3>
+        <p>Và cái gì được phép thay đổi nó giữa chừng? (Mục 5.)</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Oversight · Giám sát</div>
+        <h3>Khi nào con người nhảy vào?</h3>
+        <p>Đặc biệt trước các bước không thể hoàn tác. (Mục 2 và mục 6.)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="plan-la-gi">
+    <h2>Plan là gì? — và Plan Mode trong công cụ thật</h2>
+
+    <p>Bài giảng đưa một định nghĩa làm việc (slide 5). Đọc chậm từng mảnh:</p>
+
+    <blockquote>
+      <p>"A plan is an explicit representation of intended future behavior: the actions or subgoals an agent will attempt, with any ordering or dependencies among them."</p>
+      <cite>— Lecture 05, slide 5 <sup><a href="#src-slide5">[3]</a></sup></cite>
+    </blockquote>
+
+    <ul>
+      <li><em>explicit representation</em> — biểu diễn <strong>tường minh</strong>: viết ra được, đọc lại được, không nằm mơ hồ trong đầu ai.</li>
+      <li><em>intended future behavior</em> — hành vi <strong>tương lai dự định</strong>: chuyện sẽ làm, chưa làm.</li>
+      <li><em>the actions or subgoals</em> — các hành động hoặc <strong>mục tiêu con</strong> mà agent sẽ thử.</li>
+      <li><em>with any ordering or dependencies</em> — kèm <strong>thứ tự</strong> và <strong>phụ thuộc</strong> giữa chúng.</li>
+    </ul>
+
+    <p>Hai điều cần phân biệt ngay:</p>
+    <ul>
+      <li><strong>Plan ≠ skill.</strong> Skill là hướng dẫn tái sử dụng cho nhiều task (bạn gặp ở bài 05). Plan là cho <em>task này</em> — nên nó cụ thể hơn skill rất nhiều. Ví dụ: "quy trình phỏng vấn ứng viên" là skill; "kế hoạch tuyển một bạn backend trong tháng này, phỏng vấn ai, khi nào" là plan.</li>
+      <li><strong>Plan là một đề xuất (proposal), không phải lời bảo đảm.</strong> Nó có thể bị soi, bị sửa — bởi người dùng, bởi một model khác, hoặc bởi chính những gì môi trường trả về. Mike Tyson nói: <em>"Everybody has a plan until they get punched in the mouth."</em> Cú đấm ở đây là thực tế không giống dự đoán. Plan tốt là plan biết trước rằng nó có thể sai.</li>
+    </ul>
+
+    <p>Với định nghĩa đó, đây là một plan hợp lệ cho task mua máy ở mục 1 — tôi tự nghĩ ra để minh họa:</p>
+
+    <pre><code>MỤC TIÊU: chọn máy trạm GPU đạt yêu cầu cluster, giá tốt nhất, nộp requisition
+
+1. [song song] đọc spec + giá của vendor A, B, C, D
+2. đối chiếu từng cấu hình với wiki (chassis 4U, slot 1600 W)
+   ↳ phụ thuộc: cần xong bước 1
+3. NẾU không cấu hình nào đạt → tìm thêm vendor E   ← điểm replan
+4. chọn ứng viên tốt nhất; ghi rõ giá và lead time
+5. [cần người duyệt] nộp requisition                ← bước không hoàn tác
+</code></pre>
+
+    <p>So với mạch hành động ở mục 1, bạn thấy ngay ba thứ được thêm vào: <strong>thứ tự</strong> (bước 1 trước bước 2), <strong>phụ thuộc</strong> (bước 2 chờ bước 1), và các <strong>điểm kiểm soát</strong> (bước 3 ghi rõ khi nào phải sửa kế hoạch; bước 5 đánh dấu cần người duyệt). Và điều quan trọng nhất: plan này nằm <em>ngoài</em> model, nên ngữ cảnh có bị nén thì nó vẫn còn.</p>
+
+    <h3>Plan Mode — điều các công cụ coding đang làm</h3>
+
+    <p>Slide 4 ghi nhận một hiện tượng: Cursor, Claude Code và Codex đều đã đưa vào <strong>Plan Mode</strong> — chế độ trong đó agent viết ra một plan bền vững (persistent plan), để con người xác nhận, rồi mới thực thi, có thể giao cho các sub-agent chạy song song. Một vòng Plan Mode trông như thế này:</p>
+
+    <pre><code>  (1) Điều tra read-only ──► (2) Hỏi lại nếu mơ hồ ──► (3) Viết plan ra ──► (4) Người duyệt ──► (5) Thực thi
+       chưa sửa gì cả            hỏi cho rõ             giấy tờ đọc được      sửa / từ chối      có thể chia sub-agent
+</code></pre>
+
+    <p>Ví dụ cụ thể bằng một việc lập trình đời thường. Bạn nhờ coding agent: <em>"Thêm đăng nhập Google vào app."</em></p>
+    <ol class="steps">
+      <li><strong>Điều tra (read-only):</strong> agent mở các file, xem chỗ cấu hình đăng nhập, đọc test — nhưng <em>không sửa gì</em>. Vì chưa sửa gì nên giai đoạn này không thể phá hỏng gì.</li>
+      <li><strong>Hỏi lại:</strong> agent thấy mơ hồ nên hỏi: "dùng thư viện nào? có cần lưu refresh token không?" — thay vì tự đoán rồi làm sai.</li>
+      <li><strong>Viết plan:</strong> agent viết ra: sửa file nào, thêm file nào, theo thứ tự nào. Cursor chẳng hạn tạo một file Markdown ghi rõ đường dẫn file và đoạn code liên quan để bạn đọc.<sup><a href="#src-cursor">[4]</a></sup></li>
+      <li><strong>Người duyệt:</strong> bạn đọc và sửa: "đừng đụng vào module billing" — plan được cập nhật. Bạn cũng có thể từ chối.</li>
+      <li><strong>Thực thi:</strong> chỉ khi plan đã chốt, agent mới bắt tay làm.</li>
+    </ol>
+
+    <p>Slide 4 liệt kê năm cơ chế khiến cách làm này giúp ích. Tôi thấy rõ nhất khi đặt cạnh nhau:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Cơ chế</th><th>Nghĩa là gì</th><th>Trong ví dụ coding</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>more compute<br>(thêm tính toán)</td><td>Dành thời gian "suy nghĩ" trước khi hành động, thay vì vừa làm vừa nghĩ.</td><td>Agent đọc code trước khi sửa, nên phát hiện sớm chuyện đăng nhập đang do module cũ quản lý.</td></tr>
+        <tr><td>better context<br>(ngữ cảnh tốt hơn)</td><td>Plan dựa trên sự thật thu thập từ môi trường, không phải phỏng đoán.</td><td>Plan ghi đúng tên file, đúng hàm — vì agent đã mở chúng ra xem.</td></tr>
+        <tr><td>external artifact<br>(vật thể bên ngoài)</td><td>Plan là một thứ <em>cầm được</em>: đọc lại, sửa, lưu, chia sẻ cho người khác — không bị nén mất như token trong ngữ cảnh.</td><td>File plan Markdown nằm trong repo, teammate mở ra đọc được.</td></tr>
+        <tr><td>decomposition<br>(chia nhỏ)</td><td>Plan chia công việc thành các phần; từng phần có thể giao cho sub-agent.</td><td>Việc "thêm nút đăng nhập", "viết callback OAuth", "viết test" có thể chạy song song.</td></tr>
+        <tr><td>human approval<br>(người duyệt)</td><td>Con người chốt trước khi agent tốn tiền, tốn thời gian — và trước các bước không hoàn tác.</td><td>Bạn xem plan trước khi agent sửa code trong repo thật.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Vì sao thêm cấu trúc? Bốn áp lực</h3>
+
+    <p>Slide 17–18 gọi tên bốn "áp lực" khiến người ta thêm planning vào hệ agent. Cả bốn đều nhìn thấy được trong task mua máy:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Áp lực</th><th>Nghĩa ngắn</th><th>Trong task mua máy</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Modularity</td><td>Chia việc để từng phần độc lập, chuyên môn hóa được.</td><td>Bốn cuộc tìm kiếm chạy riêng thay vì dồn vào một luồng.</td></tr>
+        <tr><td>Feedback</td><td>Có vòng phản hồi để sửa kế hoạch.</td><td>Không vendor nào đạt → thêm vendor E, sửa plan.</td></tr>
+        <tr><td>Long horizon</td><td>Giữ được yêu cầu và tiến độ xuyên suốt nhiều bước.</td><td>"4U, 1600 W" và "đã kiểm A, B, C, D" phải sống sót cả task, không bị nén mất.</td></tr>
+        <tr><td>Control</td><td>Tách quyền quyết định cho đúng người.</td><td>Có người duyệt trước khi nộp đơn.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Cuối cùng, một câu châm ngôn kỹ thuật mà slide 17 trích: <em>"Plan to throw one away; you will, anyhow."</em> — Fred Brooks, <em>The Mythical Man-Month</em>. Nghĩa là: hãy chuẩn bị tinh thần bỏ bản kế hoạch đầu tiên, vì kiểu gì bạn cũng sẽ bỏ nó. Viết plan ra sớm chính là để phát hiện chỗ dở <em>sớm</em> — thay vì xây xong cả căn nhà rồi mới nhận ra bố cục sai.</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="chia-nho">
+    <h2>Chia nhỏ task (decomposition)</h2>
+
+    <p>Slide 7 mở đầu bằng một câu đùa của giới lập trình: <em>"Weeks of programming can save you hours of planning."</em> — "Lập trình hàng tuần có thể giúp bạn tiết kiệm hàng giờ… lập kế hoạch." Câu này chế giễu kiểu lao vào code ngay. Nhưng bài giảng lật lại: <strong>chia nhỏ trước khi hành động</strong>. Ba kỹ thuật dưới đây đi từ nhẹ đến nặng.</p>
+
+    <h3>Chain-of-thought cũng là một kế hoạch (ngầm)</h3>
+
+    <p>Bạn biết chain-of-thought (<strong>CoT</strong> — chuỗi suy luận) từ bài 02: model sinh ra các bước trung gian trước khi trả lời. Slide 8 xếp CoT vào chương planning vì hai lý do:</p>
+    <ul>
+      <li>Prompt "Let's think step by step" (Kojima et al., 2022) cho model thêm <em>compute</em> và một <em>scratchpad</em> — tờ giấy nháp để nó tham chiếu lại.</li>
+      <li>Prompt kiểu "Let's first understand the problem and devise a plan to solve the problem. Then, let's carry out the plan…" (Wang et al., 2023) gần như là planning theo nghĩa thông thường.</li>
+    </ul>
+
+    <pre><code>Prompt: 2 × (3 + 4)
+CoT:    3 + 4 = 7      ← bước trung gian, chỉ là text
+        2 × 7 = 14     ← kết quả
+</code></pre>
+
+    <p>Nhưng chú ý điều kiện quan trọng: <strong>plan và lời giải ra đời trong cùng một lần sinh</strong>. Không có gì soi xét plan ở giữa. Nếu bước trung gian sai — ví dụ model viết "3 + 4 = 8" — các bước sau cứ thế trượt theo, và không ai chặn lại. Đó là lý do CoT chỉ là planning hạng nhẹ. Đổi lại, nó rẻ và có thể <em>dạy</em> được: người ta huấn luyện model sinh CoT tốt hơn (STaR; DeepSeek-R1 — slide 8 nhắc tới).</p>
+
+    <h3>Least-to-Most — hỏi câu dễ trước</h3>
+
+    <p>Slide 9 giới thiệu <strong>Least-to-Most</strong> (Zhou et al., ICLR 2023): tách hẳn việc lập kế hoạch ra khỏi việc giải, thành hai giai đoạn:</p>
+    <ol class="steps">
+      <li><strong>Giai đoạn 1:</strong> viết ra các câu hỏi con (subquestions) — từ dễ đến khó.</li>
+      <li><strong>Giai đoạn 2:</strong> trả lời chúng theo thứ tự; đáp án của câu trước được truyền về làm ngữ cảnh cho câu sau.</li>
+    </ol>
+
+    <p>Vì sao hiệu quả? Vì model làm câu hỏi con tốt hơn hẳn câu hỏi phức tạp, và mỗi câu hỏi con cần ít ngữ cảnh hơn. Slide còn ghi một chi tiết đáng nhớ: <strong>lợi ích tăng theo độ dài bài toán</strong> — bài càng dài, chia nhỏ càng lời.</p>
+
+    <p>Ví dụ tự nghĩ, bạn tự kiểm được: <em>"Một cửa hàng nhập 3 thùng, mỗi thùng 24 hộp. Bán được 5/8 số hộp với giá 12.000 đồng, chỗ còn lại bán giảm giá 8.000 đồng. Cửa hàng thu về bao nhiêu?"</em> Thay vì giải một phát, Least-to-Most sinh chuỗi câu hỏi con:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Câu hỏi con</th><th>Đáp án</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1. Có tất cả bao nhiêu hộp?</td><td>3 × 24 = 72</td></tr>
+        <tr><td>2. Bán giá gốc bao nhiêu hộp?</td><td>5/8 × 72 = 45</td></tr>
+        <tr><td>3. Còn lại bao nhiêu hộp?</td><td>72 − 45 = 27</td></tr>
+        <tr><td>4. Tiền bán giá gốc?</td><td>45 × 12.000 = 540.000</td></tr>
+        <tr><td>5. Tiền bán giảm giá?</td><td>27 × 8.000 = 216.000</td></tr>
+        <tr><td>6. Tổng thu về?</td><td>540.000 + 216.000 = 756.000 đồng</td></tr>
+      </tbody>
+    </table>
+
+    <p>Điểm mạnh không chỉ là dễ hơn — mà là <strong>kiểm được từng chặng</strong>. Nếu bước 2 sai, bạn thấy ngay, thay vì chỉ thấy một đáp án cuối cùng sai. Slide 9 cũng nhắc tới hướng mở rộng: nếu một câu hỏi con vẫn còn khó, chia tiếp nó nữa — đó là tinh thần đệ quy của Recursive Language Models (Zhang et al., 2025).</p>
+
+    <h3>Decomposer và các handler — chia để chuyên môn hóa</h3>
+
+    <p>Slide 10 (Decomposed Prompting, Khot et al., ICLR 2023) đẩy ý tưởng thêm một bước: <strong>một bộ chia (decomposer)</strong> tạo ra các subtask, rồi <strong>định tuyến mỗi subtask cho một bộ xử lý chuyên (handler)</strong>. Ví dụ nguyên văn từ slide: câu hỏi "What awards have movies produced by people born in 1910 won?" được chia thành "Ai sinh năm 1910?" giao cho handler hỏi-đáp đơn giản, "Phim nào do #1 sản xuất?" giao cho handler hỏi-đáp kiểu tra vị trí, v.v.</p>
+
+    <pre><code>  Câu hỏi lớn: "Phim do người sinh năm 1910 sản xuất đã thắng giải gì?"
+        │
+        ▼
+  ┌─────────────┐
+  │ DECOMPOSER  │   ← chỉ làm một việc: chia câu hỏi lớn
+  └──────┬──────┘
+     ┌───┼────────────────────┐
+     ▼   ▼                    ▼
+  [Ai sinh   [Phim nào do    [Phim đó
+   năm 1910?]  #1 sản xuất?]   thắng giải gì?]
+     │            │               │
+   handler      handler         handler         ← mỗi loại câu hỏi con
+   hỏi-đáp      tra vị trí      tra giải         có bộ xử lý riêng
+     └────────────┴───────────────┘
+                   ▼
+             tổng hợp câu trả lời
+</code></pre>
+
+    <p>Hình dung đời thường: tổng đài viên của một công ty ghi nhận yêu cầu rồi chuyển đúng bộ phận — kỹ thuật, thanh toán, giao hàng. Tổng đài viên là decomposer; mỗi bộ phận là một handler. Và cái lợi của modularity ở đây rất cụ thể: <strong>nâng cấp một handler mà không đụng đến những cái còn lại</strong> — bằng cách đưa thêm ví dụ vào prompt (in-context demonstrations), hoặc huấn luyện hẳn một model riêng cho nó (slide 10).</p>
+
+    <div class="callout">
+      <div class="callout-title">Vì sao chia nhỏ lại hiệu quả — gói lại trong bốn ý</div>
+      <ol>
+        <li><strong>Câu dễ hơn:</strong> model giỏi trả lời câu hỏi con hơn câu hỏi lớn.</li>
+        <li><strong>Ít ngữ cảnh hơn:</strong> mỗi câu hỏi con chỉ cần một phần thông tin — đỡ bị nén mất chi tiết.</li>
+        <li><strong>Kiểm được từng chặng:</strong> mỗi đáp án con là một điểm để soi, thay vì chỉ có đáp án cuối.</li>
+        <li><strong>Nâng cấp từng phần:</strong> thay/ cải thiện một handler độc lập với các phần còn lại.</li>
+      </ol>
+      <p>Nhưng nhớ mặt trái: chia nhỏ chỉ tốt khi các phần được chia thật sự tách rời. Mục 6 sẽ cho bạn thấy chỗ mà chia nhỏ hay gây ra vấn đề (xem "global constraints").</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="nghi-vs-lam">
+    <h2>Nghĩ khác làm — vì sao plan phải "chạm đất"</h2>
+
+    <p>Slide 12 đặt hai thứ cạnh nhau: một bước suy luận trong CoT và một hành động trong thế giới thật. Nhìn giống nhau — cả hai đều là model sinh ra gì đó. Nhưng khác một trời một vực:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Bước suy luận (reasoning step)</th><th>Hành động (action in the world)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Chỉ đổi <strong>text</strong>.</td><td>Đổi <strong>trạng thái</strong> mà agent gặp ở bước sau.</td></tr>
+        <tr><td>Viết thêm là có thể "undo" — sai thì sửa tiếp.</td><td>Có thể thất bại.</td></tr>
+        <tr><td>Mọi bước trung gian đều nhìn thấy được.</td><td>Có thể tiết lộ thông tin mới (đôi khi là tin xấu).</td></tr>
+        <tr><td>Plan có ích nếu model điều kiện hóa tốt trên nó.</td><td>Có thể <strong>không hoàn tác được</strong>: submit, send.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Slide kết luận bằng một câu cần đọc kỹ: <em>"Acting means plans must handle feasibility, consequences, information, and recovery."</em> — Bốn chữ này áp vào task mua máy là thấy ngay:</p>
+    <ul>
+      <li><strong>Feasibility (tính khả thi):</strong> máy có lắp vừa rack 4U không? Nguồn 850 W có hợp với slot 1600 W không?</li>
+      <li><strong>Consequences (hậu quả):</strong> nộp đơn rồi là lab bị ràng buộc, không đổi ý dễ được.</li>
+      <li><strong>Information (thông tin):</strong> wiki tiết lộ ràng buộc mới — plan phải dùng được thông tin đó.</li>
+      <li><strong>Recovery (phục hồi):</strong> nếu đơn sai thì quy trình hủy là gì? Phải có bước trả hàng/điều chỉnh.</li>
+    </ul>
+
+    <h3>Nhìn lại planning cổ điển một chút</h3>
+
+    <p>Slide 13 nhắc lại <strong>classical planning</strong> — loại planning trong AI truyền thống. Ở đó:</p>
+    <ul>
+      <li>Trạng thái là một tập các mệnh đề đúng/sai (predicates).</li>
+      <li>Mỗi hành động có <strong>điều kiện tiên quyết (preconditions)</strong> và <strong>hiệu ứng (effects)</strong>.</li>
+      <li>Một chuỗi hành động là hợp lệ nếu mỗi bước đều thỏa điều kiện của nó.</li>
+      <li>Planning trở thành bài toán tìm kiếm: tìm chuỗi hành động hợp lệ dẫn đến đích.</li>
+    </ul>
+
+    <p>Ví dụ kinh điển là <em>blocksworld</em> — thế giới xếp khối. Đây là bản rút gọn từ slide:</p>
+
+    <pre><code>Trạng thái ban đầu:  on(blue, orange)  ·  clear(red, blue, yellow)
+Mục tiêu:            on(orange, blue)
+
+Hành động:
+  pick-up(x)   cần:  on-table(x) ∧ clear(x) ∧ hand-empty
+               xong: holding(x)
+  stack(x, y)  cần:  holding(x) ∧ clear(y)
+               xong: on(x, y)
+
+Kế hoạch hợp lệ (mỗi bước đều thỏa điều kiện):
+  unstack(blue, orange) → put-down(blue) → pick-up(orange) → stack(orange, blue)
+</code></pre>
+
+    <p>Để ý: kế hoạch này <em>kiểm tra được</em> — bạn dò từng bước xem điều kiện có đúng không. Đó là sức mạnh của plan hình thức. Nhưng nó hẹp: chỉ dùng được khi bạn mô tả được thế giới bằng mệnh đề và hành động bằng quy tắc rõ ràng.</p>
+
+    <h3>Với LLM, cái khó đã đổi chỗ</h3>
+
+    <p>Slide 14 là một trong những slide đáng nhớ nhất bài: <em>"With LLMs everything is implicit!"</em> Với một LLM agent:</p>
+    <ul>
+      <li>Viết một plan <em>nghe hợp lý</em> thì dễ.</li>
+      <li>Biết chắc mô hình thế giới của nó <em>có đúng hay không</em> thì khó hơn nhiều.</li>
+    </ul>
+    <p>Hệ quả của việc đổi chỗ này: agent design hiện đại dùng <strong>ít tìm kiếm sâu hơn</strong>, và dùng nhiều hơn việc <strong>kiểm tra thế giới thật</strong>: quan sát, xác minh (verification), và phục hồi sau lỗi. Nói cách khác, thay vì ngồi tính trước mọi nhánh, agent thử — nhìn — sửa. Nhưng các khái niệm tìm kiếm và "hành động có điều kiện" vẫn hữu ích để bạn đọc và đánh giá một plan.</p>
+
+    <h3>Plan được viết bằng gì?</h3>
+
+    <p>Slide 15 so ba cách biểu diễn plan, mỗi cách đánh đổi giữa <em>kiểm tra được</em> và <em>tổng quát</em>:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Dạng</th><th>Ưu điểm</th><th>Hạn chế</th><th>Ví dụ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Hình thức (formal)</td><td>Kiểm tra được bằng thuật toán: đúng/sai rõ ràng.</td><td>Hẹp — phải mô tả được thế giới bằng ký hiệu.</td><td>Chuỗi hành động blocksworld ở trên.</td></tr>
+        <tr><td>Chương trình (program)</td><td>Ở giữa: chạy được, soi được, kiểm được.</td><td>Giới hạn bởi API và cấu trúc chương trình cho phép.</td><td>Code LLM viết code gọi API điều khiển robot/giao diện (Code as Policies, ProgPrompt, Binder — khoảng 2023).</td></tr>
+        <tr><td>Ngôn ngữ (language)</td><td>Tổng quát — diễn tả được gần như mọi việc.</td><td>Không có bộ kiểm tra tổng quát; muốn kiểm phải nhờ người, test, hoặc môi trường.</td><td>Plan viết bằng tiếng Việt/tiếng Anh như ở mục 2.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Một chi tiết thú vị: API mà plan gọi đến có thể <em>chính là</em> một LLM hoặc một model neural khác — nghĩa là plan dạng chương trình vẫn có thể chứa các bước "mềm" bên trong.</p>
+
+    <div class="callout">
+      <div class="callout-title">Vì sao điều này quan trọng cho an toàn</div>
+      <p>Slide 32 chỉ ra một lợi ích ít ngờ của plan dạng chương trình. Với agent ReAct thuần, mọi trang web nó đọc đều có thể ảnh hưởng đến hành động kế tiếp — tạo ra đường chèn lệnh (injection path). Nhưng nếu kế hoạch đã được viết thành chương trình cố định, chương trình có thể <strong>nhận giá trị từ trang web mà không nhận hành động mới</strong>. Cấu trúc plan trở thành một ranh giới an toàn.</p>
+    </div>
+
+    <h3>Vì sao plan phải khả thi — bài học SayCan</h3>
+
+    <p>Nhớ lại planning cổ điển: hành động có điều kiện tiên quyết. LLM hay quên điều đó. Slide 22 kể về <strong>SayCan</strong> (Ahn et al., CoRL 2022): cho robot, model có thể sinh ra plan "lấy cốc" nghe rất hợp lý — nhưng tay robot không với tới. Nhóm nghiên cứu học một <em>value function</em> cho từng kỹ năng của robot: nó dự đoán xác suất hoàn thành kỹ năng đó. Rồi họ <strong>nhân</strong> xác suất này với xác suất LLM đề xuất bước đó — bước nào vừa hợp lý vừa làm được mới được chọn.</p>
+    <p>Đời thường: bạn lên thực đơn 5 món, nhưng bếp chỉ có 2 bếp lửa. Plan phải tính cả "làm được không", không chỉ "làm gì".</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="ba-muc">
+    <h2>Ba mức cam kết: workflow → plan-then-execute → replan</h2>
+
+    <p>Slide 16 vẽ một dải quyết định, từ "chốt hết trước khi làm" đến "vừa làm vừa quyết":</p>
+
+    <pre><code>  quyết định TRƯỚC khi làm  ◄───────────────────────────────►  quyết định TRONG khi làm
+
+  ┌──────────────────────┐   ┌──────────────────────┐   ┌──────────────────────┐
+  │ WORKFLOW cố định     │   │ PLAN-THEN-EXECUTE    │   │ ADAPTIVE / REPLAN    │
+  │ người viết quy trình │   │ model tự lập plan,   │   │ thực thi → gặp điều  │
+  │ model chỉ chạy bước  │   │ chốt plan rồi mới làm│   │ mới → sửa plan       │
+  └──────────────────────┘   └──────────────────────┘   └──────────────────────┘
+    nhanh · rẻ · dễ đoán        plan là artifact để        thích ứng tốt, nhưng
+    nhưng cứng                  duyệt / sửa                đắt và phức tạp hơn
+</code></pre>
+
+    <p>Đây là một đoạn code ví dụ cho mức thứ nhất — nguyên văn tinh thần từ slide 16:</p>
+
+    <pre><code># 1) Workflow cố định do NGƯỜI viết
+for v in VENDORS:                 # danh sách cứng
+    specs[v] = read_specs(v)      # model đọc spec
+ok = [v for v in specs if fits(v)]
+requisition(cheapest(ok))
+</code></pre>
+
+    <p>Ở mức này, "plan" nằm trong code của lập trình viên, không nằm trong model. Model không được thêm vendor mới. Sang mức hai, model tự quyết định sẽ kiểm những vendor nào — nhưng <em>chốt trước</em> rồi mới thực thi. Sang mức ba, khi bốn vendor đầu trượt, chính phản hồi từ thực thi khiến model sửa plan và tìm vendor thứ năm (RAO, MACU là các hệ như vậy — bạn sẽ gặp ở các buổi Search).</p>
+
+    <p>Vì sao không dùng mức ba luôn cho khỏe? Vì mỗi mức có cái giá của nó: chốt sớm thì <strong>nhanh hơn, rẻ hơn, dễ đoán hơn</strong>; còn replanning cho phép thích ứng khi thực thi tiết lộ thông tin mới — nhưng tốn thêm chi phí và độ phức tạp. Slide 16 kết luận rất gọn: <em>use replanning when that feedback is worth the extra cost and complexity</em> — dùng replanning khi phần phản hồi thu được đáng giá hơn phần chi phí bỏ ra.</p>
+
+    <h3>Tách planner khỏi executor</h3>
+
+    <p>Một khi plan là một thứ riêng, ta có thể tách người lập kế hoạch (planner) khỏi người thực thi (executor). Slide 19 cho thấy lợi ích ăn khớp đúng bốn áp lực ở mục 2:</p>
+    <ul>
+      <li><strong>Modularity:</strong> planner và executor có thể là hai model khác nhau, thậm chí được huấn luyện khác nhau.</li>
+      <li><strong>Feedback:</strong> executor báo kết quả về để planner sửa kế hoạch.</li>
+      <li><strong>Long horizon:</strong> planner giữ bức tranh lớn; executor chỉ cần nhìn bước hiện tại — ngữ cảnh không phình mãi.</li>
+      <li><strong>Control:</strong> tách quyền: ai được quyết định điều gì.</li>
+    </ul>
+
+    <p>Ví dụ từ slide: trong các hệ điều khiển máy tính (UGround, Agent S — 2025), planner kiểu GPT-4o hiểu hình ảnh tốt nhưng dở việc chỉ ra tọa độ pixel. Nên người ta để nó <em>mô tả hành động bằng ngôn ngữ</em> ("bấm nút Đăng nhập"), rồi một model executor 7B chuyên biệt dịch mô tả đó thành tọa độ trên màn hình. Kiến trúc sư nói "cửa sổ hướng đông"; thợ biết khoan ở đâu.</p>
+
+    <p>Và planning không chỉ là chuyện prompt. Slide 20 (Plan-and-Act, Erdogan et al., ICML 2025) kể cách <em>dạy</em> planner: một teacher model chia các trajectory thành công thành từng đoạn và gắn nhãn plan cho chúng; rồi fine-tune cả planner lẫn executor trên những trajectory đã chú thích đó. Nói cách khác: <strong>lập kế hoạch có thể trở thành một kỹ năng được huấn luyện</strong>, không chỉ là một câu prompt hay.</p>
+
+    <h3>Nghĩ nhiều hay làm nhiều?</h3>
+
+    <p>Slide 24 đặt một câu hỏi hay: khi có thêm compute, nên tiêu vào đâu? Có ba cách: sinh CoT dài hơn, lấy nhiều mẫu rồi chọn, hoặc <em>tương tác nhiều hơn với môi trường</em>. Nhóm Test-Time Interaction (Shen et al., NeurIPS 2025) thử so sánh ba cách khi cân bằng compute, và minh họa lợi ích của cách thứ ba bằng một câu nhắc kiểu: <em>"You just signaled task completion. Let's pause and think again."</em> — tương tác thêm với môi trường (kiểu Reflexion) có thể mang về thông tin mà ngồi nghĩ thêm không tạo ra được.</p>
+    <p>Nhưng coi chừng: nghĩ nhiều quá cũng có giá của nó — mục 7 sẽ nói về overthinking.</p>
+
+    <div class="callout">
+      <div class="callout-title">Chọn mức nào? — quy tắc ngón tay</div>
+      <ul>
+        <li>Quy trình đã ổn định, lặp đi lặp lại → <strong>workflow cố định</strong> là đủ, và là lựa chọn rẻ nhất.</li>
+        <li>Task đủ lớn, có bước không hoàn tác, hoặc cần nhiều người xem trước → <strong>plan-then-execute</strong> (viết plan ra, cho duyệt).</li>
+        <li>Môi trường thay đổi nhanh, thông tin chỉ lộ ra khi làm → cân nhắc <strong>adaptive/replan</strong> — nếu phản hồi đáng giá hơn chi phí phức tạp.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="da-agent">
+    <h2>Đa agent: khi nào giúp, khi nào không</h2>
+
+    <p>Phần cuối của buổi 3a chuyển sang multi-agent. Câu hỏi trung tâm rất tỉnh táo: <strong>khi nào nhiều agent thật sự giúp hơn một agent?</strong> Câu trả lời của bài giảng là: đôi khi có, và rất nhiều khi không.</p>
+
+    <h3>Khi nào đa agent giúp — song song và chuyên môn hóa</h3>
+
+    <p>Các thí nghiệm trong slide 40–44 (MACU — Koh, Salakhutdinov, Fried, 2026) xoay quanh mô hình <strong>manager – worker</strong>: một manager chia việc cho nhiều worker, rồi tổng hợp kết quả. Bốn phát hiện chính:</p>
+    <ul>
+      <li><strong>Manager mạnh hơn → phối hợp tốt hơn.</strong> Ablation trên OSWorld (36 task, worker Qwen3.5-4B) cho thấy chất lượng của manager ảnh hưởng trực tiếp tới kết quả chung.</li>
+      <li><strong>Worker yếu được nâng lên nhiều hơn.</strong> Với manager rất mạnh (Opus 4.6), các worker yếu được cải thiện rõ hơn — mở ra tiềm năng: dùng model nhỏ, rẻ cho worker, model mạnh cho manager.</li>
+      <li><strong>Chạy worker song song có ích.</strong> Trên bộ dễ của Odysseys (45 task), chạy nhiều worker song song giúp ích.</li>
+      <li><strong>Đồ thị công việc được sửa giữa chừng.</strong> Hệ thống có thể revise lại cách chia việc khi cần (Table 2).</li>
+    </ul>
+
+    <p>Ví dụ task của Odysseys: <em>tìm các bác sĩ phẫu thuật ACL</em> (Jang, Koh, Fried, Salakhutdinov, 2026). Đây là task có nhiều nhánh độc lập rõ rệt — ví dụ mỗi thành phố một worker — nên song song hóa tự nhiên. Và bạn cũng đã gặp một ví dụ đa agent "đời thực" ở bài 01: 16 agent Claude cùng viết một compiler C khoảng 100.000 dòng, đủ sức biên dịch nhân Linux (Anthropic, 02/2026).<sup><a href="#src-compiler">[10]</a></sup> Ở đó, lợi ích đến từ đúng hai nguồn: <strong>song song</strong> (nhiều module làm cùng lúc) và <strong>chuyên môn hóa</strong> (mỗi agent lo một module).</p>
+
+    <h3>Vì sao phải cẩn thận — vai trò cố định và handoff</h3>
+
+    <p>Slide 21 là một cảnh báo thẳng: <em>role decompositions for coding have had limited success</em> — chia vai cho coding agent chưa thành công rộng rãi. Hai lý do:</p>
+    <ul>
+      <li><strong>Vai trò bị chốt trước khi biết task.</strong> Bạn ấn định "người này là verifier" từ đầu. Nhưng khi cần kiểm tra một lỗi cụ thể, verifier lại không có ngữ cảnh để khoanh vùng lỗi — nó không tự tìm được chỗ cần soi trong chính câu trả lời của mình.</li>
+      <li><strong>Handoff là bản tóm tắt.</strong> Khi agent này bàn giao cho agent kia, thứ được chuyển thường là một summary report. Bản tóm tắt thì phải bỏ bớt chi tiết — và rất có thể nó bỏ đúng cái chi tiết mà agent sau cần.</li>
+    </ul>
+
+    <p>Ví dụ đời thường: bàn giao ca trực mà chỉ đưa một tờ giấy tóm tắt vài dòng. Bệnh nhân có mười chi tiết, tờ giấy có ba. Người ca sau muốn hỏi lại thì không biết hỏi ai.</p>
+
+    <p>Vì vậy Graham Neubig mới viết bài <em>"Don't Sleep on Single-agent Systems"</em> (2024) — đừng ngủ quên trên hệ một-agent. Luận điểm: một agent với một model tốt, một bộ tool dùng chung, và một cách prompt tốt thường làm được phần lớn những gì hệ đa agent làm — mà ít phức tạp hơn.<sup><a href="#src-neubig">[8]</a></sup></p>
+
+    <h3>Ranh giới chia nhỏ không miễn phí — global constraints</h3>
+
+    <p>Slide 34 (TravelPlanner, Xie et al., ICML 2024) chỉ ra một cái bẫy rất hay gặp khi chia nhỏ. Với một chuyến đi: vé máy bay, khách sạn, ăn uống, điểm tham quan chia ra rất sạch — mỗi thứ một subtask. Nhưng <strong>ngân sách, phương tiện di chuyển, và chế độ ăn</strong> là các ràng buộc <em>toàn cục</em>: chúng liên quan đến mọi mảnh, và thường bị vi phạm khi ghép các mảnh lại (mỗi mảnh tối ưu cho riêng nó, cộng lại thì vượt ngân sách hoặc không kịp di chuyển).</p>
+
+    <p>Đây là chỗ chia nhỏ phản tác dụng nếu không cẩn thận. Cách xử lý (gợi ý của tôi, không phải từ slide): (1) xác định trước những ràng buộc nào "không được vỡ ở bất kỳ mảnh nào"; (2) giao chúng cho manager giữ, chứ không đẩy xuống worker; (3) kiểm tra ràng buộc ở bước ghép, coi đó là tiêu chí nghiệm thu.</p>
+
+    <h3>Ủy quyền như một hành động</h3>
+
+    <p>Slide 31 cho thấy đa agent hiện đại không nhất thiết là một kiến trúc khổng lồ. Trong RAO (Gandhi et al., 2026) và các hệ tương tự:
+    agent có một tool tên kiểu <code>launch_subagent(goal)</code> — nó chạy một bản sao của chính mình trên một subtask, và bản sao đó có thể lại tiếp tục ủy quyền. Mỗi nút được chấm điểm theo kết quả task riêng của nó <em>và</em> theo tần suất các nút con thành công. Vì <strong>ủy quyền là một hành động</strong>, nó có thể được huấn luyện: hệ được train chỉ trên task mức vừa, nhưng khi gặp task khó nó biết ủy quyền sâu hơn.</p>
+
+    <h3>Vậy khi nào nên dùng đa agent?</h3>
+
+    <p>Tổng hợp lại thành một checklist để bạn tự hỏi trước khi nhân bản agent:</p>
+    <ol class="steps">
+      <li><strong>Các nhánh có thật sự độc lập không?</strong> Không chia sẻ trạng thái, đầu vào/đầu ra rõ ràng (kiểu mỗi thành phố một worker). Nếu các phần dính vào nhau — đừng chia.</li>
+      <li><strong>Chuyên môn hóa có mang lại gì không?</strong> Worker khác tool, khác model, hoặc khác kiến thức chuyên biệt.</li>
+      <li><strong>Manager có đủ mạnh để chia việc và tổng hợp không?</strong> Bằng chứng từ slide 41: manager càng mạnh, phối hợp càng tốt.</li>
+      <li><strong>Handoff có làm mất ngữ cảnh cần thiết không?</strong> Nếu mảnh sau cần biết chi tiết của mảnh trước — một agent giữ tất cả sẽ tốt hơn.</li>
+      <li><strong>Ràng buộc toàn cục đã có người giữ chưa?</strong> Nếu chưa, ghép lại sẽ vỡ (bài học TravelPlanner).</li>
+      <li><strong>Chi phí và độ phức tạp có xứng không?</strong> Nếu còn phân vân: bắt đầu bằng một agent với tool tốt (Neubig).</li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Hiểu lầm thường gặp</h2>
+
+    <p>Bốn hiểu lầm hay gặp nhất khi mới làm quen với planning và đa agent:</p>
+
+    <ol>
+      <li>
+        <p><strong>"Lập kế hoạch càng nhiều càng tốt."</strong> — Không. Slide 25 (Cuadron et al., 2025) ghi nhận ba kiểu <em>overthinking</em> (suy luận quá mức): tê liệt phân tích (analysis paralysis), chuỗi hành động lạc hướng (rogue action chains), và bỏ cuộc sớm (premature disengagement). Và trên nhiều loại model, càng overthinking thì càng ít giải quyết được vấn đề. Có lúc việc đúng không phải là nghĩ thêm, mà là <em>nhìn thêm</em>: slide 26–27 (Calibrate-then-Act) kể ví dụ một file dữ liệu ẩn mười hai kiểu định dạng; nếu model chỉ biết "khả năng dấu phân cách là ';' khoảng 0.85", câu trả lời đúng không phải là suy luận tiếp, mà là <em>chạy thử vài unit test để xác nhận</em>.</p>
+      </li>
+      <li>
+        <p><strong>"Đa agent luôn mạnh hơn một agent."</strong> — Không. Slide 21: phân vai cố định cho coding ít thành công, vì vai chốt trước khi biết task và handoff là bản tóm tắt dễ rơi ngữ cảnh. Neubig (2024) khuyên đừng ngủ quên trên hệ một-agent. Đa agent chỉ thắng khi các nhánh thật sự độc lập, chuyên môn hóa có ích, và có manager đủ mạnh để tổng hợp.</p>
+      </li>
+      <li>
+        <p><strong>"Lập plan xong thì cứ thế mà làm."</strong> — Không. Plan là một đề xuất, không phải lời bảo đảm. Slide 28 (Vending-Bench, Backlund &amp; Petersson, 2025) kể một thất bại dài hơi: agent điều hành một máy bán hàng tự động trong tối đa 2.000 lượt (khoảng 25 triệu token, tới 222 ngày mô phỏng). Nó "restock" quá sớm, thấy môi trường báo "hàng chưa có" — và suy luận sai thành "việc kinh doanh đã sụp". Nó không chờ email xác nhận giao hàng, cũng không kiểm tra lại. Lỗi nhỏ đó lớn dần: phí hàng ngày bị nó hiểu thành "gian lận", đến mức nó gửi email với tiêu đề <em>"EMERGENCY: Unauthorized Fees After Business Termination"</em>. Slide 29–30 (Sinha et al., 2025) đúc kết: độ chính xác từng bước càng cao thì "chân trời" càng dài, nhưng việc tự điều kiện hóa trên các bước trước (self-conditioning) có thể làm các bước sau kém chính xác đi. Một hiểu lầm nhỏ ở đầu dây chuyền có thể chảy xuống hết dây chuyền.</p>
+      </li>
+      <li>
+        <p><strong>"Plan của LLM giống plan trong sách planning cổ điển."</strong> — Khác hẳn. Plan hình thức kiểm tra được bằng thuật toán; plan ngôn ngữ tự nhiên thì tổng quát nhưng <em>không có bộ kiểm tra tổng quát</em> (slide 47 xếp "checking" vào danh sách bài toán mở). Nên trong thực tế, độ tin của một plan phải đến từ chỗ khác: người duyệt, unit test, hoặc quan sát môi trường — chứ không thể chỉ vì plan "đọc nghe hợp lý".</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+
+    <p>Ba bài dưới đây làm ra nháp trước, rồi mới mở đáp án. Đáp án chỉ là gợi ý — điều quan trọng là <strong>cách lập luận</strong> của bạn.</p>
+
+    <div class="exercise">
+      <h3>Bài 1 — Bóc cấu trúc một task dài</h3>
+      <p><strong>Đề bài:</strong> Bạn cần tổ chức một buổi workshop cho 30 người trong vòng 3 tuần (địa điểm, diễn giả, tài liệu, ăn uống).</p>
+      <p>Hãy viết ra:</p>
+      <ol>
+        <li>Phần nào có thể chạy <strong>song song</strong>?</li>
+        <li>Phần nào <strong>phụ thuộc</strong> vào phần nào (làm sau vì chờ kết quả)?</li>
+        <li><strong>Thông tin nào chỉ đến muộn</strong> — phải làm tiếp mới biết?</li>
+        <li><strong>Bước nào không thể hoàn tác</strong>?</li>
+      </ol>
+      <p>Rồi viết một plan 5–7 dòng có thứ tự, ít nhất một điểm replan, và một điểm cần người duyệt.</p>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>Song song:</strong> mời diễn giả; tìm và đặt địa điểm; chuẩn bị tài liệu; quảng bá cho người tham dự.</li>
+          <li><strong>Phụ thuộc:</strong> đặt suất ăn phải chờ biết số người xác nhận thật; tài liệu phải chờ diễn giả chốt nội dung; đặt cọc địa điểm phải chờ duyệt ngân sách.</li>
+          <li><strong>Thông tin đến muộn:</strong> số người xác nhận thực tế; diễn giả báo bận đột xuất; địa điểm bị hủy trước ngày.</li>
+          <li><strong>Không hoàn tác:</strong> chuyển tiền đặt cọc địa điểm/diễn giả; gửi thông báo chính thức cho toàn bộ khách mời.</li>
+        </ul>
+        <p>Plan gợi ý:</p>
+        <ol>
+          <li>[song song] mời 3 diễn giả · khảo sát 2 địa điểm · dựng đề cương tài liệu</li>
+          <li>chốt ngày + địa điểm (cần xong mục 1; cần người duyệt ngân sách)</li>
+          <li>gửi thư mời người tham dự → thu thập xác nhận</li>
+          <li>[replan] nếu địa điểm ngày đó bị kín → đổi sang phương án 2 hoặc đổi ngày</li>
+          <li>đặt suất ăn theo số người xác nhận (phụ thuộc mục 3)</li>
+          <li>[cần duyệt] chuyển khoản đặt cọc</li>
+        </ol>
+        <p>Chú ý: nếu bạn phát hiện thêm rằng "chốt nội dung diễn giả" cần xong trước "in tài liệu", bạn vừa làm đúng bài tập này.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 2 — Chọn mức cam kết</h3>
+      <p><strong>Đề bài:</strong> Với mỗi tình huống, chọn một trong ba mức — workflow cố định, plan-then-execute, hay adaptive/replan — và giải thích bằng đúng một câu, dựa trên hai thứ: <em>độ ổn định của môi trường</em> và <em>giá trị của phản hồi thu được khi làm</em>.</p>
+      <ol>
+        <li>Xuất hóa đơn hằng tháng cho 200 khách hàng, quy trình đã chạy ổn định nhiều năm.</li>
+        <li>Thuê một nhà thiết kế làm logo — chưa từng làm với họ, mà sửa lại rất tốn kém.</li>
+        <li>Săn vé máy bay và khách sạn cho chuyến đi 2 tuần; giá và tình trạng phòng thay đổi liên tục.</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>(1) Workflow cố định.</strong> Quy trình ổn định, lặp lại, muốn nhanh – rẻ – dễ đoán; thông tin mới trong lúc chạy gần như không có giá trị.</li>
+          <li><strong>(2) Plan-then-execute.</strong> Chưa biết họ làm thế nào, mà sửa thì đắt — nên bắt họ trình bày plan (concept, số vòng sửa, file bàn giao), mình duyệt rồi mới làm. Plan ở đây là artifact để thống nhất trước.</li>
+          <li><strong>(3) Adaptive/replan.</strong> Giá vé và phòng đổi liên tục — phản hồi từ môi trường đáng giá hơn chi phí phức tạp. Và vì "trả tiền" là bước không hoàn tác, chèn một điểm người duyệt trước khi chốt.</li>
+        </ul>
+        <p>Nếu bạn chọn (2) cho tình huống (3) cũng có lý — miễn là bạn chỉ ra được rằng plan sẽ phải được sửa ngay khi có thông tin mới. Điều đáng kiểm tra là <em>lý do</em>, không phải đáp án.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h3>Bài 3 — Một agent hay nhiều agent?</h3>
+      <p><strong>Đề bài:</strong> Chọn "một agent", "nhiều worker + manager", hoặc "chưa đủ thông tin" cho từng tình huống, rồi nói ra rủi ro chính nếu chia nhỏ.</p>
+      <ol>
+        <li>Sửa một bug nhỏ trong đúng một file.</li>
+        <li>Thu thập thông tin (giá, tính năng, đánh giá) về 6 công ty từ 6 trang web khác nhau, rồi lập bảng so sánh.</li>
+        <li>Một task dài bạn đang làm trong công việc — tự chọn, và trả lời bốn câu hỏi checklist trong slide 46.</li>
+      </ol>
+      <details>
+        <summary>Xem đáp án gợi ý</summary>
+        <ul>
+          <li><strong>(1) Một agent.</strong> Chia nhỏ chỉ thêm chi phí handoff mà không thêm lợi ích. Đây chính là lời khuyên "don't sleep on single-agent systems".</li>
+          <li><strong>(2) Nhiều worker + manager.</strong> Sáu trang là sáu nhánh độc lập — chạy song song tự nhiên, mỗi worker một công ty. Rủi ro: <em>tiêu chí so sánh là ràng buộc toàn cục</em>. Nếu mỗi worker tự chọn cách thu thập khác nhau thì ghép lại không so sánh được. Cách xử lý: manager chốt trước cấu trúc bảng và tiêu chí, worker chỉ điền.</li>
+          <li><strong>(3) Tùy.</strong> Tự kiểm bằng bốn câu hỏi của slide 46: (a) các subtask có tách rời được không, planner và executor có nên là hai model huấn luyện khác nhau không? (b) thất bại hay quan sát nào phải làm plan thay đổi? (c) hệ thống ngăn lỗi và ngữ cảnh tích tụ như thế nào? (d) thông tin/quyền gì phải tách riêng, và ai duyệt các bước không hoàn tác? Nếu bạn không trả lời được (a) và (b) cho phần định chia nhỏ — chọn một agent cho phần đó.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Sáu câu, bấm chọn — đúng thì hiện giải thích, sai thì hiện gợi ý để thử lại.</p>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">1. Trong ví dụ mua máy trạm GPU ở mục 1, vì sao agent chạy kiểu reactive (một luồng, một ngữ cảnh) thất bại?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Vì model không đủ giỏi để đọc trang web của các vendor</button>
+        <button class="quiz-opt" data-key="b">Vì bốn việc tìm kiếm độc lập bị dồn vào một ngữ cảnh duy nhất — chi tiết bị nén mất — rồi nó chọn một phương án và nộp đơn không thể hoàn tác</button>
+        <button class="quiz-opt" data-key="c">Vì không vendor nào bán máy đạt yêu cầu kỹ thuật</button>
+        <button class="quiz-opt" data-key="d">Vì người giao việc không nói rõ cấu hình mong muốn</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nghĩ tới "128k → 14k tokens" và chuyện nó vẫn bấm Submit ở bước 202.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Vấn đề nằm ở cấu trúc task chứ không phải trí thông minh của model: nhánh song song, phụ thuộc, thông tin đến muộn, bước không hoàn tác. Ở bước 201 agent tự hỏi đúng câu hỏi — nhưng nó không có chỗ nào ngoài ngữ cảnh để giữ bức tranh, và rồi vẫn cam kết. Lưu ý phương án c chỉ đúng một phần (chỉ D đạt) — đó không phải nguyên nhân thất bại.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">2. Theo định nghĩa ở mục 2, plan của một LLM agent là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Một danh sách bước cố định do lập trình viên viết sẵn trong code</button>
+        <button class="quiz-opt" data-key="b">Một lời hứa rằng agent sẽ hoàn thành task đúng như mô tả</button>
+        <button class="quiz-opt" data-key="c">Suy nghĩ thầm trong đầu model, không cần viết ra đâu cả</button>
+        <button class="quiz-opt" data-key="d">Biểu diễn tường minh hành vi tương lai dự định: các hành động hoặc mục tiêu con, kèm thứ tự và phụ thuộc</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: "explicit representation of intended future behavior".</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Plan là biểu diễn tường minh: viết ra được, đọc lại được. Nó là <em>proposal</em> chứ không phải bảo đảm — có thể bị sửa bởi người dùng, model khác, hoặc môi trường. Và nó là cho task này (khác skill — thứ tái sử dụng cho nhiều task).</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question">3. Điểm cốt lõi của Plan Mode (Claude Code, Cursor, Codex) là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Điều tra chỉ-đọc trước → hỏi lại nếu cần → viết plan ra → con người duyệt → rồi mới thực thi</button>
+        <button class="quiz-opt" data-key="b">Thực thi trước, viết plan sau để giải trình những gì đã làm</button>
+        <button class="quiz-opt" data-key="c">Chạy hai bản song song: một bản làm, một bản viết plan</button>
+        <button class="quiz-opt" data-key="d">Cấm agent mọi hành động không thể hoàn tác</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: thứ tự đúng là điều tra (chưa sửa gì) → plan → duyệt → làm.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Pipeline của Plan Mode: read-only investigation → clarifying questions → written plan → human review → execution. Nó giúp ở năm điểm: thêm compute, ngữ cảnh tốt hơn, plan là artifact bên ngoài, chia nhỏ được, và có người duyệt. Phương án d nửa đúng về tinh thần an toàn, nhưng không phải định nghĩa của Plan Mode — việc chặn hành động nguy hiểm là chuyện của cơ chế permission/approval.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">4. Least-to-Most giải bài toán khó bằng cách nào?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Dùng model lớn hơn để giải một phát</button>
+        <button class="quiz-opt" data-key="b">Sinh nhiều đáp án rồi chọn đáp án xuất hiện nhiều nhất</button>
+        <button class="quiz-opt" data-key="c">Chia thành các câu hỏi con, trả lời lần lượt; đáp án trước trở thành ngữ cảnh cho câu sau</button>
+        <button class="quiz-opt" data-key="d">Hỏi người dùng gợi ý trước khi bắt đầu</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: tên nói lên cách làm — từ dễ (least) đến khó (most).</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Giai đoạn 1 viết các câu hỏi con; giai đoạn 2 trả lời theo thứ tự và truyền đáp án về trước. Vì sao hiệu quả: model giỏi câu hỏi con hơn câu hỏi lớn, câu con cần ít ngữ cảnh hơn — và lợi ích còn tăng theo độ dài bài toán.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">5. Khi nào replanning (sửa kế hoạch giữa chừng) đáng giá?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Luôn luôn — replan lúc nào cũng tốt hơn là bám kế hoạch</button>
+        <button class="quiz-opt" data-key="b">Khi thông tin mới lộ ra trong lúc thực thi đáng giá hơn chi phí và độ phức tạp tăng thêm</button>
+        <button class="quiz-opt" data-key="c">Không bao giờ — chốt plan rồi cứ thế làm là tốt nhất</button>
+        <button class="quiz-opt" data-key="d">Chỉ khi người viết workflow quên mất một bước</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: chốt sớm có lợi, sửa được cũng có lợi — câu hỏi là phần nào lớn hơn.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Chốt plan sớm thì nhanh hơn, rẻ hơn, dễ đoán hơn; replanning cho phép thích ứng nhưng tốn thêm chi phí và độ phức tạp. Slide 16 nói gọn: dùng replanning khi phần phản hồi thu được đáng giá hơn phần chi phí bỏ ra. Ví dụ mua máy: cả bốn vendor trượt → sửa plan để thêm vendor thứ năm.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">6. Theo slide 21, vì sao phân vai cố định (fixed roles) cho coding agent ít thành công?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Vì các agent không giao tiếp được với nhau</button>
+        <button class="quiz-opt" data-key="b">Vì đa agent luôn chậm hơn một agent</button>
+        <button class="quiz-opt" data-key="c">Vì mỗi agent cần một model riêng</button>
+        <button class="quiz-opt" data-key="d">Vì vai trò bị chốt trước khi biết task, và handoff chỉ là bản tóm tắt nên làm rơi ngữ cảnh agent sau cần</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: hai cụm từ khóa — "fixed before the task arrives" và "summary reports".</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Vai trò chốt trước khi biết task khiến verifier không tự khoanh được lỗi để kiểm chính câu trả lời của mình; còn handoff là bản tóm tắt nên có thể bỏ đúng chi tiết agent sau cần. Đó là lý do Neubig (2024) nhắc: đừng ngủ quên trên hệ một-agent.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <p>Đọc lướt bảng này một lần trước khi rời bài:</p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Plan</td><td>Biểu diễn tường minh việc sẽ làm: hành động/mục tiêu con + thứ tự + phụ thuộc; là proposal, không phải bảo đảm.</td></tr>
+        <tr><td>Planning</td><td>Quyết định trước rồi mới làm — thêm cấu trúc cho task dài.</td></tr>
+        <tr><td>Task decomposition</td><td>Chia task thành các subtask nhỏ hơn, làm và kiểm được từng phần.</td></tr>
+        <tr><td>Plan artifact</td><td>Plan viết ra thành vật thể ngoài model (file/văn bản) để đọc, sửa, lưu — không bị nén mất cùng ngữ cảnh.</td></tr>
+        <tr><td>Plan Mode</td><td>Điều tra chỉ-đọc → hỏi lại → viết plan → người duyệt → thực thi (Cursor, Claude Code, Codex).</td></tr>
+        <tr><td>Chain-of-thought (CoT)</td><td>Chuỗi suy luận trung gian; một dạng plan ngầm — không ai kiểm tra bước giữa.</td></tr>
+        <tr><td>Least-to-Most</td><td>Chia thành câu hỏi con, trả lời lần lượt; đáp án trước làm ngữ cảnh cho câu sau.</td></tr>
+        <tr><td>Decomposer / handler</td><td>Bộ chia subtask + các bộ xử lý chuyên cho từng loại subtask (Decomposed Prompting).</td></tr>
+        <tr><td>Plan-then-execute</td><td>Lập plan và chốt xong mới thực thi.</td></tr>
+        <tr><td>Replanning</td><td>Sửa plan khi thực thi tiết lộ thông tin mới.</td></tr>
+        <tr><td>Planner / executor</td><td>Tách phần quyết định chiến lược khỏi phần thực thi chi tiết — có thể khác model, khác training.</td></tr>
+        <tr><td>Handoff</td><td>Bàn giao giữa các agent; thường là bản tóm tắt → dễ làm rơi ngữ cảnh.</td></tr>
+        <tr><td>Global constraints</td><td>Ràng buộc trải khắp mọi subtask (ngân sách, chế độ ăn…) — dễ bị vi phạm khi chia nhỏ.</td></tr>
+        <tr><td>Irreversible action</td><td>Hành động không hoàn tác được (submit, send) — cần người duyệt.</td></tr>
+        <tr><td>Long horizon</td><td>Task dài nhiều bước; lỗi nhỏ tích lũy, ngữ cảnh phình ra.</td></tr>
+        <tr><td>Overthinking</td><td>Suy luận quá mức: tê liệt phân tích, chuỗi hành động lạc hướng, bỏ cuộc sớm.</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li id="src-slide2">Task dài và cấu trúc của nó (ví dụ mua máy trạm GPU, bốn câu hỏi lớn) — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=2">slide 2</a> và <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=3">slide 3</a>.</li>
+      <li id="src-slide4">Plan Mode trong coding agent (read-only → câu hỏi → plan → người duyệt → thực thi; "possibly helpful" list) — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=4">slide 4</a>; demo Cursor — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=33">slide 33</a>.</li>
+      <li id="src-slide5">Định nghĩa plan; plan vs skill; "a plan is a proposal"; câu của Mike Tyson — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=5">slide 5</a>.</li>
+      <li id="src-cursor">Cursor — <a href="https://cursor.com/blog/plan-mode">Introducing Plan Mode</a> (10/2025): nghiên cứu codebase, hỏi lại, tạo file Markdown có đường dẫn file, sửa plan, lưu lại trong repo.</li>
+      <li id="src-slide8">Chain-of-thought như một plan ngầm (Kojima et al. 2022; Wang et al. 2023; STaR; DeepSeek-R1) — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=8">slide 8</a>. Least-to-Most (Zhou et al., ICLR 2023) — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=9">slide 9</a> · <a href="https://arxiv.org/abs/2205.10625">arXiv:2205.10625</a>. Decomposed Prompting (Khot et al., ICLR 2023) — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=10">slide 10</a> · <a href="https://arxiv.org/abs/2210.02406">arXiv:2210.02406</a>.</li>
+      <li id="src-slide12">Suy luận vs hành động ("feasibility, consequences, information, recovery") — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=12">slide 12</a>. Planning cổ điển &amp; blocksworld (STRIPS; PlanBench) — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=13">slide 13</a>. "What is hard has changed" — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=14">slide 14</a>. Ba dạng biểu diễn plan — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=15">slide 15</a>. SayCan — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=22">slide 22</a>.</li>
+      <li id="src-slide16">Ba mức cam kết &amp; khi nào replan (kèm dẫn Anthropic "Building effective agents") — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=16">slide 16</a> · <a href="https://www.anthropic.com/engineering/building-effective-agents">anthropic.com/engineering/building-effective-agents</a>. Bốn áp lực và ví dụ mua máy — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=17">slide 17</a>–<a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=18">18</a>. Tách planner/executor (UGround, Agent S) và Plan-and-Act — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=19">slide 19</a>–<a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=20">20</a>.</li>
+      <li id="src-neubig">Cảnh báo vai trò cố định &amp; handoff; "Don't Sleep on Single-agent Systems" — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=21">slide 21</a> · <a href="https://www.openhands.dev/blog/dont-sleep-on-single-agent-systems">bài của Graham Neubig, 09/2024</a>. Overthinking (Cuadron et al. 2025) — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=25">slide 25</a>. Vending-Bench &amp; lỗi tích lũy — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=28">slide 28</a>–<a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=30">30</a>. Ủy quyền đệ quy (RAO) — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=31">slide 31</a>. Plans as security boundaries — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=32">slide 32</a>.</li>
+      <li>Global constraints (TravelPlanner) — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=34">slide 34</a>. Multi-agent computer use: Odysseys &amp; MACU (manager–worker, OSWorld ablation, worker parallelism) — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=40">slide 40</a>–<a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=44">44</a>. Design checklist — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=46">slide 46</a>. Bài toán mở — <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf#page=47">slide 47</a>.</li>
+      <li id="src-compiler">Anthropic — <a href="https://www.anthropic.com/engineering/building-c-compiler">Building a C compiler with a team of parallel Claudes</a> (02/2026): ví dụ 16 agent song song (đã kể ở bài 01).</li>
+      <li>Slide gốc đầy đủ: <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf">lecture-05-planning.pdf</a> (bản trên web: <a href="https://www.cmu-agents.com/slides/lecture-05-planning.pdf">cmu-agents.com/slides/lecture-05-planning.pdf</a>).</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài tiếp theo:</strong> buổi 3b · Coding Agents — quy trình cố định kiểu Agentless, và vì sao coding là môi trường lý tưởng để thử planning.</p>
+    <p>Nếu có chỗ chưa rõ: ghi lại câu hỏi, rồi đọc lại đúng mục đó một lần — phần lớn sẽ sáng ra ở lần đọc thứ hai. Điều quan trọng của bài này không phải nhớ hết, mà là tự hỏi được: "task này có cấu trúc gì, và mình đang cam kết ở mức nào?"</p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

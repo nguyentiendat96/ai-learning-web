@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam 04 · Quản lý ngữ cảnh — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Exam 04</div>
+    <h1><span class="lang-vi">Exam — Quản lý ngữ cảnh</span><span class="lang-en">Exam — Context Management</span></h1>
+    <p class="subtitle"><span class="lang-vi">16 câu + 2 bài tập code. Làm lại được nhiều lần — mục tiêu: đúng ≥ 85%.</span><span class="lang-en">16 questions + 2 coding exercises. Retake as many times as you like — target: ≥ 85% correct.</span></p>
+    <p class="lesson-meta"><span>~40 phút / ~40 min</span><span><a href="../lessons/0004-quan-ly-ngu-canh.html"><span class="lang-vi">← Ôn lại Bài 04</span><span class="lang-en">← Review Lesson 04</span></a></span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="exam-bar">
+    <span class="exam-progress">Đúng 0 / 13 câu tương tác</span>
+    <button class="exam-reset" type="button">Làm lại từ đầu</button>
+  </div>
+
+  <p><span class="lang-vi"><strong>Cách làm:</strong> phần A–B chấm điểm tự động; phần C–D tự kiểm bằng đáp án. Mục tiêu: <strong>≥ 85%</strong>.</span><span class="lang-en"><strong>How to use:</strong> parts A–B are graded automatically; parts C–D are self-checked against the answer keys. Target: <strong>≥ 85%</strong>.</span></p>
+
+  <!-- ================================================== -->
+  <section id="trac-nghiem">
+    <h2><span class="lang-vi">Phần A — Trắc nghiệm (10 câu)</span><span class="lang-en">Part A — Multiple choice (10 questions)</span></h2>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A1. Model không có trí nhớ giữa các lần gọi. Vậy "trí nhớ" của agent thực chất nằm ở đâu?</span><span class="lang-en">A1. The model has no memory between calls. So where does an agent's "memory" actually live?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Trong trọng số model, được cập nhật sau mỗi lượt</span><span class="lang-en">In the model weights, updated after every turn</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Trong harness — bên gửi lại toàn bộ lịch sử ở mỗi lần gọi</span><span class="lang-en">In the harness — which resends the full history on every call</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Trong KV cache của nhà cung cấp</span><span class="lang-en">In the provider's KV cache</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Trong context window — model giữ nó lại giữa các lần gọi</span><span class="lang-en">In the context window — the model keeps it between calls</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Mỗi lần gọi model chỉ biết đoạn text harness gửi lúc đó. Mọi thứ có vẻ agent "nhớ" là do harness gửi lại. KV cache là trạng thái tính toán để khỏi prefill lại — không phải nơi lưu nội dung.</span><span class="lang-en">On each call the model only knows the text the harness sends at that moment. Everything the agent seems to "remember" is there because the harness resent it. The KV cache is compute state that avoids re-prefilling — not a place where content is stored.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A2. Đo trên 1.500 session OpenHands: thành phần nào chiếm nhiều token nhất trong ngữ cảnh?</span><span class="lang-en">A2. Measured across 1,500 OpenHands sessions: which component takes up the most tokens in the context?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">System + tools (~23%)</span><span class="lang-en">System + tools (~23%)</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Tool calls (~20%)</span><span class="lang-en">Tool calls (~20%)</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">User (~9%)</span><span class="lang-en">User (~9%)</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Tool results (~37%)</span><span class="lang-en">Tool results (~37%)</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Tool results chiếm ~37% — nhiều nhất, còn user chỉ ~9%. Hơn hai phần ba ngữ cảnh là do máy sinh (system+tools 23% + tool calls 20% + tool results 37%), nên nếu không quản lý nó tự phình. Trung bình 77.922 token/session.</span><span class="lang-en">Tool results account for ~37% — the most, while user input is only ~9%. More than two thirds of the context is machine-generated (system+tools 23% + tool calls 20% + tool results 37%), so without management it keeps growing on its own. Average: 77,922 tokens/session.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A3. Vì sao tổng token cộng dồn tăng nhanh hơn nhiều so với số bước của agent?</span><span class="lang-en">A3. Why does the cumulative token total grow much faster than the number of agent steps?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì model viết dài hơn ở mỗi bước</span><span class="lang-en">Because the model writes more at each step</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì tool trả kết quả ngày càng dài</span><span class="lang-en">Because tools return longer and longer results</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì giá token tăng dần theo thời gian</span><span class="lang-en">Because token prices rise over time</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì mỗi lần gọi phải gửi lại toàn bộ lịch sử phía trước</span><span class="lang-en">Because every call must resend the entire preceding history</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Mỗi bước chỉ thêm ~5K nhưng cả phần cũ bị gửi lại: input mỗi lần tăng tuyến tính (6K → 26K sau 5 lần), cộng dồn tăng bậc hai (80K sau 5 lần; ~4,14M sau 40 bước). Slide 3 gọi là "quadratic input from linear history growth".</span><span class="lang-en">Each step adds only ~5K, but all the old content is resent: per-call input grows linearly (6K → 26K after 5 calls), while the cumulative total grows quadratically (80K after 5 calls; ~4.14M after 40 steps). Slide 3 calls this "quadratic input from linear history growth".</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A4. Điều kiện để prompt caching có tác dụng là gì?</span><span class="lang-en">A4. What is the condition for prompt caching to work?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Prompt phải ngắn hơn một nửa cửa sổ ngữ cảnh</span><span class="lang-en">The prompt must be shorter than half the context window</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Phải bật chế độ cache ở phía model</span><span class="lang-en">Cache mode must be enabled on the model side</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Prefix phải giống hệt nhau — máy chủ so khớp từ token đầu tiên</span><span class="lang-en">The prefix must be identical — the server matches from the very first token</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Toàn bộ prompt phải giống hệt nhau, kể cả phần lịch sử mới</span><span class="lang-en">The entire prompt must be identical, including the new history</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Khớp được đến đâu tái dùng đến đó; một chữ khác ở đầu là mọi thứ phía sau tính là mới. Phần nối thêm ở cuối vẫn ổn — prefix cũ vẫn được tái dùng. Cache có thể bị đuổi theo kiểu LRU, không tồn tại mãi.</span><span class="lang-en">The match is reused as far as it goes; one different character at the start makes everything after it count as new. Appending at the end is fine — the old prefix is still reused. Cache entries can be evicted LRU-style; they don't last forever.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A5. Việc nào khiến cache gần như không bao giờ trúng?</span><span class="lang-en">A5. Which practice makes the cache almost never hit?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Chèn "Bây giờ là 14:32:07 ngày 23/09/2026" ở đầu prompt và cập nhật mỗi lần gọi</span><span class="lang-en">Inserting "It is now 14:32:07 on 23/09/2026" at the top of the prompt and updating it on every call</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Ghép quan sát mới vào cuối prompt</span><span class="lang-en">Appending new observations at the end of the prompt</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Giữ nguyên thứ tự và cách viết định nghĩa tool</span><span class="lang-en">Keeping tool definitions in the same order and wording</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Đặt ví dụ few-shot ngay sau system prompt, trong prefix</span><span class="lang-en">Placing few-shot examples right after the system prompt, inside the prefix</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Timestamp đổi mỗi lần gọi → prefix khác → cache vô hiệu → trả giá đầy đủ cho toàn bộ lịch sử. Lỗi tương tự: serialize danh sách tool theo thứ tự khác nhau, chèn ghi chú ngẫu nhiên vào đầu prompt.</span><span class="lang-en">The timestamp changes on every call → different prefix → cache invalidated → you pay full price for the entire history. Similar mistakes: serialising the tool list in a different order, injecting random notes at the top of the prompt.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A6. Chỉ số TTFT (time to first token) phụ thuộc chủ yếu vào đâu?</span><span class="lang-en">A6. What does TTFT (time to first token) mostly depend on?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Số token output của câu trả lời trước</span><span class="lang-en">The number of output tokens in the previous reply</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">TPOT của lần gọi trước</span><span class="lang-en">The TPOT of the previous call</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Số tool được bật trong hệ thống</span><span class="lang-en">The number of tools enabled in the system</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Pha prefill — đọc toàn bộ prompt và tính trạng thái; prompt càng dài càng lâu</span><span class="lang-en">The prefill phase — reading the whole prompt and computing state; the longer the prompt, the slower</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Prefill là "đọc hết 200 trang hồ sơ trước khi trả lời"; decode là "nói từng câu" (gắn với TPOT). Nhờ caching, TTFT không phình theo độ dài lịch sử vì chỉ phần mới phải prefill đầy đủ.</span><span class="lang-en">Prefill is "reading all 200 pages of the file before answering"; decode is "speaking sentence by sentence" (tied to TPOT). Thanks to caching, TTFT doesn't balloon with history length because only the new part has to be fully prefilled.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A7. "Advertised context" khác "effective context" ở điểm nào?</span><span class="lang-en">A7. How does "advertised context" differ from "effective context"?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Nếu thông tin nằm trong cửa sổ cho phép thì model luôn dùng được</span><span class="lang-en">If the information is inside the allowed window, the model can always use it</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Trong cửa sổ, thông tin ở giữa thường được dùng kém hơn ở đầu và cuối</span><span class="lang-en">Within the window, information in the middle is usually used less reliably than at the start and end</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Cửa sổ càng lớn thì chất lượng suy luận càng tăng</span><span class="lang-en">The bigger the window, the better the reasoning quality</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Nhiễu không ảnh hưởng vì model tự lọc thông tin</span><span class="lang-en">Noise doesn't matter because the model filters information by itself</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Needle in a haystack (GPT-4, Kamradt 2023): tài liệu càng dài càng dễ tìm hụt dù câu trả lời vẫn nằm trong cửa sổ. "Đọc được" không đồng nghĩa "dùng được": kim chôn giữa cỏ dễ bị sót, hướng dẫn cũ bị loãng, nhiễu lấn át tín hiệu.</span><span class="lang-en">Needle in a haystack (GPT-4, Kamradt 2023): the longer the document, the more likely the lookup misses even though the answer is still inside the window. "Readable" does not mean "usable": a needle buried in hay is easily missed, old instructions get diluted, and noise drowns out signal.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A8. Khi nén lịch sử, nội dung nào phải được giữ <strong>nguyên văn</strong>?</span><span class="lang-en">A8. When compacting history, which content must be kept <strong>verbatim</strong>?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Những lần thử đã bị thay thế</span><span class="lang-en">Attempts that were superseded</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Toàn bộ suy luận trung gian cũ</span><span class="lang-en">All the old intermediate reasoning</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Anchor — mục tiêu và ràng buộc, ví dụ "dùng CUDA 12.4"</span><span class="lang-en">Anchors — goals and constraints, e.g. "use CUDA 12.4"</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Toàn bộ log 24K dòng agent đã đọc</span><span class="lang-en">The entire 24K-line log the agent read</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Anchor và đuôi gần nhất là hai nhóm "giữ nguyên văn" (slide 48) — diễn giải là chỗ thông tin hay bị bóp méo. Log lớn thì đưa ra ngoài, chỉ giữ đường dẫn; lần thử bị thay thế thì bỏ; checkpoint (quyết định, ID) được mã hoá lại.</span><span class="lang-en">Anchors and the most recent tail are the two "keep verbatim" groups (slide 48) — paraphrase is where information gets distorted. Large logs go external with only a path kept; superseded attempts are dropped; checkpoints (decisions, IDs) get re-encoded.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A9. Vì sao nén lịch sử nhiều lần liên tiếp dễ làm mất ràng buộc?</span><span class="lang-en">A9. Why does compaction applied repeatedly tend to lose constraints?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì model chủ động xoá những gì ít được nhắc lại</span><span class="lang-en">Because the model actively deletes whatever is mentioned less often</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì cache bị xóa mỗi lần nén</span><span class="lang-en">Because the cache is cleared on every compaction</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì bản nén mới được viết từ bản nén cũ cộng phần mới, không phải từ lịch sử gốc</span><span class="lang-en">Because each new summary is written from the previous summary plus the new part, not from the original history</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì nén làm tổng số token tăng lên</span><span class="lang-en">Because compaction increases the total number of tokens</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">"Photocopy của bản photocopy": mỗi vòng chi tiết mờ đi — "CUDA 12.4" → "CUDA 12.x" → "recent CUDA". Chống bằng cách chép nguyên văn anchor, giữ đuôi gần nhất, giữ đường dẫn về bằng chứng gốc (slide 50). Model không "xoá" gì — nó vốn không nhớ gì.</span><span class="lang-en">"A photocopy of a photocopy": details blur with each round — "CUDA 12.4" → "CUDA 12.x" → "recent CUDA". Counter it by copying anchors verbatim, keeping the recent tail, and keeping paths back to the original evidence (slide 50). The model doesn't "delete" anything — it never remembered anything in the first place.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A10. Sub-agent giúp gì cho ngữ cảnh chính, và cái giá phải trả là gì?</span><span class="lang-en">A10. What does a sub-agent do for the main context, and what is the price?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Cô lập ngữ cảnh "bẩn" trong agent con; cái giá: thêm agent + lượt gọi, chất lượng phụ thuộc brief, kết quả cần kiểm chứng</span><span class="lang-en">It isolates "dirty" context inside the child agent; the price: an extra agent + call turns, quality depends on the brief, and the result needs verification</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Làm model nhớ lịch sử lâu hơn; cái giá: tốn dung lượng ổ cứng</span><span class="lang-en">It makes the model remember history longer; the price: disk space</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Tăng context window cho agent mẹ; cái giá: chậm hơn</span><span class="lang-en">It enlarges the parent agent's context window; the price: slower responses</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Tự động nén lịch sử; cái giá: có thể mất anchor</span><span class="lang-en">It compacts history automatically; the price: anchors may be lost</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Agent con đọc 24K dòng log rồi trả về vài dòng kết luận — ngữ cảnh mẹ không phình. Cái giá: thêm một agent và lượt gọi, chất lượng phụ thuộc brief bạn viết, và kết quả trả về vẫn phải kiểm chứng. Phương án d mô tả compaction, không phải sub-agent.</span><span class="lang-en">The child agent reads 24K lines of log and returns a few lines of conclusions — the parent context doesn't balloon. The price: an extra agent and call turns, quality depends on the brief you write, and the returned result still needs verification. Option d describes compaction, not sub-agents.</span></p></div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="dien-khuyet">
+    <h2><span class="lang-vi">Phần B — Điền khuyết (3 câu)</span><span class="lang-en">Part B — Fill in the blank (3 questions)</span></h2>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B1. Hai pha của một lần gọi model:</span><span class="lang-en">B1. The two phases of a model call:</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Pha</span><span class="lang-en">The</span> <span class="fib" data-answer="prefill|pre-fill" data-placeholder="?"></span> <span class="lang-vi">đọc toàn bộ prompt và tính trạng thái cho từng vị trí; còn pha</span><span class="lang-en">phase reads the entire prompt and computes state for every position; the</span> <span class="fib" data-answer="decode" data-placeholder="?"></span> <span class="lang-vi">sinh từng token một.</span><span class="lang-en">phase generates one token at a time.</span></p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B2. Chỉ số độ trễ đến token đầu tiên:</span><span class="lang-en">B2. The latency-to-first-token metric:</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Chỉ số đo từ lúc gửi request đến token đầu tiên có tên viết tắt là</span><span class="lang-en">The metric measuring the time from sending the request to the first token has the abbreviation</span> <span class="fib" data-answer="ttft|time to first token" data-placeholder="?"></span>.</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B3. Nén lặp và cách chống:</span><span class="lang-en">B3. Repeated compaction and how to counter it:</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Hiện tượng chi tiết trôi dần qua nhiều lần nén gọi là</span><span class="lang-en">The phenomenon where details gradually drift through repeated compactions is called</span> <span class="fib" data-answer="drift" data-placeholder="?"></span><span class="lang-vi">, và cách chống là chép nguyên văn các</span><span class="lang-en">, and the countermeasure is to copy the</span> <span class="fib" data-answer="anchor|anchors" data-placeholder="?"></span><span class="lang-vi">.</span><span class="lang-en"> verbatim.</span></p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tinh-huong">
+    <h2><span class="lang-vi">Phần C — Tình huống &amp; phân tích (3 câu)</span><span class="lang-en">Part C — Scenarios &amp; analysis (3 questions)</span></h2>
+
+    <p><strong>C1.</strong> <span class="lang-vi">Một agent có prefix 6K token, mỗi bước thêm 5K token (tool call + kết quả + suy luận), không có caching. Trả lời bốn ý:</span><span class="lang-en">An agent has a 6K-token prefix; each step adds 5K tokens (tool call + result + reasoning), and there is no caching. Answer four parts:</span></p>
+    <ol>
+      <li><span class="lang-vi">Lần gọi thứ 5 gửi bao nhiêu token?</span><span class="lang-en">How many tokens does the 5th call send?</span></li>
+      <li><span class="lang-vi">Tổng input đã gửi cộng dồn qua 5 lần là bao nhiêu?</span><span class="lang-en">What is the cumulative input sent across 5 calls?</span></li>
+      <li><span class="lang-vi">Với cửa sổ 200K, khoảng bước thứ mấy thì tràn?</span><span class="lang-en">With a 200K window, around which step does it overflow?</span></li>
+      <li><span class="lang-vi">Giải thích trong 1–2 câu: vì sao cộng dồn tăng nhanh hơn nhiều so với số bước?</span><span class="lang-en">Explain in 1–2 sentences: why does the cumulative total grow much faster than the number of steps?</span></li>
+    </ol>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <p><span class="lang-vi"><strong>(1)</strong> 6 + 5 × 4 = <strong>26K token</strong>.</span><span class="lang-en"><strong>(1)</strong> 6 + 5 × 4 = <strong>26K tokens</strong>.</span></p>
+      <p><span class="lang-vi"><strong>(2)</strong> 6 + 11 + 16 + 21 + 26 = <strong>80K token</strong>. (Công thức: 5 × 6 + 5 × (0+1+2+3+4) = 30 + 50 = 80K.)</span><span class="lang-en"><strong>(2)</strong> 6 + 11 + 16 + 21 + 26 = <strong>80K tokens</strong>. (Formula: 5 × 6 + 5 × (0+1+2+3+4) = 30 + 50 = 80K.)</span></p>
+      <p><span class="lang-vi"><strong>(3)</strong> Cần 6 + 5 × (n − 1) &gt; 200 → n ≈ <strong>40</strong>. Bước 39 mới là 196K (vẫn vừa), bước 40 là 201K (đã tràn). Thực tế phải chừa thêm chỗ cho output nên sẽ chạm trần sớm hơn một chút.</span><span class="lang-en"><strong>(3)</strong> We need 6 + 5 × (n − 1) &gt; 200 → n ≈ <strong>40</strong>. Step 39 is 196K (still fits); step 40 is 201K (already overflowing). In practice you must leave room for output, so you hit the ceiling a little sooner.</span></p>
+      <p><span class="lang-vi"><strong>(4)</strong> Vì model không nhớ gì giữa các lần gọi — mỗi lần phải gửi lại <em>toàn bộ</em> lịch sử phía trước. Input mỗi lần tăng tuyến tính, nhưng tổng cộng dồn tăng theo bậc hai.</span><span class="lang-en"><strong>(4)</strong> Because the model remembers nothing between calls — each call must resend the <em>entire</em> preceding history. Per-call input grows linearly, but the cumulative total grows quadratically.</span></p>
+    </details>
+
+    <p><strong>C2.</strong> <span class="lang-vi">Viết bản compact khoảng 6 dòng cho lịch sử agent sau, theo các mục <strong>Goal</strong> · <strong>Constraints</strong> · <strong>Cause</strong> · <strong>Verified</strong> · <strong>Evidence</strong> · <strong>Next action</strong>. Nói rõ bạn <em>bỏ</em> gì và vì sao.</span><span class="lang-en">Write a ~6-line compact summary of the agent history below, using the headings <strong>Goal</strong> · <strong>Constraints</strong> · <strong>Cause</strong> · <strong>Verified</strong> · <strong>Evidence</strong> · <strong>Next action</strong>. State clearly what you <em>drop</em> and why.</span></p>
+    <div class="lang-vi">
+    <pre><code>RÀNG BUỘC (người dùng dặn): giữ tương thích Python 3.9; không thêm thư viện mới.
+OBSERVATION  Endpoint /report chậm: 12 giây cho 1.000 dòng.
+ACTION       Đọc profile: 90% thời gian nằm ở vòng lặp N+1 query trong report.py.
+ACTION       Thử cache trong bộ nhớ: test cũ pass, nhưng chạy 1 triệu dòng bị MemoryError.
+OBSERVATION  Bản cache trong bộ nhớ bị bỏ.
+ACTION       Chuyển sang prefetch theo lô 500 dòng, chỉ dùng stdlib.
+OBSERVATION  Toàn bộ test pass; 1 triệu dòng còn 1,3 giây. Benchmark ở bench/report.json. Commit d4e5f6a.</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>CONSTRAINTS (user's instructions): keep Python 3.9 compatibility; add no new libraries.
+OBSERVATION  Endpoint /report is slow: 12 seconds for 1,000 rows.
+ACTION       Read the profile: 90% of the time is in an N+1 query loop in report.py.
+ACTION       Try an in-memory cache: existing tests pass, but 1 million rows hit MemoryError.
+OBSERVATION  The in-memory cache was dropped.
+ACTION       Switch to batched prefetch, 500 rows at a time, stdlib only.
+OBSERVATION  All tests pass; 1 million rows now take 1.3 seconds. Benchmark at bench/report.json. Commit d4e5f6a.</code></pre>
+    </div>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án gợi ý</span><span class="lang-en">See suggested answer</span></summary>
+      <div class="lang-vi">
+      <pre><code>Goal:        Giảm thời gian endpoint /report (12 giây cho 1.000 dòng).
+Constraints: Giữ tương thích Python 3.9; không thêm thư viện mới.   (chép nguyên văn)
+Cause:       Vòng lặp N+1 query trong report.py.
+Verified:    Prefetch theo lô 500 dòng; toàn bộ test pass; 1 triệu dòng còn 1,3 giây; commit d4e5f6a.
+Evidence:    bench/report.json                (đọc lại khi cần)
+Next action: Mở PR.</code></pre>
+      </div>
+      <div class="lang-en">
+      <pre><code>Goal:        Reduce the /report endpoint's time (12 seconds for 1,000 rows).
+Constraints: Keep Python 3.9 compatibility; add no new libraries.   (copied verbatim)
+Cause:       The N+1 query loop in report.py.
+Verified:    Batched prefetch, 500 rows at a time; all tests pass; 1 million rows now take 1.3 seconds; commit d4e5f6a.
+Evidence:    bench/report.json                (re-read when needed)
+Next action: Open the PR.</code></pre>
+      </div>
+      <p><span class="lang-vi"><strong>Bỏ:</strong> lần thử cache trong bộ nhớ (đã bị thay thế vì MemoryError) và các bước đọc profile chi tiết.</span><span class="lang-en"><strong>Dropped:</strong> the in-memory cache attempt (superseded because of MemoryError) and the detailed profiling steps.</span></p>
+      <p><span class="lang-vi"><strong>Kiểm lại:</strong> hai ràng buộc có còn nguyên văn không? Định danh (commit d4e5f6a, đường dẫn bench/report.json) có bị mất không? Nếu bản compact này bị nén thêm lần nữa, dòng Constraints có sống sót?</span><span class="lang-en"><strong>Check:</strong> are the two constraints still verbatim? Are the identifiers (commit d4e5f6a, path bench/report.json) still there? If this compact version gets compacted again, will the Constraints line survive?</span></p>
+    </details>
+
+    <p><strong>C3.</strong> <span class="lang-vi">Một agent chạy 90 phút bỗng "quên" ràng buộc <em>"không được đổi schema API"</em> — nó sửa cả phần response của API và làm fail test tích hợp. Nêu 2–3 nguyên nhân khả dĩ theo bài giảng, cách phòng tương ứng, và cách đo để biết compaction còn tốt hay không.</span><span class="lang-en">An agent running for 90 minutes suddenly "forgets" the constraint <em>"do not change the API schema"</em> — it edits the API's response section too and breaks an integration test. Give 2–3 possible causes from the lecture, the corresponding prevention, and how to measure whether compaction is still healthy.</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án gợi ý</span><span class="lang-en">See suggested answer</span></summary>
+      <p><span class="lang-vi"><strong>Nguyên nhân 1 — drift qua nhiều lần nén:</strong> bản nén mới viết từ bản nén cũ + phần mới; ràng buộc bị diễn giải dần ("không đổi schema API" → "hạn chế đổi API" → biến mất).</span><span class="lang-en"><strong>Cause 1 — drift across repeated compaction:</strong> each new summary is written from the old summary + the new part; the constraint gets paraphrased away ("don't change the API schema" → "avoid changing the API" → gone).</span></p>
+      <p><span class="lang-vi"><strong>Nguyên nhân 2 — hướng dẫn cũ bị loãng:</strong> dù chưa nén, ràng buộc nằm ở đầu session có thể bị hàng nghìn token phía sau làm nhạt; thông tin ở giữa ngữ cảnh cũng dễ bị bỏ sót (lost in the middle).</span><span class="lang-en"><strong>Cause 2 — old instructions diluted:</strong> even without compaction, a constraint near the start of the session can be washed out by thousands of tokens after it; information in the middle of the context is also easily missed (lost in the middle).</span></p>
+      <p><span class="lang-vi"><strong>Nguyên nhân 3 — chuyển giao thiếu:</strong> nếu giao việc cho sub-agent hoặc externalize mà ràng buộc không được đưa vào brief / không giữ đường dẫn, agent con không biết luật.</span><span class="lang-en"><strong>Cause 3 — incomplete handoff:</strong> if work is delegated to a sub-agent or externalised without the constraint in the brief / without keeping the path, the child agent doesn't know the rule.</span></p>
+      <p><span class="lang-vi"><strong>Cách phòng:</strong> chép nguyên văn anchor (mục tiêu, ràng buộc); giữ đuôi gần nhất; giữ đường dẫn về bằng chứng gốc; cắt ở ranh giới hợp lệ (hết lượt, hết tool call); khi nén thì chừa chỗ cho output tiếp theo.</span><span class="lang-en"><strong>Prevention:</strong> copy anchors verbatim (goals, constraints); keep the most recent tail; keep paths back to the original evidence; cut at valid boundaries (end of turn, end of tool call); when compacting, leave room for the next output.</span></p>
+      <p><span class="lang-vi"><strong>Cách đo:</strong> continuation-based evaluation — gieo vào lịch sử một số trạng thái, nén bằng đúng chính sách đang dùng, cho agent <em>làm tiếp</em>, rồi chấm bốn chỉ số: state recall (ràng buộc/ID còn nhớ?), task success, efficiency, stability (nén lặp nhiều lần có hỏng không).</span><span class="lang-en"><strong>Measurement:</strong> continuation-based evaluation — seed some state into the history, compact with the exact policy in use, let the agent <em>continue</em>, then score four metrics: state recall (are constraints/IDs still remembered?), task success, efficiency, stability (does repeated compaction break it?).</span></p>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="code">
+    <h2><span class="lang-vi">Phần D — Bài tập code (2 bài)</span><span class="lang-en">Part D — Coding exercises (2 exercises)</span></h2>
+
+    <h3><span class="lang-vi">D1 · compact(messages, max_chars) — mô phỏng compaction</span><span class="lang-en">D1 · compact(messages, max_chars) — simulating compaction</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam04_d1.py</code>, viết phần <code>TODO</code>, chạy để thấy <code>OK!</code>. Hàm giữ các tin <code>system</code> + các tin gần nhất, thay phần giữa bằng <em>một dòng tóm tắt</em>, và cắt theo ranh giới tin nhắn (không cắt giữa một tin).</span><span class="lang-en">Copy into <code>exam04_d1.py</code>, fill in the <code>TODO</code>, and run until you see <code>OK!</code>. The function keeps <code>system</code> messages + the most recent ones, replaces the middle with <em>a single summary line</em>, and cuts at message boundaries (never mid-message).</span></p>
+    <div class="lang-vi">
+    <pre><code>def compact(messages, max_chars):
+    """Mô phỏng compaction: giữ system + đuôi gần nhất, nén phần giữa.
+
+    messages: list các dict {"role": ..., "content": ...}
+    max_chars: ngân sách cho TỔNG len(content) của kết quả.
+
+    Quy tắc:
+      1. Các tin role "system" được giữ nguyên, xếp ở đầu kết quả.
+      2. Giữ được bao nhiêu tin gần nhất (ở cuối danh sách) thì giữ.
+      3. Phần giữa bị bỏ được thay bằng MỘT tin
+         {"role": "summary", "content": "[đã nén K tin]"} (K = số tin bị bỏ).
+      4. Nếu mọi thứ vừa ngân sách: trả về danh sách gốc, không thêm tóm tắt.
+      Giả sử các tin system luôn vừa ngân sách.
+    """
+    # TODO: gợi ý — tách system / phần còn lại, rồi thử bỏ dần tin cũ nhất
+    #       (d = 0, 1, 2, ...) cho tới khi tổng ký tự vừa max_chars.
+    pass
+
+# ---------- Tự kiểm ----------
+msgs = [
+    {"role": "system",    "content": "Bạn là một coding agent."},
+    {"role": "user",      "content": "Sửa lỗi CI giúp tôi."},
+    {"role": "tool",      "content": "Log 24K dòng: address already in use, lặp 12 lần."},
+    {"role": "user",      "content": "Nhắc lại: đừng đổi schema API nhé."},
+    {"role": "assistant", "content": "Đã đặt --workers=1; toàn bộ test pass."},
+]
+
+# 1) Ngân sách rộng: giữ nguyên, không thêm tóm tắt
+out = compact(msgs, 10_000)
+assert out == msgs
+
+# 2) Ngân sách hẹp: system + tin mới nhất vẫn còn, phần giữa bị nén
+out = compact(msgs, 120)
+assert out[0] == msgs[0]
+assert out[-1] == msgs[-1]
+assert any(m["role"] == "summary" for m in out)
+assert sum(len(m["content"]) for m in out) &lt;= 120
+assert all("address already in use" not in m["content"] for m in out)
+
+# 3) Không có system: chỉ còn tin mới nhất + dòng tóm tắt
+msgs2 = [
+    {"role": "user", "content": "x" * 50},
+    {"role": "user", "content": "y" * 50},
+]
+out = compact(msgs2, 70)
+assert len(out) == 2
+assert out[0]["role"] == "summary"
+assert out[1]["content"] == "y" * 50
+assert sum(len(m["content"]) for m in out) &lt;= 70
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def compact(messages, max_chars):
+    """Simulate compaction: keep system + the most recent tail, compress the middle.
+
+    messages: list of dicts {"role": ..., "content": ...}
+    max_chars: budget for the TOTAL len(content) of the result.
+
+    Rules:
+      1. Messages with role "system" are kept as-is, placed at the start of the result.
+      2. Keep as many of the most recent messages (at the end of the list) as fit.
+      3. The dropped middle is replaced by ONE message
+         {"role": "summary", "content": "[compacted K messages]"} (K = number of dropped messages).
+      4. If everything fits the budget: return the original list, no summary added.
+      Assume system messages always fit the budget.
+    """
+    # TODO: hint — split system / the rest, then try dropping the oldest message
+    #       (d = 0, 1, 2, ...) until the total character count fits max_chars.
+    pass
+
+# ---------- Self-check ----------
+msgs = [
+    {"role": "system",    "content": "Bạn là một coding agent."},
+    {"role": "user",      "content": "Sửa lỗi CI giúp tôi."},
+    {"role": "tool",      "content": "Log 24K dòng: address already in use, lặp 12 lần."},
+    {"role": "user",      "content": "Nhắc lại: đừng đổi schema API nhé."},
+    {"role": "assistant", "content": "Đã đặt --workers=1; toàn bộ test pass."},
+]
+
+# 1) Wide budget: keep everything, no summary added
+out = compact(msgs, 10_000)
+assert out == msgs
+
+# 2) Tight budget: system + newest message survive, the middle is compacted
+out = compact(msgs, 120)
+assert out[0] == msgs[0]
+assert out[-1] == msgs[-1]
+assert any(m["role"] == "summary" for m in out)
+assert sum(len(m["content"]) for m in out) &lt;= 120
+assert all("address already in use" not in m["content"] for m in out)
+
+# 3) No system message: only the newest message + the summary line remain
+msgs2 = [
+    {"role": "user", "content": "x" * 50},
+    {"role": "user", "content": "y" * 50},
+]
+out = compact(msgs2, 70)
+assert len(out) == 2
+assert out[0]["role"] == "summary"
+assert out[1]["content"] == "y" * 50
+assert sum(len(m["content"]) for m in out) &lt;= 70
+print("OK!")</code></pre>
+    </div>
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <div class="lang-vi">
+      <pre><code>def compact(messages, max_chars):
+    systems = [m for m in messages if m["role"] == "system"]
+    convo = [m for m in messages if m["role"] != "system"]
+    budget = max_chars - sum(len(m["content"]) for m in systems)
+
+    for d in range(len(convo) + 1):
+        kept = convo[d:]
+        used = sum(len(m["content"]) for m in kept)
+        if d:
+            summary = {"role": "summary", "content": f"[đã nén {d} tin]"}
+            used += len(summary["content"])
+        else:
+            summary = None
+        if used &lt;= budget:
+            return systems + ([summary] if summary else []) + kept
+
+    return systems + [{"role": "summary", "content": f"[đã nén {len(convo)} tin]"}]</code></pre>
+      </div>
+      <div class="lang-en">
+      <pre><code>def compact(messages, max_chars):
+    systems = [m for m in messages if m["role"] == "system"]
+    convo = [m for m in messages if m["role"] != "system"]
+    budget = max_chars - sum(len(m["content"]) for m in systems)
+
+    for d in range(len(convo) + 1):
+        kept = convo[d:]
+        used = sum(len(m["content"]) for m in kept)
+        if d:
+            summary = {"role": "summary", "content": f"[compacted {d} messages]"}
+            used += len(summary["content"])
+        else:
+            summary = None
+        if used &lt;= budget:
+            return systems + ([summary] if summary else []) + kept
+
+    return systems + [{"role": "summary", "content": f"[compacted {len(convo)} messages]"}]</code></pre>
+      </div>
+      <p><span class="lang-vi">Với <code>compact(msgs, 120)</code>, kết quả là: <code>system</code> · <code>summary [đã nén 2 tin]</code> · tin nhắc ràng buộc · tin assistant mới nhất (tổng 110 ký tự). Hai tin bị bỏ là câu hỏi ban đầu và dòng log 24K — đúng tinh thần externalize: giữ kết luận mới nhất, bỏ nội dung lớn.</span><span class="lang-en">With <code>compact(msgs, 120)</code>, the result is: <code>system</code> · <code>summary [compacted 2 messages]</code> · the constraint reminder · the latest assistant message (118 characters total). The two dropped messages are the initial question and the 24K log line — exactly the externalise spirit: keep the latest conclusion, drop the bulky content.</span></p>
+      <p><span class="lang-vi"><strong>Lưu ý:</strong> đây là bản đồ chơi cắt theo vị trí. Chính sách thật phải bảo vệ anchor (chép nguyên văn mục tiêu, ràng buộc) — nếu không, lần nén tiếp theo có thể nuốt mất dòng "đừng đổi schema API".</span><span class="lang-en"><strong>Note:</strong> this is a toy version that cuts by position. A real policy must protect anchors (copy goals and constraints verbatim) — otherwise the next compaction may swallow the line "don't change the API schema".</span></p>
+    </details>
+
+    <h3><span class="lang-vi">D2 · Ước lượng token &amp; cộng dồn (bonus)</span><span class="lang-en">D2 · Token estimation &amp; cumulative totals (bonus)</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam04_d2.py</code>, viết <code>TODO</code>, chạy để thấy <code>OK!</code>. Đây chính là phép tính 6K → 26K và 80K → 4,14M của bài giảng.</span><span class="lang-en">Copy into <code>exam04_d2.py</code>, fill in the <code>TODO</code>, and run until you see <code>OK!</code>. This is exactly the 6K → 26K and 80K → 4.14M arithmetic from the lecture.</span></p>
+    <div class="lang-vi">
+    <pre><code>def usage(prefix_k, per_step_k, n):
+    """Trả về tuple (input của lần gọi thứ n, tổng input đã gửi qua n lần).
+    Đơn vị: K token. Ví dụ prefix 6, mỗi bước thêm 5:
+      lần 1 -> (6, 6); lần 2 -> (11, 17); ...
+    """
+    # TODO
+    pass
+
+def estimate_tokens(text):
+    """Ước lượng thô số token: ceil(len(text) / 4). Chuỗi rỗng -> 0."""
+    # TODO
+    pass
+
+# ---------- Tự kiểm ----------
+assert usage(6, 5, 1) == (6, 6)
+assert usage(6, 5, 2) == (11, 17)
+assert usage(6, 5, 5) == (26, 80)
+assert usage(6, 5, 39)[0] == 196
+assert usage(6, 5, 40) == (201, 4140)
+assert estimate_tokens("") == 0
+assert estimate_tokens("hello") == 2
+assert estimate_tokens("xin chào") == 2
+assert estimate_tokens("word " * 100) == 125
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def usage(prefix_k, per_step_k, n):
+    """Return the tuple (input of the n-th call, total input sent over n calls).
+    Unit: K tokens. Example: prefix 6, each step adds 5:
+      call 1 -> (6, 6); call 2 -> (11, 17); ...
+    """
+    # TODO
+    pass
+
+def estimate_tokens(text):
+    """Rough token estimate: ceil(len(text) / 4). Empty string -> 0."""
+    # TODO
+    pass
+
+# ---------- Self-check ----------
+assert usage(6, 5, 1) == (6, 6)
+assert usage(6, 5, 2) == (11, 17)
+assert usage(6, 5, 5) == (26, 80)
+assert usage(6, 5, 39)[0] == 196
+assert usage(6, 5, 40) == (201, 4140)
+assert estimate_tokens("") == 0
+assert estimate_tokens("hello") == 2
+assert estimate_tokens("xin chào") == 2
+assert estimate_tokens("word " * 100) == 125
+print("OK!")</code></pre>
+    </div>
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <pre><code>def usage(prefix_k, per_step_k, n):
+    input_n = prefix_k + per_step_k * (n - 1)
+    total = n * prefix_k + per_step_k * n * (n - 1) // 2
+    return input_n, total
+
+def estimate_tokens(text):
+    return (len(text) + 3) // 4</code></pre>
+      <p><span class="lang-vi"><strong>Đối chiếu bài giảng:</strong> <code>usage(6, 5, 5) == (26, 80)</code> — đúng bảng slide 3. <code>usage(6, 5, 40) == (201, 4140)</code> — bước 40 gửi 201K, vượt cửa sổ 200K, và tổng cộng dồn ~4,14 triệu token.</span><span class="lang-en"><strong>Cross-check with the lecture:</strong> <code>usage(6, 5, 5) == (26, 80)</code> — matches the slide 3 table. <code>usage(6, 5, 40) == (201, 4140)</code> — step 40 sends 201K, exceeding the 200K window, and the cumulative total is ~4.14 million tokens.</span></p>
+      <p><span class="lang-vi"><strong>Lưu ý về ước lượng:</strong> chia 4 chỉ là heuristic thô cho tiếng Anh. Tiếng Việt thường bị cắt thành nhiều token hơn trên cùng một ý — muốn con số chính xác phải đo bằng tokenizer thật.</span><span class="lang-en"><strong>Note on estimation:</strong> dividing by 4 is only a rough heuristic for English. Vietnamese usually gets split into more tokens for the same meaning — for exact numbers you must measure with the real tokenizer.</span></p>
+    </details>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><a href="../exams/0003-exam.html"><span class="lang-vi">← Exam 03</span><span class="lang-en">← Exam 03</span></a> · <a href="../lessons/0004-quan-ly-ngu-canh.html"><span class="lang-vi">Ôn lại Bài 04</span><span class="lang-en">Review Lesson 04</span></a> · <a href="../exams/0005-exam.html"><span class="lang-vi">Exam 05 — Skills &amp; Memory →</span><span class="lang-en">Exam 05 — Skills &amp; Memory →</span></a></p>
+    <p><span class="lang-vi">Chưa đạt 85%? Làm lại từ đầu — mỗi lần làm lại là một lần nhớ sâu hơn.</span><span class="lang-en">Below 85%? Start over — every retake deepens the memory.</span></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

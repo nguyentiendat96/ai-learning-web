@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam 06 · Planning &amp; đa agent — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Exam 06</div>
+    <h1><span class="lang-vi">Exam — Planning &amp; đa agent</span><span class="lang-en">Exam — Planning &amp; Multi-Agent</span></h1>
+    <p class="subtitle"><span class="lang-vi">16 câu + 2 bài tập code. Làm lại được nhiều lần — mục tiêu: đúng ≥ 85%.</span><span class="lang-en">16 questions + 2 coding exercises. Retake as many times as you like — target: ≥ 85% correct.</span></p>
+    <p class="lesson-meta"><span>~40 phút / ~40 min</span><span><a href="../lessons/0006-planning-va-da-agent.html"><span class="lang-vi">← Ôn lại Bài 06</span><span class="lang-en">← Review Lesson 06</span></a></span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="exam-bar">
+    <span class="exam-progress">Đúng 0 / 13 câu tương tác</span>
+    <button class="exam-reset" type="button">Làm lại từ đầu</button>
+  </div>
+
+  <p><span class="lang-vi"><strong>Cách làm:</strong> phần A–B chấm điểm tự động (bấm chọn, gõ đáp án rồi Enter); phần C–D tự kiểm bằng nút "Xem đáp án". Bài code chạy bằng <code>python exam06_d1.py</code> — thấy <code>OK!</code> là đạt. Mục tiêu: <strong>≥ 85%</strong>.</span><span class="lang-en"><strong>How to use:</strong> sections A–B are scored automatically (click a choice, type your answer then press Enter); sections C–D are self-checked with the "See answer" buttons. Coding drills are run with <code>python exam06_d1.py</code> — you pass when you see <code>OK!</code>. Target: <strong>≥ 85%</strong>.</span></p>
+
+  <!-- ================================================== -->
+  <section id="trac-nghiem">
+    <h2><span class="lang-vi">Phần A — Trắc nghiệm (10 câu)</span><span class="lang-en">Part A — Multiple choice (10 questions)</span></h2>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A1. Theo định nghĩa ở mục 2 của bài giảng, plan của một agent là gì?</span><span class="lang-en">A1. According to the definition in section 2 of the lecture, what is an agent's plan?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Danh sách bước cố định do lập trình viên viết sẵn trong code — model chỉ chạy từng bước</span><span class="lang-en">A fixed list of steps hard-coded by the developer — the model just runs each step</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Lời hứa của agent rằng task sẽ được hoàn thành đúng như mô tả</span><span class="lang-en">The agent's promise that the task will be completed exactly as described</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Biểu diễn tường minh hành vi tương lai dự định — các hành động/mục tiêu con, kèm thứ tự và phụ thuộc giữa chúng</span><span class="lang-en">An explicit representation of intended future behavior — the actions or subgoals, with their ordering and dependencies</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Bản tóm tắt những gì agent đã làm, viết ra sau khi task kết thúc</span><span class="lang-en">A summary of what the agent did, written after the task ends</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">"A plan is an explicit representation of intended future behavior" — viết ra được, đọc lại được. Plan là một <em>proposal</em>, không phải lời bảo đảm: nó có thể bị người dùng, model khác, hoặc môi trường sửa lại. Phương án a mô tả workflow cố định (một mức cam kết — xem A8).</span><span class="lang-en">"A plan is an explicit representation of intended future behavior" — it can be written down and read back. A plan is a <em>proposal</em>, not a guarantee: the user, another model, or the environment may revise it. Option a describes a fixed workflow (one of the commitment levels — see A8).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A2. Plan khác skill ở điểm nào?</span><span class="lang-en">A2. How does a plan differ from a skill?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Không khác — plan chỉ là tên gọi khác của skill trong bài giảng</span><span class="lang-en">No difference — "plan" is just another name for a skill in the lecture</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Skill là hướng dẫn tái sử dụng cho nhiều task; plan là cho task này — nên plan cụ thể hơn skill rất nhiều</span><span class="lang-en">A skill is a reusable guide for many tasks; a plan is for this task — so a plan is far more specific than a skill</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Skill là cho từng task một; plan là hướng dẫn dùng chung cho nhiều task</span><span class="lang-en">A skill is for a single task; a plan is a shared guide for many tasks</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Skill do người viết; còn plan thì không thể viết ra được</span><span class="lang-en">Skills are written by people; a plan cannot be written down</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Ví dụ trong bài: "quy trình phỏng vấn ứng viên" là skill; "kế hoạch tuyển một bạn backend trong tháng này, phỏng vấn ai, khi nào" là plan. Plan gắn với task cụ thể và có thứ tự, phụ thuộc, điểm kiểm soát.</span><span class="lang-en">Example from the lecture: "the candidate interview process" is a skill; "the plan to hire a backend engineer this month, interview whom, when" is a plan. A plan is tied to a specific task and carries ordering, dependencies, and checkpoints.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A3. Bốn tính chất khiến task dài khó xử lý (slide 3) là gì?</span><span class="lang-en">A3. What are the four properties that make long tasks hard (slide 3)?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Song song · phụ thuộc · thông tin đến muộn · bước không thể hoàn tác</span><span class="lang-en">Parallelism · dependencies · late-arriving information · irreversible steps</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Nhanh · rẻ · dễ đoán · cứng</span><span class="lang-en">Fast · cheap · predictable · rigid</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Modularity · feedback · long horizon · control</span><span class="lang-en">Modularity · feedback · long horizon · control</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Thu thập · phân tích · quyết định · hành động</span><span class="lang-en">Collect · analyze · decide · act</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Cả bốn đều có mặt trong ví dụ mua máy trạm GPU: bốn cuộc tìm kiếm độc lập (song song), phải có spec mới đối chiếu được với wiki (phụ thuộc), ràng buộc 4U/1600 W lộ ra sau khi đã chốt cấu hình (thông tin đến muộn), và Submit requisition (không hoàn tác). Phương án c là <em>bốn áp lực</em> khiến người ta thêm planning vào hệ agent (slide 17–18) — khác với bốn tính chất của task.</span><span class="lang-en">All four appear in the GPU workstation purchase example: four independent searches (parallelism), the spec must exist before it can be checked against the wiki (dependency), the 4U/1600 W constraint only surfaces after the config was locked in (late information), and Submit requisition (irreversible). Option c lists the <em>four pressures</em> that push people to add planning to agent systems (slides 17–18) — not the four properties of the task.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A4. Một vòng Plan Mode (Claude Code, Cursor, Codex) diễn ra theo thứ tự nào?</span><span class="lang-en">A4. In what order does a Plan Mode round (Claude Code, Cursor, Codex) play out?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Thực thi trước → viết plan để giải trình → người dùng duyệt</span><span class="lang-en">Execute first → write a plan to justify it → user approves</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Điều tra chỉ-đọc → hỏi lại nếu mơ hồ → viết plan ra → người duyệt → thực thi</span><span class="lang-en">Read-only investigation → ask again if ambiguous → write the plan out → approval → execution</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Chạy song song hai bản: một bản làm thật, một bản viết plan</span><span class="lang-en">Run two copies in parallel: one doing the work, one writing the plan</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Người dùng tự viết plan → agent chạy y nguyên, không được hỏi lại</span><span class="lang-en">The user writes the plan → the agent runs it verbatim and may not ask again</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Bước 1 chưa sửa gì nên không thể phá hỏng gì; plan là artifact bên ngoài để đọc, sửa, lưu; chỉ khi plan đã chốt agent mới thực thi — và có thể chia việc cho sub-agent. Năm điểm giúp ích: thêm compute, ngữ cảnh tốt hơn, artifact ngoài, chia nhỏ, người duyệt.</span><span class="lang-en">Step 1 changes nothing, so it cannot break anything; the plan is an external artifact you can read, edit, and save; only once the plan is settled does the agent execute — and it may split work across sub-agents. Five benefits: more compute, better context, an external artifact, decomposition, and a human approver.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A5. Vì sao CoT (chain-of-thought) chỉ được xem là planning hạng nhẹ?</span><span class="lang-en">A5. Why is CoT (chain-of-thought) considered only lightweight planning?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì CoT chỉ dùng được cho bài toán số học đơn giản</span><span class="lang-en">Because CoT only works for simple arithmetic problems</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì CoT đắt nhất trong mọi cách lập kế hoạch nên không thực tế</span><span class="lang-en">Because CoT is the most expensive way to plan, so it isn't practical</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì plan và lời giải ra đời trong cùng một lần sinh — không ai soi bước trung gian; một bước sai thì các bước sau trượt theo</span><span class="lang-en">Because the plan and the solution are produced in a single generation — nothing checks the intermediate steps; one bad step and the rest slide with it</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì CoT không sinh ra bước trung gian nào, chỉ có đáp án cuối</span><span class="lang-en">Because CoT produces no intermediate steps at all, only the final answer</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">"Let's think step by step" cho model thêm compute và một scratchpad, và prompt kiểu "devise a plan, then carry it out" gần như planning thật. Nhưng không có gì chặn ở giữa: model viết "3 + 4 = 8" thì các bước sau cứ thế sai theo. Đổi lại, CoT rẻ và có thể <em>dạy</em> được (STaR, DeepSeek-R1).</span><span class="lang-en">"Let's think step by step" gives the model extra compute and a scratchpad, and prompts like "devise a plan, then carry it out" come close to real planning. But nothing stops it in between: if the model writes "3 + 4 = 8", every later step is wrong in turn. On the other hand, CoT is cheap and can be <em>taught</em> (STaR, DeepSeek-R1).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A6. Least-to-Most giải bài toán khó bằng hai giai đoạn như thế nào?</span><span class="lang-en">A6. How does Least-to-Most solve a hard problem in two stages?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Giải câu hỏi khó trước để lấy đà, câu dễ giải sau</span><span class="lang-en">Solve the hard question first for momentum, then the easy ones</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Sinh nhiều lời giải rồi chọn đáp án xuất hiện nhiều lần nhất</span><span class="lang-en">Generate many solutions and pick the answer that appears most often</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Hỏi người dùng vài câu dễ trước khi bắt đầu giải</span><span class="lang-en">Ask the user a few easy questions before starting to solve</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Viết các câu hỏi con từ dễ đến khó, rồi trả lời lần lượt; đáp án của câu trước trở thành ngữ cảnh cho câu sau</span><span class="lang-en">Write sub-questions from easy to hard, then answer them in order; each earlier answer becomes context for the next question</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Vì sao hiệu quả: model giỏi trả lời câu hỏi con hơn câu hỏi lớn, và mỗi câu con cần ít ngữ cảnh hơn — lợi ích còn <em>tăng theo độ dài bài toán</em>. Điểm mạnh thứ hai là kiểm được từng chặng; câu con nào vẫn khó thì chia tiếp (tinh thần Recursive Language Models).</span><span class="lang-en">Why it works: models are better at answering sub-questions than the big question, and each sub-question needs less context — the benefit even <em>grows with problem length</em>. The second strength is that every stage can be checked; any sub-question that is still hard gets split further (the spirit of Recursive Language Models).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A7. Ba dạng biểu diễn plan (slide 15) — nhận định nào mô tả đúng đánh đổi?</span><span class="lang-en">A7. The three plan representations (slide 15) — which statement describes the trade-offs correctly?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Hình thức: kiểm được bằng thuật toán nhưng hẹp; chương trình: ở giữa, chạy được và soi được; ngôn ngữ: tổng quát nhưng không có bộ kiểm tra tổng quát</span><span class="lang-en">Formal: algorithmically checkable but narrow; program: in between, runnable and inspectable; language: general but with no general-purpose checker</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Ngôn ngữ là dạng duy nhất kiểm tra được bằng thuật toán; hai dạng kia chỉ để con người đọc</span><span class="lang-en">Language is the only form that can be checked algorithmically; the other two are just for humans to read</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Chương trình là dạng tổng quát nhất, không bị giới hạn bởi API nào</span><span class="lang-en">Program is the most general form, limited by no API</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Cả ba dạng đều có một bộ kiểm tra tổng quát dùng chung</span><span class="lang-en">All three forms share one general-purpose checker</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Hình thức = chuỗi hành động kiểu blocksworld (đúng/sai rõ ràng nhưng phải mô tả được thế giới bằng ký hiệu); chương trình = code gọi API (Code as Policies, ProgPrompt, Binder) — giới hạn bởi API, nhưng cấu trúc plan có thể làm ranh giới an toàn; ngôn ngữ = plan tiếng Việt/Anh — độ tin phải đến từ người duyệt, unit test, hoặc quan sát môi trường.</span><span class="lang-en">Formal = sequences of actions in the blocksworld style (clearly right or wrong, but the world must be describable symbolically); program = code calling APIs (Code as Policies, ProgPrompt, Binder) — limited by the API, but the plan's structure can serve as a safety boundary; language = a plan written in Vietnamese/English — trust must come from a human approver, unit tests, or environment observations.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A8. Ba mức cam kết (slide 16) — câu nào mô tả đúng nhất?</span><span class="lang-en">A8. The three commitment levels (slide 16) — which statement fits best?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Workflow cố định: model tự lập plan rồi chốt trước khi làm</span><span class="lang-en">Fixed workflow: the model builds its own plan and locks it in before acting</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Plan-then-execute: vừa thực thi vừa sửa kế hoạch khi gặp thông tin mới</span><span class="lang-en">Plan-then-execute: execute and revise the plan as new information arrives</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Adaptive/replan: người viết sẵn quy trình cứng, model chỉ chạy từng bước</span><span class="lang-en">Adaptive/replan: the developer hard-codes the process; the model just runs each step</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Workflow cố định nhanh–rẻ–dễ đoán nhưng cứng; replan thích ứng tốt nhưng đắt và phức tạp hơn — chỉ đáng khi phản hồi thu được đáng giá hơn chi phí</span><span class="lang-en">A fixed workflow is fast, cheap, and predictable but rigid; replanning adapts well but costs more and is more complex — worth it only when the feedback gained is worth the extra cost</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Câu gọn của slide 16: <em>use replanning when that feedback is worth the extra cost and complexity</em>. Ở mức 1, plan nằm trong code của lập trình viên — model không được thêm vendor. Mức 2 model tự lập plan nhưng <em>chốt trước</em> rồi mới thực thi. Mức 3 sửa plan khi thực thi tiết lộ thông tin mới (ví dụ: cả bốn vendor trượt → thêm vendor E).</span><span class="lang-en">The slide 16 one-liner: <em>use replanning when that feedback is worth the extra cost and complexity</em>. At level 1 the plan lives in the developer's code — the model may not add a vendor. At level 2 the model builds its own plan but <em>locks it in</em> before executing. At level 3 it revises the plan when execution reveals new information (for example: all four vendors fail → add vendor E).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A9. Mô hình manager–worker (MACU, slide 40–44) — phát hiện nào đúng?</span><span class="lang-en">A9. The manager–worker model (MACU, slides 40–44) — which finding is correct?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Chỉ nên dùng worker, bỏ manager để tiết kiệm token và tránh nút cổ chai</span><span class="lang-en">Use only workers; drop the manager to save tokens and avoid a bottleneck</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Worker càng yếu càng tốt, vì manager dễ tổng hợp kết quả đơn giản</span><span class="lang-en">The weaker the workers the better, because the manager can easily combine simple results</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Manager càng mạnh thì phối hợp càng tốt; worker yếu được nâng lên nhiều hơn — mở ra tiềm năng dùng model nhỏ, rẻ cho worker và model mạnh cho manager</span><span class="lang-en">The stronger the manager, the better the coordination; weak workers improve more — opening up small, cheap models for workers and a strong model for the manager</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Chạy nhiều worker song song không đem lại lợi ích trong bất kỳ bộ task nào</span><span class="lang-en">Running many workers in parallel brings no benefit on any task set</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Ablation trên OSWorld (36 task, worker Qwen3.5-4B) cho thấy chất lượng manager ảnh hưởng trực tiếp tới kết quả; với manager rất mạnh (Opus 4.6), worker yếu được cải thiện rõ hơn. Chạy worker song song có ích trên bộ dễ của Odysseys (45 task), và đồ thị công việc còn được sửa giữa chừng khi cần.</span><span class="lang-en">An ablation on OSWorld (36 tasks, Qwen3.5-4B workers) shows manager quality directly affects outcomes; with a very strong manager (Opus 4.6), weak workers improve more clearly. Parallel workers help on the easy set of Odysseys (45 tasks), and the work graph can even be revised mid-run when needed.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A10. Trong ví dụ TravelPlanner, ngân sách — phương tiện di chuyển — chế độ ăn là loại ràng buộc gì?</span><span class="lang-en">A10. In the TravelPlanner example, budget — transportation — diet are what kind of constraint?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Ràng buộc địa phương: mỗi subtask tự xử lý, ghép lại không cần kiểm tra</span><span class="lang-en">Local constraints: each subtask handles them itself; no check needed when combining</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Ràng buộc chỉ đáng quan tâm khi người dùng nói rõ; còn lại có thể bỏ qua</span><span class="lang-en">Constraints worth caring about only when the user states them explicitly; otherwise they can be ignored</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Ràng buộc không biểu diễn được nên phải quay về workflow cố định</span><span class="lang-en">Constraints that cannot be represented, so you must fall back to a fixed workflow</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Ràng buộc toàn cục: liên quan tới mọi mảnh, thường bị vi phạm khi ghép các mảnh lại</span><span class="lang-en">Global constraints: they touch every piece and are often violated when the pieces are combined</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Chia nhỏ rất sạch (vé máy bay, khách sạn, ăn uống, tham quan) nhưng ghép lại có thể vượt ngân sách hoặc không kịp di chuyển — vì mỗi mảnh tối ưu cho riêng nó. Cách xử lý: xác định trước ràng buộc "không được vỡ ở bất kỳ mảnh nào"; giao manager giữ chứ không đẩy xuống worker; kiểm tra ở bước ghép như tiêu chí nghiệm thu.</span><span class="lang-en">The decomposition is very clean (flights, hotel, food, attractions) but combining the pieces can exceed the budget or leave no time to travel — because each piece optimizes for itself. The fix: identify up front the constraints that "must not break in any piece"; give them to the manager rather than pushing them down to workers; check them at the merge step as acceptance criteria.</span></p></div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="dien-khuyet">
+    <h2><span class="lang-vi">Phần B — Điền khuyết (3 câu)</span><span class="lang-en">Part B — Fill in the blank (3 questions)</span></h2>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B1. Điền nốt định nghĩa plan:</span><span class="lang-en">B1. Complete the definition of a plan:</span></p>
+      <p class="fib-sentence">"A plan is an explicit representation of intended future behavior: the actions or subgoals an agent will attempt, with any ordering or <span class="fib" data-answer="dependencies|dependency|phụ thuộc" data-placeholder="?"></span> among them."</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B2. Trong Decomposed Prompting, ai chia subtask?</span><span class="lang-en">B2. In Decomposed Prompting, who splits the subtasks?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Một </span><span class="lang-en">A </span><span class="fib" data-answer="decomposer|bộ chia" data-placeholder="?"></span><span class="lang-vi"> tạo ra các subtask, rồi định tuyến mỗi subtask cho một handler chuyên.</span><span class="lang-en"> creates the subtasks, then routes each subtask to a specialist handler.</span></p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B3. Handoff giữa hai agent thường chuyển cái gì?</span><span class="lang-en">B3. What do handoffs between two agents usually transfer?</span></p>
+      <p class="fib-sentence"><span class="lang-vi">Thứ được chuyển thường là một </span><span class="lang-en">What gets transferred is usually a </span><span class="fib" data-answer="summary|summary report|bản tóm tắt|báo cáo tóm tắt" data-placeholder="?"></span><span class="lang-vi"> — nên nó phải bỏ bớt chi tiết, và có thể bỏ đúng chi tiết agent sau cần.</span><span class="lang-en"> — so it has to drop details, and it may drop exactly the details the next agent needs.</span></p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tinh-huong">
+    <h2><span class="lang-vi">Phần C — Tình huống &amp; phân tích (3 câu)</span><span class="lang-en">Part C — Scenarios &amp; analysis (3 questions)</span></h2>
+
+    <p><strong>C1.</strong> <span class="lang-vi">Đọc lại trace mua máy trạm GPU ở mục 1 của bài giảng và chỉ ra: (1) phần nào đáng lẽ chạy <em>song song</em>, (2) phần nào <em>phụ thuộc</em> phần nào, (3) <em>thông tin nào đến muộn</em>, (4) <em>bước nào không thể hoàn tác</em>. Cuối cùng: điểm replan nằm ở đâu?</span><span class="lang-en">Re-read the GPU workstation purchase trace in section 1 of the lecture and point out: (1) what should have run <em>in parallel</em>, (2) what <em>depends</em> on what, (3) <em>what information arrived late</em>, (4) <em>which step cannot be undone</em>. Finally: where is the replan point?</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi"><strong>Song song:</strong> bốn cuộc tìm kiếm vendor A–D độc lập nhau, nhưng bị dồn vào một luồng/một ngữ cảnh — đến mức phải nén 128k → 14k token. Đáng lẽ mỗi vendor một nhánh riêng.</span><span class="lang-en"><strong>Parallel:</strong> the four vendor searches A–D are independent, but they were crammed into one thread/one context — so badly that 128k tokens had to be compressed down to 14k. Each vendor should have had its own branch.</span></li>
+        <li><span class="lang-vi"><strong>Phụ thuộc:</strong> đối chiếu cấu hình với wiki (chassis 4U, slot 1600 W) cần có spec của vendor trước; chọn máy cần xong bước đối chiếu.</span><span class="lang-en"><strong>Dependencies:</strong> checking a config against the wiki (4U chassis, 1600 W slot) needs the vendor's spec first; choosing the machine needs the check to be done.</span></li>
+        <li><span class="lang-vi"><strong>Thông tin đến muộn:</strong> ràng buộc "rack chỉ nhận chassis 4U; mỗi slot 1600 W" xuất hiện ở bước 31 — <em>sau</em> khi agent đã chốt cấu hình ở bước 15.</span><span class="lang-en"><strong>Late information:</strong> the constraint "the rack only takes 4U chassis; 1600 W per slot" appeared at step 31 — <em>after</em> the agent had locked in the config at step 15.</span></li>
+        <li><span class="lang-vi"><strong>Không hoàn tác:</strong> Submit requisition ở bước 202.</span><span class="lang-en"><strong>Irreversible:</strong> Submit requisition at step 202.</span></li>
+        <li><span class="lang-vi"><strong>Điểm replan:</strong> khi cả bốn vendor đều không đạt → phải thêm vendor E (đồ thị công việc phải được sửa giữa chừng). Và vì Submit không hoàn tác, plan nên có thêm một điểm người duyệt ngay trước bước đó.</span><span class="lang-en"><strong>Replan point:</strong> when all four vendors fail → you must add vendor E (the work graph has to be revised mid-run). And because Submit cannot be undone, the plan should add a human approval checkpoint right before that step.</span></li>
+      </ul>
+    </details>
+
+    <p><strong>C2.</strong> <span class="lang-vi">Chọn mức cam kết phù hợp — <em>workflow cố định</em>, <em>plan-then-execute</em>, hay <em>adaptive/replan</em> — cho ba tình huống sau, mỗi câu giải thích bằng một lý do dựa trên <em>độ ổn định của môi trường</em> và <em>giá trị của phản hồi thu được khi làm</em>:</span><span class="lang-en">Pick the right commitment level — <em>fixed workflow</em>, <em>plan-then-execute</em>, or <em>adaptive/replan</em> — for the three situations below, justifying each with one reason based on <em>how stable the environment is</em> and <em>the value of the feedback gained while working</em>:</span></p>
+    <ol>
+      <li><span class="lang-vi">Xuất hóa đơn hằng tháng cho 200 khách hàng; quy trình đã chạy ổn định nhiều năm.</span><span class="lang-en">Sending monthly invoices to 200 customers; the process has run stably for years.</span></li>
+      <li><span class="lang-vi">Thuê một nhà thiết kế làm logo — chưa từng làm cùng, mà sửa lại rất tốn kém.</span><span class="lang-en">Hiring a designer for a logo — you have never worked together, and revisions are expensive.</span></li>
+      <li><span class="lang-vi">Săn vé máy bay và khách sạn cho chuyến đi 2 tuần; giá và tình trạng phòng thay đổi liên tục.</span><span class="lang-en">Hunting for flights and hotels for a 2-week trip; prices and room availability change constantly.</span></li>
+    </ol>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi"><strong>(1) Workflow cố định.</strong> Môi trường ổn định, việc lặp lại; thông tin mới trong lúc chạy gần như không có giá trị — muốn nhanh, rẻ, dễ đoán. "Plan" nằm trong code của người viết.</span><span class="lang-en"><strong>(1) Fixed workflow.</strong> Stable environment, repetitive work; new information during the run is nearly worthless — you want fast, cheap, predictable. The "plan" lives in the developer's code.</span></li>
+        <li><span class="lang-vi"><strong>(2) Plan-then-execute.</strong> Chưa biết người này làm việc thế nào, mà sửa thì đắt — nên yêu cầu họ trình bày plan (concept, số vòng sửa, file bàn giao), mình duyệt rồi mới làm. Plan ở đây là artifact để thống nhất trước.</span><span class="lang-en"><strong>(2) Plan-then-execute.</strong> You do not know how this person works yet, and revisions are expensive — so ask them to present a plan first (concept, revision rounds, deliverables), approve it, then let them work. Here the plan is an artifact for aligning up front.</span></li>
+        <li><span class="lang-vi"><strong>(3) Adaptive/replan.</strong> Giá vé và phòng đổi liên tục — phản hồi từ môi trường đáng giá hơn chi phí phức tạp. Vì "trả tiền" là bước không hoàn tác, chèn thêm một điểm người duyệt trước khi chốt.</span><span class="lang-en"><strong>(3) Adaptive/replan.</strong> Ticket prices and rooms change constantly — feedback from the environment is worth more than the complexity cost. Because "paying" is an irreversible step, insert a human approval checkpoint before locking anything in.</span></li>
+      </ul>
+      <p><span class="lang-vi">Nếu bạn chọn (2) cho tình huống (3) cũng có lý — miễn là bạn chỉ ra được rằng plan sẽ phải sửa ngay khi có thông tin mới. Điều đáng kiểm là <em>lý do</em>, không phải đáp án.</span><span class="lang-en">Choosing (2) for situation (3) is also defensible — as long as you point out that the plan would have to be revised the moment new information arrives. What matters is the <em>reasoning</em>, not the answer.</span></p>
+    </details>
+
+    <p><strong>C3.</strong> <span class="lang-vi">Chuyện Vending-Bench: agent điều hành một máy bán hàng tự động trong tối đa 2.000 lượt. Nó "restock" quá sớm, thấy môi trường báo hàng chưa có, rồi suy luận thành "việc kinh doanh đã sụp". Nó không chờ email xác nhận giao hàng, không kiểm tra lại — lỗi nhỏ lớn dần đến mức nó gửi email với tiêu đề "EMERGENCY: Unauthorized Fees After Business Termination".</span><span class="lang-en">The Vending-Bench story: an agent runs a vending machine for up to 2,000 turns. It "restocks" too early, sees the environment report that the goods have not arrived, and reasons its way to "the business has collapsed". It does not wait for the delivery confirmation email, does not double-check — a small error snowballs until it sends an email titled "EMERGENCY: Unauthorized Fees After Business Termination".</span></p>
+    <p><span class="lang-vi">(a) Lỗi gốc nằm ở đâu? (b) Câu nào về plan trong bài giảng bị vi phạm? (c) Bạn thêm gì vào plan để chặn kiểu lỗi này?</span><span class="lang-en">(a) Where is the root error? (b) Which statement about plans in the lecture does it violate? (c) What would you add to the plan to block this kind of failure?</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi"><strong>(a)</strong> Nó hiểu sai một observation: "hàng chưa có" nghĩa là <em>chưa giao</em>, không phải "công ty đã sụp". Không xác minh lại, không chờ tín hiệu xác nhận. Sai lệch nhỏ bị self-conditioning kéo dài: việc tự điều kiện hóa trên các bước sai trước đó làm các bước sau kém chính xác dần (slide 29–30).</span><span class="lang-en"><strong>(a)</strong> It misread an observation: "the goods have not arrived" means <em>not delivered yet</em>, not "the company has collapsed". It did not verify, did not wait for a confirming signal. The small deviation is prolonged by self-conditioning: conditioning on its own earlier wrong steps makes later steps steadily less accurate (slides 29–30).</span></li>
+        <li><span class="lang-vi"><strong>(b)</strong> Hiểu lầm "lập plan xong thì cứ thế mà làm", và quên rằng <strong>plan là proposal, không phải bảo đảm</strong>. Thực thi là nơi thông tin mới đến — plan phải dùng được thông tin đó.</span><span class="lang-en"><strong>(b)</strong> Misreading "once the plan is written, just follow it", and forgetting that <strong>a plan is a proposal, not a guarantee</strong>. Execution is where new information arrives — the plan must be able to use it.</span></li>
+        <li><span class="lang-vi"><strong>(c)</strong> Thêm bước xác minh (chờ/kiểm tra email xác nhận giao hàng, đối chiếu trạng thái thật); quy tắc "không ra quyết định lớn từ một tín hiệu chưa xác minh"; điểm người duyệt trước hành động không hoàn tác (gửi email); định kỳ đặt lại giả định. Bốn chữ của slide 12: feasibility — consequences — information — recovery.</span><span class="lang-en"><strong>(c)</strong> Add a verification step (wait for/check the delivery confirmation email, compare against the real state); a rule "never make a big decision from one unverified signal"; a human approval checkpoint before irreversible actions (sending the email); and periodically reset assumptions. The slide 12 four words: feasibility — consequences — information — recovery.</span></li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="code">
+    <h2><span class="lang-vi">Phần D — Bài tập code (2 bài)</span><span class="lang-en">Part D — Coding exercises (2 drills)</span></h2>
+
+    <h3><span class="lang-vi">D1 · Thứ tự thực thi (topological order)</span><span class="lang-en">D1 · Execution order (topological order)</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam06_d1.py</code>, viết <code>TODO</code>, chạy để thấy <code>OK!</code>. Đây là "deps phải chạy trước" ở dạng code — đúng thứ mà một plan phải ghi ra.</span><span class="lang-en">Copy it into <code>exam06_d1.py</code>, fill in the <code>TODO</code>, run it and look for <code>OK!</code>. This is "deps must run first" in code form — exactly what a plan has to write down.</span></p>
+    <div class="lang-vi">
+    <pre><code>def execution_order(steps):
+    """Trả về một thứ tự thực thi hợp lệ cho các bước.
+
+    steps: list các dict {"id": str, "deps": [id, ...]}
+           deps là các bước phải chạy TRƯỚC bước này.
+    Trả về list các id, mỗi id đúng một lần, dep luôn đứng trước bước phụ thuộc nó.
+    Raise ValueError nếu có vòng lặp phụ thuộc, hoặc deps trỏ tới id không tồn tại.
+    """
+    # TODO
+    pass
+
+# ---------- Tự kiểm ----------
+steps = [
+    {"id": "a", "deps": []},
+    {"id": "b", "deps": ["a"]},
+    {"id": "c", "deps": ["a"]},
+    {"id": "d", "deps": ["b", "c"]},
+]
+order = execution_order(steps)
+assert sorted(order) == ["a", "b", "c", "d"]
+assert order.index("a") &lt; order.index("b") &lt; order.index("d")
+assert order.index("a") &lt; order.index("c") &lt; order.index("d")
+assert execution_order([]) == []
+
+for bad in [
+    [{"id": "x", "deps": ["y"]}, {"id": "y", "deps": ["x"]}],   # vòng lặp
+    [{"id": "x", "deps": ["z"]}],                               # dep không tồn tại
+]:
+    try:
+        execution_order(bad)
+        raise AssertionError(f"Đáng lẽ phải raise ValueError: {bad}")
+    except ValueError:
+        pass
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def execution_order(steps):
+    """Return a valid execution order for the steps.
+
+    steps: list of dicts {"id": str, "deps": [id, ...]}
+           deps are the steps that must run BEFORE this step.
+    Return a list of ids, each id exactly once, with every dep before the step that depends on it.
+    Raise ValueError if there is a dependency cycle, or if deps point to an id that does not exist.
+    """
+    # TODO
+    pass
+
+# ---------- Self-check ----------
+steps = [
+    {"id": "a", "deps": []},
+    {"id": "b", "deps": ["a"]},
+    {"id": "c", "deps": ["a"]},
+    {"id": "d", "deps": ["b", "c"]},
+]
+order = execution_order(steps)
+assert sorted(order) == ["a", "b", "c", "d"]
+assert order.index("a") &lt; order.index("b") &lt; order.index("d")
+assert order.index("a") &lt; order.index("c") &lt; order.index("d")
+assert execution_order([]) == []
+
+for bad in [
+    [{"id": "x", "deps": ["y"]}, {"id": "y", "deps": ["x"]}],   # cycle
+    [{"id": "x", "deps": ["z"]}],                               # dep does not exist
+]:
+    try:
+        execution_order(bad)
+        raise AssertionError(f"Đáng lẽ phải raise ValueError: {bad}")
+    except ValueError:
+        pass
+print("OK!")</code></pre>
+    </div>
+
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <div class="lang-vi">
+      <pre><code>def execution_order(steps):
+    deps = {s["id"]: list(s["deps"]) for s in steps}
+    for ds in deps.values():
+        for dep in ds:
+            if dep not in deps:
+                raise ValueError(f"dep không tồn tại: {dep}")
+
+    order = []
+    done = set()
+    remaining = list(deps)
+    while remaining:
+        ready = [i for i in remaining if all(dep in done for dep in deps[i])]
+        if not ready:
+            raise ValueError("Có vòng lặp phụ thuộc")
+        order.extend(ready)
+        done.update(ready)
+        remaining = [i for i in remaining if i not in done]
+    return order</code></pre>
+      </div>
+      <div class="lang-en">
+      <pre><code>def execution_order(steps):
+    deps = {s["id"]: list(s["deps"]) for s in steps}
+    for ds in deps.values():
+        for dep in ds:
+            if dep not in deps:
+                raise ValueError(f"dep does not exist: {dep}")
+
+    order = []
+    done = set()
+    remaining = list(deps)
+    while remaining:
+        ready = [i for i in remaining if all(dep in done for dep in deps[i])]
+        if not ready:
+            raise ValueError("There is a dependency cycle")
+        order.extend(ready)
+        done.update(ready)
+        remaining = [i for i in remaining if i not in done]
+    return order</code></pre>
+      </div>
+      <p><span class="lang-vi">Danh sách <code>ready</code> ở mỗi vòng chính là các bước "không còn chờ ai" — làm hết chúng rồi mới sang vòng sau. Nếu vòng nào không có ai ready mà vẫn còn bước, chắc chắn có vòng lặp. Đối chiếu với mục 1 của bài giảng: đây là cấu trúc mà agent mua máy thiếu — nó không có chỗ nào ngoài ngữ cảnh để giữ thứ tự và phụ thuộc.</span><span class="lang-en">The <code>ready</code> list in each round is exactly the set of steps "no longer waiting on anyone" — finish them all, then move to the next round. If a round has nobody ready but steps remain, there is definitely a cycle. Compare with section 1 of the lecture: this is the structure the machine-buying agent lacked — it had nowhere outside its context to keep ordering and dependencies.</span></p>
+    </details>
+
+    <h3><span class="lang-vi">D2 · Đếm bước chạy song song theo lớp</span><span class="lang-en">D2 · Counting parallel steps by layer</span></h3>
+    <p><span class="lang-vi">Copy vào <code>exam06_d2.py</code>, viết <code>TODO</code>, chạy để thấy <code>OK!</code>. Mỗi "lớp" là nhóm bước có thể chạy song song — trả lời được câu "task này song song được tới đâu?".</span><span class="lang-en">Copy it into <code>exam06_d2.py</code>, fill in the <code>TODO</code>, run it and look for <code>OK!</code>. Each "layer" is a group of steps that can run in parallel — it answers "how parallel can this task get?".</span></p>
+    <div class="lang-vi">
+    <pre><code>def parallel_layers(steps):
+    """Trả về số bước có thể chạy song song ở mỗi lớp.
+
+    Lớp 0: các bước không phụ thuộc gì.
+    Lớp 1: các bước chỉ phụ thuộc bước ở lớp 0. v.v.
+    Ví dụ với a→b, a→c, b,c→d thì trả về [1, 2, 1].
+    Raise ValueError nếu có vòng lặp phụ thuộc hoặc dep không tồn tại.
+    """
+    # TODO
+    pass
+
+# ---------- Tự kiểm ----------
+steps = [
+    {"id": "a", "deps": []},
+    {"id": "b", "deps": ["a"]},
+    {"id": "c", "deps": ["a"]},
+    {"id": "d", "deps": ["b", "c"]},
+]
+assert parallel_layers(steps) == [1, 2, 1]
+assert parallel_layers([
+    {"id": "x", "deps": []},
+    {"id": "y", "deps": []},
+    {"id": "z", "deps": ["x", "y"]},
+]) == [2, 1]
+assert parallel_layers([]) == []
+
+try:
+    parallel_layers([{"id": "p", "deps": ["q"]}, {"id": "q", "deps": ["p"]}])
+    raise AssertionError("Đáng lẽ phải raise ValueError")
+except ValueError:
+    pass
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>def parallel_layers(steps):
+    """Return the number of steps that can run in parallel in each layer.
+
+    Layer 0: steps with no dependencies.
+    Layer 1: steps that depend only on layer 0 steps. And so on.
+    Example with a→b, a→c, b,c→d it returns [1, 2, 1].
+    Raise ValueError if there is a dependency cycle or a dep does not exist.
+    """
+    # TODO
+    pass
+
+# ---------- Self-check ----------
+steps = [
+    {"id": "a", "deps": []},
+    {"id": "b", "deps": ["a"]},
+    {"id": "c", "deps": ["a"]},
+    {"id": "d", "deps": ["b", "c"]},
+]
+assert parallel_layers(steps) == [1, 2, 1]
+assert parallel_layers([
+    {"id": "x", "deps": []},
+    {"id": "y", "deps": []},
+    {"id": "z", "deps": ["x", "y"]},
+]) == [2, 1]
+assert parallel_layers([]) == []
+
+try:
+    parallel_layers([{"id": "p", "deps": ["q"]}, {"id": "q", "deps": ["p"]}])
+    raise AssertionError("Đáng lẽ phải raise ValueError")
+except ValueError:
+    pass
+print("OK!")</code></pre>
+    </div>
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <div class="lang-vi">
+      <pre><code>def parallel_layers(steps):
+    deps = {s["id"]: set(s["deps"]) for s in steps}
+    for ds in deps.values():
+        for dep in ds:
+            if dep not in deps:
+                raise ValueError(f"dep không tồn tại: {dep}")
+
+    ids = list(deps)
+    done = set()
+    layers = []
+    remaining = list(ids)
+    while remaining:
+        layer = [i for i in remaining if deps[i] &lt;= done]
+        if not layer:
+            raise ValueError("Có vòng lặp phụ thuộc")
+        layers.append(len(layer))
+        done.update(layer)
+        remaining = [i for i in remaining if i not in done]
+    return layers</code></pre>
+      </div>
+      <div class="lang-en">
+      <pre><code>def parallel_layers(steps):
+    deps = {s["id"]: set(s["deps"]) for s in steps}
+    for ds in deps.values():
+        for dep in ds:
+            if dep not in deps:
+                raise ValueError(f"dep does not exist: {dep}")
+
+    ids = list(deps)
+    done = set()
+    layers = []
+    remaining = list(ids)
+    while remaining:
+        layer = [i for i in remaining if deps[i] &lt;= done]
+        if not layer:
+            raise ValueError("There is a dependency cycle")
+        layers.append(len(layer))
+        done.update(layer)
+        remaining = [i for i in remaining if i not in done]
+    return layers</code></pre>
+      </div>
+      <p><span class="lang-vi">Ví dụ mua máy trạm GPU sẽ ra <code>[4, 1, 1]</code>: lớp 0 là bốn cuộc tìm kiếm vendor A–D (chạy song song được!), lớp 1 là đối chiếu với wiki, lớp 2 là chọn máy + nộp requisition. Trace cũ dồn cả bốn cuộc tìm kiếm vào một luồng — đó chính là chỗ lãng phí mà lớp 0 chỉ ra.</span><span class="lang-en">The GPU workstation example would give <code>[4, 1, 1]</code>: layer 0 is the four vendor searches A–D (they can run in parallel!), layer 1 is checking against the wiki, layer 2 is choosing the machine + submitting the requisition. The old trace squeezed all four searches into one thread — exactly the waste layer 0 exposes.</span></p>
+    </details>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><a href="../exams/0005-exam.html">← Exam 05</a> · <a href="../lessons/0006-planning-va-da-agent.html"><span class="lang-vi">Ôn lại Bài 06</span><span class="lang-en">Review Lesson 06</span></a> · <span class="lang-vi">Exam 07 chưa có (sẽ ra cùng Bài 07 — Coding Agents).</span><span class="lang-en">Exam 07 isn't out yet (it will ship with Lesson 07 — Coding Agents).</span></p>
+    <p><span class="lang-vi">Chưa đạt 85%? Làm lại từ đầu — mỗi lần làm lại là một lần nhớ sâu hơn.</span><span class="lang-en">Below 85%? Start over — every retake deepens the memory.</span></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

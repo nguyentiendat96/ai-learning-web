@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam 01 · Agent là gì? — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Exam 01</div>
+    <h1><span class="lang-vi">Exam — Agent là gì?</span><span class="lang-en">Exam — What Is an Agent?</span></h1>
+    <p class="subtitle"><span class="lang-vi">16 câu + 1 bài tập code. Làm lại được nhiều lần — mục tiêu: đúng ≥ 85%.</span><span class="lang-en">16 questions + 1 coding exercise. Retake as many times as you like — target: ≥ 85% correct.</span></p>
+    <p class="lesson-meta"><span>~35 phút / ~35 min</span><span><a href="../lessons/0001-agent-la-gi.html"><span class="lang-vi">← Ôn lại Bài 01</span><span class="lang-en">← Review Lesson 01</span></a></span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="exam-bar">
+    <span class="exam-progress">Đúng 0 / 13 câu tương tác</span>
+    <button class="exam-reset" type="button">Làm lại từ đầu</button>
+  </div>
+
+  <p><span class="lang-vi"><strong>Cách làm:</strong> phần A–B có chấm điểm tự động ở thanh trên (đúng thì mới tính). Phần C–D tự kiểm bằng cách mở đáp án. Mục tiêu: <strong>≥ 85%</strong> — chưa đạt thì làm lại, đây là cách nhớ lâu.</span><span class="lang-en"><strong>How to use:</strong> sections A–B are scored automatically in the bar above (only correct answers count). Sections C–D are self-checked by revealing the answers. Target: <strong>≥ 85%</strong> — if you fall short, take it again; that is how memory sticks.</span></p>
+
+  <!-- ================================================== -->
+  <section id="trac-nghiem">
+    <h2><span class="lang-vi">Phần A — Trắc nghiệm (10 câu)</span><span class="lang-en">Part A — Multiple choice (10 questions)</span></h2>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A1. Theo định nghĩa Russell &amp; Norvig, agent là gì?</span><span class="lang-en">A1. According to the Russell &amp; Norvig definition, what is an agent?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Một AI thông minh có khả năng tự học</span><span class="lang-en">An intelligent AI that can learn on its own</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Thứ nhận biết môi trường qua sensors và hành động lên môi trường qua actuators</span><span class="lang-en">Anything that can be viewed as perceiving its environment through sensors and acting upon it through actuators</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Một chương trình máy tính bất kỳ</span><span class="lang-en">Any computer program</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Một chatbot trò chuyện tự nhiên</span><span class="lang-en">A chatbot that chats naturally</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Định nghĩa không nói gì về độ thông minh — chỉ nói về cặp "nhận biết → hành động".</span><span class="lang-en">The definition says nothing about intelligence — only about the perceive → act pair.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A2. Trong một coding agent, đâu là "sensors" (bộ cảm biến)?</span><span class="lang-en">A2. In a coding agent, what are the "sensors"?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Bàn phím và chuột của bạn</span><span class="lang-en">Your keyboard and mouse</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Những dòng code nó viết ra</span><span class="lang-en">The lines of code it writes</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Đọc file, nhận tin nhắn, nhận kết quả tool</span><span class="lang-en">Reading files, receiving messages, receiving tool results</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">CPU và RAM của máy tính</span><span class="lang-en">The computer's CPU and RAM</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Sensors = kênh <em>nhận thông tin vào</em>. Với agent phần mềm: đọc file, nhận message, nhận kết quả tool.</span><span class="lang-en">Sensors are the <em>input</em> channels. For a software agent: reading files, receiving messages, receiving tool results.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A3. "Kết quả pytest trả về: <code>1 passed</code>" — mô tả nào đúng nhất?</span><span class="lang-en">A3. "pytest returned: <code>1 passed</code>" — which description fits best?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Chỉ là một action của agent</span><span class="lang-en">It is only an action of the agent</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Là observation — và cũng là reward khi task kết thúc</span><span class="lang-en">It is an observation — and also the reward when the task ends</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Chỉ là reward, không phải observation</span><span class="lang-en">It is only a reward, not an observation</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Là một phần của environment</span><span class="lang-en">It is part of the environment</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Nó đến từ môi trường (observation), và là tín hiệu cho biết task đã xong (reward).</span><span class="lang-en">It comes from the environment (observation), and it signals that the task is done (reward).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A4. Điều gì khiến một hệ thống là <strong>agent</strong> chứ không chỉ là chatbot?</span><span class="lang-en">A4. What makes a system an <strong>agent</strong> rather than just a chatbot?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vòng lặp: hành động thay đổi môi trường rồi nhận kết quả về</span><span class="lang-en">A loop: actions change the environment and results come back</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Model lớn hơn và thông minh hơn</span><span class="lang-en">A bigger, smarter model</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Trả lời nhanh hơn</span><span class="lang-en">Faster replies</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Được train nhiều dữ liệu hơn</span><span class="lang-en">More training data</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Bản chất nằm ở vòng lặp tác động lên môi trường — không phải kích thước model.</span><span class="lang-en">The essence is the loop acting on an environment — not the size of the model.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A5. Theo lecture, đâu là ví dụ của <strong>reward</strong> trong hệ agent phần mềm?</span><span class="lang-en">A5. According to the lecture, which is an example of <strong>reward</strong> for a software agent?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Số token model đã dùng</span><span class="lang-en">Tokens the model used</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Test pass, rubric LLM-judge, hoặc phản hồi người dùng</span><span class="lang-en">Passing tests, LLM-judge rubrics, or user feedback</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Số lần agent gọi tool</span><span class="lang-en">How many tools the agent called</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Thời gian agent chạy</span><span class="lang-en">How long the agent ran</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Reward = tín hiệu đánh giá kết quả. Token/thời gian là chi phí; số lần gọi tool là hành vi.</span><span class="lang-en">Reward = a signal judging the outcome. Tokens/time are cost; tool-call counts are behaviour.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question"><span class="lang-vi">A6. Điều nào sau đây <strong>KHÔNG phải</strong> là action của agent?</span><span class="lang-en">A6. Which of the following is <strong>NOT</strong> an action of the agent?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Sửa một file</span><span class="lang-en">Editing a file</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Gọi một API</span><span class="lang-en">Calling an API</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Suy nghĩ thầm trong đầu</span><span class="lang-en">Thinking silently to itself</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Gửi tin nhắn trả lời</span><span class="lang-en">Sending a reply message</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Action là thứ agent chủ động làm <em>lên môi trường</em>. Suy nghĩ nội bộ không tác động ra ngoài.</span><span class="lang-en">An action is something the agent does <em>to the environment</em>. Internal thinking does not affect the outside world.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A7. Điều hòa nhiệt độ có phải agent theo định nghĩa của lecture không?</span><span class="lang-en">A7. Is a thermostat an agent under the lecture's definition?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Không — nó không thông minh</span><span class="lang-en">No — it isn't intelligent</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Có — nó nhận biết nhiệt độ và hành động bật/tắt máy nén</span><span class="lang-en">Yes — it senses temperature and acts by switching the compressor on/off</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Không — nó không dùng LLM</span><span class="lang-en">No — it doesn't use an LLM</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Chỉ khi kết nối internet</span><span class="lang-en">Only when connected to the internet</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Định nghĩa rộng hơn bạn tưởng: điều hòa có sensors (cảm biến nhiệt) + actuators (bật/tắt máy nén).</span><span class="lang-en">The definition is broader than you think: a thermostat has sensors (temperature) and actuators (the compressor switch).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="a">
+      <p class="quiz-question"><span class="lang-vi">A8. "Environment" của một coding agent đang sửa bug là gì?</span><span class="lang-en">A8. What is the "environment" of a coding agent fixing a bug?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Repository chứa code</span><span class="lang-en">The repository containing the code</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Màn hình máy tính</span><span class="lang-en">The computer screen</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Người dùng</span><span class="lang-en">The user</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Internet nói chung</span><span class="lang-en">The internet at large</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Environment = "thế giới" mà agent tác động vào — ở đây là repository (và cả cuộc hội thoại).</span><span class="lang-en">The environment is the world the agent acts on — here, the repository (and the conversation).</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question"><span class="lang-vi">A9. Đâu là mô tả đúng về <strong>observation</strong>?</span><span class="lang-en">A9. Which description of an <strong>observation</strong> is correct?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Là thứ agent chủ động làm</span><span class="lang-en">Something the agent actively does</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Là thứ môi trường trả về cho agent</span><span class="lang-en">Something the environment returns to the agent</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Là điểm số cuối cùng</span><span class="lang-en">The final score</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Là suy nghĩ nội bộ của model</span><span class="lang-en">The model's internal thoughts</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Observation phải <em>đến từ môi trường</em>: kết quả lệnh, nội dung file, kết quả tool.</span><span class="lang-en">An observation must <em>come from the environment</em>: command output, file contents, tool results.</span></p></div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question"><span class="lang-vi">A10. Vì sao nói "agent là một cách nhìn" (a way of viewing)?</span><span class="lang-en">A10. Why do we say an agent is a "way of viewing"?</span></p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a"><span class="lang-vi">Vì agent chỉ là ảo giác</span><span class="lang-en">Because agents are an illusion</span></button>
+        <button class="quiz-opt" data-key="b"><span class="lang-vi">Vì agent chỉ dùng cho mục đích học tập</span><span class="lang-en">Because agents are only for studying</span></button>
+        <button class="quiz-opt" data-key="c"><span class="lang-vi">Vì mọi hệ thống đều là AI</span><span class="lang-en">Because every system is AI</span></button>
+        <button class="quiz-opt" data-key="d"><span class="lang-vi">Vì cùng một hệ thống có thể được nhìn qua khung nhận biết → hành động</span><span class="lang-en">Because any system can be viewed through the perceive → act frame</span></button>
+      </div>
+      <div class="quiz-explain" hidden><p><span class="lang-vi">Định nghĩa dùng chữ "can be viewed as" — bạn nhìn hệ thống qua cặp nhận biết → hành động để thấy environment/observations/actions/reward của nó.</span><span class="lang-en">The definition says "can be viewed as" — you view a system through the perceive → act frame to see its environment/observations/actions/reward.</span></p></div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="dien-khuyet">
+    <h2><span class="lang-vi">Phần B — Điền khuyết (3 câu)</span><span class="lang-en">Part B — Fill in the blank (3 questions)</span></h2>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B1. Hoàn thành định nghĩa:</span><span class="lang-en">B1. Complete the definition:</span></p>
+      <p class="fib-sentence">"An agent is anything that can be viewed as perceiving its <span class="fib" data-answer="environment|environments" data-placeholder="?"></span> through sensors…"</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B2. …và hành động qua gì?</span><span class="lang-en">B2. …and acts through what?</span></p>
+      <p class="fib-sentence">"…and acting upon that environment through <span class="fib" data-answer="actuators|actuator" data-placeholder="?"></span>."</p>
+    </div>
+
+    <div class="quiz-q">
+      <p class="quiz-question"><span class="lang-vi">B3. Câu thần chú của khóa học:</span><span class="lang-en">B3. The course mantra:</span></p>
+      <p class="fib-sentence">"An agent is a model in a <span class="fib" data-answer="loop" data-placeholder="?"></span>."</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tinh-huong">
+    <h2><span class="lang-vi">Phần C — Tình huống &amp; phân tích (3 câu)</span><span class="lang-en">Part C — Scenarios &amp; analysis (3 questions)</span></h2>
+
+    <p><strong>C1.</strong> <span class="lang-vi">Cho trace của một agent đặt vé máy bay. Phân loại từng bước là <em>action</em> hay <em>observation</em>:</span><span class="lang-en">Here is a trace of a flight-booking agent. Classify each step as an <em>action</em> or an <em>observation</em>:</span></p>
+    <ol>
+      <li><span class="lang-vi">Agent nhận yêu cầu: "Đặt vé Hà Nội → Đà Nẵng ngày mai"</span><span class="lang-en">Agent receives the request: "Book a Hanoi → Da Nang ticket for tomorrow"</span></li>
+      <li><span class="lang-vi">Agent mở trang web hãng bay</span><span class="lang-en">Agent opens the airline's website</span></li>
+      <li><span class="lang-vi">Trang web hiển thị danh sách chuyến bay</span><span class="lang-en">The website shows a list of flights</span></li>
+      <li><span class="lang-vi">Agent chọn chuyến 8h và điền thông tin</span><span class="lang-en">Agent picks the 8 am flight and fills in the details</span></li>
+      <li><span class="lang-vi">Hệ thống xác nhận đặt vé thành công</span><span class="lang-en">The system confirms the booking</span></li>
+      <li><span class="lang-vi">Agent báo cho người dùng</span><span class="lang-en">Agent tells the user</span></li>
+    </ol>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <ul>
+        <li><span class="lang-vi">1 — <strong>Observation</strong> (yêu cầu đến từ môi trường/người dùng)</span><span class="lang-en">1 — <strong>Observation</strong> (the request comes from the environment/user)</span></li>
+        <li><span class="lang-vi">2 — <strong>Action</strong> (agent chủ động mở)</span><span class="lang-en">2 — <strong>Action</strong> (the agent actively opens it)</span></li>
+        <li><span class="lang-vi">3 — <strong>Observation</strong> (trang web trả về nội dung)</span><span class="lang-en">3 — <strong>Observation</strong> (the website returns content)</span></li>
+        <li><span class="lang-vi">4 — <strong>Action</strong> (agent chọn + điền)</span><span class="lang-en">4 — <strong>Action</strong> (the agent picks and fills)</span></li>
+        <li><span class="lang-vi">5 — <strong>Observation</strong> — và cũng là <strong>Reward</strong> (xác nhận thành công)</span><span class="lang-en">5 — <strong>Observation</strong> — and also the <strong>Reward</strong> (success confirmation)</span></li>
+        <li><span class="lang-vi">6 — <strong>Action</strong> (trả lời người dùng)</span><span class="lang-en">6 — <strong>Action</strong> (replying to the user)</span></li>
+      </ul>
+    </details>
+
+    <p><strong>C2.</strong> <span class="lang-vi">Máy giặt thông minh: viết ra 4 thành phần (environment / observations / actions / reward).</span><span class="lang-en">A smart washing machine: write out the four components (environment / observations / actions / reward).</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án gợi ý</span><span class="lang-en">See suggested answer</span></summary>
+      <ul>
+        <li><span class="lang-vi"><strong>Environment:</strong> lồng giặt + quần áo + nước.</span><span class="lang-en"><strong>Environment:</strong> the drum + the clothes + the water.</span></li>
+        <li><span class="lang-vi"><strong>Observations:</strong> cảm biến khối lượng quần, trạng thái cửa, mức nước…</span><span class="lang-en"><strong>Observations:</strong> clothes-weight sensor, door state, water level…</span></li>
+        <li><span class="lang-vi"><strong>Actions:</strong> bơm nước, quay lồng, xả, vắt.</span><span class="lang-en"><strong>Actions:</strong> pumping water, spinning the drum, rinsing, spinning.</span></li>
+        <li><span class="lang-vi"><strong>Reward:</strong> quần áo sạch + chu trình hoàn tất (báo xong).</span><span class="lang-en"><strong>Reward:</strong> clothes are clean + the cycle completed (done signal).</span></li>
+      </ul>
+    </details>
+
+    <p><strong>C3.</strong> <span class="lang-vi">Tìm lỗi: một bạn nói <em>"Observation là suy nghĩ của model"</em>. Sai ở đâu? Sửa lại cho đúng.</span><span class="lang-en">Find the mistake: someone says <em>"An observation is the model's thoughts."</em> What is wrong? Fix it.</span></p>
+    <details>
+      <summary><span class="lang-vi">Xem đáp án</span><span class="lang-en">See answer</span></summary>
+      <p><span class="lang-vi">Sai: observation là thứ <strong>môi trường trả về</strong> (kết quả tool, nội dung file, tin nhắn) — không phải suy nghĩ của model. Suy nghĩ nội bộ là phần model tự sinh, không đến từ môi trường. Cách sửa: <em>"Observation là thông tin môi trường trả về cho agent; còn suy nghĩ của model không phải observation."</em></span><span class="lang-en">Wrong: an observation is what the <strong>environment returns</strong> (tool results, file contents, messages) — not the model's thoughts. Internal thinking is generated by the model; it does not come from the environment. Fixed version: <em>"An observation is information the environment returns to the agent; the model's thoughts are not observations."</em></span></p>
+    </details>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="code">
+    <h2><span class="lang-vi">Phần D — Bài tập code</span><span class="lang-en">Part D — Coding exercise</span></h2>
+    <p><span class="lang-vi">Copy đoạn dưới vào một file <code>exam01.py</code>, viết phần <code>TODO</code>, rồi chạy <code>python exam01.py</code> — thấy <code>OK!</code> là đạt.</span><span class="lang-en">Copy the snippet below into <code>exam01.py</code>, fill in the <code>TODO</code>, then run <code>python exam01.py</code> — you pass when you see <code>OK!</code>.</span></p>
+
+    <div class="lang-vi">
+    <pre><code>TRACE = [
+    ("OBS", "Yêu cầu: sửa lỗi trong app.py"),
+    ("ACT", "Chạy pytest"),
+    ("OBS", "FAILED test_login"),
+    ("ACT", "Đọc app.py"),
+    ("OBS", "Nội dung file app.py"),
+    ("ACT", "Sửa dòng 42"),
+    ("ACT", "Chạy lại pytest"),
+    ("OBS", "1 passed"),
+    ("ACT", "Báo đã xong"),
+]
+
+def summarize(trace):
+    """Trả về dict gồm:
+       - "actions": số bước là action (ACT)
+       - "observations": số bước là observation (OBS)
+       - "reward_step": nội dung bước OBS cuối cùng (được xem là reward), hoặc None
+    """
+    # TODO: viết code của bạn ở đây
+    pass
+
+# ---------- Tự kiểm: các assert dưới phải chạy qua ----------
+assert summarize(TRACE) == {
+    "actions": 5,
+    "observations": 4,
+    "reward_step": "1 passed",
+}
+print("OK!")</code></pre>
+    </div>
+    <div class="lang-en">
+    <pre><code>TRACE = [
+    ("OBS", "Request: fix the bug in app.py"),
+    ("ACT", "Run pytest"),
+    ("OBS", "FAILED test_login"),
+    ("ACT", "Read app.py"),
+    ("OBS", "Contents of app.py"),
+    ("ACT", "Edit line 42"),
+    ("ACT", "Run pytest again"),
+    ("OBS", "1 passed"),
+    ("ACT", "Report done"),
+]
+
+def summarize(trace):
+    """Return a dict with:
+       - "actions": number of action steps (ACT)
+       - "observations": number of observation steps (OBS)
+       - "reward_step": the text of the last OBS step (treated as reward), or None
+    """
+    # TODO: write your code here
+    pass
+
+# ---------- Self-check: all asserts below must pass ----------
+assert summarize(TRACE) == {
+    "actions": 5,
+    "observations": 4,
+    "reward_step": "1 passed",
+}
+print("OK!")</code></pre>
+    </div>
+
+    <details>
+      <summary><span class="lang-vi">Xem lời giải</span><span class="lang-en">See solution</span></summary>
+      <pre><code>def summarize(trace):
+    actions = sum(1 for kind, _ in trace if kind == "ACT")
+    observations = sum(1 for kind, _ in trace if kind == "OBS")
+    obs_steps = [text for kind, text in trace if kind == "OBS"]
+    return {
+        "actions": actions,
+        "observations": observations,
+        "reward_step": obs_steps[-1] if obs_steps else None,
+    }</code></pre>
+      <p><span class="lang-vi">Bài này luyện đúng kỹ năng cốt lõi của Bài 01: <strong>phân loại mọi bước thành action hoặc observation</strong>.</span><span class="lang-en">This drill trains the core skill of Lesson 01: <strong>classifying every step as an action or an observation</strong>.</span></p>
+    </details>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><a href="../lessons/0001-agent-la-gi.html"><span class="lang-vi">← Ôn lại Bài 01</span><span class="lang-en">← Review Lesson 01</span></a> · <a href="../exams/0002-exam.html"><span class="lang-vi">Exam 02 — Model trong một vòng lặp →</span><span class="lang-en">Exam 02 — Model in a Loop →</span></a></p>
+    <p><span class="lang-vi">Chưa đạt 85%? Làm lại từ đầu — mỗi lần làm lại là một lần nhớ sâu hơn.</span><span class="lang-en">Below 85%? Start over — every retake deepens the memory.</span></p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

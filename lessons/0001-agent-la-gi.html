@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 01 · Agent là gì? — 11-768 AI Agents</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">11-768 · AI Agents · Bài 01</div>
+    <h1>Agent là gì?</h1>
+    <p class="subtitle">Bài học nền tảng — giải thích từ đầu, kèm thực hành tự kiểm ngay trong bài.</p>
+    <p class="lesson-meta"><span>~20 phút</span><span>6 câu hỏi tương tác</span><span>Thực hành có đáp án tự kiểm</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong bài này</strong>
+    <ol>
+      <li><a href="#bat-dau">Một câu hỏi rất đơn giản</a></li>
+      <li><a href="#dinh-nghia">Định nghĩa gốc — dịch từng chữ</a></li>
+      <li><a href="#bon-thanh-phan">Bốn thành phần — qua một ví dụ từng bước</a></li>
+      <li><a href="#hinh-dung">Hai cách hình dung để nhớ</a></li>
+      <li><a href="#chatbot-vs-agent">Chatbot khác agent ở đâu?</a></li>
+      <li><a href="#hieu-lam">Năm hiểu lầm thường gặp</a></li>
+      <li><a href="#thuc-hanh">Thực hành — tự làm, tự kiểm</a></li>
+      <li><a href="#quiz">Kiểm tra hiểu</a></li>
+      <li><a href="#tu-khoa">Từ khóa &amp; nguồn chính</a></li>
+    </ol>
+  </nav>
+
+  <div class="callout">
+    <div class="callout-title">📝 Exam của bài này</div>
+    <p>Làm <a href="../exams/0001-exam.html"><strong>Exam 01</strong></a> để nhớ chắc — nhiều câu hỏi + bài tập code có test tự chạy, làm lại được nhiều lần. Mục tiêu: đúng ≥ 85%.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cách học bài này</div>
+    <p>Bài này giải thích chậm, từ con số 0 — không cần biết gì trước. Cứ đọc tuần tự. Đến mục 7, bạn tự làm bài rồi <strong>mở đáp án để tự kiểm</strong> — không phải nộp cho ai cả.</p>
+  </div>
+
+  <!-- ================================================== -->
+  <section id="bat-dau">
+    <h2>Một câu hỏi rất đơn giản</h2>
+    <p>Tháng 2/2026, 16 agent Claude cùng nhau viết một compiler C 100.000 dòng — đủ sức compile nhân Linux. Nghe chữ "agent" có vẻ ghê gớm. Nhưng định nghĩa của nó đơn giản hơn bạn nghĩ rất nhiều.<sup><a href="#src-anthropic">[1]</a></sup></p>
+    <p>Hãy tự hỏi: <strong>một thứ gì đó muốn hành động lên thế giới thì cần tối thiểu những gì?</strong></p>
+    <p>Chỉ cần hai thứ:</p>
+    <ol>
+      <li><strong>Biết chuyện gì đang diễn ra</strong> — nhìn, nghe, đọc.</li>
+      <li><strong>Có cách tác động lên sự việc</strong> — làm, viết, chạy.</li>
+    </ol>
+    <p>Hết. Robot hút bụi có hai thứ đó. Điều hòa nhiệt độ có hai thứ đó. Claude Code cũng có hai thứ đó. Lecture 01 gọi chúng bằng hai từ tiếng Anh: <strong>sensors</strong> (bộ cảm biến) và <strong>actuators</strong> (cơ cấu chấp hành).</p>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="dinh-nghia">
+    <h2>Định nghĩa gốc — dịch từng chữ</h2>
+    <p>Lecture mở đầu bằng định nghĩa kinh điển của Russell &amp; Norvig — bộ giáo trình AI được dùng nhiều nhất thế giới:</p>
+
+    <blockquote>
+      <p>"An agent is anything that can be viewed as perceiving its environment through sensors and acting upon that environment through actuators."</p>
+      <cite>— Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> — lecture 01 trích dẫn (slide 9)<sup><a href="#src-aima">[2]</a></sup></cite>
+    </blockquote>
+
+    <p>Dịch từng mảnh:</p>
+    <ul>
+      <li><em>perceiving its environment</em> — nhận biết môi trường của nó (môi trường = "thế giới" xung quanh nó).</li>
+      <li><em>through sensors</em> — qua các bộ cảm biến.</li>
+      <li><em>acting upon that environment</em> — hành động lên chính môi trường đó.</li>
+      <li><em>through actuators</em> — qua các cơ cấu chấp hành.</li>
+    </ul>
+
+    <p>Cùng một định nghĩa, áp cho bốn hệ thống khác nhau:</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Hệ thống</th><th>Sensors — nhận biết bằng gì?</th><th>Actuators — hành động bằng gì?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Điều hòa nhiệt độ</td><td>cảm biến nhiệt độ</td><td>bật/tắt máy nén</td></tr>
+        <tr><td>Robot hút bụi</td><td>cảm biến chạm, camera</td><td>bánh xe, chổi hút</td></tr>
+        <tr><td>Con người</td><td>mắt, tai, da…</td><td>tay, chân, miệng…</td></tr>
+        <tr><td>Agent phần mềm (vd: coding agent)</td><td>đọc file, nhận tin nhắn, nhận kết quả tool</td><td>sửa file, chạy lệnh, gọi API</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Để ý chữ "can be viewed as"</div>
+      <p>Nghĩa là: <em>có thể được nhìn như</em>. Agent không phải một loại sản phẩm cụ thể — nó là <strong>một cách nhìn</strong> hệ thống qua cặp "nhận biết → hành động". Cùng một phần mềm, nhìn qua lăng kính này sẽ thấy nó có môi trường, có quan sát, có hành động.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="bon-thanh-phan">
+    <h2>Bốn thành phần — qua một ví dụ từng bước</h2>
+    <p>Từ cặp "sensors/actuators", lecture dịch sang thế giới phần mềm thành <strong>bốn thành phần</strong>. Thay vì học thuộc, hãy xem một agent làm việc thật.</p>
+    <p><strong>Tình huống:</strong> bạn nhờ một coding agent (kiểu Claude Code): <em>"Test đang fail ở app.py, sửa giúp tôi."</em></p>
+
+    <table class="mapping">
+      <thead>
+        <tr><th>#</th><th>Chuyện gì xảy ra</th><th>Thành phần</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Agent nhận yêu cầu của bạn</td><td><span class="badge">Observation</span></td></tr>
+        <tr><td>2</td><td>Agent chạy lệnh <code>pytest</code> để xem test nào fail</td><td><span class="badge">Action</span></td></tr>
+        <tr><td>3</td><td>Nhận kết quả: <code>FAILED test_app.py::test_login</code></td><td><span class="badge">Observation</span></td></tr>
+        <tr><td>4</td><td>Agent mở file <code>app.py</code> ra đọc</td><td><span class="badge">Action</span></td></tr>
+        <tr><td>5</td><td>Nhận nội dung file</td><td><span class="badge">Observation</span></td></tr>
+        <tr><td>6</td><td>Agent sửa một dòng code bị sai</td><td><span class="badge">Action</span></td></tr>
+        <tr><td>7</td><td>Agent chạy lại <code>pytest</code></td><td><span class="badge">Action</span></td></tr>
+        <tr><td>8</td><td>Nhận kết quả: <code>1 passed</code></td><td><span class="badge">Observation</span> <span class="badge">Reward</span></td></tr>
+        <tr><td>9</td><td>Agent trả lời "đã sửa xong" và dừng vòng lặp</td><td><span class="badge">Action</span></td></tr>
+      </tbody>
+    </table>
+
+    <p>Ghép với bốn thành phần:</p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Environment</div>
+        <h3>Môi trường</h3>
+        <p>Thế giới mà agent tác động vào. Ở đây là <strong>repository</strong> chứa <code>app.py</code> — và cả cuộc hội thoại với bạn.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Observations</div>
+        <h3>Quan sát</h3>
+        <p>Mọi thứ <strong>môi trường trả về</strong>: yêu cầu của bạn, kết quả pytest, nội dung file.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Actions</div>
+        <h3>Hành động</h3>
+        <p>Mọi thứ agent <strong>chủ động làm</strong>: chạy lệnh, đọc file, sửa file, trả lời.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Reward</div>
+        <h3>Tín hiệu đánh giá</h3>
+        <p>Cách biết đã xong việc / đúng chưa. Ở đây là <code>1 passed</code> — <strong>test pass</strong>, reward phổ biến nhất trong nghề coding agent.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">Điều quan trọng nhất của cả bài</div>
+      <p>Trong ví dụ trên, mỗi bước chỉ có thể là một trong hai loại:</p>
+      <ul>
+        <li><strong>Action</strong> — agent chủ động làm gì đó.</li>
+        <li><strong>Observation</strong> — môi trường trả về gì đó.</li>
+      </ul>
+      <p>Và hai thành phần còn lại nằm ở hai đầu: <strong>Environment</strong> (nơi bị tác động) và <strong>Reward</strong> (tín hiệu biết đã xong). Phân loại được mọi thứ vào 4 rổ này — bạn đã hiểu agent. Đó là toàn bộ kỹ năng của bài này.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hinh-dung">
+    <h2>Hai cách hình dung để nhớ</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Cách 1</div>
+        <h3>Nhân viên mới</h3>
+        <p>Sếp giao việc. Nhân viên: <strong>nhìn</strong> (quan sát) → <strong>làm</strong> (hành động) → <strong>xem kết quả</strong> (quan sát) → <strong>làm tiếp</strong>… cho đến khi xong và báo cáo. KPI cuối tháng là reward.</p>
+        <p>Agent phần mềm y hệt — chỉ khác "mắt" và "tay" của nó là tool/API.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Cách 2</div>
+        <h3>Ván cờ</h3>
+        <p>Nhìn bàn cờ (quan sát) → đi một nước (hành động) → bàn cờ thay đổi → nhìn lại (quan sát mới) → … Thắng ván là reward.</p>
+        <p>Điểm mấu chốt: <strong>nước đi làm bàn cờ đổi, và cái đổi đó quay lại thành thông tin cho bước sau</strong>. Agent phần mềm cũng vậy.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="chatbot-vs-agent">
+    <h2>Chatbot khác agent ở đâu?</h2>
+    <p><strong>Chatbot một lượt:</strong> bạn hỏi → nó trả lời → hết. Nó không làm gì thay đổi thế giới bên ngoài (ngoài việc hiện chữ lên màn hình).</p>
+    <p><strong>Agent:</strong> sau mỗi hành động, thế giới thay đổi — và kết quả quay về cho nó. Rồi nó lại hành động. Cứ thế:</p>
+
+    <pre><code>[Quan sát] ──► [Hành động] ──► môi trường thay đổi ──► [Quan sát mới] ──► ...</code></pre>
+
+    <p>Mũi tên cuối nối vòng về mũi tên đầu — đó là lý do lecture gọi nó là <strong>loop</strong> (vòng lặp).</p>
+
+    <div class="callout">
+      <div class="callout-title">Câu thần chú của khóa học</div>
+      <p><em>"An agent is a model in a loop."</em> — một agent là một model nằm trong một vòng lặp (slide 14).<sup><a href="#src-slide14">[3]</a></sup></p>
+      <p><strong>Model</strong> = phần suy nghĩ và ra quyết định (ví dụ: Claude, GPT). <strong>Loop</strong> = vòng lặp ở trên. Bài 02 sẽ mổ xẻ chi tiết vòng lặp này.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="hieu-lam">
+    <h2>Năm hiểu lầm thường gặp</h2>
+    <p>Đây là những chỗ khiến người mới thấy khó hiểu — đọc kỹ để tránh:</p>
+    <ol>
+      <li><strong>"Agent là AI thông minh, tự chủ."</strong> — Định nghĩa không hề nói về độ thông minh. Điều hòa nhiệt độ cũng là agent. "Agent" nói về <em>cấu trúc</em> nhận biết → hành động, không nói về IQ.</li>
+      <li><strong>"Observation là những gì agent nghĩ ra."</strong> — Ngược lại. Observation là thứ <em>môi trường trả về</em>: kết quả lệnh, nội dung file, trang web. Suy nghĩ của model không phải observation.</li>
+      <li><strong>"Action phải là việc gì đó to tát."</strong> — Không. Trả lời một câu, gõ một phím, gọi một API — đều là action. Action = mọi thứ agent <em>chủ động làm</em>.</li>
+      <li><strong>"Reward lúc nào cũng là điểm số do người chấm."</strong> — Không. Test pass là reward. Người dùng gõ "cảm ơn, đúng rồi" cũng là reward. Rubric do một LLM khác chấm cũng là reward.</li>
+      <li><strong>"Agent là một sản phẩm cụ thể nào đó."</strong> — Không. Nó là một <em>cách nhìn</em>. Cùng một app, nhìn qua khung agent bạn sẽ thấy environment / observations / actions / reward của nó.</li>
+    </ol>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="thuc-hanh">
+    <h2>Thực hành — tự làm, tự kiểm</h2>
+    <p>Phần này quan trọng nhất. Làm ra nháp (hoặc nhẩm) trước, rồi mới mở đáp án. Đáp án chỉ là gợi ý — điều quan trọng là <strong>cách lập luận</strong>, không phải khớp từng chữ.</p>
+
+    <h3>Phần A — Phân rã ba hệ thống</h3>
+
+    <p><strong>A1 · ChatGPT có web search.</strong> Viết ra 4 thành phần của nó.</p>
+    <details>
+      <summary>Xem đáp án gợi ý</summary>
+      <ul>
+        <li><strong>Environment:</strong> Internet (các trang web nó truy cập) và cuộc hội thoại với bạn.</li>
+        <li><strong>Observations:</strong> câu hỏi của bạn; kết quả tìm kiếm trả về.</li>
+        <li><strong>Actions:</strong> gọi công cụ tìm kiếm; viết câu trả lời.</li>
+        <li><strong>Reward:</strong> bạn thấy câu trả lời đúng và hữu ích — hoặc bạn phàn nàn (tín hiệu ngược lại).</li>
+      </ul>
+    </details>
+
+    <p><strong>A2 · Bot chơi cờ vua.</strong> Viết ra 4 thành phần.</p>
+    <details>
+      <summary>Xem đáp án gợi ý</summary>
+      <ul>
+        <li><strong>Environment:</strong> bàn cờ — và đối thủ.</li>
+        <li><strong>Observations:</strong> thế cờ hiện tại: quân hai bên đang ở đâu, nước vừa được đi.</li>
+        <li><strong>Actions:</strong> đi một nước cờ.</li>
+        <li><strong>Reward:</strong> thắng ván (thua là tín hiệu ngược lại).</li>
+      </ul>
+    </details>
+
+    <p><strong>A3 · Coding agent sửa bug</strong> (như ví dụ ở mục 3 — tự làm lại rồi so).</p>
+    <details>
+      <summary>Xem đáp án gợi ý</summary>
+      <ul>
+        <li><strong>Environment:</strong> repository chứa code.</li>
+        <li><strong>Observations:</strong> yêu cầu của bạn; kết quả chạy test; nội dung các file.</li>
+        <li><strong>Actions:</strong> chạy lệnh; đọc file; sửa file; trả lời.</li>
+        <li><strong>Reward:</strong> test pass.</li>
+      </ul>
+    </details>
+
+    <p><strong>A4 · Một agent bạn đang dùng.</strong> Tự chọn và phân rã nó.</p>
+    <details>
+      <summary>Checklist tự kiểm</summary>
+      <ul>
+        <li>Environment của nó là gì? (nơi nó thao tác)</li>
+        <li>Mỗi bước nó nhận thông tin gì?</li>
+        <li>Nó làm được những gì?</li>
+        <li>Làm sao biết nó làm đúng? Nếu không rõ — có thể reward nằm ở chính bạn (người dùng).</li>
+      </ul>
+    </details>
+
+    <h3>Phần B — Mô phỏng vòng lặp</h3>
+    <p>Hai câu này kiểm tra "phản xạ" của bạn về vòng lặp. Chọn đáp án — đúng thì hiện giải thích.</p>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">B1. Agent vừa gửi lời gọi <code>run_command("pytest")</code>. Bước tiếp theo của vòng lặp là gì?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Agent tự chạy pytest bên trong model</button>
+        <button class="quiz-opt" data-key="b">Harness chạy pytest thật, rồi trả kết quả về</button>
+        <button class="quiz-opt" data-key="c">Vòng lặp dừng ở đây</button>
+        <button class="quiz-opt" data-key="d">pytest chạy xong, agent tự biết kết quả</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: model chỉ "đề nghị" — ai là người thực thi?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Model chỉ đề nghị hành động. <strong>Harness</strong> — phần mềm chạy vòng lặp agent — là bên thực thi thật, rồi gửi kết quả về cho model như một observation mới.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">B2. Harness trả về dòng chữ <code>FAILED test_login</code>. Đó là thành phần nào?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Một action của agent</button>
+        <button class="quiz-opt" data-key="b">Một reward</button>
+        <button class="quiz-opt" data-key="c">Một observation</button>
+        <button class="quiz-opt" data-key="d">Một phần của environment</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nó đến từ đâu — agent tự làm ra, hay môi trường trả về?</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Kết quả test là thứ <em>môi trường trả về</em> → observation. (Reward sẽ là tín hiệu lúc kết thúc: test pass, task xong, user hài lòng.)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="quiz">
+    <h2>Kiểm tra hiểu</h2>
+    <p>Bốn câu cuối — làm nhanh để chắc chắn mình đã nắm bài.</p>
+
+    <div class="quiz-q">
+      <p class="quiz-question">1. Điền hai chỗ trống để hoàn thành định nghĩa:</p>
+      <p class="fib-sentence">"An agent is anything that can be viewed as perceiving its <span class="fib" data-answer="environment|environments" data-placeholder="?"></span> through sensors and acting upon that environment through <span class="fib" data-answer="actuators|actuator" data-placeholder="?"></span>."</p>
+    </div>
+
+    <div class="quiz-q" data-correct="c">
+      <p class="quiz-question">2. Điều gì khiến một hệ thống trở thành <strong>agent</strong>, chứ không chỉ là chatbot?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Model lớn hơn và thông minh hơn</button>
+        <button class="quiz-opt" data-key="b">Prompt dài hơn và được viết kỹ hơn</button>
+        <button class="quiz-opt" data-key="c">Vòng lặp tác động lên môi trường rồi nhận kết quả về</button>
+        <button class="quiz-opt" data-key="d">Giao diện đẹp hơn và trả lời nhanh hơn</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: nghĩ tới điều xảy ra <em>sau khi</em> model trả lời lần đầu.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Bản chất của agent nằm ở vòng lặp: hành động thay đổi môi trường, kết quả quay về thành quan sát mới, model tiếp tục ra quyết định. Model to hay prompt khéo chỉ làm vòng lặp đó hiệu quả hơn — không tạo ra nó.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="b">
+      <p class="quiz-question">3. Theo lecture, đâu là ví dụ của <strong>reward</strong> trong hệ agent phần mềm?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Số token model đã tiêu thụ</button>
+        <button class="quiz-opt" data-key="b">Test pass hoặc người dùng hài lòng</button>
+        <button class="quiz-opt" data-key="c">Thời gian agent chạy đến khi xong</button>
+        <button class="quiz-opt" data-key="d">Số lần agent gọi tool trong task</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: reward là tín hiệu cho biết <em>kết quả</em> tốt hay xấu — không phải chi phí hay hành vi.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Lecture liệt kê ba ví dụ reward: passing test cases, rubric chấm bởi LLM-as-a-judge, và phản hồi tích cực từ người dùng. Token và thời gian là chi phí (cost); số lần gọi tool là hành vi — không phải tín hiệu đánh giá kết quả.</p>
+      </div>
+    </div>
+
+    <div class="quiz-q" data-correct="d">
+      <p class="quiz-question">4. Điều nào sau đây là một <strong>observation</strong> của agent?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-key="a">Suy nghĩ thầm trong đầu của model</button>
+        <button class="quiz-opt" data-key="b">Lệnh <code>pytest</code> mà agent gõ ra</button>
+        <button class="quiz-opt" data-key="c">Câu trả lời agent gửi cho bạn</button>
+        <button class="quiz-opt" data-key="d">Kết quả <code>FAILED</code> mà môi trường trả về</button>
+      </div>
+      <p class="quiz-hint" hidden>Gợi ý: observation phải <em>đến từ môi trường</em>.</p>
+      <div class="quiz-explain" hidden>
+        <p><strong>Chính xác.</strong> Observation là thứ môi trường trả về: kết quả lệnh, nội dung file, kết quả tool. Lệnh agent gõ ra là action; câu trả lời gửi bạn cũng là action; suy nghĩ trong đầu model không đến từ môi trường nên không phải observation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <section id="tu-khoa">
+    <h2>Từ khóa &amp; nguồn chính</h2>
+    <p>Bảy từ khóa của bài — đọc lướt lại một lần là nhớ:</p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Thuật ngữ</th><th>Nghĩa một dòng</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Agent</td><td>Thứ nhận biết môi trường (qua sensors) và hành động lên môi trường (qua actuators).</td></tr>
+        <tr><td>Environment</td><td>"Thế giới" mà agent tác động vào: repository, website, ứng dụng, workflow.</td></tr>
+        <tr><td>Observation</td><td>Thông tin môi trường trả về: tin nhắn, nội dung file, kết quả tool.</td></tr>
+        <tr><td>Action</td><td>Việc agent chủ động làm: trả lời, sửa file, chạy lệnh, gọi API.</td></tr>
+        <tr><td>Reward</td><td>Tín hiệu biết kết quả tốt/xấu: test pass, rubric chấm, phản hồi người dùng.</td></tr>
+        <tr><td>Harness</td><td>Phần mềm chạy vòng lặp agent: thực thi action, đưa observation về cho model.</td></tr>
+        <tr><td>Loop</td><td>Vòng lặp quan sát → hành động → quan sát → … cho đến khi xong việc.</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="sources">
+      <li id="src-anthropic">Anthropic — <a href="https://www.anthropic.com/engineering/building-c-compiler">Building a C compiler with a team of parallel Claudes</a> (Nicholas Carlini, 02/2026). Ví dụ mở đầu — slide 2 của lecture.</li>
+      <li id="src-aima">Russell &amp; Norvig — <a href="http://aima.cs.berkeley.edu/4th-ed/pdfs/newchap02.pdf">AIMA, ch. 2 "Intelligent Agents"</a> (4th ed.). Nguồn gốc định nghĩa agent.</li>
+      <li id="src-slide14">Lecture 01 — <a href="https://www.cmu-agents.com/slides/lecture-01-agents.pdf#page=9">slide 9</a> (định nghĩa + bốn thành phần) và <a href="https://www.cmu-agents.com/slides/lecture-01-agents.pdf#page=14">slide 14</a> ("An agent is a model in a loop").</li>
+      <li>Video lecture gốc: <a href="https://www.youtube.com/watch?v=UwfjzyLnvMg">CMU AI Agents 2026 — 1. What are Agents and How Do They Work?</a> (~68 phút).</li>
+    </ol>
+  </section>
+
+  <footer class="lesson-footer">
+    <p><strong>Bài tiếp theo:</strong> 02 · Model trong một vòng lặp — mổ xẻ vòng lặp ở mục 5 (đã sẵn sàng trong <code>lessons/</code>).</p>
+    <p>Vẫn còn chỗ chưa rõ? Đừng cố đi tiếp — ghi lại câu hỏi và nhắn cho giáo viên.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
