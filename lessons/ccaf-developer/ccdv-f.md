@@ -716,6 +716,27 @@ Hai câu hỏi khác nhau:
 | Làm sao bảo đảm hình dạng? | Schema |
 | Code của tôi làm gì sau khi nhận? | Validate, vì schema chỉ làm ca xấu hiếm hơn |
 
+### Phân loại lỗi theo nguyên nhân, không theo mã
+
+| Câu hỏi | Nhóm | Ví dụ | Hành động |
+|---|---|---|---|
+| Đồng hồ có thể đổi kết quả không | Trạng thái thế giới | 429, 529, 5xx, timeout | Chờ rồi thử lại |
+| Không | Lỗi nằm trong request | 400, 401, 403, 404 | Sửa hoặc từ chối, không retry |
+
+Hai ngoại lệ: 429 do chạm hạn mức chi tiêu không có retry-after và cứ hỏng đến khi hạn mức được nới; request quá lớn thì giảm max_tokens và gửi request khác, không lặp lại y nguyên.
+
+Retriability là tính chất của nguyên nhân; an toàn là tính chất của việc lần đầu đã ghi gì. Retry băng qua một ranh giới ghi là lần ghi thứ hai, trừ khi thao tác idempotent. Khi không rõ, đoán không thử lại rẻ hơn.
+
+### Test nói hỏng, trace nói hỏng ở đâu
+
+Một bộ test xanh chỉ nói về từng phần, không nói về sản phẩm: chỗ nối giữa hai thành phần không thuộc về thành phần nào. Đọc trace của một lần chạy: đầu ra của model trước khi bị xử lý tiếp.
+
+| Trace cho thấy | Lỗi ở đâu |
+|---|---|
+| Model trả đúng, hệ thống dùng sai | Dưới model: parser, handoff, tool wrapper |
+| Model trả sai, input bị cắt hoặc thiếu | Bước dựng input |
+| Model trả sai, input đầy đủ | Prompt, ví dụ, ràng buộc, chọn model |
+
 ### Ví dụ
 
 Dashboard có một panel trống, call trả 200.

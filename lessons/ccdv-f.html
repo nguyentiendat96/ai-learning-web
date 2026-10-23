@@ -1514,6 +1514,76 @@ khác chữ hoa thường.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="phân-loại-lỗi-theo-nguyên-nhân-không-theo-mã">Phân loại lỗi theo
+nguyên nhân, không theo mã</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Nhóm</th>
+<th>Ví dụ</th>
+<th>Hành động</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đồng hồ có thể đổi kết quả không</td>
+<td>Trạng thái thế giới</td>
+<td>429, 529, 5xx, timeout</td>
+<td>Chờ rồi thử lại</td>
+</tr>
+<tr>
+<td>Không</td>
+<td>Lỗi nằm trong request</td>
+<td>400, 401, 403, 404</td>
+<td>Sửa hoặc từ chối, không retry</td>
+</tr>
+</tbody>
+</table>
+<p>Hai ngoại lệ: 429 do chạm hạn mức chi tiêu không có retry-after và cứ
+hỏng đến khi hạn mức được nới; request quá lớn thì giảm max_tokens và
+gửi request khác, không lặp lại y nguyên.</p>
+<p>Retriability là tính chất của nguyên nhân; an toàn là tính chất của
+việc lần đầu đã ghi gì. Retry băng qua một ranh giới ghi là lần ghi thứ
+hai, trừ khi thao tác idempotent. Khi không rõ, đoán không thử lại rẻ
+hơn.</p>
+<h3 id="test-nói-hỏng-trace-nói-hỏng-ở-đâu">Test nói hỏng, trace nói
+hỏng ở đâu</h3>
+<p>Một bộ test xanh chỉ nói về từng phần, không nói về sản phẩm: chỗ nối
+giữa hai thành phần không thuộc về thành phần nào. Đọc trace của một lần
+chạy: đầu ra của model trước khi bị xử lý tiếp.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Trace cho thấy</th>
+<th>Lỗi ở đâu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model trả đúng, hệ thống dùng sai</td>
+<td>Dưới model: parser, handoff, tool wrapper</td>
+</tr>
+<tr>
+<td>Model trả sai, input bị cắt hoặc thiếu</td>
+<td>Bước dựng input</td>
+</tr>
+<tr>
+<td>Model trả sai, input đầy đủ</td>
+<td>Prompt, ví dụ, ràng buộc, chọn model</td>
+</tr>
+</tbody>
+</table>
 <h3 id="ví-dụ-8">Ví dụ</h3>
 <p>Dashboard có một panel trống, call trả 200.</p>
 <table class="mapping">

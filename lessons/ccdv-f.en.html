@@ -1553,6 +1553,79 @@ optional</td>
 </tr>
 </tbody>
 </table>
+<h3 id="classify-errors-by-cause-not-by-status-code">Classify errors by
+cause, not by status code</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Question</th>
+<th>Bucket</th>
+<th>Examples</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Could the clock alone change the outcome</td>
+<td>World state</td>
+<td>429, 529, 5xx, timeout</td>
+<td>Wait, then retry</td>
+</tr>
+<tr>
+<td>No</td>
+<td>The request is wrong</td>
+<td>400, 401, 403, 404</td>
+<td>Repair or reject, do not retry</td>
+</tr>
+</tbody>
+</table>
+<p>Two exceptions: a spend-cap 429 carries no retry-after and keeps
+failing until the cap lifts; a request too large means lowering
+max_tokens and sending a different request, not repeating the same
+one.</p>
+<p>Retriability is a property of the cause; safety is a property of what
+the first attempt already wrote. A retry crossing a writing boundary is
+a second write unless the operation is idempotent. When unclear,
+guessing terminal is cheaper.</p>
+<h3 id="a-test-says-it-broke-a-trace-says-where">A test says it broke; a
+trace says where</h3>
+<p>A green suite is a claim about parts, not about the product: the seam
+between two components belongs to neither. Read the trace of one run,
+starting with what the model returned before anything downstream touched
+it.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>What the trace shows</th>
+<th>Where the fault is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The model returned what was wanted and the system misused it</td>
+<td>Below the model: parser, handoff, tool wrapper</td>
+</tr>
+<tr>
+<td>The model returned wrongly and the input was truncated or
+missing</td>
+<td>The step that built the input</td>
+</tr>
+<tr>
+<td>The model returned wrongly and the input was complete</td>
+<td>Prompt, examples, constraints, model choice</td>
+</tr>
+</tbody>
+</table>
 <h3 id="example-8">Example</h3>
 <p>A dashboard panel is empty and the call returned 200.</p>
 <table class="mapping">

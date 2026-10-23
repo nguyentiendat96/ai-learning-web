@@ -705,6 +705,27 @@ Two different questions:
 | How do I guarantee the shape? | Schema |
 | What does my code do on receipt? | Validate, because a schema makes the bad case rarer, not the parser optional |
 
+### Classify errors by cause, not by status code
+
+| Question | Bucket | Examples | Action |
+|---|---|---|---|
+| Could the clock alone change the outcome | World state | 429, 529, 5xx, timeout | Wait, then retry |
+| No | The request is wrong | 400, 401, 403, 404 | Repair or reject, do not retry |
+
+Two exceptions: a spend-cap 429 carries no retry-after and keeps failing until the cap lifts; a request too large means lowering max_tokens and sending a different request, not repeating the same one.
+
+Retriability is a property of the cause; safety is a property of what the first attempt already wrote. A retry crossing a writing boundary is a second write unless the operation is idempotent. When unclear, guessing terminal is cheaper.
+
+### A test says it broke; a trace says where
+
+A green suite is a claim about parts, not about the product: the seam between two components belongs to neither. Read the trace of one run, starting with what the model returned before anything downstream touched it.
+
+| What the trace shows | Where the fault is |
+|---|---|
+| The model returned what was wanted and the system misused it | Below the model: parser, handoff, tool wrapper |
+| The model returned wrongly and the input was truncated or missing | The step that built the input |
+| The model returned wrongly and the input was complete | Prompt, examples, constraints, model choice |
+
 ### Example
 
 A dashboard panel is empty and the call returned 200.
