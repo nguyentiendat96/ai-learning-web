@@ -2721,6 +2721,76 @@ Chống jailbreak có thể chặn tài khoản; chống injection thì không a
 chặn.</p>
 <p>Kiểm tra lớp: kể một lỗi làm mất hai lớp cùng lúc. Nếu kể được thì số
 lớp đếm sai.</p>
+<h3 id="secret-là-một-quần-thể-bản-sao-không-phải-một-giá-trị">Secret là
+một quần thể bản sao, không phải một giá trị</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Đo</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Số bản sao</td>
+<td>Bao nhiêu nơi giữ giá trị, ai đọc được</td>
+</tr>
+<tr>
+<td>Tầm với</td>
+<td>Một bản sao làm được gì khi bị lấy</td>
+</tr>
+<tr>
+<td>Tuổi thọ</td>
+<td>Còn hiệu lực bao lâu sau khi người khác giữ</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Cách làm</th>
+<th>Đổi cái gì</th>
+<th>Còn để lại</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Không ghi giá trị vào file cấu hình</td>
+<td>Số bản sao</td>
+<td>Tầm với và tuổi thọ của các bản còn lại</td>
+</tr>
+<tr>
+<td>Kho quản lý, đọc lúc chạy</td>
+<td>Số bản sao, có ghi ai đọc</td>
+<td>Tầm với</td>
+</tr>
+<tr>
+<td>Credential riêng theo môi trường và dịch vụ</td>
+<td>Tầm với, giảm</td>
+<td>Số bản sao, tăng</td>
+</tr>
+<tr>
+<td>Hạn dùng đặt lúc tạo, xoay vòng định kỳ</td>
+<td>Tuổi thọ</td>
+<td>Số bản sao và tầm với</td>
+</tr>
+<tr>
+<td>Ghi log truy cập và cảnh báo</td>
+<td>Không đổi cái nào</td>
+<td>Cả ba</td>
+</tr>
+</tbody>
+</table>
+<p>Giá trị ghi vào file đã commit thì xóa cũng không mất: lịch sử git
+giữ nó. Coi như đã lộ, phải phát hành key mới và thu hồi key cũ. Xoay
+vòng định kỳ chặn lộ âm thầm; xoay vòng khi nghi ngờ là xử lý sự cố.</p>
+<p>Quyền của key được chốt lúc tạo: workspace, hạn, scope. Muốn đổi thì
+phát hành key khác.</p>
 <h3 id="ví-dụ-15">Ví dụ</h3>
 <p>Ticket có khối dán từ nơi khác, trong đó yêu cầu danh sách khách
 hàng.</p>

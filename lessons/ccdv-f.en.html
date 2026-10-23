@@ -2788,6 +2788,77 @@ user is the victim. A jailbreak can be throttled by account; an
 injection has nobody to throttle.</p>
 <p>Layer test: name one failure that removes two layers at once. If you
 can, the count was wrong.</p>
+<h3 id="a-secret-is-a-population-of-copies-not-a-value">A secret is a
+population of copies, not a value</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Measure</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Copy count</td>
+<td>How many places hold the value, and who can read each</td>
+</tr>
+<tr>
+<td>Reach</td>
+<td>What one copy authorises when taken</td>
+</tr>
+<tr>
+<td>Life</td>
+<td>How long it keeps working once someone else holds it</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Practice</th>
+<th>Moves</th>
+<th>Leaves standing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Keeping the value out of the config file</td>
+<td>Copy count</td>
+<td>Reach and life of the remaining copies</td>
+</tr>
+<tr>
+<td>A managed store read at runtime</td>
+<td>Copy count, plus a read record</td>
+<td>Reach</td>
+</tr>
+<tr>
+<td>Separate credentials per environment and service</td>
+<td>Reach, downward</td>
+<td>Copy count, upward</td>
+</tr>
+<tr>
+<td>Expiry set at creation, scheduled rotation</td>
+<td>Life</td>
+<td>Copy count and reach</td>
+</tr>
+<tr>
+<td>Access logs and alerting</td>
+<td>None of the three</td>
+<td>All three</td>
+</tr>
+</tbody>
+</table>
+<p>A value written into a committed file survives deletion: git history
+keeps it. Treat it as exposed, issue a new key, revoke the old one.
+Scheduled rotation bounds an undetected leak; rotation on suspicion is
+incident response.</p>
+<p>A key fixed its workspace, expiry and scopes at creation. Changing
+any of them means issuing a different key.</p>
 <h3 id="example-15">Example</h3>
 <p>A ticket carries a pasted block asking for the customer list.</p>
 <table class="mapping">

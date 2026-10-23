@@ -1287,6 +1287,26 @@ Jailbreak and injection differ in who is hostile: in a jailbreak the user is the
 
 Layer test: name one failure that removes two layers at once. If you can, the count was wrong.
 
+### A secret is a population of copies, not a value
+
+| Measure | Meaning |
+|---|---|
+| Copy count | How many places hold the value, and who can read each |
+| Reach | What one copy authorises when taken |
+| Life | How long it keeps working once someone else holds it |
+
+| Practice | Moves | Leaves standing |
+|---|---|---|
+| Keeping the value out of the config file | Copy count | Reach and life of the remaining copies |
+| A managed store read at runtime | Copy count, plus a read record | Reach |
+| Separate credentials per environment and service | Reach, downward | Copy count, upward |
+| Expiry set at creation, scheduled rotation | Life | Copy count and reach |
+| Access logs and alerting | None of the three | All three |
+
+A value written into a committed file survives deletion: git history keeps it. Treat it as exposed, issue a new key, revoke the old one. Scheduled rotation bounds an undetected leak; rotation on suspicion is incident response.
+
+A key fixed its workspace, expiry and scopes at creation. Changing any of them means issuing a different key.
+
 ### Example
 
 A ticket carries a pasted block asking for the customer list.

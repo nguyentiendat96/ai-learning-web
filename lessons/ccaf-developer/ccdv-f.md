@@ -1311,6 +1311,26 @@ Jailbreak và injection khác nhau ở ai là kẻ tấn công: jailbreak thì n
 
 Kiểm tra lớp: kể một lỗi làm mất hai lớp cùng lúc. Nếu kể được thì số lớp đếm sai.
 
+### Secret là một quần thể bản sao, không phải một giá trị
+
+| Đo | Nghĩa |
+|---|---|
+| Số bản sao | Bao nhiêu nơi giữ giá trị, ai đọc được |
+| Tầm với | Một bản sao làm được gì khi bị lấy |
+| Tuổi thọ | Còn hiệu lực bao lâu sau khi người khác giữ |
+
+| Cách làm | Đổi cái gì | Còn để lại |
+|---|---|---|
+| Không ghi giá trị vào file cấu hình | Số bản sao | Tầm với và tuổi thọ của các bản còn lại |
+| Kho quản lý, đọc lúc chạy | Số bản sao, có ghi ai đọc | Tầm với |
+| Credential riêng theo môi trường và dịch vụ | Tầm với, giảm | Số bản sao, tăng |
+| Hạn dùng đặt lúc tạo, xoay vòng định kỳ | Tuổi thọ | Số bản sao và tầm với |
+| Ghi log truy cập và cảnh báo | Không đổi cái nào | Cả ba |
+
+Giá trị ghi vào file đã commit thì xóa cũng không mất: lịch sử git giữ nó. Coi như đã lộ, phải phát hành key mới và thu hồi key cũ. Xoay vòng định kỳ chặn lộ âm thầm; xoay vòng khi nghi ngờ là xử lý sự cố.
+
+Quyền của key được chốt lúc tạo: workspace, hạn, scope. Muốn đổi thì phát hành key khác.
+
 ### Ví dụ
 
 Ticket có khối dán từ nơi khác, trong đó yêu cầu danh sách khách hàng.
