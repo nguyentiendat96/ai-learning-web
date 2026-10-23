@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Certified Architect: Professional (CCAR-P) — Claude · CCAR-P · 12 lessons</title>
+<link rel="stylesheet" href="../assets/course.css?v=3">
+<style>
+  .toc li { margin: .3rem 0; }
+  /* heading numbers are written in the source, so the CSS counter is off here */
+  h2 { counter-increment: none; }
+  h2::before { content: none; }
+  @media (max-width: 760px) { .toc { display: block; } }
+</style>
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Claude · CCAR-P · 12 lessons</div>
+    <h1>Claude Certified Architect: Professional (CCAR-P)</h1>
+    <p class="subtitle">A 12-lesson curriculum: architecture decisions, cost, evaluation, guardrails, compliance.</p>
+    <p class="lesson-meta"><span>12 lessons</span><span>63 questions</span><span>Nguồn: transcript video</span></p>
+    <p style="margin:.5rem 0"><a href="ccarp.html">Bản tiếng Việt</a></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="layout">
+    <aside class="side">
+      <nav class="toc">
+        <strong>On this page</strong>
+        <ol>
+      <li><a href="#m01">01 · The Exam Map and the Three Pattern Rungs</a></li>
+      <li><a href="#m02">02 · When a Second Agent Is a Liability</a></li>
+      <li><a href="#m03">03 · Model Choice, Prompting, Caching</a></li>
+      <li><a href="#m04">04 · Integration and Least Privilege</a></li>
+      <li><a href="#m05">05 · RAG: Chunking and Retrieval</a></li>
+      <li><a href="#m06">06 · Monitoring: Green Dashboards, Garbage Answers</a></li>
+      <li><a href="#m07">07 · Evaluation: Better or Just Different</a></li>
+      <li><a href="#m08">08 · A/B Testing and Cost Optimisation</a></li>
+      <li><a href="#m09">09 · Guardrails: a Prompt Asks, Code Stops It</a></li>
+      <li><a href="#m10">10 · Compliance: Where the Data Goes</a></li>
+      <li><a href="#m11">11 · Defending the Design and Rolling Out to a Team</a></li>
+      <li><a href="#m12">12 · Four Autopsies, Reading the Paper, Exam Day</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <div class="content">
+
+<p>A 12-lesson curriculum built from “CCAR-P Full Course: All 16
+Episodes” (169 minutes), October 2026. Source: <a
+href="https://www.youtube.com/watch?v=YjjeATv2Edc">CCAR-P course
+video</a>.</p>
+<blockquote>
+<p>The difference from CCA-F: Foundations asks whether you can build it.
+Professional asks whether you <strong>should</strong>, and whether you
+can defend the call. Same technology, a different job.</p>
+</blockquote>
+<p>Each lesson has: objectives, theory, example, code, hands-on,
+exercises, pitfalls.</p>
+<h2 class="plain" id="the-exam">The exam</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Questions</td>
+<td>63</td>
+</tr>
+<tr>
+<td>Time</td>
+<td>120 minutes, under 2 minutes each</td>
+</tr>
+<tr>
+<td>Pass</td>
+<td>720 on a 100 to 1,000 scale</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>single choice, plus multiple response stating how many to pick</td>
+</tr>
+<tr>
+<td>Proctoring</td>
+<td>remote camera or test centre</td>
+</tr>
+<tr>
+<td>Validity</td>
+<td>12 months, free renewal if not lapsed</td>
+</tr>
+<tr>
+<td>Retakes</td>
+<td>increasing intervals, capped per year</td>
+</tr>
+</tbody>
+</table>
+<p>No official practice test exists for this exam. Registration runs
+through Anthropic’s partner network.</p>
+<p>Seven domains; integration is the largest at nearly a fifth.</p>
+<section id="m01">
+<h2 id="the-exam-map-and-the-three-pattern-rungs">01 · The Exam Map and
+the Three Pattern Rungs</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Remember three numbers: 63 questions, 120 minutes, 720.</li>
+<li>Place a problem on the right rung.</li>
+<li>Apply “simplest that still works”.</li>
+</ul>
+<h3 id="theory">Theory</h3>
+<p>Each rung trades flexibility for predictability.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Rung</th>
+<th>Who picks the step</th>
+<th>Trait</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Augmented model</td>
+<td>No steps</td>
+<td>One call plus tools, memory</td>
+</tr>
+<tr>
+<td>Workflow</td>
+<td>Your code</td>
+<td>Fixed path, knowable in advance</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>The model</td>
+<td>Path drawn at runtime, possibly different each time</td>
+</tr>
+</tbody>
+</table>
+<p>The rule above the ladder: use the simplest pattern that meets the
+requirement, not one rung higher. Agentic systems trade latency and cost
+for performance, and that trade pays only when the task is genuinely
+open-ended.</p>
+<p>Two architecture failures:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Failure</th>
+<th>Shape</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Over-orchestration</td>
+<td>A team of agents for a straight line</td>
+<td>Coordination dominates the work</td>
+</tr>
+<tr>
+<td>Gold plating</td>
+<td>Every tool and safeguard</td>
+<td>Higher bill and wider attack surface</td>
+</tr>
+</tbody>
+</table>
+<p>The winning answer is almost always the lowest rung that satisfies
+every constraint in the stem.</p>
+<h3 id="example">Example</h3>
+<p>A team teaches invoices to process themselves with an agent. The work
+is fixed: read fields, match a purchase order, send.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Same fields and checks each time</td>
+<td>Workflow</td>
+</tr>
+<tr>
+<td>Demo works, production takes a different path daily</td>
+<td>Wrong pattern, not a tuning problem</td>
+</tr>
+<tr>
+<td>Expert’s fix</td>
+<td>Delete the agent, replace with a sequence</td>
+</tr>
+</tbody>
+</table>
+<p>The treatment was deleting code, not tuning it.</p>
+<h3 id="code">Code</h3>
+<p>No specific code. On paper, draw the three rungs and circle the
+lowest one that satisfies the stem.</p>
+<h3 id="hands-on">Hands-on</h3>
+<ol type="1">
+<li>Pick three AI uses.</li>
+<li>For each, identify who picks the next step.</li>
+<li>Note what you give up by climbing a rung.</li>
+<li>Re-choose the lowest sufficient rung.</li>
+</ol>
+<h3 id="exercises">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Classify six systems</td>
+<td>15 min</td>
+<td>Each names who picks the step</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Find one over-orchestrated case</td>
+<td>10 min</td>
+<td>Coordination cost is named</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Defend the lower rung</td>
+<td>15 min</td>
+<td>The violated constraint is named</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall">Pitfall</h3>
+<p>Choosing an agent because the roadmap wants the word “autonomous”.
+The exam rewards the lowest rung that works.</p>
+</section>
+<section id="m02">
+<h2 id="when-a-second-agent-is-a-liability">02 · When a Second Agent Is
+a Liability</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Name the two legitimate reasons to split agents.</li>
+<li>Quantify multi-agent cost.</li>
+<li>Tie a design to one business value and state its price.</li>
+</ul>
+<h3 id="theory-1">Theory</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Reason</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context isolation</td>
+<td>A subagent sees only its slice</td>
+</tr>
+<tr>
+<td>Breadth</td>
+<td>Independent directions run in parallel</td>
+</tr>
+</tbody>
+</table>
+<p>Outside those, splitting usually adds coordination. Every agent adds
+a handoff, and every handoff is a place context drops.</p>
+<p>Anthropic’s data: a multi-agent system burned about 15 times the
+tokens of plain chat. That is a budget decision, not a technical
+detail.</p>
+<p>Disqualifier: if every agent needs the same context, or each step
+depends on the previous one, multi-agent is the wrong shape.</p>
+<p>Five business values: efficiency, transformation, productivity, cost,
+and a promised performance target.</p>
+<h3 id="example-1">Example</h3>
+<p>A five-agent research system: planner, searcher, summariser, checker,
+writer. In production it is slow and expensive, and half the bugs are
+agents waiting on each other.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Analysis</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trace where the work happens</td>
+<td>Two agents do the real thinking</td>
+</tr>
+<tr>
+<td>The other three</td>
+<td>Pass notes</td>
+</tr>
+<tr>
+<td>Fix</td>
+<td>Cut three, keep two</td>
+</tr>
+</tbody>
+</table>
+<p>The team was told “transform the organisation” and chased the
+impressive build. The real constraint was cost and reliability, and five
+agents made both worse.</p>
+<h3 id="code-1">Code</h3>
+<p>No specific code. The answer shape: “this design serves [value], and
+it worsens [other value] by [amount]”.</p>
+<h3 id="hands-on-1">Hands-on</h3>
+<ol type="1">
+<li>For a multi-agent system, count the handoffs.</li>
+<li>Identify agents that only pass notes.</li>
+<li>Compare token use with a single agent.</li>
+<li>Write one sentence naming value and price.</li>
+</ol>
+<h3 id="exercises-1">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Count handoffs and cost</td>
+<td>15 min</td>
+<td>Numbers recorded</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Name a redundant agent</td>
+<td>10 min</td>
+<td>Its work is described</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Write the two-step defence</td>
+<td>10 min</td>
+<td>Value and price both present</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-1">Pitfall</h3>
+<p>Answering with the value someone said out loud instead of the
+constraint the stem actually names.</p>
+</section>
+<section id="m03">
+<h2 id="model-choice-prompting-caching">03 · Model Choice, Prompting,
+Caching</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Choose a model by three axes and an eval set.</li>
+<li>Use the system prompt as a template with slots.</li>
+<li>Place the cache breakpoint correctly.</li>
+</ul>
+<h3 id="theory-2">Theory</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Axis</th>
+<th>Question</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Capability</td>
+<td>Does it clear the quality bar</td>
+</tr>
+<tr>
+<td>Speed</td>
+<td>Is a human waiting</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>Multiplied by volume</td>
+</tr>
+</tbody>
+</table>
+<p>Two honest starts: the cheap model first, upgrading if it misses; or
+the most capable, measured, then optimised down. The eval set decides,
+not intuition.</p>
+<p>One underused lever: some models expose an effort setting trading
+intelligence for speed and cost. Tuning effort often beats switching
+models.</p>
+<p>Prompting: the system prompt is standing orders, written as a
+template with slots. Zero shot by default; few-shot when examples are
+needed; chain of thought only when reasoning genuinely needs steps,
+because it adds latency.</p>
+<p>Caching: static content first, changing content last.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Wrong</th>
+<th>Right</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Instructions first, user message in the middle, policy last</td>
+<td>Policy and tools first, user message last</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-2">Example</h3>
+<p>An extraction pipeline runs on the top model, accuracy well past
+target, cost hurting.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Option</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Keep the model, lower max_tokens and temperature</td>
+<td>Turning knobs</td>
+</tr>
+<tr>
+<td>Drop a tier, re-run the eval set</td>
+<td>Correct</td>
+</tr>
+<tr>
+<td>Add a routing layer</td>
+<td>Building what is not needed</td>
+</tr>
+<tr>
+<td>Add examples for confidence</td>
+<td>Spending on the wrong problem</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-2">Code</h3>
+<pre class="python"><code>resp = client.messages.create(
+    model=&quot;claude-sonnet-5-5&quot;,
+    max_tokens=1024,
+    system=[
+        {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: POLICY},
+        {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: TOOL_GUIDE,
+         &quot;cache_control&quot;: {&quot;type&quot;: &quot;ephemeral&quot;}},
+    ],
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question}],
+)
+print(resp.usage.cache_read_input_tokens)</code></pre>
+<h3 id="hands-on-2">Hands-on</h3>
+<ol type="1">
+<li>Run one task on two tiers.</li>
+<li>Record quality, latency and price.</li>
+<li>Split the prompt into static and changing parts.</li>
+<li>Enable caching and measure the second call.</li>
+</ol>
+<h3 id="exercises-2">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Compare two tiers on the eval set</td>
+<td>25 min</td>
+<td>Three axes recorded</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write the prompt as a template</td>
+<td>15 min</td>
+<td>Slots are explicit</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Measure cache reads</td>
+<td>15 min</td>
+<td>Second call above zero</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-2">Pitfall</h3>
+<p>Jumping to the largest model. The documentation says tuning effort
+usually beats switching models.</p>
+</section>
+<section id="m04">
+<h2 id="integration-and-least-privilege">04 · Integration and Least
+Privilege</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Read the tool list as a list of permissions.</li>
+<li>Remove capability instead of logging around it.</li>
+<li>Catch identity errors.</li>
+</ul>
+<h3 id="theory-3">Theory</h3>
+<p>At architect level, a tool is a <strong>permission</strong>. The
+question shifts from “what can this agent do for us” to “what could it
+do to us if someone else wrote its instructions”.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Problem</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A tool nobody uses still exists</td>
+<td>Remove it from the configuration</td>
+</tr>
+<tr>
+<td>A dangerous tool</td>
+<td>Remove the capability, do not log around it</td>
+</tr>
+<tr>
+<td>A shared account sees every record</td>
+<td>Per-user authority</td>
+</tr>
+</tbody>
+</table>
+<p>Logging tells you the barn door was open after the horse left. A tool
+the agent does not have is a tool an attacker cannot reach.</p>
+<p>The second cost of a long tool list: every tool is described in full
+on <strong>every</strong> request, spending tokens before the user
+speaks and giving the model more tools to mis-select.</p>
+<h3 id="example-3">Example</h3>
+<p>A support agent has four tools: read account, draft reply, issue
+refund, delete record. Nobody remembers the last refund or delete.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Option</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add logging to the dangerous tools</td>
+<td>Does not prevent</td>
+</tr>
+<tr>
+<td>Add confirmation before refunds</td>
+<td>Reduces, does not remove</td>
+</tr>
+<tr>
+<td>Remove both tools from the configuration</td>
+<td>Correct</td>
+</tr>
+<tr>
+<td>Switch to a stronger model</td>
+<td>Wrong direction</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-3">Code</h3>
+<pre class="json"><code>{
+  &quot;tools&quot;: [&quot;read_account&quot;, &quot;draft_reply&quot;]
+}</code></pre>
+<p>The tool list is the permission list. If a tool is absent, there is
+no path to call it.</p>
+<h3 id="hands-on-3">Hands-on</h3>
+<ol type="1">
+<li>List a running agent’s tools.</li>
+<li>Mark tools unused for 30 days.</li>
+<li>Remove them and re-run.</li>
+<li>Check identity: can the agent see other users’ records?</li>
+</ol>
+<h3 id="exercises-3">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Audit the tool list</td>
+<td>15 min</td>
+<td>At least one tool removed</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write the reason</td>
+<td>10 min</td>
+<td>It names capability, not logging</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Check identity</td>
+<td>15 min</td>
+<td>Whose permissions run is stated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-3">Pitfall</h3>
+<p>Adding logging and confirmation, then calling it handled. The
+capability is still there.</p>
+</section>
+<section id="m05">
+<h2 id="rag-chunking-and-retrieval">05 · RAG: Chunking and
+Retrieval</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Chunk on semantic boundaries.</li>
+<li>Recognise a stale index behind confident wrong answers.</li>
+<li>Measure retrieval quality.</li>
+</ul>
+<h3 id="theory-4">Theory</h3>
+<p>The model does not know your documents. Each question fetches
+relevant passages and pastes them into the prompt. The answer is only as
+good as what is fetched.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Step</th>
+<th>Common failure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chunk</td>
+<td>Fixed-size cuts through a clause</td>
+</tr>
+<tr>
+<td>Index</td>
+<td>Not rebuilt after documents change</td>
+</tr>
+<tr>
+<td>Retrieval</td>
+<td>Measuring latency, not relevance</td>
+</tr>
+</tbody>
+</table>
+<p>Chunking principle: cut on the document’s own boundaries (section,
+clause, function) so each chunk means something alone. Size is a
+deliberate trade-off, not a round number.</p>
+<h3 id="example-4">Example</h3>
+<p>Product documentation was refreshed on a Friday. All weekend the
+assistant answers quickly, confidently, and wrongly about the new
+policy.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model</td>
+<td>Unchanged</td>
+</tr>
+<tr>
+<td>Prompt</td>
+<td>Unchanged</td>
+</tr>
+<tr>
+<td>Index</td>
+<td>Copied before Friday</td>
+</tr>
+<tr>
+<td>Verdict</td>
+<td>Retrieval failure, not hallucination</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-4">Code</h3>
+<pre class="python"><code>chunks = []
+for section in doc.sections:
+    for para in section.paragraphs:
+        chunks.append({&quot;text&quot;: para.text, &quot;section&quot;: section.title})</code></pre>
+<h3 id="hands-on-4">Hands-on</h3>
+<ol type="1">
+<li>Chunk a long document by character count.</li>
+<li>Check for clauses split across chunks.</li>
+<li>Re-chunk by structure.</li>
+<li>Compare answer quality.</li>
+</ol>
+<h3 id="exercises-4">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Find a split chunk</td>
+<td>15 min</td>
+<td>At least one case</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Re-chunk by structure</td>
+<td>20 min</td>
+<td>No clause split</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Score top-3 relevance</td>
+<td>15 min</td>
+<td>A score is recorded</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-4">Pitfall</h3>
+<p>Enlarging the context window to fit more chunks. That is capacity,
+not a fix for where the cut happened.</p>
+</section>
+<section id="m06">
+<h2 id="monitoring-green-dashboards-garbage-answers">06 · Monitoring:
+Green Dashboards, Garbage Answers</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Explain why an LLM system fails while dashboards stay green.</li>
+<li>Name the four observation layers.</li>
+<li>Distinguish logging from watching.</li>
+</ul>
+<h3 id="theory-5">Theory</h3>
+<p>Ordinary software fails loudly. An LLM system can return 200,
+valid-looking content, and be wrong.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Layer</th>
+<th>Records</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trace</td>
+<td>One request’s full path, every stage, timed</td>
+</tr>
+<tr>
+<td>Per-stage</td>
+<td>Latency and output quality for each stage</td>
+</tr>
+<tr>
+<td>Sampling and judges</td>
+<td>Sampled answers scored against a rubric</td>
+</tr>
+<tr>
+<td>Cost meter</td>
+<td>Input and output tokens per request from <code>usage</code></td>
+</tr>
+</tbody>
+</table>
+<p>A logged request is not a watched request.</p>
+<h3 id="example-5">Example</h3>
+<p>A retrieval system degrades for a week with no alarm: latency normal,
+error rate flat.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Missing</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Retrieval relevance score</td>
+<td>No idea which stage broke</td>
+</tr>
+<tr>
+<td>Per-stage timing</td>
+<td>No idea where it slowed</td>
+</tr>
+<tr>
+<td>Periodic sampling</td>
+<td>Only learn when a customer complains</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-5">Code</h3>
+<pre class="python"><code>u = resp.usage
+log.info(&quot;request&quot;, input=u.input_tokens, output=u.output_tokens,
+         cache_read=u.cache_read_input_tokens,
+         latency_ms=elapsed, stage=&quot;answer&quot;)</code></pre>
+<h3 id="hands-on-5">Hands-on</h3>
+<ol type="1">
+<li>Add tracing to a three-stage pipeline.</li>
+<li>Record latency and one quality score per stage.</li>
+<li>Sample 20 answers and score them.</li>
+<li>Chart daily cost from usage.</li>
+</ol>
+<h3 id="exercises-5">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Draw the four layers</td>
+<td>15 min</td>
+<td>All four present</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add a per-stage quality score</td>
+<td>20 min</td>
+<td>A chart exists</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Score 20 samples</td>
+<td>20 min</td>
+<td>Mean and spread recorded</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-5">Pitfall</h3>
+<p>Watching latency and error rate and calling it enough. Neither says
+whether the content is right.</p>
+</section>
+<section id="m07">
+<h2 id="evaluation-better-or-just-different">07 · Evaluation: Better or
+Just Different</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Build a golden set from real failures.</li>
+<li>Measure five things, not just accuracy.</li>
+<li>Use three grading methods and cross-check.</li>
+</ul>
+<h3 id="theory-6">Theory</h3>
+<p>“Better” only means something when measured against the same ruler: a
+<strong>golden set</strong> of real inputs paired with known-good
+outputs.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Metric</th>
+<th>Question</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Accuracy</td>
+<td>Is the answer right</td>
+</tr>
+<tr>
+<td>Latency</td>
+<td>Does it arrive in time</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>What it costs at real volume</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>Does it leak data or promise what you cannot deliver</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Can hostile input push it off the rails</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Method</th>
+<th>Use for</th>
+<th>Trap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Code check</td>
+<td>Clear right and wrong</td>
+<td>Misses nuance</td>
+</tr>
+<tr>
+<td>Model judge</td>
+<td>Tone, soft criteria</td>
+<td>Needs calibration</td>
+</tr>
+<tr>
+<td>Human read</td>
+<td>Confirms the other two measure the right thing</td>
+<td>Expensive</td>
+</tr>
+</tbody>
+</table>
+<p>A happy-path-only set is a demo, not an evaluation. Include failures
+and adversarial inputs: sarcasm, typos, an attempt to override
+instructions.</p>
+<p>Subtle point: test where a behaviour should <strong>not</strong>
+happen, not only where it should.</p>
+<h3 id="example-6">Example</h3>
+<p>A prompt was tightened; replies read better. Shipped Friday. A week
+later compliance finds a slice of refund replies lost a required
+disclaimer.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Missing</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Safety cases in the eval</td>
+<td>Nobody saw the disclaimer disappear</td>
+</tr>
+<tr>
+<td>Scoring untouched criteria</td>
+<td>No collateral-damage check</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-6">Code</h3>
+<pre class="python"><code>cases = [
+    {&quot;id&quot;: &quot;refund-01&quot;, &quot;input&quot;: ticket, &quot;must_contain&quot;: [&quot;disclaimer&quot;],
+     &quot;must_not_contain&quot;: [&quot;refund within 24h&quot;]},
+]
+score = sum(check(c) for c in cases) / len(cases)</code></pre>
+<h3 id="hands-on-6">Hands-on</h3>
+<ol type="1">
+<li>Take 25 real tickets and write the correct output.</li>
+<li>Write one code check for a hard requirement.</li>
+<li>Write a rubric for a model judge and score 20 cases.</li>
+<li>Compare with a human and adjust.</li>
+</ol>
+<h3 id="exercises-6">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Build a 25-case golden set</td>
+<td>45 min</td>
+<td>Failure and adversarial cases included</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write a code check</td>
+<td>20 min</td>
+<td>Runs without a model</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Calibrate the judge</td>
+<td>25 min</td>
+<td>Agrees with the human on 20 cases</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-6">Pitfall</h3>
+<p>Scoring only accuracy. Safety and security are first-class metrics
+with their own cases and thresholds.</p>
+</section>
+<section id="m08">
+<h2 id="ab-testing-and-cost-optimisation">08 · A/B Testing and Cost
+Optimisation</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Run A/B with a baseline.</li>
+<li>Change one thing at a time.</li>
+<li>Trace a regression to its layer.</li>
+</ul>
+<h3 id="theory-7">Theory</h3>
+<p>Every change to a live system is a bet that it improves things
+without breaking others.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Step</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Run the current system on the golden set, record the baseline</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Change <strong>one</strong> thing</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Re-run on the same set</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Keep if it wins meaningfully, revert otherwise</td>
+</tr>
+</tbody>
+</table>
+<p>Change three things at once and a move in the score teaches
+nothing.</p>
+<p>A demo is not a measurement. “It reads better” has a name: eval
+blindness.</p>
+<h3 id="example-7">Example</h3>
+<p>Switching to a cheaper model because the demo looked fine. A week
+later, complaints.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Golden set before</td>
+<td>Never run</td>
+</tr>
+<tr>
+<td>Golden set after</td>
+<td>Lower than the old version</td>
+</tr>
+<tr>
+<td>Verdict</td>
+<td>Blind optimisation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-7">Code</h3>
+<pre class="python"><code>baseline = run_eval(system_v1)
+candidate = run_eval(system_v2)
+assert candidate.total &gt;= baseline.total, &quot;revert&quot;
+assert candidate.safety &gt;= baseline.safety, &quot;safety must not drop&quot;</code></pre>
+<h3 id="hands-on-7">Hands-on</h3>
+<ol type="1">
+<li>Record a baseline before changing anything.</li>
+<li>Change one thing, re-run.</li>
+<li>Record the delta on every metric, including untouched ones.</li>
+<li>Keep or revert, with a reason.</li>
+</ol>
+<h3 id="exercises-7">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Record the baseline</td>
+<td>20 min</td>
+<td>Five metrics recorded</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Run one change</td>
+<td>20 min</td>
+<td>Nothing else changed</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Write the keep/revert call</td>
+<td>10 min</td>
+<td>Based on numbers</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-7">Pitfall</h3>
+<p>Bundling several changes in one release. Even if the score rises, you
+learn nothing.</p>
+</section>
+<section id="m09">
+<h2 id="guardrails-a-prompt-asks-code-stops-it">09 · Guardrails: a
+Prompt Asks, Code Stops It</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Separate guidance from control.</li>
+<li>Name five failure modes.</li>
+<li>Place guardrails at the right layer.</li>
+</ul>
+<h3 id="theory-8">Theory</h3>
+<p>“Never issue a large refund without approval” in a system prompt is
+<strong>guidance</strong>. It shapes what the model usually does, not
+what it cannot do.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Word in the requirement</th>
+<th>Where it belongs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>must, never, cannot</td>
+<td>Code: check, gate, permission</td>
+</tr>
+<tr>
+<td>should, prefer</td>
+<td>Prompt</td>
+</tr>
+</tbody>
+</table>
+<p>Five failure modes:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hallucination</td>
+<td>Confident false statement</td>
+</tr>
+<tr>
+<td>Prompt injection</td>
+<td>Read text carrying instructions</td>
+</tr>
+<tr>
+<td>Tool misuse</td>
+<td>Real tool, wrong arguments or wrong moment</td>
+</tr>
+<tr>
+<td>Context poisoning</td>
+<td>Bad information treated as truth for the rest of the session</td>
+</tr>
+<tr>
+<td>Drift</td>
+<td>Good at launch, degrading as the world changes</td>
+</tr>
+</tbody>
+</table>
+<p>Only hallucination is the model being wrong on its own. The other
+four are about what the system lets it read and do.</p>
+<h3 id="example-8">Example</h3>
+<p>A refund agent auto-issues small refunds and waits for a human above
+a limit. One afternoon it misreads a currency field and queues a refund
+with too many zeros. The approver catches it in seconds.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Option</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stronger prompt wording</td>
+<td>Guidance</td>
+</tr>
+<tr>
+<td>Add logging</td>
+<td>Does not stop</td>
+</tr>
+<tr>
+<td>A code gate</td>
+<td>Control</td>
+</tr>
+<tr>
+<td>Change the model</td>
+<td>Unrelated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-8">Code</h3>
+<pre class="python"><code>def issue_refund(amount, session):
+    if amount &gt; session.limit and not session.human_approved:
+        raise PermissionError(&quot;Above limit, human approval required.&quot;)
+    return payments.refund(amount)</code></pre>
+<h3 id="hands-on-8">Hands-on</h3>
+<ol type="1">
+<li>List five invariant rules in your system.</li>
+<li>Check which live in prompts.</li>
+<li>Move them into code and verify they block.</li>
+<li>For each failure mode, name one catching layer.</li>
+</ol>
+<h3 id="exercises-8">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Classify eight rules</td>
+<td>10 min</td>
+<td>Invariants become code</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write one gate</td>
+<td>20 min</td>
+<td>Blocks the bad case</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Map five failure modes to layers</td>
+<td>15 min</td>
+<td>Each has a layer</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-8">Pitfall</h3>
+<p>Adding a disclaimer or a log and calling it a guardrail. A control
+runs before the action.</p>
+</section>
+<section id="m10">
+<h2 id="compliance-where-the-data-goes">10 · Compliance: Where the Data
+Goes</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Map the data flow before naming a regulation.</li>
+<li>Tell GDPR, HIPAA and FedRAMP apart.</li>
+<li>Choose controls by “must”.</li>
+</ul>
+<h3 id="theory-9">Theory</h3>
+<p>Before any regulation, map the data flow: created where, passing
+through where, resting where, reachable by whom. Every arrow is a place
+data lives and a place a regulator points at.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Regulation</th>
+<th>Asks</th>
+<th>Control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GDPR</td>
+<td>Where personal data sits, can it be erased, is more sent than
+needed</td>
+<td>Pin inference and storage regions; erasure and minimisation stay
+yours</td>
+</tr>
+<tr>
+<td>HIPAA</td>
+<td>Protected health information</td>
+<td>Supported API with a signed BAA; encryption, access control, audit
+logging</td>
+</tr>
+<tr>
+<td>FedRAMP</td>
+<td>Is the environment authorised</td>
+<td>The environment is authorised, not the model</td>
+</tr>
+</tbody>
+</table>
+<p>The line: FedRAMP does not certify a model; it authorises the
+environment the model runs in. The same model is compliant or not
+depending on the room.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Control</th>
+<th>Blocks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zero data retention</td>
+<td>No prompt or response stored</td>
+</tr>
+<tr>
+<td>Region pinning</td>
+<td>Data leaving the region</td>
+</tr>
+<tr>
+<td>Redacting sensitive fields from logs</td>
+<td>Logs becoming a leak</td>
+</tr>
+<tr>
+<td>Human review before a decision</td>
+<td>Errors reaching the recipient</td>
+</tr>
+</tbody>
+</table>
+<p>A log records what happened; it does not stop it.</p>
+<h3 id="example-9">Example</h3>
+<p>A healthcare project is finished, demos well, and cannot launch
+because legal asks where patient data goes and nobody can draw it.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Missing</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data-flow map</td>
+<td>Cannot answer the basic question</td>
+</tr>
+<tr>
+<td>BAA</td>
+<td>Cannot process health data</td>
+</tr>
+<tr>
+<td>Storage region</td>
+<td>Cannot prove residency</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-9">Code</h3>
+<p>No specific code. The deliverable is a map: boxes and arrows, each
+arrow labelled with data and who can read it.</p>
+<h3 id="hands-on-9">Hands-on</h3>
+<ol type="1">
+<li>Draw a real system’s data flow.</li>
+<li>Mark where sensitive data appears.</li>
+<li>For each regulation, write its question and control.</li>
+<li>Find which “must” controls currently live in prompts.</li>
+</ol>
+<h3 id="exercises-9">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Draw the flow</td>
+<td>20 min</td>
+<td>Every arrow is labelled</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Attach three regulations</td>
+<td>15 min</td>
+<td>Each has a clear question</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Choose two controls</td>
+<td>10 min</td>
+<td>Both are controls, not logs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-9">Pitfall</h3>
+<p>Turning on zero data retention and calling compliance done. It is one
+control among several.</p>
+</section>
+<section id="m11">
+<h2 id="defending-the-design-and-rolling-out-to-a-team">11 · Defending
+the Design and Rolling Out to a Team</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Find the deciding constraint in discovery.</li>
+<li>Present a decision, not a diagram.</li>
+<li>Place configuration at the right tier.</li>
+</ul>
+<h3 id="theory-10">Theory</h3>
+<p>Discovery keeps asking until it finds <strong>one deciding
+constraint</strong>: cost, compliance, or something that must never
+happen.</p>
+<p>A defensible design has three parts:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Part</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What it buys</td>
+<td>Benefit in business language</td>
+</tr>
+<tr>
+<td>What it costs</td>
+<td>The honest downside</td>
+</tr>
+<tr>
+<td>Which pillar</td>
+<td>The value agreed in discovery</td>
+</tr>
+</tbody>
+</table>
+<p>A diagram shows what you build, not why you chose it over the cheaper
+option. The approver can only judge the why.</p>
+<p>For Claude Code in a team, three configuration tiers:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tier</th>
+<th>Controlled by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Personal</td>
+<td>Each person</td>
+</tr>
+<tr>
+<td>Team</td>
+<td>Repository, inherited by every clone</td>
+</tr>
+<tr>
+<td>Managed</td>
+<td>Organisation, cannot be switched off</td>
+</tr>
+</tbody>
+</table>
+<p>Two file kinds, two jobs:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Nature</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Instruction files for the model</td>
+<td>A note; usually followed, occasionally not</td>
+</tr>
+<tr>
+<td>Settings and permissions</td>
+<td>A wall; enforced regardless of the model</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-10">Example</h3>
+<p>A claims triage assistant stalls for a month. The design is right;
+the sentence was wrong.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Director’s question</th>
+<th>Answer given</th>
+<th>Answer needed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“Will it ever send a claim to the wrong place”</td>
+<td>“Accuracy is very high”</td>
+<td>“Yes, a small share; those go to a human before sending”</td>
+</tr>
+</tbody>
+</table>
+<p>The design did not change; the sentence did, and it was approved.</p>
+<p>A 40-person team widened shared settings to stop permission prompts.
+A week later an agent ran a cleanup script against production instead of
+staging.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Mistake</th>
+<th>Correct tier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Open command execution for everyone</td>
+<td>Managed or environment-scoped gate</td>
+</tr>
+<tr>
+<td>Write “do not touch production” in an instruction file</td>
+<td>Permission rule</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-10">Code</h3>
+<pre class="json"><code>{
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [&quot;Bash(*production*)&quot;, &quot;Bash(rm -rf *)&quot;]
+  }
+}</code></pre>
+<h3 id="hands-on-10">Hands-on</h3>
+<ol type="1">
+<li>Run discovery: ask “what must absolutely never happen”.</li>
+<li>Write a three-part sentence defending a design.</li>
+<li>Sort decisions into team and managed tiers.</li>
+<li>Turn one “note” into a “wall”.</li>
+</ol>
+<h3 id="exercises-10">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Find the deciding constraint</td>
+<td>15 min</td>
+<td>One sentence eliminates options</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write the three-part sentence</td>
+<td>15 min</td>
+<td>Benefit, cost, pillar</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Place five settings across three tiers</td>
+<td>15 min</td>
+<td>Invariants sit in managed or permissions</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-10">Pitfall</h3>
+<p>Presenting the architecture diagram. It does not show the approver
+why.</p>
+</section>
+<section id="m12">
+<h2 id="four-autopsies-reading-the-paper-exam-day">12 · Four Autopsies,
+Reading the Paper, Exam Day</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Recognise four production failure signatures.</li>
+<li>Read a stem for constraint, not topic.</li>
+<li>Work the paper in two passes.</li>
+</ul>
+<h3 id="theory-11">Theory</h3>
+<p>Four autopsies, four signatures:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Signature</th>
+<th>Symptom</th>
+<th>Real cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context rot</td>
+<td>Worse as it grows, forgets old constraints</td>
+<td>Full window, middle buried</td>
+</tr>
+<tr>
+<td>Stale index</td>
+<td>Confident, fluent, uniformly wrong</td>
+<td>Re-ingest or embedding model changed</td>
+</tr>
+<tr>
+<td>Tool noise</td>
+<td>Wrong tool, token burn</td>
+<td>Long tool list, blurred descriptions</td>
+</tr>
+<tr>
+<td>Not measured</td>
+<td>Green dashboards, customer complaints</td>
+<td>No quality score</td>
+</tr>
+</tbody>
+</table>
+<p>Three questions for any broken system: what changed, at which layer,
+is it measured.</p>
+<p>Reading method, three steps:</p>
+<ol type="1">
+<li>Read for the <strong>constraint</strong>, not the topic.
+<code>must</code>, <code>never</code>, a limit, a regulator, a cost
+ceiling.</li>
+<li>Eliminate by principle: name the principle the item tests and drop
+options that break it.</li>
+<li>Multiple response: judge each option true or false against the stem
+independently.</li>
+</ol>
+<p>Exam day: two passes. Pass one answers what you recognise; as soon as
+an item pushes back, place your best answer, flag it, and move on. Never
+leave an item blank.</p>
+<h3 id="example-11">Example</h3>
+<p>The published sample: an agent has four tools; staff only need to
+read tickets and draft replies; the worry is being talked into a
+dangerous tool.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Option</th>
+<th>Eliminated because</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Log refund and delete tool use</td>
+<td>Does not prevent</td>
+</tr>
+<tr>
+<td>Remove both tools from the configuration</td>
+<td>Correct</td>
+</tr>
+<tr>
+<td>Keep tools, add confirmation</td>
+<td>Reduces, does not remove</td>
+</tr>
+<tr>
+<td>Use a larger model</td>
+<td>Wrong direction</td>
+</tr>
+</tbody>
+</table>
+<p>The constraint sits in “only need to read and draft”: surplus
+capability must be removed.</p>
+<h3 id="code-11">Code</h3>
+<p>No code. This is reading and choosing.</p>
+<h3 id="hands-on-11">Hands-on</h3>
+<ol type="1">
+<li>Take five items, underline the constraint before reading
+options.</li>
+<li>Write the principle each item tests.</li>
+<li>Eliminate by principle.</li>
+<li>Work 20 items in 40 minutes, two passes.</li>
+</ol>
+<h3 id="exercises-11">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Underline constraints in 10 stems</td>
+<td>15 min</td>
+<td>One constraint per item</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Name the principle for 10 items</td>
+<td>15 min</td>
+<td>None is a topic label</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Work 20 items in two passes</td>
+<td>40 min</td>
+<td>Nothing left blank</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-11">Pitfall</h3>
+<p>Skimming the first three sentences and choosing. The deciding clause
+often sits in the third or fourth.</p>
+</section>
+
+
+    </div>
+  </div>
+
+  <footer class="lesson-footer">
+    <p>Source: course video. Figures checked October 2026.</p>
+    <p>Back to <a href="../index.html">home</a>.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/site-nav.js?v=3"></script>
+</body>
+</html>

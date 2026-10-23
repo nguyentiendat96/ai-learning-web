@@ -1,0 +1,2611 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Certified Developer: Foundations (CCDV-F) — Claude · CCDV-F · 16 lessons</title>
+<link rel="stylesheet" href="../assets/course.css?v=3">
+<style>
+  .toc li { margin: .3rem 0; }
+  /* heading numbers are written in the source, so the CSS counter is off here */
+  h2 { counter-increment: none; }
+  h2::before { content: none; }
+  @media (max-width: 760px) { .toc { display: block; } }
+</style>
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Claude · CCDV-F · 16 lessons</div>
+    <h1>Claude Certified Developer: Foundations (CCDV-F)</h1>
+    <p class="subtitle">A 16-lesson curriculum: objectives, theory, example, code, hands-on, exercises, pitfalls. Exam material lives separately.</p>
+    <p class="lesson-meta"><span>16 lessons</span><span>53-question blueprint</span><span>Nguồn: transcript video</span></p>
+    <p style="margin:.5rem 0"><a href="ccdv-f.html">Bản tiếng Việt</a></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="layout">
+    <aside class="side">
+      <nav class="toc">
+        <strong>On this page</strong>
+        <ol>
+      <li><a href="#m01">01 · Every Question Is One of Four Decisions</a></li>
+      <li><a href="#m02">02 · One Ticket, One Call</a></li>
+      <li><a href="#m03">03 · Streaming, Vision, Thinking</a></li>
+      <li><a href="#m04">04 · The Quarter That Isn't About Claude</a></li>
+      <li><a href="#m05">05 · The Three Surfaces</a></li>
+      <li><a href="#m06">06 · Same Repo, Three Different Claudes</a></li>
+      <li><a href="#m07">07 · Asking Is Not Making Sure</a></li>
+      <li><a href="#m08">08 · A Bigger Window Makes It Worse</a></li>
+      <li><a href="#m09">09 · The Three Places a Call Can Break</a></li>
+      <li><a href="#m10">10 · input_tokens Is Not Your Input</a></li>
+      <li><a href="#m11">11 · Batch: Results in Any Order</a></li>
+      <li><a href="#m12">12 · The Description Is the Interface</a></li>
+      <li><a href="#m13">13 · An MCP Server Is Not a Bag of Tools</a></li>
+      <li><a href="#m14">14 · Usually Fewer Agents</a></li>
+      <li><a href="#m15">15 · Self-Hosted Is Not Air-Gapped</a></li>
+      <li><a href="#m16">16 · The Attack Arrives as a Ticket</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <div class="content">
+
+<p>A 16-lesson curriculum built from the “CCDV-F: The Full Exam Prep
+Course” (178 minutes) and checked against Anthropic documentation,
+October 2026. Source: <a
+href="https://www.youtube.com/watch?v=Lan-CbQ2IKM">CCDV-F course
+video</a>.</p>
+<p>Each lesson has: objectives, theory, example, code, hands-on,
+exercises, pitfalls. The exam material lives separately under <a
+href="exam.html">Exam</a>.</p>
+<h2 class="plain" id="the-four-decisions">The four decisions</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Covers</th>
+<th>Approx.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What runs</td>
+<td>agent or workflow, tools, MCP</td>
+<td>13 questions</td>
+</tr>
+<tr>
+<td>How the call is made</td>
+<td>messages, streaming, batch, tier, cost</td>
+<td>12 questions</td>
+</tr>
+<tr>
+<td>What the model sees and says</td>
+<td>context, prompt, output schema</td>
+<td>13 questions</td>
+</tr>
+<tr>
+<td>Whether it survives production</td>
+<td>requirements, lifecycle, debugging, security</td>
+<td>14 questions</td>
+</tr>
+</tbody>
+</table>
+<p>Two rules used throughout:</p>
+<ol type="1">
+<li><strong>Constraint rule.</strong> The stem names the binding
+constraint; the answer is the mechanism built for it. Generic knobs are
+distractors.</li>
+<li><strong>Guarantee rule.</strong> When the stem says
+<code>must</code>, <code>never</code>, <code>always</code> or
+<code>cannot</code> about what the model may do, every option that needs
+the model’s cooperation is wrong.</li>
+</ol>
+<section id="m01">
+<h2 id="every-question-is-one-of-four-decisions">01 · Every Question Is
+One of Four Decisions</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Classify a question into one of the four decisions.</li>
+<li>Apply both distractor rules.</li>
+<li>Explain why a prompt is not a control.</li>
+</ul>
+<h3 id="theory">Theory</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Question inside</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What runs</td>
+<td>workflow or agent, which tools, MCP or copy</td>
+<td>Refund tool wired into the loop</td>
+</tr>
+<tr>
+<td>How the call is made</td>
+<td>sync or stream, realtime or batch, which tier</td>
+<td>10,000 tickets overnight</td>
+</tr>
+<tr>
+<td>What the model sees</td>
+<td>system, context, schema</td>
+<td>Dashboard needs fields, not prose</td>
+</tr>
+<tr>
+<td>Whether it survives</td>
+<td>requirements, lifecycle, debugging, security</td>
+<td>Prototype on a laptop</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Signal</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Constraint</td>
+<td>Stem says cost, overnight, “must not change model”</td>
+<td>Pick the mechanism built for it</td>
+</tr>
+<tr>
+<td>Guarantee</td>
+<td><code>must</code>, <code>never</code>, <code>always</code>,
+<code>cannot</code></td>
+<td>Prompt and classifiers are out; hooks, permissions, schema
+survive</td>
+</tr>
+</tbody>
+</table>
+<p>A business rule written in a prompt works “most of the time”, and
+most of the time is not a control when money moves.</p>
+<h3 id="example">Example</h3>
+<p>A ticket contains hidden text asking the model to refund the whole
+order. Requirement: ticket text must never trigger the refund tool.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Kind</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add a line to the system prompt</td>
+<td>Request</td>
+<td>Wrong, can be talked around</td>
+</tr>
+<tr>
+<td>Switch to the most capable model</td>
+<td>Knob</td>
+<td>Wrong, unrelated</td>
+</tr>
+<tr>
+<td>Set temperature to zero</td>
+<td>Knob</td>
+<td>Wrong</td>
+</tr>
+<tr>
+<td>Treat ticket text as untrusted, block with a hook</td>
+<td>Control</td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code">Code</h3>
+<pre class="python"><code>def before_tool_call(name: str, args: dict, session) -&gt; None:
+    if name == &quot;refund_order&quot; and not session.verified_customer_id:
+        raise PermissionError(
+            &quot;Missing verified customer ID. Call get_customer first.&quot;
+        )</code></pre>
+<p>The point is placement, outside the model, where it cannot be
+persuaded.</p>
+<h3 id="hands-on">Hands-on</h3>
+<ol type="1">
+<li>Take six sample questions.</li>
+<li>Label each with its decision.</li>
+<li>For three items containing <code>must</code>/<code>never</code>,
+strike every option that needs the model’s cooperation.</li>
+<li>Compare with the key and note misclassifications.</li>
+</ol>
+<h3 id="exercises">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Classify eight items into four decisions</td>
+<td>10 min</td>
+<td>None gets two labels</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Rewrite both rules in your own words</td>
+<td>5 min</td>
+<td>Each has an example</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Find three generic knobs in a paper</td>
+<td>10 min</td>
+<td>Each names the constraint it violates</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall">Pitfall</h3>
+<p>Reading the options first. The most reasonable-sounding option is
+usually the generic knob that fits every question, so it fits none.</p>
+</section>
+<section id="m02">
+<h2 id="one-ticket-one-call">02 · One Ticket, One Call</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Read all four response fields.</li>
+<li>Know that <code>max_tokens</code> is a ceiling, not a target.</li>
+<li>Understand why identical output cannot be forced.</li>
+</ul>
+<h3 id="theory-1">Theory</h3>
+<p>The model writes one token at a time, choosing among plausible
+continuations. There is no plan behind it. Tokens are not words.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>content</code></td>
+<td>List of blocks</td>
+<td>Read the answer, branch on <code>type</code></td>
+</tr>
+<tr>
+<td><code>stop_reason</code></td>
+<td>Why it stopped</td>
+<td>Decide whether the answer is usable</td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td>Input, output, cache tokens</td>
+<td>Cost and cache detection</td>
+</tr>
+<tr>
+<td><code>id</code></td>
+<td>Request id</td>
+<td>Support, log correlation</td>
+</tr>
+</tbody>
+</table>
+<p>Request structure:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Part</th>
+<th>Where</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Standing rules</td>
+<td><code>system</code></td>
+<td>Outside the messages</td>
+</tr>
+<tr>
+<td>Turns</td>
+<td><code>messages</code></td>
+<td>user and assistant alternate</td>
+</tr>
+<tr>
+<td>Two user turns in a row</td>
+<td>Folded into one</td>
+<td>No error raised</td>
+</tr>
+</tbody>
+</table>
+<p>Determinism: identical input can yield different wording. Temperature
+has been removed on the newest models, so do not chase identical output;
+assert on structure.</p>
+<h3 id="example-1">Example</h3>
+<p>A summary cut mid-sentence, with no error.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Check</th>
+<th>Value</th>
+<th>Conclusion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP status</td>
+<td>200</td>
+<td>Not a transport error</td>
+</tr>
+<tr>
+<td><code>stop_reason</code></td>
+<td><code>max_tokens</code></td>
+<td>Truncated</td>
+</tr>
+<tr>
+<td><code>usage.output_tokens</code></td>
+<td>Equal to the ceiling</td>
+<td>Confirmed</td>
+</tr>
+</tbody>
+</table>
+<p>Fix: raise the ceiling, re-run, and check <code>stop_reason</code> on
+every call.</p>
+<h3 id="code-1">Code</h3>
+<pre class="python"><code>import anthropic
+
+client = anthropic.Anthropic()
+
+msg = client.messages.create(
+    model=&quot;claude-opus-5-5&quot;,
+    max_tokens=1024,
+    system=&quot;You are a support assistant. Never invent order ids.&quot;,
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: ticket_text}],
+)
+
+print(msg.stop_reason)
+print(msg.usage.input_tokens, msg.usage.output_tokens)
+
+if msg.stop_reason == &quot;max_tokens&quot;:
+    msg = client.messages.create(
+        model=&quot;claude-opus-5-5&quot;,
+        max_tokens=4096,
+        system=&quot;You are a support assistant. Never invent order ids.&quot;,
+        messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: ticket_text}],
+    )
+
+text = &quot;&quot;.join(b.text for b in msg.content if b.type == &quot;text&quot;)</code></pre>
+<p>Note the last line: filter by <code>type</code>, do not take
+<code>content[0]</code>, because with thinking enabled the first block
+is thinking.</p>
+<h3 id="hands-on-1">Hands-on</h3>
+<ol type="1">
+<li>Send a request with <code>max_tokens=16</code> to force
+truncation.</li>
+<li>Print <code>stop_reason</code> and <code>usage</code>.</li>
+<li>Raise the ceiling, re-run, compare.</li>
+<li>Write a structure assertion and run it five times.</li>
+</ol>
+<h3 id="exercises-1">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Force <code>max_tokens</code> then fix it</td>
+<td>10 min</td>
+<td>Old and new ceilings named</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write a structure test</td>
+<td>15 min</td>
+<td>Passes five consecutive runs</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Price three requests from <code>usage</code></td>
+<td>10 min</td>
+<td>Matches the price table</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-1">Pitfall</h3>
+<p>Ignoring <code>stop_reason</code>. A truncated answer nobody notices
+is worse than an error.</p>
+</section>
+<section id="m03">
+<h2 id="streaming-vision-thinking">03 · Streaming, Vision, Thinking</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Read a stream’s event order.</li>
+<li>Place the image block correctly.</li>
+<li>Count thinking as output cost.</li>
+</ul>
+<h3 id="theory-2">Theory</h3>
+<p>Streaming does not make the model faster; it changes when the text
+appears. A non-streaming call returns only when the last token is
+written, so long calls can exceed timeouts.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Event</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>message_start</code></td>
+<td>Opens the response, names the model</td>
+</tr>
+<tr>
+<td><code>content_block_start</code></td>
+<td>Opens a block, carries its index</td>
+</tr>
+<tr>
+<td><code>content_block_delta</code></td>
+<td>Text or JSON fragment</td>
+</tr>
+<tr>
+<td><code>content_block_stop</code></td>
+<td>Closes the block</td>
+</tr>
+<tr>
+<td><code>message_delta</code></td>
+<td>Final <code>stop_reason</code> and usage</td>
+</tr>
+<tr>
+<td><code>message_stop</code></td>
+<td>Ends the stream</td>
+</tr>
+</tbody>
+</table>
+<p>The API uses one-way server-sent events. There is no websocket; an
+option offering one is a distractor.</p>
+<p>Vision: an image is a block in <code>content</code>, placed before
+the question. Images are split into patches and cost tokens; if you
+already have the text, send the text. A PDF is counted twice: text plus
+each page rendered as an image.</p>
+<p>Thinking: reasoning tokens are billed as output and count against
+<code>max_tokens</code>.</p>
+<h3 id="example-2">Example</h3>
+<p>A console calls the model with long tickets and a large output
+ceiling; agents need to see progress.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Option</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Raise the timeout</td>
+<td>Still silent</td>
+</tr>
+<tr>
+<td>Stream</td>
+<td>First words appear in seconds</td>
+</tr>
+<tr>
+<td>Split the ticket</td>
+<td>Does not solve visible progress</td>
+</tr>
+<tr>
+<td>Lower the ceiling</td>
+<td>Loses content</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-2">Code</h3>
+<pre class="python"><code>with client.messages.stream(
+    model=&quot;claude-opus-5-5&quot;,
+    max_tokens=2048,
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Explain the context window.&quot;}],
+) as stream:
+    for event in stream:
+        if event.type == &quot;content_block_delta&quot;:
+            print(event.delta.text, end=&quot;&quot;, flush=True)
+    final = stream.get_final_message()</code></pre>
+<pre class="python"><code>import base64
+
+with open(&quot;receipt.jpg&quot;, &quot;rb&quot;) as f:
+    img = base64.b64encode(f.read()).decode()
+
+resp = client.messages.create(
+    model=&quot;claude-opus-5-5&quot;,
+    max_tokens=1024,
+    messages=[{
+        &quot;role&quot;: &quot;user&quot;,
+        &quot;content&quot;: [
+            {&quot;type&quot;: &quot;image&quot;,
+             &quot;source&quot;: {&quot;type&quot;: &quot;base64&quot;, &quot;media_type&quot;: &quot;image/jpeg&quot;, &quot;data&quot;: img}},
+            {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: &quot;Extract the total and the date as JSON.&quot;},
+        ],
+    }],
+)</code></pre>
+<h3 id="hands-on-2">Hands-on</h3>
+<ol type="1">
+<li>Run a stream and print each event type.</li>
+<li>Count deltas against the final text length.</li>
+<li>Send one image and compare input tokens with a text-only
+request.</li>
+<li>Enable thinking and compare <code>usage</code>.</li>
+</ol>
+<h3 id="exercises-2">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Print the six event types in order</td>
+<td>20 min</td>
+<td>Order matches the table</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Compare image and text cost</td>
+<td>15 min</td>
+<td>Both token counts recorded</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Confirm thinking is billed as output</td>
+<td>10 min</td>
+<td>The field is named</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-2">Pitfall</h3>
+<p>Options mentioning websockets or two-way streams. This API is
+one-way.</p>
+</section>
+<section id="m04">
+<h2 id="the-quarter-that-isnt-about-claude">04 · The Quarter That Isn’t
+About Claude</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Separate functional and infrastructure requirements.</li>
+<li>Place a system in the right lifecycle stage.</li>
+<li>Recognise that most items here need no Claude knowledge.</li>
+</ul>
+<h3 id="theory-3">Theory</h3>
+<p>A quarter of the questions is ordinary software engineering.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Type</th>
+<th>Answers</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Functional</td>
+<td>What the system does</td>
+<td>Summarise tickets, read images, stream</td>
+</tr>
+<tr>
+<td>Infrastructure</td>
+<td>Where it runs, who operates it, how to roll back</td>
+<td>Shared server, deploy, revert</td>
+</tr>
+</tbody>
+</table>
+<p>Four stages:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Stage</th>
+<th>Meaning</th>
+<th>Check question</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Develop</td>
+<td>Build it</td>
+<td>Who writes it?</td>
+</tr>
+<tr>
+<td>Implement</td>
+<td>Put it where users run it</td>
+<td>Who deploys?</td>
+</tr>
+<tr>
+<td>Operate</td>
+<td>Run it daily</td>
+<td>Who is on call at 2am?</td>
+</tr>
+<tr>
+<td>Maintain</td>
+<td>Change it safely over years</td>
+<td>When is it retired?</td>
+</tr>
+</tbody>
+</table>
+<p>Production credit is earned in operate and maintain, never in
+develop.</p>
+<h3 id="example-3">Example</h3>
+<p>A prototype runs on Daniel’s laptop; the team needs to deploy, fix
+and roll back.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Functional requirements</td>
+<td>Met: summarise, stream, read images</td>
+</tr>
+<tr>
+<td>Infrastructure requirements</td>
+<td>All unmet</td>
+</tr>
+<tr>
+<td>Stage</td>
+<td>Still in develop</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-3">Code</h3>
+<p>No specific code. The exercise is to split a scenario into two
+columns on paper.</p>
+<h3 id="hands-on-3">Hands-on</h3>
+<ol type="1">
+<li>Pick an internal tool.</li>
+<li>Write both requirement lists.</li>
+<li>For each infrastructure item, name its owner.</li>
+<li>Decide the current stage, with evidence.</li>
+</ol>
+<h3 id="exercises-3">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Split one requirement into two lists</td>
+<td>10 min</td>
+<td>No item is in both</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Place a real system in a stage</td>
+<td>10 min</td>
+<td>Evidence is stated</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Write three checkable infrastructure requirements</td>
+<td>10 min</td>
+<td>Each has a check</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-3">Pitfall</h3>
+<p>Skipping this because “there is no Claude in it”. It is the heaviest
+part of a whole quarter.</p>
+</section>
+<section id="m05">
+<h2 id="the-three-surfaces">05 · The Three Surfaces</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Know how each surface reads your instructions.</li>
+<li>Never place third-party data in <code>system</code>.</li>
+<li>Recognise that a <code>system</code> message role does not
+exist.</li>
+</ul>
+<h3 id="theory-4">Theory</h3>
+<p>The same sentence, “never promise a refund date”, behaves differently
+in three places.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Where your words land</th>
+<th>Remember</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chat product</td>
+<td>Layered over Anthropic’s own system prompt</td>
+<td>Behaviour does not transfer to the API</td>
+</tr>
+<tr>
+<td>Coding tool</td>
+<td>Arrives as a user message</td>
+<td>No higher authority than later messages</td>
+</tr>
+<tr>
+<td>API</td>
+<td>The <code>system</code> field</td>
+<td>No message may carry role <code>system</code></td>
+</tr>
+</tbody>
+</table>
+<p>Third-party data goes in <strong>tool results</strong>, never pasted
+into system or mixed into user text. The reverse also holds: do not put
+your own instructions inside a tool result.</p>
+<h3 id="example-4">Example</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Placement</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prototype chat prompt</td>
+<td>Works, because Anthropic’s system prompt sits underneath</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td>Works, but at the same level as later messages</td>
+</tr>
+<tr>
+<td>API message text</td>
+<td>Wrong: the rule is treated as conversation</td>
+</tr>
+<tr>
+<td>API <code>system</code></td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-4">Code</h3>
+<pre class="python"><code>resp = client.messages.create(
+    model=&quot;claude-opus-5-5&quot;,
+    max_tokens=512,
+    system=&quot;Never promise a specific refund date.&quot;,
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: ticket}],
+)
+
+resp = client.messages.create(
+    model=&quot;claude-opus-5-5&quot;,
+    max_tokens=512,
+    messages=[{&quot;role&quot;: &quot;user&quot;,
+               &quot;content&quot;: &quot;Never promise a refund date. &quot; + ticket}],
+)
+</code></pre>
+<h3 id="hands-on-4">Hands-on</h3>
+<ol type="1">
+<li>Run the same rule on all three surfaces.</li>
+<li>Record where it was ignored.</li>
+<li>Move the rule to <code>system</code>, re-run.</li>
+<li>Try a <code>system</code> message role and observe the error.</li>
+</ol>
+<h3 id="exercises-4">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Write one rule for three surfaces</td>
+<td>15 min</td>
+<td>The weakest surface is named</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Port a chat prototype to the API</td>
+<td>20 min</td>
+<td>Rule lands in <code>system</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Classify six passages into system, user, tool result</td>
+<td>10 min</td>
+<td>No third-party text in system</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-4">Pitfall</h3>
+<p>An option offering a message with role <code>system</code> describes
+an API that does not exist. Eliminate it on sight.</p>
+</section>
+<section id="m06">
+<h2 id="same-repo-three-different-claudes">06 · Same Repo, Three
+Different Claudes</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Separate rule files from switch files.</li>
+<li>Know that rules stack and switches pick a winner.</li>
+<li>Fix “works on my machine”.</li>
+</ul>
+<h3 id="theory-5">Theory</h3>
+<p>Two file kinds, four locations.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Kind</th>
+<th>Holds</th>
+<th>Combination</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td>Written rules</td>
+<td>Stack, broadest first</td>
+</tr>
+<tr>
+<td><code>settings.json</code></td>
+<td>Switches</td>
+<td>Exactly one wins, by precedence</td>
+</tr>
+</tbody>
+</table>
+<p>Precedence: organisation &gt; command line &gt;
+<code>settings.local.json</code> &gt; project <code>settings.json</code>
+&gt; home.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Detail</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lists in settings</td>
+<td>Merge, do not replace</td>
+</tr>
+<tr>
+<td>File in a subfolder</td>
+<td>Loads when work reaches that folder</td>
+</tr>
+<tr>
+<td>Editing <code>CLAUDE.md</code> mid-session</td>
+<td>Takes effect next session</td>
+</tr>
+<tr>
+<td><code>settings.local.json</code></td>
+<td>Never committed</td>
+</tr>
+</tbody>
+</table>
+<p>Consequence: two contradictory <code>CLAUDE.md</code> rules raise no
+error; both live and the model chooses.</p>
+<h3 id="example-5">Example</h3>
+<p>Three engineers, one repo, three behaviours.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Cause</th>
+<th>Check with</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rule sits in one person’s home file</td>
+<td><code>/memory</code></td>
+</tr>
+<tr>
+<td>Different pinned models</td>
+<td>Each machine’s <code>settings.json</code></td>
+</tr>
+<tr>
+<td>Someone has a private <code>settings.local.json</code></td>
+<td>Compare repo files</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-5">Code</h3>
+<pre class="json"><code>{
+  &quot;model&quot;: &quot;claude-opus-5-5&quot;,
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [&quot;Bash(rm -rf *)&quot;, &quot;Bash(git push --force*)&quot;]
+  }
+}</code></pre>
+<p>Commit this so the team shares the model and the deny rules. Deny is
+a control; ordinary settings can be overridden from the command
+line.</p>
+<h3 id="hands-on-5">Hands-on</h3>
+<ol type="1">
+<li>Run <code>/memory</code> and list loaded files.</li>
+<li>Create a contradiction between a home and a project
+<code>CLAUDE.md</code>.</li>
+<li>Observe both applying.</li>
+<li>Pin the model in committed settings and test a second machine.</li>
+</ol>
+<h3 id="exercises-5">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>List the four <code>CLAUDE.md</code> locations</td>
+<td>10 min</td>
+<td>Confirmed with <code>/memory</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Create a two-layer contradiction</td>
+<td>15 min</td>
+<td>Both rules are live</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Pin the model</td>
+<td>10 min</td>
+<td>A second machine matches</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-5">Pitfall</h3>
+<p>Assuming <code>CLAUDE.md</code> files override each other. They
+stack; only settings have a winner.</p>
+</section>
+<section id="m07">
+<h2 id="asking-is-not-making-sure">07 · Asking Is Not Making Sure</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Place a technique on the request-to-guarantee line.</li>
+<li>Write few-shot examples correctly.</li>
+<li>Know that prefill is gone.</li>
+</ul>
+<h3 id="theory-6">Theory</h3>
+<p>One line: a request at one end, a structure that cannot produce
+anything else at the other.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Approach</th>
+<th>Position</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sentence in the prompt</td>
+<td>Request</td>
+</tr>
+<tr>
+<td>Allow “I do not know”, require quotes</td>
+<td>Better request</td>
+</tr>
+<tr>
+<td>Three different few-shot examples</td>
+<td>Stronger</td>
+</tr>
+<tr>
+<td>Schema constraining output</td>
+<td>Near the guarantee end</td>
+</tr>
+<tr>
+<td>Prefill the assistant turn</td>
+<td>Removed, returns an error</td>
+</tr>
+</tbody>
+</table>
+<p>Few-shot done right: several examples, genuinely different, each
+wrapped in its own tag so they do not blur into the instructions.</p>
+<p>Placement:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Content</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Role, standing rules</td>
+<td><code>system</code></td>
+</tr>
+<tr>
+<td>Examples</td>
+<td>In <code>system</code> or before the ask</td>
+</tr>
+<tr>
+<td>Long document</td>
+<td>Start of the user turn</td>
+</tr>
+<tr>
+<td>Question</td>
+<td>End of the user turn</td>
+</tr>
+</tbody>
+</table>
+<p>A tool description is also a prompt: it is the only thing the model
+reads when choosing a tool.</p>
+<h3 id="example-6">Example</h3>
+<p>Every answer must start with a fixed structure.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Option</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add an instruction</td>
+<td>Mostly correct</td>
+</tr>
+<tr>
+<td>Prefill an opening brace</td>
+<td>Error on current models</td>
+</tr>
+<tr>
+<td>Schema</td>
+<td>Shape guaranteed</td>
+</tr>
+<tr>
+<td>Validate after receipt</td>
+<td>Still required</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-6">Code</h3>
+<pre class="python"><code>SYSTEM = &quot;&quot;&quot;You classify tickets.
+&lt;examples&gt;
+&lt;example&gt;&lt;input&gt;Order has not arrived&lt;/input&gt;&lt;output&gt;{&quot;category&quot;:&quot;shipping&quot;,&quot;urgent&quot;:false}&lt;/output&gt;&lt;/example&gt;
+&lt;example&gt;&lt;input&gt;Charged twice&lt;/input&gt;&lt;output&gt;{&quot;category&quot;:&quot;billing&quot;,&quot;urgent&quot;:true}&lt;/output&gt;&lt;/example&gt;
+&lt;example&gt;&lt;input&gt;Unclear&lt;/input&gt;&lt;output&gt;{&quot;category&quot;:&quot;unclear&quot;,&quot;urgent&quot;:false}&lt;/output&gt;&lt;/example&gt;
+&lt;/examples&gt;
+Return exactly one JSON object, nothing else.&quot;&quot;&quot;
+
+resp = client.messages.create(
+    model=&quot;claude-opus-5-5&quot;,
+    max_tokens=256,
+    system=SYSTEM,
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: ticket}],
+)</code></pre>
+<h3 id="hands-on-6">Hands-on</h3>
+<ol type="1">
+<li>Write three genuinely different examples.</li>
+<li>Run 10 inputs, count format failures.</li>
+<li>Remove one example, re-run, compare.</li>
+<li>Swap document and question order, compare.</li>
+</ol>
+<h3 id="exercises-6">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Write three different examples</td>
+<td>20 min</td>
+<td>No two are near-duplicates</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Measure format failures before and after</td>
+<td>15 min</td>
+<td>Numbers recorded</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Swap document order</td>
+<td>10 min</td>
+<td>Difference stated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-6">Pitfall</h3>
+<p>Assuming a prompt instruction is a guarantee. When the stem says
+“must”, the answer is a mechanism.</p>
+</section>
+<section id="m08">
+<h2 id="a-bigger-window-makes-it-worse">08 · A Bigger Window Makes It
+Worse</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Explain context rot.</li>
+<li>Distinguish the two overflow cases.</li>
+<li>Choose between pruning, compaction and redesign.</li>
+</ul>
+<h3 id="theory-7">Theory</h3>
+<p>The API remembers nothing; every turn resends the whole conversation.
+Cost grows and older detail sinks.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Phenomenon</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context rot</td>
+<td>A fuller window is a less reliable one</td>
+</tr>
+<tr>
+<td>Input exceeds the window</td>
+<td>Request rejected before running</td>
+</tr>
+<tr>
+<td>Input plus <code>max_tokens</code> exceeds</td>
+<td>Runs, stops partway, <code>stop_reason</code> reports it</td>
+</tr>
+<tr>
+<td>Lost in the middle</td>
+<td>Detail in the middle is skipped more often</td>
+</tr>
+</tbody>
+</table>
+<p>Four ways to fight tool-driven bloat:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Load fewer tools, call them from code</td>
+<td>Fewer repeated definitions</td>
+</tr>
+<tr>
+<td>Cache the stable prefix</td>
+<td>Lower read cost</td>
+</tr>
+<tr>
+<td>Prune old tool results</td>
+<td>Cuts what is sent, not your records</td>
+</tr>
+<tr>
+<td>Compaction</td>
+<td>Replaces history with a summary block, records unchanged</td>
+</tr>
+</tbody>
+</table>
+<p>Two compaction edges: the summarising step can call a tool and return
+an empty block; and the summary is written by the same model you are
+calling, so a cheaper summariser cannot be substituted.</p>
+<h3 id="example-7">Example</h3>
+<p>A 40-turn conversation forgets a refund promise made at turn 6.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Approach</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bigger window</td>
+<td>Still buried, more expensive</td>
+</tr>
+<tr>
+<td>Prune old tool results</td>
+<td>Keeps the important part</td>
+</tr>
+<tr>
+<td>Compaction</td>
+<td>Keeps the thread, check the block is non-empty</td>
+</tr>
+<tr>
+<td>Separate case-facts block</td>
+<td>Best for amounts, dates, order ids</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-7">Code</h3>
+<p>Measure first:</p>
+<pre class="python"><code>resp = client.messages.create(...)
+u = resp.usage
+print(&quot;in&quot;, u.input_tokens,
+      &quot;cache_read&quot;, u.cache_read_input_tokens,
+      &quot;cache_write&quot;, u.cache_creation_input_tokens)</code></pre>
+<p>If <code>input_tokens</code> climbs every turn, history is not being
+trimmed.</p>
+<h3 id="hands-on-7">Hands-on</h3>
+<ol type="1">
+<li>Measure token usage by source in a long conversation.</li>
+<li>Identify the largest source.</li>
+<li>Prune old tool results, measure again.</li>
+<li>Confirm your own records are intact.</li>
+</ol>
+<h3 id="exercises-7">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Measure four token sources</td>
+<td>15 min</td>
+<td>Each has a number</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Prune and re-measure</td>
+<td>15 min</td>
+<td>Records are still complete</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Cause an overflow and read <code>stop_reason</code></td>
+<td>10 min</td>
+<td>The two cases are distinguished</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-7">Pitfall</h3>
+<p>Enlarging the window. A full window lowers accuracy, it does not only
+raise cost.</p>
+</section>
+<section id="m09">
+<h2 id="the-three-places-a-call-can-break">09 · The Three Places a Call
+Can Break</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Locate a failure in the integration layer or the model layer.</li>
+<li>Know that a schema is not an absolute guarantee.</li>
+<li>Parse a streamed tool call correctly.</li>
+</ul>
+<h3 id="theory-8">Theory</h3>
+<p>A call passes four stages: code sends, model answers, parser reads,
+app renders. Failures sit in only three places.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Where it broke</th>
+<th>Readable signal</th>
+<th>Layer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Never ran</td>
+<td>HTTP 400, 401, 429, 5xx</td>
+<td>Integration</td>
+</tr>
+<tr>
+<td>Ran and stopped early</td>
+<td><code>stop_reason</code></td>
+<td>Model</td>
+</tr>
+<tr>
+<td>Ran normally, body unusable</td>
+<td>No signal</td>
+<td>Yours</td>
+</tr>
+</tbody>
+</table>
+<p>Schema compliance is guaranteed in most cases, with documented
+exceptions: the model may refuse, output may be truncated, and an enum
+value may come back in different casing.</p>
+<p>Two different questions:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>How do I guarantee the shape?</td>
+<td>Schema</td>
+</tr>
+<tr>
+<td>What does my code do on receipt?</td>
+<td>Validate, because a schema makes the bad case rarer, not the parser
+optional</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-8">Example</h3>
+<p>A dashboard panel is empty and the call returned 200.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Check</th>
+<th>Finding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP</td>
+<td>200, no error</td>
+</tr>
+<tr>
+<td><code>stop_reason</code></td>
+<td><code>max_tokens</code></td>
+</tr>
+<tr>
+<td>Conclusion</td>
+<td>Not a broken model; the ceiling is too low for this schema</td>
+</tr>
+</tbody>
+</table>
+<p>The harder case: <code>end_turn</code> but a missing field. That is
+your layer: the parser trusted the schema.</p>
+<h3 id="code-8">Code</h3>
+<pre class="python"><code>import json
+
+resp = client.messages.create(...)
+
+if resp.stop_reason != &quot;end_turn&quot;:
+    raise RuntimeError(f&quot;unexpected stop: {resp.stop_reason}&quot;)
+
+text = &quot;&quot;.join(b.text for b in resp.content if b.type == &quot;text&quot;)
+
+try:
+    data = json.loads(text)
+except json.JSONDecodeError as e:
+    raise ValueError(f&quot;unparseable body: {e}; raw={text[:200]}&quot;)</code></pre>
+<p>Streamed tool call: accumulate fragments, parse once when the block
+closes.</p>
+<pre class="python"><code>buf = &quot;&quot;
+async for event in stream:
+    if event.type == &quot;content_block_delta&quot; and event.delta.type == &quot;input_json_delta&quot;:
+        buf += event.delta.partial_json
+    elif event.type == &quot;content_block_stop&quot;:
+        args = json.loads(buf)
+        buf = &quot;&quot;</code></pre>
+<h3 id="hands-on-8">Hands-on</h3>
+<ol type="1">
+<li>Cause a 400, a <code>max_tokens</code> stop and a parse
+failure.</li>
+<li>Classify each into one of the three places.</li>
+<li>Add validation after the schema.</li>
+<li>Try parsing a fragment to see the fake error.</li>
+</ol>
+<h3 id="exercises-8">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Classify six failures</td>
+<td>10 min</td>
+<td>Each names its signal</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add validation after schema</td>
+<td>15 min</td>
+<td>Parser is not skipped</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Parse a streamed tool call</td>
+<td>15 min</td>
+<td>No fragment parsing</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-8">Pitfall</h3>
+<p>Trusting the schema. It lowers the odds, it does not replace your
+parser.</p>
+</section>
+<section id="m10">
+<h2 id="input_tokens-is-not-your-input">10 · input_tokens Is Not Your
+Input</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Read all four <code>usage</code> fields.</li>
+<li>Place the cache breakpoint correctly.</li>
+<li>Detect silent cache failure.</li>
+</ul>
+<h3 id="theory-9">Theory</h3>
+<p>Every request has a repeating front and a changing tail. Caching
+works on the front only.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input_tokens</code></td>
+<td>Content after the last breakpoint</td>
+</tr>
+<tr>
+<td><code>cache_creation_input_tokens</code></td>
+<td>Just written to cache</td>
+</tr>
+<tr>
+<td><code>cache_read_input_tokens</code></td>
+<td>Read from cache</td>
+</tr>
+<tr>
+<td><code>output_tokens</code></td>
+<td>Generated, including thinking</td>
+</tr>
+</tbody>
+</table>
+<p>Render order is fixed: tools, system, messages. Put the breakpoint
+after the last stable block.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Silent failure</th>
+<th>Detection</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prefix shorter than the minimum</td>
+<td>No cache, no error; read the two cache fields</td>
+</tr>
+<tr>
+<td>Changing content in the middle</td>
+<td>Stable content after it loses caching</td>
+</tr>
+<tr>
+<td>A timestamp in system</td>
+<td>Every request is a new prefix</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-9">Example</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Cost approach</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Move to a cheaper model</td>
+<td>Possible, but the stem forbids it</td>
+</tr>
+<tr>
+<td>Shorten user messages</td>
+<td>The small part</td>
+</tr>
+<tr>
+<td>Send the document once and reference it</td>
+<td>The API keeps no state</td>
+</tr>
+<tr>
+<td>Cache the identical prefix</td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-9">Code</h3>
+<pre class="python"><code>resp = client.messages.create(
+    model=&quot;claude-opus-5-5&quot;,
+    max_tokens=1024,
+    system=[
+        {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: &quot;You are a support assistant.&quot;},
+        {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: policy_document,
+         &quot;cache_control&quot;: {&quot;type&quot;: &quot;ephemeral&quot;}},
+    ],
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question}],
+)
+
+u = resp.usage
+print(u.cache_creation_input_tokens, u.cache_read_input_tokens)</code></pre>
+<h3 id="hands-on-9">Hands-on</h3>
+<ol type="1">
+<li>Run three calls with the breakpoint after system.</li>
+<li>Print both cache fields each time.</li>
+<li>Move the breakpoint after the user turn, re-run.</li>
+<li>Add a timestamp to system, re-run.</li>
+</ol>
+<h3 id="exercises-9">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Place the breakpoint, read cache</td>
+<td>20 min</td>
+<td>Calls 2 and 3 show reads</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Misplace it, confirm zero</td>
+<td>10 min</td>
+<td>Numbers recorded</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Project monthly cost</td>
+<td>15 min</td>
+<td>Assumptions stated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-9">Pitfall</h3>
+<p>Caching without reading usage. Nothing errors; the bill is just
+higher.</p>
+</section>
+<section id="m11">
+<h2 id="batch-results-in-any-order">11 · Batch: Results in Any
+Order</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Choose the lane by “is anyone waiting”, not by speed.</li>
+<li>Correlate results by <code>custom_id</code>.</li>
+<li>Retry only the failures.</li>
+</ul>
+<h3 id="theory-10">Theory</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Lane</th>
+<th>When</th>
+<th>Traits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Synchronous</td>
+<td>Someone is waiting</td>
+<td>Immediate, full price</td>
+</tr>
+<tr>
+<td>Batch</td>
+<td>Nobody is waiting</td>
+<td>Cheaper, window up to 24 hours, no streaming</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<thead>
+<tr>
+<th>Detail</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Correlation</td>
+<td><code>custom_id</code> you assign</td>
+</tr>
+<tr>
+<td>Result order</td>
+<td>Not submission order</td>
+</tr>
+<tr>
+<td>Status</td>
+<td><code>in_progress</code> to <code>ended</code></td>
+</tr>
+<tr>
+<td><code>ended</code></td>
+<td>Does not mean every request succeeded</td>
+</tr>
+<tr>
+<td>Expired</td>
+<td>Unprocessed requests return <code>expired</code></td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>Best effort</td>
+</tr>
+</tbody>
+</table>
+<p>Disqualifiers: the stem requires streaming, or the agent makes
+multi-turn tool calls.</p>
+<h3 id="example-10">Example</h3>
+<p>10,000 tickets, nothing needed before morning.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Option</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10,000 concurrent calls</td>
+<td>Rate limited, full price anyway</td>
+</tr>
+<tr>
+<td>Batch</td>
+<td>Correct lane</td>
+</tr>
+<tr>
+<td>Batch with realtime fallback on timeout</td>
+<td>Unnecessary complexity</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-10">Code</h3>
+<pre class="python"><code>requests = [{
+    &quot;custom_id&quot;: f&quot;ticket-{i}&quot;,
+    &quot;params&quot;: {
+        &quot;model&quot;: &quot;claude-opus-5-5&quot;,
+        &quot;max_tokens&quot;: 512,
+        &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: t}],
+    },
+} for i, t in enumerate(tickets)]
+
+job = client.beta.messages.batches.create(requests=requests)
+
+while client.beta.messages.batches.retrieve(job.id).processing_status != &quot;ended&quot;:
+    time.sleep(30)
+
+for row in client.beta.messages.batches.results(job.id):
+    if row.result.type == &quot;succeeded&quot;:
+        save(row.custom_id, row.result.message)
+    else:
+        retry_later(row.custom_id)</code></pre>
+<h3 id="hands-on-10">Hands-on</h3>
+<ol type="1">
+<li>Submit five requests with distinct <code>custom_id</code>s.</li>
+<li>Poll until <code>ended</code>.</li>
+<li>Print results keyed by <code>custom_id</code>, not order.</li>
+<li>Fail one request and retry only that one.</li>
+</ol>
+<h3 id="exercises-10">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Correlate results</td>
+<td>20 min</td>
+<td>No positional matching</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Isolate one failure</td>
+<td>15 min</td>
+<td>Whole batch not resent</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Compute submission cadence for an SLA</td>
+<td>10 min</td>
+<td>Worst-case window used</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-10">Pitfall</h3>
+<p>Streaming inside a batch. Nobody is watching and the API does not
+support it.</p>
+</section>
+<section id="m12">
+<h2 id="the-description-is-the-interface">12 · The Description Is the
+Interface</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Write a description with four parts.</li>
+<li>Tell client, built-in and server tools apart.</li>
+<li>Return structured tool errors.</li>
+</ul>
+<h3 id="theory-11">Theory</h3>
+<p>Three of the four loop steps are your code; the model only picks a
+tool and fills arguments from what you wrote.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Crosses the boundary</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>Identifier</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>Prose, the only place explaining when to use it</td>
+</tr>
+<tr>
+<td><code>input_schema</code></td>
+<td>Argument shape</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tool kind</th>
+<th>Runs on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Client tool you wrote</td>
+<td>Your machine</td>
+</tr>
+<tr>
+<td>Built-in (bash, text editor)</td>
+<td>Your machine; prefer these</td>
+</tr>
+<tr>
+<td>Server tool (web search)</td>
+<td>Anthropic side</td>
+</tr>
+</tbody>
+</table>
+<p>A good description answers four questions: what it does, when to use
+it, when not to, what the parameters mean and what it cannot do.</p>
+<h3 id="example-11">Example</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Missing</th>
+<th>Symptom</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“When to use”</td>
+<td>The tool is skipped</td>
+</tr>
+<tr>
+<td>“When not to use”</td>
+<td>The tool fires on everything</td>
+</tr>
+<tr>
+<td>Parameter descriptions</td>
+<td>Customer names sent where order ids belong</td>
+</tr>
+<tr>
+<td>Value format</td>
+<td><code>order 10,493</code> instead of <code>A10493</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-11">Code</h3>
+<pre class="python"><code>tools = [{
+    &quot;name&quot;: &quot;get_order_status&quot;,
+    &quot;description&quot;: (
+        &quot;Look up an order. Takes an order_id shaped ANNNNN, returns status and ETA. &quot;
+        &quot;Use for order questions, not for account details or refunds.&quot;
+    ),
+    &quot;input_schema&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+            &quot;order_id&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Order id shaped ANNNNN, e.g. A10493&quot;}
+        },
+        &quot;required&quot;: [&quot;order_id&quot;],
+        &quot;additionalProperties&quot;: False,
+    },
+    &quot;strict&quot;: True,
+}]</code></pre>
+<pre class="python"><code>{&quot;type&quot;: &quot;tool_result&quot;, &quot;tool_use_id&quot;: block.id, &quot;is_error&quot;: True,
+ &quot;content&quot;: &quot;Order not found. The id must be shaped ANNNNN.&quot;}</code></pre>
+<h3 id="hands-on-11">Hands-on</h3>
+<ol type="1">
+<li>Rewrite one tool description with all four parts.</li>
+<li>Run 10 questions, count correct tool choices.</li>
+<li>Remove the “when not to” sentence, re-run.</li>
+<li>Return a bare error and observe the loop.</li>
+</ol>
+<h3 id="exercises-11">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Write a four-part description</td>
+<td>20 min</td>
+<td>It contains “when not to”</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Measure correct-choice rate</td>
+<td>15 min</td>
+<td>Before and after numbers</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Compare structured and bare errors</td>
+<td>15 min</td>
+<td>The agent recovers only with the first</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-11">Pitfall</h3>
+<p>Fixing tool choice by adding a line to the system prompt. The
+selection step only reads the description.</p>
+</section>
+<section id="m13">
+<h2 id="an-mcp-server-is-not-a-bag-of-tools">13 · An MCP Server Is Not a
+Bag of Tools</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Draw host, client and server correctly.</li>
+<li>Distinguish the three primitives and who controls each.</li>
+<li>Choose a transport by server location.</li>
+</ul>
+<h3 id="theory-12">Theory</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Part</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host</td>
+<td>The app the person uses</td>
+</tr>
+<tr>
+<td>Client</td>
+<td>One per server; five servers means five clients</td>
+</tr>
+<tr>
+<td>Server</td>
+<td>Separate program exposing capabilities over one interface</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<thead>
+<tr>
+<th>Primitive</th>
+<th>Controlled by</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tools</td>
+<td>Model</td>
+<td>Order lookup</td>
+</tr>
+<tr>
+<td>Resources</td>
+<td>Application</td>
+<td>Pull the refund policy</td>
+</tr>
+<tr>
+<td>Prompts</td>
+<td>User</td>
+<td>Pick a reply template</td>
+</tr>
+</tbody>
+</table>
+<p>Transport: <code>stdio</code> on the same machine, streamable HTTP
+across machines. With <code>stdio</code>, stdout carries protocol
+messages only; logs go to stderr.</p>
+<h3 id="example-12">Example</h3>
+<p>Copying a tool into a second app. When the system changes, one copy
+is fixed and the other is not, and two customers get different answers
+for the same order.</p>
+<h3 id="code-12">Code</h3>
+<pre class="json"><code>{
+  &quot;mcpServers&quot;: {
+    &quot;inventory&quot;: {
+      &quot;command&quot;: &quot;python&quot;,
+      &quot;args&quot;: [&quot;-m&quot;, &quot;inventory_mcp&quot;],
+      &quot;env&quot;: { &quot;INVENTORY_TOKEN&quot;: &quot;${INVENTORY_TOKEN}&quot; }
+    }
+  }
+}</code></pre>
+<p>Never paste a real token into the file, even if the file is
+gitignored.</p>
+<h3 id="hands-on-12">Hands-on</h3>
+<ol type="1">
+<li>Draw host, client and server for three apps sharing one server.</li>
+<li>Count the clients.</li>
+<li>Sort six capabilities into the three primitives.</li>
+<li>Run a <code>stdio</code> server and log to stderr.</li>
+</ol>
+<h3 id="exercises-12">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Sort six capabilities</td>
+<td>10 min</td>
+<td>Each names its controller</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write a secret-free config</td>
+<td>15 min</td>
+<td>Grep finds no token</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Move one copied tool to a server</td>
+<td>30 min</td>
+<td>Both apps use one copy</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-12">Pitfall</h3>
+<p>Calling an MCP server a “bag of tools”. Resources and prompts are not
+model-controlled.</p>
+</section>
+<section id="m14">
+<h2 id="usually-fewer-agents">14 · Usually Fewer Agents</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Identify who picks the next step.</li>
+<li>Choose among five workflow shapes.</li>
+<li>Know when an agent loses explainability.</li>
+</ul>
+<h3 id="theory-13">Theory</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Position</th>
+<th>Who picks the step</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One call</td>
+<td>No steps</td>
+</tr>
+<tr>
+<td>Workflow</td>
+<td>Your code</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>The model</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Shape</th>
+<th>Use when</th>
+<th>What it costs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompt chaining</td>
+<td>Sequential steps</td>
+<td>Added latency</td>
+</tr>
+<tr>
+<td>Routing</td>
+<td>Several input types</td>
+<td>Needs correct classification</td>
+</tr>
+<tr>
+<td>Parallelization</td>
+<td>Independent parts</td>
+<td>Duplicated context</td>
+</tr>
+<tr>
+<td>Orchestrator-workers</td>
+<td>Subtasks unknown in advance</td>
+<td>Model may split badly</td>
+</tr>
+<tr>
+<td>Evaluator-optimizer</td>
+<td>Clear criteria exist</td>
+<td>Needs a bounded loop</td>
+</tr>
+</tbody>
+</table>
+<p>The last two are still workflows: the model picks content, code picks
+the path.</p>
+<p>Decision question: if your code picks the next step, you are in a
+workflow. If you cannot predict the number of steps, you need an
+agent.</p>
+<h3 id="example-13">Example</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Case</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>12 categories, explanation required</td>
+<td>Routing</td>
+</tr>
+<tr>
+<td>Investigating a failed nightly job</td>
+<td>Agent</td>
+</tr>
+<tr>
+<td>Content with clear grading criteria</td>
+<td>Evaluator-optimizer</td>
+</tr>
+<tr>
+<td>Six independent checks</td>
+<td>Parallelization</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-13">Code</h3>
+<pre class="python"><code>MAX_ROUNDS = 3
+draft = generate(task)
+
+for _ in range(MAX_ROUNDS):
+    verdict = evaluate(draft, criteria)
+    if verdict.passed:
+        break
+    draft = revise(draft, verdict.fixes)
+
+return draft</code></pre>
+<h3 id="hands-on-13">Hands-on</h3>
+<ol type="1">
+<li>Classify six systems.</li>
+<li>For one real task, choose a shape and name the rejected one.</li>
+<li>Measure cost of workflow versus agent on the same task.</li>
+</ol>
+<h3 id="exercises-13">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Classify six systems</td>
+<td>15 min</td>
+<td>Each names who picks the step</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Choose a shape for one task</td>
+<td>15 min</td>
+<td>The cost is stated</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Measure both approaches</td>
+<td>20 min</td>
+<td>Numbers recorded</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-13">Pitfall</h3>
+<p>Choosing an agent for flexibility. If explaining the path is a
+requirement, an agent is the wrong pick.</p>
+</section>
+<section id="m15">
+<h2 id="self-hosted-is-not-air-gapped">15 · Self-Hosted Is Not
+Air-Gapped</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Separate the loop from the harness.</li>
+<li>Choose a build tier.</li>
+<li>Know where hooks run.</li>
+</ul>
+<h3 id="theory-14">Theory</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loop</td>
+<td>Call model, run tool, return result, repeat</td>
+</tr>
+<tr>
+<td>Harness</td>
+<td>Tools, context management and execution environment around the
+loop</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Who owns the harness</th>
+<th>What you give up</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Raw Messages API</td>
+<td>You</td>
+<td>Considerable work</td>
+</tr>
+<tr>
+<td>Agent SDK</td>
+<td>A library inside your process</td>
+<td>Python or TypeScript only</td>
+</tr>
+<tr>
+<td>Managed agents</td>
+<td>Anthropic</td>
+<td>Runtime control</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compaction</td>
+<td>Summarises history; early instructions can be summarised away</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td>Reloaded every turn, not summarised</td>
+</tr>
+<tr>
+<td>Resume</td>
+<td>Keeps the session across runs</td>
+</tr>
+<tr>
+<td>Hook</td>
+<td>Runs at a fixed point, deterministically</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-14">Example</h3>
+<p>“Never delete anything without asking Priya.” A prompt does not
+guarantee it; a hook before the tool does.</p>
+<h3 id="code-14">Code</h3>
+<pre class="python"><code>from claude_agent_sdk import ClaudeAgentOptions, query
+
+async for msg in query(
+    prompt=&quot;Read the repo and list endpoints without tests.&quot;,
+    options=ClaudeAgentOptions(
+        allowed_tools=[&quot;Read&quot;, &quot;Glob&quot;, &quot;Grep&quot;],
+        system_prompt=&quot;You are a review engineer. Read only, do not edit files.&quot;,
+    ),
+):
+    print(msg)</code></pre>
+<h3 id="hands-on-14">Hands-on</h3>
+<ol type="1">
+<li>Draw the loop and the harness for a running system.</li>
+<li>Choose a build tier for one project.</li>
+<li>Add a hook blocking a delete.</li>
+<li>Confirm the hook runs before the tool.</li>
+</ol>
+<h3 id="exercises-14">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Draw loop and harness</td>
+<td>15 min</td>
+<td>The two layers are distinct</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Choose a tier</td>
+<td>15 min</td>
+<td>The trade is named</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Add a blocking hook</td>
+<td>20 min</td>
+<td>It runs before the tool</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-14">Pitfall</h3>
+<p>Assuming self-hosted means isolated. A server runs with your
+permissions and reaches what you reach.</p>
+</section>
+<section id="m16">
+<h2 id="the-attack-arrives-as-a-ticket">16 · The Attack Arrives as a
+Ticket</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Tell direct and indirect injection apart.</li>
+<li>Separate guidance from control.</li>
+<li>Order the four defence layers.</li>
+</ul>
+<h3 id="theory-15">Theory</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Kind</th>
+<th>Who attacks</th>
+<th>Inlet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Direct</td>
+<td>The app’s user</td>
+<td>What they type</td>
+</tr>
+<tr>
+<td>Indirect</td>
+<td>Content the app fetches</td>
+<td>Web pages, email, tool results</td>
+</tr>
+</tbody>
+</table>
+<p>The base rule: permissions are enforced by the tool, not by the
+model. A prompt shapes what the model <strong>intends</strong> to do,
+not what it <strong>may</strong> do.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Layer</th>
+<th>Guarantees?</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Least privilege</td>
+<td>Yes</td>
+<td>Decided before any call exists</td>
+</tr>
+<tr>
+<td>Output classifier</td>
+<td>No</td>
+<td>Reduces risk, does not enforce</td>
+</tr>
+<tr>
+<td>Permission rules</td>
+<td>Yes</td>
+<td>Deny outranks allow</td>
+</tr>
+<tr>
+<td>Human approval</td>
+<td>Yes</td>
+<td>Only if the human can actually say no</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-15">Example</h3>
+<p>A ticket carries a pasted block asking for the customer list.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tell the model to ignore instructions in tickets</td>
+<td>Guidance, can be talked around</td>
+</tr>
+<tr>
+<td>Add a classifier</td>
+<td>Reduces, does not guarantee</td>
+</tr>
+<tr>
+<td>A tool that can read one order only</td>
+<td>Control</td>
+</tr>
+<tr>
+<td>A deny rule in settings</td>
+<td>Strongest control</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-15">Code</h3>
+<pre class="json"><code>{
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [
+      &quot;Bash(rm -rf *)&quot;,
+      &quot;Bash(curl * | sh)&quot;,
+      &quot;Read(./.env)&quot;
+    ]
+  }
+}</code></pre>
+<pre class="python"><code>messages.append({
+    &quot;role&quot;: &quot;user&quot;,
+    &quot;content&quot;: [{
+        &quot;type&quot;: &quot;tool_result&quot;,
+        &quot;tool_use_id&quot;: block.id,
+        &quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: fetched_page}]   # data, not instructions
+    }],
+})</code></pre>
+<h3 id="hands-on-15">Hands-on</h3>
+<ol type="1">
+<li>Classify five attacks as direct or indirect.</li>
+<li>Write three defence layers for a data-reading tool.</li>
+<li>Attempt an injection and record which layer stopped it.</li>
+<li>Remove the strongest layer and retry.</li>
+</ol>
+<h3 id="exercises-15">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Classify five attacks</td>
+<td>10 min</td>
+<td>Each names its inlet</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write three layers</td>
+<td>20 min</td>
+<td>At least two are controls</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Test an injection</td>
+<td>20 min</td>
+<td>The stopping layer is named</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-15">Pitfall</h3>
+<p>Putting a security rule in the prompt. When the stem says “must
+never”, the answer is something that cannot be persuaded.</p>
+</section>
+
+
+    </div>
+  </div>
+
+  <footer class="lesson-footer">
+    <p>Source: course video. Figures checked October 2026.</p>
+    <p>Back to <a href="../index.html">home</a>.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/site-nav.js?v=3"></script>
+</body>
+</html>

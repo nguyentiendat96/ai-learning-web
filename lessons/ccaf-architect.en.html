@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Certified Architect: Foundations (CCA-F) — Claude · CCA-F · 12 lessons</title>
+<link rel="stylesheet" href="../assets/course.css?v=3">
+<style>
+  .toc li { margin: .3rem 0; }
+  /* heading numbers are written in the source, so the CSS counter is off here */
+  h2 { counter-increment: none; }
+  h2::before { content: none; }
+  @media (max-width: 760px) { .toc { display: block; } }
+</style>
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Claude · CCA-F · 12 lessons</div>
+    <h1>Claude Certified Architect: Foundations (CCA-F)</h1>
+    <p class="subtitle">A 12-lesson curriculum: objectives, theory, example, code, hands-on, exercises, pitfalls.</p>
+    <p class="lesson-meta"><span>12 lessons</span><span>5 domains</span><span>Nguồn: transcript video</span></p>
+    <p style="margin:.5rem 0"><a href="ccaf-architect.html">Bản tiếng Việt</a></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="layout">
+    <aside class="side">
+      <nav class="toc">
+        <strong>On this page</strong>
+        <ol>
+      <li><a href="#m01">01 · The Exam and the First Decision</a></li>
+      <li><a href="#m02">02 · Decomposition, Patterns, Topology</a></li>
+      <li><a href="#m03">03 · Configuring Claude Code</a></li>
+      <li><a href="#m04">04 · Headless, CI and Hooks</a></li>
+      <li><a href="#m05">05 · System-Scale Prompting and Structured Output</a></li>
+      <li><a href="#m06">06 · Tool Design and MCP</a></li>
+      <li><a href="#m07">07 · Context and the Two Scenario Labs</a></li>
+      <li><a href="#m08">08 · The Agentic Loop and Spawning Subagents</a></li>
+      <li><a href="#m09">09 · Gates, Handoffs and SDK Hooks</a></li>
+      <li><a href="#m10">10 · Sessions, Built-in Tools, Configuration Memory</a></li>
+      <li><a href="#m11">11 · From Plan Mode to Multi-Pass Review</a></li>
+      <li><a href="#m12">12 · Escalation, Multi-Agent Errors, Reliability</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <div class="content">
+
+<p>A 12-lesson curriculum, consolidated from 35 modules and checked
+against Anthropic documentation, October 2026. Source: <a
+href="https://www.youtube.com/playlist?list=PLTw_BnRTtaD4">Architect
+playlist</a> and the <a
+href="https://www.youtube.com/watch?v=cLa3Qf9SUYs">16-lesson
+course</a>.</p>
+<p>Each lesson has: objectives, theory, example, code, hands-on,
+exercises, pitfalls. The exam material lives separately under <a
+href="exam.html">Exam</a>.</p>
+<h2 class="plain" id="the-exam">The exam</h2>
+<table class="mapping">
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Questions</td>
+<td>60</td>
+</tr>
+<tr>
+<td>Time</td>
+<td>120 minutes</td>
+</tr>
+<tr>
+<td>Pass</td>
+<td>720 on a 100 to 1,000 scale</td>
+</tr>
+<tr>
+<td>Scenarios</td>
+<td>4 of 6, 15 questions each</td>
+</tr>
+<tr>
+<td>Fee</td>
+<td>49 USD, retake after 6 months</td>
+</tr>
+</tbody>
+</table>
+<p>Five domains: agentic architecture 27%, Claude Code configuration
+20%, prompting and structured output 20%, tools and MCP 18%, context and
+reliability 15%.</p>
+<section id="m01">
+<h2 id="the-exam-and-the-first-decision">01 · The Exam and the First
+Decision</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Read the format and budget time by weight.</li>
+<li>Classify a system as workflow, agent or conversation.</li>
+<li>Apply proportionate intervention.</li>
+</ul>
+<h3 id="theory">Theory</h3>
+<p>The exam tests reading speed as much as knowledge: 60 questions in
+120 minutes, about two minutes each.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Shape</th>
+<th>Who picks the next step</th>
+<th>Signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Workflow</td>
+<td>Your code</td>
+<td>Every branch can be listed in advance</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>The model</td>
+<td>The path emerges while running</td>
+</tr>
+<tr>
+<td>Conversation</td>
+<td>No plan</td>
+<td>One turn at a time</td>
+</tr>
+</tbody>
+</table>
+<p>The only question: can you write the whole sequence down in advance?
+If yes, it is a workflow, however hard each step is. A model, tools and
+a retry loop do not make an agent; who wrote the branches does.</p>
+<p>Proportionate intervention: fix the root cause at the lowest
+cost.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Right fix</th>
+<th>Over-engineering</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Picks the wrong one of two tools</td>
+<td>Rewrite the descriptions</td>
+<td>Add a routing classifier</td>
+</tr>
+<tr>
+<td>Review of many files is shallow</td>
+<td>Per-file passes plus an integration pass</td>
+<td>Bigger context window</td>
+</tr>
+<tr>
+<td>A financial rule must hold</td>
+<td>Code gate</td>
+<td>Stronger prompt</td>
+</tr>
+</tbody>
+</table>
+<p>The line: irreversible actions get code, not prompts.</p>
+<h3 id="example">Example</h3>
+<p>An invoice system with a model, tools, retries and a ledger write
+looks agentic.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Can the sequence be written first</td>
+<td>Yes: read, validate, retry on failure, post</td>
+</tr>
+<tr>
+<td>Who decides to retry</td>
+<td>Code</td>
+</tr>
+<tr>
+<td>Verdict</td>
+<td>Workflow</td>
+</tr>
+</tbody>
+</table>
+<p>Choosing wrong does not fail loudly: an agent costs several times
+more and takes longer for the same result, and nothing in the output
+says the shape was wrong.</p>
+<h3 id="code">Code</h3>
+<p>No specific code. On exam paper, write two columns: steps, and who
+picks the next step.</p>
+<h3 id="hands-on">Hands-on</h3>
+<ol type="1">
+<li>Pick three systems you know.</li>
+<li>Write every branch for each.</li>
+<li>If you can, the verdict is workflow.</li>
+<li>Note what you give up with the other shape.</li>
+</ol>
+<h3 id="exercises">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Classify five systems</td>
+<td>15 min</td>
+<td>Each names who picks the step</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Try writing every branch of an “agent”</td>
+<td>20 min</td>
+<td>Reclassify if you can</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Build a study budget by weight</td>
+<td>10 min</td>
+<td>Heaviest domain gets the most hours</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall">Pitfall</h3>
+<p>Confusing difficulty with autonomy. The exam always presents a system
+with a model, tools and a loop, and the answer is workflow because a
+human wrote every branch.</p>
+</section>
+<section id="m02">
+<h2 id="decomposition-patterns-topology">02 · Decomposition, Patterns,
+Topology</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Split along natural seams, not token counts.</li>
+<li>Choose a pattern by data dependency.</li>
+<li>Choose a topology and name its cost.</li>
+</ul>
+<h3 id="theory-1">Theory</h3>
+<p>Split along the material’s own seams: file boundaries, discovery
+steps. Token chunking cuts through reasoning, and no later step recovers
+it.</p>
+<p>Every split needs a <strong>recombination step</strong> owning the
+coherence of the final output.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Use when</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sequential</td>
+<td>The next step needs the previous output</td>
+<td>Latency adds up</td>
+</tr>
+<tr>
+<td>Parallel</td>
+<td>Steps are independent</td>
+<td>Duplicated context, more failure points</td>
+</tr>
+<tr>
+<td>Adaptive</td>
+<td>Scope is unknown</td>
+<td>Slower than a fixed plan</td>
+</tr>
+</tbody>
+</table>
+<p>In the Agent SDK, parallel means the coordinator emits several task
+calls in <strong>one</strong> response. One task per turn is serial,
+whatever the diagram says.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Topology</th>
+<th>Observability</th>
+<th>Failure behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hub and spoke</td>
+<td>One coordinator sees everything</td>
+<td>Coordinator notices immediately</td>
+</tr>
+<tr>
+<td>Pipeline</td>
+<td>Each output feeds one input</td>
+<td>Every seam needs error handling</td>
+</tr>
+<tr>
+<td>Peer-to-peer</td>
+<td>No centre</td>
+<td>Each agent discovers the failure at a different time</td>
+</tr>
+</tbody>
+</table>
+<p>Two subagent rules: each gets only its role’s tools; the coordinator
+picks which run, rather than always running the full pipeline.</p>
+<h3 id="example-1">Example</h3>
+<p>A 14-file pull request under security review.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One prompt with all 14 files</td>
+<td>Uniformly shallow, misses cross-file issues</td>
+</tr>
+<tr>
+<td>Token chunks</td>
+<td>One chunk flags a dangerous pattern another approves</td>
+</tr>
+<tr>
+<td>14 per-file passes plus one integration pass</td>
+<td>The integration pass follows a value from validation to use</td>
+</tr>
+</tbody>
+</table>
+<p>A four-agent research system: “capital of France” needs only the
+searcher and reporter. Running all four is still correct, just slower
+and noisier.</p>
+<h3 id="code-1">Code</h3>
+<pre class="python"><code>tasks = [
+    {&quot;type&quot;: &quot;task&quot;, &quot;agent&quot;: &quot;searcher&quot;, &quot;prompt&quot;: &quot;...&quot;},
+    {&quot;type&quot;: &quot;task&quot;, &quot;agent&quot;: &quot;analyst&quot;, &quot;prompt&quot;: &quot;...&quot;},
+]</code></pre>
+<h3 id="hands-on-1">Hands-on</h3>
+<ol type="1">
+<li>Split one large task along natural seams.</li>
+<li>Name the step that owns coherence.</li>
+<li>Choose a pattern by data dependency.</li>
+<li>Draw hub-and-spoke, then count the seams a pipeline would need.</li>
+</ol>
+<h3 id="exercises-1">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Split with seams recorded</td>
+<td>15 min</td>
+<td>No chunk cuts a data flow</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Identify the recombination step</td>
+<td>10 min</td>
+<td>It consumes every other output</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Compare topologies</td>
+<td>15 min</td>
+<td>Seam count is stated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-1">Pitfall</h3>
+<p>Token chunking plus concatenation. The exam always adds a symptom of
+contradiction between chunks, and the answer adds a recombination
+step.</p>
+</section>
+<section id="m03">
+<h2 id="configuring-claude-code">03 · Configuring Claude Code</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Separate the three configuration tiers and know which wins.</li>
+<li>Choose between command, skill and subagent.</li>
+<li>Place rules at the right scope.</li>
+</ul>
+<h3 id="theory-2">Theory</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tier</th>
+<th>Holds</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enterprise</td>
+<td>Non-negotiable constraints</td>
+<td>Security, compliance</td>
+</tr>
+<tr>
+<td>User</td>
+<td>Personal preference</td>
+<td>Length, formatting</td>
+</tr>
+<tr>
+<td>Project</td>
+<td>Team agreements</td>
+<td>ORM, test framework</td>
+</tr>
+</tbody>
+</table>
+<p>The more specific tier wins, not the higher organisational rank. It
+is replacement for conflicting directives, not merging: enterprise still
+applies where the project is silent.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tool</th>
+<th>Trigger</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Slash command</td>
+<td>The human types it</td>
+<td>Main context</td>
+</tr>
+<tr>
+<td>Skill</td>
+<td>Automatic, by description</td>
+<td>May fork</td>
+</tr>
+<tr>
+<td>Subagent</td>
+<td>Coordinator delegates</td>
+<td>Isolated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-2">Example</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Need</th>
+<th>Choice</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Review checklist, invoked when reviewing</td>
+<td>Command</td>
+<td>Human decides when</td>
+</tr>
+<tr>
+<td>Diagram on every design discussion</td>
+<td>Skill with a narrow description</td>
+<td>Automatic by context</td>
+</tr>
+<tr>
+<td>Full-repo API scan</td>
+<td>Subagent</td>
+<td>Large output, isolated context</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-2">Code</h3>
+<pre class="json"><code>{
+  &quot;model&quot;: &quot;claude-opus-5-5&quot;,
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [&quot;Bash(rm -rf *)&quot;, &quot;Read(./.env)&quot;]
+  }
+}</code></pre>
+<p>Commit it so the team shares the model and deny rules.
+<code>CLAUDE.md</code> files do not override each other; they stack.</p>
+<h3 id="hands-on-2">Hands-on</h3>
+<ol type="1">
+<li>Run <code>/memory</code> and see which files load.</li>
+<li>Move one personal rule to project scope and commit.</li>
+<li>Turn a repeatedly pasted prompt into a command.</li>
+<li>Write a skill description and check it does not fire wrongly.</li>
+</ol>
+<h3 id="exercises-2">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Place three rules across three tiers</td>
+<td>15 min</td>
+<td>Winner explained by specificity</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Convert a prompt into a command</td>
+<td>15 min</td>
+<td>Two machines behave the same</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Write a narrow skill description</td>
+<td>10 min</td>
+<td>It states when not to fire</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-2">Pitfall</h3>
+<p>Assuming three broad rules outvote one project rule. Only specificity
+decides.</p>
+</section>
+<section id="m04">
+<h2 id="headless-ci-and-hooks">04 · Headless, CI and Hooks</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Run Claude unattended the documented way.</li>
+<li>Tell the two hook families apart.</li>
+<li>Write a blocking hook with a redirect.</li>
+</ul>
+<h3 id="theory-3">Theory</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Task</th>
+<th>Documented mechanism</th>
+<th>Trap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unattended run</td>
+<td><code>-p</code></td>
+<td><code>claude headless</code>, <code>batch</code> do not exist</td>
+</tr>
+<tr>
+<td>Context in CI</td>
+<td><code>CLAUDE.md</code></td>
+<td>CI has no session history</td>
+</tr>
+<tr>
+<td>Enforce an invariant</td>
+<td>Hook</td>
+<td>A prompt is probabilistic</td>
+</tr>
+<tr>
+<td>Choose a response mode</td>
+<td>By who consumes the output</td>
+<td>Treating it as a performance setting</td>
+</tr>
+</tbody>
+</table>
+<p>Two hook families: Claude Code hooks (shell, per repository or team)
+and Agent SDK hooks (code inside the agent process). “Pipeline” and
+“team” signal the first; “agent” and “tool result” signal the
+second.</p>
+<h3 id="example-3">Example</h3>
+<p>A pipeline hangs when calling Claude.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Step</th>
+<th>Action</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Add <code>-p</code></td>
+<td>Stops hanging</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>--output-format json</code></td>
+<td>No prose</td>
+</tr>
+<tr>
+<td>3</td>
+<td>A five-field schema</td>
+<td>Comments land correctly</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Do not use <code>stdin &lt; /dev/null</code></td>
+<td>Masks the symptom</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-3">Code</h3>
+<pre class="bash"><code>claude -p &quot;Review staged diff for security issues&quot; \
+  --output-format json \
+  --allowedTools &quot;Read,Grep,Glob&quot;</code></pre>
+<pre class="python"><code>def before_tool(name, args, session):
+    if name == &quot;bash&quot; and args[&quot;command&quot;].startswith(&quot;rm -rf&quot;):
+        raise PermissionError(
+            &quot;Recursive delete blocked. Use a branch and open a PR.&quot;
+        )</code></pre>
+<h3 id="hands-on-3">Hands-on</h3>
+<ol type="1">
+<li>Write a headless command with <code>-p</code> and JSON.</li>
+<li>Add a blocking hook.</li>
+<li>Block with a bare error and watch the agent stall.</li>
+<li>Fix it to return a reason and an alternative tool.</li>
+</ol>
+<h3 id="exercises-3">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Write a correct CI command</td>
+<td>15 min</td>
+<td>No invented flags</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write a hook with a redirect</td>
+<td>20 min</td>
+<td>The agent can use the alternative</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Classify five rules as hook or prompt</td>
+<td>10 min</td>
+<td>Invariants become hooks</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-3">Pitfall</h3>
+<p>Blocking with a hook but returning a bare error. The exam treats that
+as a design flaw, not safety.</p>
+</section>
+<section id="m05">
+<h2 id="system-scale-prompting-and-structured-output">05 · System-Scale
+Prompting and Structured Output</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Treat the system prompt as an interface contract.</li>
+<li>Pick few-shot or chain of thought by the failure.</li>
+<li>Use schemas correctly and know their limit.</li>
+</ul>
+<h3 id="theory-4">Theory</h3>
+<p>The system prompt is a contract: role, boundaries, when to escalate,
+output shape. Not a notebook.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Technique</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clear, stable classification</td>
+<td>Zero shot</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Hesitation at the boundary</td>
+<td>Few shot, 2-4 different examples</td>
+<td>Tokens per request</td>
+</tr>
+<tr>
+<td>Genuine multi-step reasoning</td>
+<td>Chain of thought</td>
+<td>Latency</td>
+</tr>
+</tbody>
+</table>
+<p>CoT on classification is a trap: cost without quality.</p>
+<p>Structured output constrains shape, not truth.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Situation</th>
+<th>Configuration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unknown document type</td>
+<td><code>tool_choice: any</code></td>
+</tr>
+<tr>
+<td>Prose answer acceptable</td>
+<td><code>auto</code>, but the parser breaks</td>
+</tr>
+<tr>
+<td>Type known for certain</td>
+<td>Force the tool name</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Schema rule</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Do not mark a possibly-absent source field
+<code>required</code></td>
+<td>The model invents a value</td>
+</tr>
+<tr>
+<td>Include an <code>other</code> enum value with detail</td>
+<td>Enums are open-ended</td>
+</tr>
+<tr>
+<td>Validate after receipt</td>
+<td>The schema only makes the bad case rarer</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-4">Example</h3>
+<p>An annual report summary with a suspicious litigation figure.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Option</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ship it, it has citations</td>
+<td>Unopened citations are unverified</td>
+</tr>
+<tr>
+<td>Ask the model to check itself</td>
+<td>Same mechanism</td>
+</tr>
+<tr>
+<td>Require verbatim quotes, withdraw unsupported claims</td>
+<td>Correct</td>
+</tr>
+<tr>
+<td>Check completeness against the original list</td>
+<td>Catches missing items</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-4">Code</h3>
+<pre class="python"><code>resp = client.messages.create(
+    model=&quot;claude-opus-5-5&quot;,
+    max_tokens=1024,
+    system=(
+        &quot;You classify tickets. Return JSON matching the schema. &quot;
+        &quot;If information is missing, return category=unclear, do not guess.&quot;
+    ),
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: ticket}],
+)</code></pre>
+<p>For an unknown document type, <code>tool_choice: any</code> forces a
+tool call and lets the model choose the schema.</p>
+<h3 id="hands-on-4">Hands-on</h3>
+<ol type="1">
+<li>Write a system prompt under 200 tokens doing one job.</li>
+<li>Add few-shot for the boundary case and measure error rate.</li>
+<li>Write a schema with a nullable field.</li>
+<li>Validate after the schema and feed it a missing field.</li>
+</ol>
+<h3 id="exercises-4">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Write a lean system prompt</td>
+<td>20 min</td>
+<td>No tool-specific detail inside</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Compare zero shot and few shot</td>
+<td>15 min</td>
+<td>Error counts recorded</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Write a nullable schema</td>
+<td>15 min</td>
+<td>No field is required without cause</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-4">Pitfall</h3>
+<p>Marking every field <code>required</code>. It induces fabrication and
+is the classic wrong answer.</p>
+</section>
+<section id="m06">
+<h2 id="tool-design-and-mcp">06 · Tool Design and MCP</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Choose tool granularity.</li>
+<li>Write a four-part description.</li>
+<li>Scope an MCP server and its primitives.</li>
+</ul>
+<h3 id="theory-5">Theory</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One tool doing unrelated jobs, blurred description</td>
+<td>Split</td>
+</tr>
+<tr>
+<td>Too many tools, poor selection</td>
+<td>Consolidate</td>
+</tr>
+<tr>
+<td>Adding a <code>mode</code> parameter</td>
+<td>Wrong: the ambiguity stays inside one description</td>
+</tr>
+</tbody>
+</table>
+<p>The description is the model’s only documentation. Four sentences:
+what it does, when to use it, when not to, what the parameters mean and
+what it cannot do.</p>
+<p>MCP:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Decision</th>
+<th>Choice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Shared server</td>
+<td>Project scope, commit the config</td>
+</tr>
+<tr>
+<td>Personal experiment</td>
+<td>User scope</td>
+</tr>
+<tr>
+<td>Secret</td>
+<td>Environment variable</td>
+</tr>
+<tr>
+<td>Common integration</td>
+<td>Community server</td>
+</tr>
+<tr>
+<td>Content catalogue</td>
+<td>Resources, not a list-all tool</td>
+</tr>
+</tbody>
+</table>
+<p>Three primitives, three controllers: tools by the model, resources by
+the application, prompts by the user.</p>
+<h3 id="example-5">Example</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Failure</th>
+<th>Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wrong tool chosen</td>
+<td>No boundary sentence</td>
+<td>Rewrite the description</td>
+</tr>
+<tr>
+<td>Wrong argument</td>
+<td>Format not stated</td>
+<td>Give an example such as <code>A10493</code></td>
+</tr>
+<tr>
+<td>Tool skipped</td>
+<td>No “when to use”</td>
+<td>Add that sentence</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-5">Code</h3>
+<pre class="python"><code>tools = [{
+    &quot;name&quot;: &quot;get_order_status&quot;,
+    &quot;description&quot;: (
+        &quot;Look up an order. Takes an order_id shaped ANNNNN. &quot;
+        &quot;Use for order questions, not for account details or refunds.&quot;
+    ),
+    &quot;input_schema&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {&quot;order_id&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Shaped ANNNNN&quot;}},
+        &quot;required&quot;: [&quot;order_id&quot;],
+        &quot;additionalProperties&quot;: False,
+    },
+    &quot;strict&quot;: True,
+}]</code></pre>
+<pre class="json"><code>{
+  &quot;mcpServers&quot;: {
+    &quot;inventory&quot;: {
+      &quot;command&quot;: &quot;python&quot;,
+      &quot;args&quot;: [&quot;-m&quot;, &quot;inventory_mcp&quot;],
+      &quot;env&quot;: { &quot;INVENTORY_TOKEN&quot;: &quot;${INVENTORY_TOKEN}&quot; }
+    }
+  }
+}</code></pre>
+<h3 id="hands-on-5">Hands-on</h3>
+<ol type="1">
+<li>Rewrite one tool description with all four parts.</li>
+<li>Measure the correct-choice rate before and after.</li>
+<li>Sort six capabilities into the three primitives.</li>
+<li>Write an MCP config with no secret.</li>
+</ol>
+<h3 id="exercises-5">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Write a four-part description</td>
+<td>20 min</td>
+<td>It contains “when not to”</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Measure the correct-choice rate</td>
+<td>15 min</td>
+<td>Before and after numbers</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Sort the primitives</td>
+<td>10 min</td>
+<td>Each names its controller</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-5">Pitfall</h3>
+<p>Fixing tool selection with a system prompt line. The selection step
+only reads the description.</p>
+</section>
+<section id="m07">
+<h2 id="context-and-the-two-scenario-labs">07 · Context and the Two
+Scenario Labs</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Budget context and trim at the boundary.</li>
+<li>Keep transactional facts out of summaries.</li>
+<li>Read a scenario for its binding constraint.</li>
+</ul>
+<h3 id="theory-6">Theory</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Task</th>
+<th>Where</th>
+<th>Do not</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Budget</td>
+<td>Measure each source first</td>
+<td>Guess</td>
+</tr>
+<tr>
+<td>Trim</td>
+<td>At the boundary, in a post-tool-use hook</td>
+<td>Let the model see everything, then compact</td>
+</tr>
+<tr>
+<td>Oversized result</td>
+<td>Truncate and say so</td>
+<td>Drop silently</td>
+</tr>
+<tr>
+<td>Compaction</td>
+<td>A case-facts block outside the summary</td>
+<td>Ask the summariser to keep details</td>
+</tr>
+</tbody>
+</table>
+<p>Context rot: a fuller window is less accurate. Models recall the
+beginning and end better than the middle.</p>
+<p>Scenario labs teach one skill: find the binding constraint and use it
+as an elimination filter.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Constraint</th>
+<th>Eliminates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Irreversible action</td>
+<td>Every probabilistic mechanism</td>
+</tr>
+<tr>
+<td>A resolution-rate target</td>
+<td>Escalating on confidence</td>
+</tr>
+<tr>
+<td>No irreversible action</td>
+<td>Enforcement gates</td>
+</tr>
+<tr>
+<td>A cited report</td>
+<td>Prose handoffs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-6">Example</h3>
+<p>Scenario A: a support agent targeting 80% first-contact
+resolution.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Eliminated because</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Handle everything autonomously</td>
+<td>Guesses on ambiguous cases</td>
+</tr>
+<tr>
+<td>Escalate below a confidence threshold</td>
+<td>Escalates what it could close</td>
+</tr>
+<tr>
+<td>Handle clear policy cases, escalate policy gaps</td>
+<td>Survives</td>
+</tr>
+</tbody>
+</table>
+<p>Scenario B: a four-agent research system with a cited report. The
+difference is isolated context and provenance, so an enforcement gate
+has no place.</p>
+<h3 id="code-6">Code</h3>
+<pre class="python"><code>CASE = &quot;&quot;&quot;Amount: 247.83
+Date: 3 March
+Order: 4471
+Promise: refund within 5 business days&quot;&quot;&quot;</code></pre>
+<h3 id="hands-on-6">Hands-on</h3>
+<ol type="1">
+<li>Measure tokens across four sources in a long conversation.</li>
+<li>Write a hook trimming one tool result.</li>
+<li>Write case facts for one real case.</li>
+<li>For a brief, list the constraint and eliminated options.</li>
+</ol>
+<h3 id="exercises-6">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Measure tokens by source</td>
+<td>20 min</td>
+<td>Each has a number</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write a case-facts block</td>
+<td>15 min</td>
+<td>Every figure is verbatim</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Build the elimination table</td>
+<td>15 min</td>
+<td>Nothing eliminated on feeling</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-6">Pitfall</h3>
+<p>Weighing pros and cons between options. If you are weighing, you
+missed an elimination.</p>
+</section>
+<section id="m08">
+<h2 id="the-agentic-loop-and-spawning-subagents">08 · The Agentic Loop
+and Spawning Subagents</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Write the loop against <code>stop_reason</code>.</li>
+<li>Pass context explicitly.</li>
+<li>Emit parallel task calls correctly.</li>
+</ul>
+<h3 id="theory-7">Theory</h3>
+<p>The loop: send, read <code>stop_reason</code>, run tools, return
+results, repeat.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Part</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stop_reason</code></td>
+<td>The only reliable stop signal</td>
+</tr>
+<tr>
+<td><code>tool_result</code> with <code>tool_use_id</code></td>
+<td>Every tool call must be answered, all of them</td>
+</tr>
+<tr>
+<td>Iteration cap</td>
+<td>A safety net, not the ending mechanism</td>
+</tr>
+</tbody>
+</table>
+<p>Spawning uses the task tool. The coordinator must have
+<code>task</code> in its allowed tools; without it, it does the work
+itself and says nothing.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Task</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Parallel</td>
+<td>Several task calls in one response</td>
+</tr>
+<tr>
+<td>Serial</td>
+<td>One task per turn</td>
+</tr>
+<tr>
+<td>Tool scope</td>
+<td>Each subagent gets only its role’s tools</td>
+</tr>
+<tr>
+<td>Context</td>
+<td>Written explicitly, nothing inherited</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-7">Example</h3>
+<p>The model returns three tool calls in one turn.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Response shape</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Three <code>tool_result</code> blocks in one user message</td>
+<td>Correct</td>
+</tr>
+<tr>
+<td>Two of three</td>
+<td>API error</td>
+</tr>
+<tr>
+<td>One message per result</td>
+<td>The model learns not to batch</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Tools</th>
+<th>If over-granted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Searcher</td>
+<td>web search</td>
+<td></td>
+</tr>
+<tr>
+<td>Synthesizer</td>
+<td>no web search</td>
+<td>It researches on its own, the report covers a third</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-7">Code</h3>
+<pre class="python"><code>while True:
+    resp = client.messages.create(
+        model=&quot;claude-opus-5-5&quot;, max_tokens=2048,
+        messages=messages, tools=tools,
+    )
+    if resp.stop_reason != &quot;tool_use&quot;:
+        break
+    results = []
+    for block in resp.content:
+        if block.type == &quot;tool_use&quot;:
+            out = run_tool(block.name, block.input)
+            results.append({&quot;type&quot;: &quot;tool_result&quot;,
+                            &quot;tool_use_id&quot;: block.id, &quot;content&quot;: out})
+    messages.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: resp.content})
+    messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: results})</code></pre>
+<h3 id="hands-on-7">Hands-on</h3>
+<ol type="1">
+<li>Write a loop that never parses text to stop.</li>
+<li>Handle a turn with three tool calls.</li>
+<li>Add an iteration cap returning a partial result.</li>
+<li>Write a structured handoff payload between two agents.</li>
+</ol>
+<h3 id="exercises-7">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Write the loop</td>
+<td>20 min</td>
+<td>No text parsing</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Handle three tool calls</td>
+<td>15 min</td>
+<td>All answered in one message</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Write claim, evidence, source, date</td>
+<td>15 min</td>
+<td>No free-prose field</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-7">Pitfall</h3>
+<p>Parsing “I am done” in the text, or using the iteration count as the
+main stop condition.</p>
+</section>
+<section id="m09">
+<h2 id="gates-handoffs-and-sdk-hooks">09 · Gates, Handoffs and SDK
+Hooks</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Gate actions that must never go wrong.</li>
+<li>Write a handoff that replaces the transcript.</li>
+<li>Use hooks to normalise and block.</li>
+</ul>
+<h3 id="theory-8">Theory</h3>
+<p>A gate is code blocking a tool until a prerequisite is done.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Gate when</th>
+<th>Something else when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Consequence is severe and must never happen</td>
+<td>The tool was merely mis-chosen: fix the description</td>
+</tr>
+<tr>
+<td>Money, safety, legal</td>
+<td>Ordering is suboptimal: prompt</td>
+</tr>
+</tbody>
+</table>
+<p>A block must return a structured error naming the missing
+prerequisite and the supplying tool.</p>
+<p>A human handoff payload replaces the transcript:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Field</th>
+<th>Answers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Customer id, order id</td>
+<td>What is this</td>
+</tr>
+<tr>
+<td>Root cause</td>
+<td>What happened</td>
+</tr>
+<tr>
+<td>Evidence</td>
+<td>Based on what</td>
+</tr>
+<tr>
+<td>Amount</td>
+<td>How much at risk</td>
+</tr>
+<tr>
+<td>Recommendation</td>
+<td>What to do</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Runs</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Post tool use</td>
+<td>After the tool, before the model sees it</td>
+<td>Normalise, trim</td>
+</tr>
+<tr>
+<td>Interception</td>
+<td>Before the tool runs</td>
+<td>Block violations</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-8">Example</h3>
+<p>Three tools return three time formats: epoch, ISO, and a numeric
+status code.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tool returns</th>
+<th>Hook rewrites</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1755300000000</code></td>
+<td>ISO 8601</td>
+</tr>
+<tr>
+<td>ISO</td>
+<td>unchanged</td>
+</tr>
+<tr>
+<td><code>status: 3</code></td>
+<td><code>refunded</code></td>
+</tr>
+</tbody>
+</table>
+<p>Refund above 500: the hook blocks and points to
+<code>escalate_to_human</code>. A bare block stalls the agent.</p>
+<h3 id="code-8">Code</h3>
+<pre class="python"><code>def post_tool_use(name, result):
+    if name == &quot;get_customer&quot; and isinstance(result.get(&quot;created&quot;), int):
+        result[&quot;created&quot;] = to_iso(result[&quot;created&quot;])
+    if name == &quot;billing&quot; and isinstance(result.get(&quot;status&quot;), int):
+        result[&quot;status&quot;] = {3: &quot;refunded&quot;}.get(result[&quot;status&quot;], &quot;unknown&quot;)
+    return result</code></pre>
+<h3 id="hands-on-8">Hands-on</h3>
+<ol type="1">
+<li>Write a gate for a money-moving tool.</li>
+<li>Write a five-field handoff for a real case.</li>
+<li>Write a hook normalising an unusual format.</li>
+<li>Write a blocking hook with a redirect.</li>
+</ol>
+<h3 id="exercises-8">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Write the gate</td>
+<td>20 min</td>
+<td>The error names the supplying tool</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write the handoff</td>
+<td>15 min</td>
+<td>No transcript needed</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Write two hooks</td>
+<td>25 min</td>
+<td>One normalises, one blocks</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-8">Pitfall</h3>
+<p>Strengthening the system prompt for a rule that must hold 100% of the
+time. Prompts are probabilistic.</p>
+</section>
+<section id="m10">
+<h2 id="sessions-built-in-tools-configuration-memory">10 · Sessions,
+Built-in Tools, Configuration Memory</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Choose resume, fork or a fresh session by staleness.</li>
+<li>Match the built-in tool to the question.</li>
+<li>Place rules at the right tier and scope.</li>
+</ul>
+<h3 id="theory-9">Theory</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Situation</th>
+<th>Choice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context still valid</td>
+<td>Resume</td>
+</tr>
+<tr>
+<td>A few files changed, known which</td>
+<td>Resume with targeted reanalysis</td>
+</tr>
+<tr>
+<td>Baseline changed broadly</td>
+<td>Fresh session with a summary</td>
+</tr>
+<tr>
+<td>Several branches must not cross</td>
+<td>Fork</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<thead>
+<tr>
+<th>Question</th>
+<th>Tool</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where does this string live</td>
+<td>grep</td>
+</tr>
+<tr>
+<td>Which files match a pattern</td>
+<td>glob</td>
+</tr>
+<tr>
+<td>What is in this file</td>
+<td>read</td>
+</tr>
+<tr>
+<td>Change exactly one spot</td>
+<td>edit with a unique anchor</td>
+</tr>
+</tbody>
+</table>
+<p>If the anchor is not unique, widen it with surrounding context. For a
+small file with many changes, read then write.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Rule</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Whole team</td>
+<td>Project, committed</td>
+</tr>
+<tr>
+<td>Personal</td>
+<td>User</td>
+</tr>
+<tr>
+<td>Per file type</td>
+<td>Rule with <code>paths</code> glob</td>
+</tr>
+<tr>
+<td>Per directory</td>
+<td><code>CLAUDE.md</code> in that directory</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-9">Example</h3>
+<p>An overnight refactor moved 40 files.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Resume silently</td>
+<td>Confident answers about paths that no longer exist</td>
+</tr>
+<tr>
+<td>Resume, naming three changed files</td>
+<td>Re-reads only those three</td>
+</tr>
+<tr>
+<td>Fresh session with a summary</td>
+<td>Keeps conclusions about unchanged code</td>
+</tr>
+</tbody>
+</table>
+<p>Forty directories each holding a copy of the test convention drift
+apart. One rule with <code>**/*.test.tsx</code> replaces all forty.</p>
+<h3 id="code-9">Code</h3>
+<pre class="yaml"><code>paths: [&quot;**/*.test.tsx&quot;]
+All tests use testing-library, not enzyme.</code></pre>
+<pre class="json"><code>{
+  &quot;context&quot;: &quot;fork&quot;,
+  &quot;allowed-tools&quot;: [&quot;Read&quot;, &quot;Grep&quot;],
+  &quot;argument-hint&quot;: &quot;&lt;module path&gt;&quot;
+}</code></pre>
+<h3 id="hands-on-9">Hands-on</h3>
+<ol type="1">
+<li>For three situations, choose resume, fork or fresh.</li>
+<li>Write a resume message naming changed files.</li>
+<li>Write a <code>paths</code> rule and verify when it loads.</li>
+<li>Write frontmatter for a large-output skill.</li>
+</ol>
+<h3 id="exercises-9">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Choose a session for three cases</td>
+<td>10 min</td>
+<td>Based on staleness</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write a glob rule</td>
+<td>15 min</td>
+<td>Loads on matching files only</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Write frontmatter</td>
+<td>15 min</td>
+<td>Tool scope is limited</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-9">Pitfall</h3>
+<p>Always resuming because it looks cheaper. With stale data it costs
+more, because wrong conclusions must be unwound.</p>
+</section>
+<section id="m11">
+<h2 id="from-plan-mode-to-multi-pass-review">11 · From Plan Mode to
+Multi-Pass Review</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Choose plan or direct by three signals.</li>
+<li>Replace prose with examples and tests.</li>
+<li>Design CI output and incremental review.</li>
+</ul>
+<h3 id="theory-10">Theory</h3>
+<p>Plan mode when: several valid approaches exist, an architectural
+decision is involved, or the blast radius is wide. Size is not a
+signal.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Signal</th>
+<th>Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Several approaches, wide scope</td>
+<td>Plan, then execute</td>
+</tr>
+<tr>
+<td>Obvious approach, one file</td>
+<td>Direct</td>
+</tr>
+<tr>
+<td>Unknown codebase</td>
+<td>Plan plus explore subagent</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<thead>
+<tr>
+<th>Problem</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Three runs, three results</td>
+<td>Replace prose with input/output pairs</td>
+</tr>
+<tr>
+<td>Vague bug report</td>
+<td>A concrete test case</td>
+</tr>
+<tr>
+<td>Missing constraints</td>
+<td>Interview before writing code</td>
+</tr>
+</tbody>
+</table>
+<p>CI:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Part</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unattended</td>
+<td><code>-p</code></td>
+</tr>
+<tr>
+<td>Machine-readable</td>
+<td><code>--output-format json</code></td>
+</tr>
+<tr>
+<td>Contract</td>
+<td><code>path</code>, <code>line</code>, <code>severity</code>,
+<code>issue</code>, <code>fix</code></td>
+</tr>
+</tbody>
+</table>
+<p>Incremental review: supply the previous output, report only deltas.
+Independent review: a session other than the one that wrote the
+code.</p>
+<p>Batch: only for work that tolerates up to 24 hours. Results arrive
+unordered; correlate by <code>custom_id</code>.</p>
+<p>Multi-file review: per-file passes plus one integration pass. The
+problem is attention dilution, not capacity.</p>
+<h3 id="example-10">Example</h3>
+<p>A 14-file review in one pass: the first file is thorough, the last is
+skimmed, and the same pattern is criticised in file 3 and approved in
+file 11. Fix it with 14 file passes plus one integration pass.</p>
+<h3 id="code-10">Code</h3>
+<pre class="bash"><code>claude -p &quot;Review staged diff, output JSON per schema&quot; \
+  --output-format json \
+  --allowedTools &quot;Read,Grep,Glob&quot;</code></pre>
+<pre class="python"><code>requests = [{
+  &quot;custom_id&quot;: f&quot;ticket-{i}&quot;,
+  &quot;params&quot;: {&quot;model&quot;: &quot;claude-opus-5-5&quot;, &quot;max_tokens&quot;: 512,
+             &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: t}]},
+} for i, t in enumerate(tickets)]
+job = client.beta.messages.batches.create(requests=requests)</code></pre>
+<h3 id="hands-on-10">Hands-on</h3>
+<ol type="1">
+<li>Score three tasks against the plan signals.</li>
+<li>Replace one vague instruction with three input/output pairs.</li>
+<li>Write a CI command with a schema.</li>
+<li>Run a review twice, the second time reporting deltas only.</li>
+</ol>
+<h3 id="exercises-10">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Score tasks by signal</td>
+<td>10 min</td>
+<td>Each gets a mode</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write three example pairs</td>
+<td>15 min</td>
+<td>Two people agree on output</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Run an incremental review</td>
+<td>20 min</td>
+<td>No duplicate comments</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-10">Pitfall</h3>
+<p>Skipping the integration pass. A review without it misses cross-file
+defects.</p>
+</section>
+<section id="m12">
+<h2 id="escalation-multi-agent-errors-reliability">12 · Escalation,
+Multi-Agent Errors, Reliability</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Escalate for the right three reasons.</li>
+<li>Propagate errors a coordinator can act on.</li>
+<li>Segment accuracy and preserve provenance.</li>
+</ul>
+<h3 id="theory-11">Theory</h3>
+<p>Exactly three escalation triggers: the customer asks, policy is
+silent or needs an exception, or no meaningful progress was made after
+investigation.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Not a trigger</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A complex case</td>
+<td>Clear policy means the agent can handle it</td>
+</tr>
+<tr>
+<td>An upset customer</td>
+<td>Emotion does not measure authority</td>
+</tr>
+<tr>
+<td>Low confidence</td>
+<td>Models are confidently wrong on hard cases</td>
+</tr>
+</tbody>
+</table>
+<p>A failing subagent returns: failure type, attempted query, partial
+results, alternatives. An empty result is not a failure.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context degradation</td>
+<td>Scratchpad, phase summaries, a manifest</td>
+</tr>
+<tr>
+<td>Aggregate accuracy hides errors</td>
+<td>Segment by document type and field</td>
+</tr>
+<tr>
+<td>Uncalibrated confidence</td>
+<td>Calibrate against a labelled set</td>
+</tr>
+<tr>
+<td>Conflicting sources</td>
+<td>Return both with sources, never average</td>
+</tr>
+<tr>
+<td>Provenance lost in summarisation</td>
+<td>Claim, evidence, URL, date through every step</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-11">Example</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Damaged item, photos, clear policy</td>
+<td>Handle it</td>
+</tr>
+<tr>
+<td>Refund after 45 days, policy says 30</td>
+<td>Escalate</td>
+</tr>
+<tr>
+<td>90% of invoices at 99%, 10% handwritten at 79%</td>
+<td>Keep humans on the handwritten segment</td>
+</tr>
+<tr>
+<td>Two sources say 4.2bn and 7.1bn</td>
+<td>Return both with method and date</td>
+</tr>
+</tbody>
+</table>
+<h3 id="code-11">Code</h3>
+<pre class="python"><code>return {
+    &quot;status&quot;: &quot;error&quot;,
+    &quot;failure_type&quot;: &quot;timeout&quot;,
+    &quot;query_attempted&quot;: q,
+    &quot;partial_results&quot;: found,
+    &quot;alternatives&quot;: [&quot;rephrase_query&quot;, &quot;different_engine&quot;],
+}</code></pre>
+<h3 id="hands-on-11">Hands-on</h3>
+<ol type="1">
+<li>Classify six cases by the three triggers.</li>
+<li>Write a four-field error payload.</li>
+<li>Split a pipeline into segments with separate accuracy.</li>
+<li>Write the claim/evidence/URL/date schema.</li>
+</ol>
+<h3 id="exercises-11">Exercises</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Classify six escalations</td>
+<td>10 min</td>
+<td>None is emotional</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write the error payload</td>
+<td>15 min</td>
+<td>All four fields present</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Segment accuracy</td>
+<td>15 min</td>
+<td>Each segment has its own rate</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-11">Pitfall</h3>
+<p>Averaging two conflicting sources. The number belongs to no source,
+and the disagreement, which is the useful finding, is lost.</p>
+</section>
+
+
+    </div>
+  </div>
+
+  <footer class="lesson-footer">
+    <p>Source: course video. Figures checked October 2026.</p>
+    <p>Back to <a href="../index.html">home</a>.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/site-nav.js?v=3"></script>
+</body>
+</html>
