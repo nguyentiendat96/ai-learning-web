@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Certified Associate: Foundations (CCAO-F) — Claude · CCAO-F · 10 lessons</title>
+<link rel="stylesheet" href="../assets/course.css?v=3">
+<style>
+  .toc li { margin: .3rem 0; }
+  /* heading numbers are written in the source, so the CSS counter is off here */
+  h2 { counter-increment: none; }
+  h2::before { content: none; }
+  @media (max-width: 760px) { .toc { display: block; } }
+</style>
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Claude · CCAO-F · 10 lessons</div>
+    <h1>Claude Certified Associate: Foundations (CCAO-F)</h1>
+    <p class="subtitle">A 10-lesson curriculum: objectives, theory, example, hands-on, exercises, pitfalls. Exam material lives separately.</p>
+    <p class="lesson-meta"><span>10 lessons</span><span>7 domains</span><span>Nguồn: transcript video</span></p>
+    <p style="margin:.5rem 0"><a href="ccao-f.html">Bản tiếng Việt</a></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="layout">
+    <aside class="side">
+      <nav class="toc">
+        <strong>On this page</strong>
+        <ol>
+      <li><a href="#m01">01 · The Answer Pattern and the Blueprint</a></li>
+      <li><a href="#m02">02 · Prompting and Task Execution (D1, 14%)</a></li>
+      <li><a href="#m03">03 · Catching Confident Lies (D2, 21%)</a></li>
+      <li><a href="#m04">04 · The Validation Playbook (D2, 21%)</a></li>
+      <li><a href="#m05">05 · Product and Model Selection (D3, 12%)</a></li>
+      <li><a href="#m06">06 · Workflow Integration (D4, 16%)</a></li>
+      <li><a href="#m07">07 · Configuration and Knowledge (D5, 12%)</a></li>
+      <li><a href="#m08">08 · Governance and Responsible Use (D6, 15%)</a></li>
+      <li><a href="#m09">09 · Troubleshooting and Optimization (D7, 10%)</a></li>
+      <li><a href="#m10">10 · Capstone: One Workday</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <div class="content">
+
+<p>A 12-lesson curriculum built from the “CCAO-F: Full Course, All 12
+Lessons” course (116 minutes), October 2026. Source: <a
+href="https://www.youtube.com/watch?v=O94JiAuQ9zY">CCAO-F course
+video</a>.</p>
+<p>Each lesson has six parts: objectives, theory, example, hands-on,
+exercises, pitfalls. The exam material lives separately under <a
+href="exam.html">Exam</a>.</p>
+<h2 class="plain" id="the-four-moves">The four moves</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Move</th>
+<th>Meaning</th>
+<th>When to use it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Verify</strong></td>
+<td>Check the claim against its source before acting</td>
+<td>Numbers, citations, factual claims</td>
+</tr>
+<tr>
+<td><strong>Match</strong></td>
+<td>Fit the tool to the job</td>
+<td>Before choosing a feature, model, or prompt shape</td>
+</tr>
+<tr>
+<td><strong>Gate</strong></td>
+<td>Protect data and policy first, then proceed</td>
+<td>Personal data, contract-bound documents, policy</td>
+</tr>
+<tr>
+<td><strong>Escalate</strong></td>
+<td>Recognise the call is not yours</td>
+<td>High-risk domains, silent policy</td>
+</tr>
+</tbody>
+</table>
+<h2 class="plain" id="the-exam">The exam</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Questions</td>
+<td>60</td>
+</tr>
+<tr>
+<td>Time</td>
+<td>120 minutes, about 2 minutes each</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>multiple choice and multiple response</td>
+</tr>
+<tr>
+<td>Pass</td>
+<td>720 on a 100 to 1,000 scale</td>
+</tr>
+<tr>
+<td>Domain weights</td>
+<td>D1 14%, D2 21%, D3 12%, D4 16%, D5 12%, D6 15%, D7 10%</td>
+</tr>
+</tbody>
+</table>
+<p>Multiple-response items always state how many answers to select. That
+number is information: two answers means the item wants two moves, not
+one perfect option.</p>
+<p>Registration currently runs through Anthropic’s partner network.
+Check the current registration page before booking.</p>
+<section id="m01">
+<h2 id="the-answer-pattern-and-the-blueprint">01 · The Answer Pattern
+and the Blueprint</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Recognise the four moves inside any question.</li>
+<li>Read the exam structure and budget study time by weight.</li>
+<li>Understand why the right answer is usually the small step, not the
+sweeping redesign.</li>
+</ul>
+<h3 id="theory">Theory</h3>
+<p>Every item has the same shape: a tempting shortcut, a fake safeguard,
+an overreaction, and one professional move.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Part</th>
+<th>Shape</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Shortcut</td>
+<td>Fast because it sounds reasonable</td>
+<td>Send it because Claude sounded sure</td>
+</tr>
+<tr>
+<td>Fake safeguard</td>
+<td>Looks like control, is not</td>
+<td>Ask the model to rate its own confidence</td>
+</tr>
+<tr>
+<td>Overreaction</td>
+<td>Refuses work when a safe path exists</td>
+<td>Drop the analysis entirely</td>
+</tr>
+<tr>
+<td>Move</td>
+<td>Small, correct step</td>
+<td>Open the source and check the citation</td>
+</tr>
+</tbody>
+</table>
+<p>The four moves cover the seven domains:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Domain</th>
+<th>Dominant move</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompting and task execution</td>
+<td>Match</td>
+</tr>
+<tr>
+<td>Output evaluation and validation</td>
+<td>Verify</td>
+</tr>
+<tr>
+<td>Product and model selection</td>
+<td>Match</td>
+</tr>
+<tr>
+<td>Workflow integration</td>
+<td>Match, verify</td>
+</tr>
+<tr>
+<td>Configuration and knowledge</td>
+<td>Match</td>
+</tr>
+<tr>
+<td>Governance and responsible use</td>
+<td>Gate, escalate</td>
+</tr>
+<tr>
+<td>Troubleshooting</td>
+<td>Verify, match</td>
+</tr>
+</tbody>
+</table>
+<p>Weights are a study budget, not a study order. Output evaluation is
+the heaviest at about a fifth of the score, so it gets the most
+hours.</p>
+<h3 id="example">Example</h3>
+<p>Anthropic’s published sample: Maya summarises a new regulation, the
+summary cites “subsection 4B2”, and her manager asks whether to send
+it.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Move</th>
+<th>Why it fails</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Send it, Claude sounded sure</td>
+<td>none</td>
+<td>Confidence is not evidence</td>
+</tr>
+<tr>
+<td>Ask Claude to rate its confidence</td>
+<td>none</td>
+<td>Models are confident while wrong</td>
+</tr>
+<tr>
+<td>Make it sound more formal</td>
+<td>none</td>
+<td>Formatting does not fix facts</td>
+</tr>
+<tr>
+<td>Open the regulation and check 4B2</td>
+<td>Verify</td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<p>Second item, same shape: Dan hands over a spreadsheet full of names
+and account numbers, and policy forbids sharing regulated personal
+data.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Why it fails</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Upload it, “it is internal only”</td>
+<td>Internal is not a policy exemption</td>
+</tr>
+<tr>
+<td>Upload it and tell Claude not to retain</td>
+<td>An instruction to the model is not a control</td>
+</tr>
+<tr>
+<td>Skip the analysis</td>
+<td>Refusing work when a safe path exists is also a failure</td>
+</tr>
+<tr>
+<td>Strip identifiers, then analyse</td>
+<td>Correct: gate</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hands-on">Hands-on</h3>
+<ol type="1">
+<li>Pick one piece of work where you use Claude.</li>
+<li>Write down which move it needs: verify, match, gate or
+escalate.</li>
+<li>Find one place where you took a shortcut instead.</li>
+<li>Rewrite that step as the correct move.</li>
+</ol>
+<h3 id="exercises">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Assign one of the four moves to five situations</td>
+<td>15 min</td>
+<td>Each situation has exactly one main move</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Rewrite the two sample items from memory</td>
+<td>10 min</td>
+<td>You can explain why each distractor fails</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Build a 40-hour study budget by weight</td>
+<td>15 min</td>
+<td>The heaviest domain gets the most hours</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall">Pitfall</h3>
+<p>Reading the options first and picking the most comprehensive one. The
+correct answer is usually a small step in the right place.</p>
+</section>
+<section id="m02">
+<h2 id="prompting-and-task-execution-d1-14">02 · Prompting and Task
+Execution (D1, 14%)</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Write a four-part brief instead of a wall of commands.</li>
+<li>Split a large deliverable into reviewable stages.</li>
+<li>Choose the prompt shape by task type.</li>
+</ul>
+<h3 id="theory-1">Theory</h3>
+<p>Maya spends 40 minutes on a 15-line prompt and gets a flatter report
+than any short prompt that week. The problem is not length. It is length
+in the wrong places and silence in the right ones.</p>
+<p>A brief a new contractor could act on has four parts:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Part</th>
+<th>Question</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context</td>
+<td>What is the situation, which data</td>
+<td>Q3 campaign, figures in the attached file</td>
+</tr>
+<tr>
+<td>Ask</td>
+<td>What exactly to do</td>
+<td>Build a six-section report, one chart each</td>
+</tr>
+<tr>
+<td>Audience</td>
+<td>Who reads it, what they do next</td>
+<td>Director deciding the Q4 budget</td>
+</tr>
+<tr>
+<td>Success</td>
+<td>What good looks like</td>
+<td>Every number sourced, under two pages</td>
+</tr>
+</tbody>
+</table>
+<p>A positive instruction beats a wall of prohibitions. One sample
+teaches more than ten sentences describing a voice.</p>
+<p>Decomposition: a quarterly report is not one task, it is a chain:
+pull figures, find what changed, write, format. An error at step one
+gets baked into the finished draft.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Grouping</td>
+<td>Several small related questions in one message</td>
+<td>Ask for three metrics together</td>
+</tr>
+<tr>
+<td>Decomposition</td>
+<td>One large task split into reviewable stages</td>
+<td>Pull, review, write, review, format</td>
+</tr>
+</tbody>
+</table>
+<p>Feedback belongs in the same conversation, naming what to keep and
+what to change. Opening a new chat with a bigger prompt throws away all
+the context already built.</p>
+<p>Four task types, four prompt shapes:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Type</th>
+<th>Emphasis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Analysis</td>
+<td>Maximum specificity: which metrics, which window, which calculation,
+which format</td>
+</tr>
+<tr>
+<td>Research</td>
+<td>Match scope to the lookup tool</td>
+</tr>
+<tr>
+<td>Drafting</td>
+<td>Voice sample and audience</td>
+</tr>
+<tr>
+<td>Brainstorming</td>
+<td>State the goal and boundaries, ask for many varied options</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-1">Example</h3>
+<p>Five vendor proposals, a scored comparison and a recommendation.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“Compare and pick one for me”</td>
+<td>No criteria, nothing to check against</td>
+</tr>
+<tr>
+<td>One long prompt with every criterion and format</td>
+<td>A finished deliverable in one shot, unverifiable</td>
+</tr>
+<tr>
+<td>Five separate chats, merge by hand</td>
+<td>No chat ever sees two proposals side by side</td>
+</tr>
+<tr>
+<td>Ask for the comparison criteria and data first, review, then score
+one criterion at a time</td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<p>Maya also has a cheaper safeguard than decomposition: ask for the
+data needed and the assumptions to be used, then review before any work.
+The plan usually exposes one wrong assumption.</p>
+<h3 id="hands-on-1">Hands-on</h3>
+<ol type="1">
+<li>Pick a task you repeat weekly.</li>
+<li>Write the four-part brief.</li>
+<li>Add: “list the data you need and the assumptions you will make, for
+me to review first”.</li>
+<li>Run it, read the plan, fix the wrong assumption.</li>
+<li>Continue, then give targeted feedback: keep this, change that.</li>
+</ol>
+<h3 id="exercises-1">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Rewrite a long prompt into four parts</td>
+<td>15 min</td>
+<td>No “do not” line remains</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Split one deliverable into four reviewable stages</td>
+<td>15 min</td>
+<td>An error at stage one is caught before stage four</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Run the plan-first step on real work</td>
+<td>10 min</td>
+<td>The plan exposes at least one wrong assumption</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Write prompts for four different task types</td>
+<td>20 min</td>
+<td>Each type has a different emphasis</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-1">Pitfall</h3>
+<p>Assuming a long prompt is skilled. The issue is length in the wrong
+places, and missing the four parts.</p>
+</section>
+<section id="m03">
+<h2 id="catching-confident-lies-d2-21">03 · Catching Confident Lies (D2,
+21%)</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Explain why a model produces citations that do not exist.</li>
+<li>Apply three habits that cut fabrication.</li>
+<li>Catch missing content, not just wrong content.</li>
+</ul>
+<h3 id="theory-2">Theory</h3>
+<p>Maya puts a statistic on a slide: “73% of buyers shortlist a vendor
+before talking to sales, according to The Everling Group’s annual
+survey”. The company does not exist.</p>
+<p>A model does not look facts up in a database; it predicts the next
+piece of text. The phrase “according to a report by” is usually followed
+by a firm name, a survey title and a tidy number. It completes the shape
+of a citation, it does not retrieve one.</p>
+<p>Three failure types:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Type</th>
+<th>Sign</th>
+<th>Check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stale training data</td>
+<td>Prices, leaders, rules stated as current</td>
+<td>Check the current source</td>
+</tr>
+<tr>
+<td>Fabricated citation</td>
+<td>Report, organisation, figure all look real</td>
+<td>Open the source</td>
+</tr>
+<tr>
+<td>Plausible-sounding error</td>
+<td>No source to open</td>
+<td>Check against the source data</td>
+</tr>
+</tbody>
+</table>
+<p>Three habits that cut fabrication sharply:</p>
+<ol type="1">
+<li>Allow “I do not have enough information”. Anthropic’s documentation
+says permission to admit uncertainty drastically reduces false
+information.</li>
+<li>Require a verbatim supporting quote for every claim.</li>
+<li>Open the source yourself for anything important.</li>
+</ol>
+<p><strong>Completeness</strong> is harder: every sentence is true but
+something that changes the conclusion is missing. A six-market study
+summarised into five insights can drop two markets without a single
+wrong sentence.</p>
+<p>A tell: ask the same factual question twice and get two different
+answers. Disagreement between runs means neither is verified.</p>
+<h3 id="example-2">Example</h3>
+<p>A market-share analysis with citations, destined for a public
+webinar.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ship it, it has citations</td>
+<td>An unopened citation is unverified</td>
+</tr>
+<tr>
+<td>Ask Claude to double-check</td>
+<td>Same machine, same failure modes</td>
+</tr>
+<tr>
+<td>Spot-check the surprising number</td>
+<td>Dangerous fabrications usually look ordinary</td>
+</tr>
+<tr>
+<td>Open every cited report and check every figure</td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<p>Completeness check: the original brief listed six markets, the
+summary has five insights. Count and compare, do not read for gaps.</p>
+<h3 id="hands-on-2">Hands-on</h3>
+<ol type="1">
+<li>Take an output with figures.</li>
+<li>Mark every checkable claim.</li>
+<li>Require a verbatim quote for each claim; withdraw claims with
+none.</li>
+<li>Open the source for the two most important claims.</li>
+<li>Compare the summary against the original requirement list.</li>
+</ol>
+<h3 id="exercises-2">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Demand quotes for 10 claims, withdraw the unsupported</td>
+<td>15 min</td>
+<td>At least one claim withdrawn</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Check completeness against the brief</td>
+<td>10 min</td>
+<td>One missing item found</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Ask the same question twice and compare</td>
+<td>5 min</td>
+<td>The divergence is written down</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-2">Pitfall</h3>
+<p>Asking “are you sure”. The answer is generated by the same mechanism
+that produced the claim.</p>
+</section>
+<section id="m04">
+<h2 id="the-validation-playbook-d2-21">04 · The Validation Playbook (D2,
+21%)</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Run a one-page validation routine every time.</li>
+<li>Recognise when the answer is not yours to give.</li>
+<li>Hand off to a qualified reviewer correctly.</li>
+</ul>
+<h3 id="theory-3">Theory</h3>
+<p>Priya asks: “Who verified this before it goes out?” Reading it twice
+is not an answer.</p>
+<p>The one-page routine:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Step</th>
+<th>Action</th>
+<th>Blocks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Attach the source documents, require only those</td>
+<td>The model drawing on general knowledge</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add “if there is not enough information, say so”</td>
+<td>Fabrication filling gaps</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Every claim carries a verbatim quote; no quote, no claim</td>
+<td>Unsourced claims</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Open the source yourself, read each figure in place</td>
+<td>Fabricated citations</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Re-ask one important question in a fresh chat and compare</td>
+<td>Silent divergence</td>
+</tr>
+</tbody>
+</table>
+<p>Order matters: inside the model reduces errors, outside the model is
+the real gate.</p>
+<p>When to escalate:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>High-risk domain</td>
+<td>Qualified human reviews before the recipient sees it</td>
+</tr>
+<tr>
+<td>Policy is silent or needs an exception</td>
+<td>Route to the policy owner</td>
+</tr>
+<tr>
+<td>Answer will be published</td>
+<td>Check every claim, not a sample</td>
+</tr>
+</tbody>
+</table>
+<p>High-risk domains named in policy: legal, medical, insurance, lending
+and investment, hiring, housing, admissions, published journalism. In
+these, a qualified professional must review before delivery, and the
+recipient must be told AI was involved. Claude reviewing its own draft
+is not a review.</p>
+<h3 id="example-3">Example</h3>
+<p>A 100-page contract, assess penalty and termination clauses.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Why it fails</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“Be extremely careful, this document matters”</td>
+<td>Tone does not ground a claim in the text</td>
+</tr>
+<tr>
+<td>Split into 20 short chunks</td>
+<td>The risk is fabricated clause content, not long answers</td>
+</tr>
+<tr>
+<td>Ask Claude for its confidence per finding</td>
+<td>Same generating mechanism</td>
+</tr>
+<tr>
+<td>Extract verbatim clauses first, analyse only from those quotes</td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<p>The tax treatment of a customer invoice passes every step above but
+is still not Maya’s call. It goes to a qualified reviewer before
+publication, and the customer is told.</p>
+<h3 id="hands-on-3">Hands-on</h3>
+<ol type="1">
+<li>Pick a real document with figures.</li>
+<li>Run all five steps.</li>
+<li>Record every withdrawn claim and why.</li>
+<li>For each answer, ask whether it sits in a high-risk domain.</li>
+<li>If it does, name the reviewer in the process before sending.</li>
+</ol>
+<h3 id="exercises-3">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Run the five steps on a real document</td>
+<td>25 min</td>
+<td>At least one claim withdrawn</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Classify five answers: routine or high-risk</td>
+<td>10 min</td>
+<td>Each names its reviewer</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Write two versions for two readers</td>
+<td>15 min</td>
+<td>Each states the reader and their next action</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Write a five-step checklist for the team</td>
+<td>15 min</td>
+<td>Someone else can follow it unaided</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-3">Pitfall</h3>
+<p>Treating “I read it again” as verification. Verification means
+opening the source.</p>
+</section>
+<section id="m05">
+<h2 id="product-and-model-selection-d3-12">05 · Product and Model
+Selection (D3, 12%)</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Choose a feature by the weakness it fixes.</li>
+<li>Choose a model tier using three axes.</li>
+<li>Handle a long conversation correctly.</li>
+</ul>
+<h3 id="theory-4">Theory</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Weakness it fixes</th>
+<th>Use when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Plain chat</td>
+<td>Default</td>
+<td>One-off work, nothing to remember</td>
+</tr>
+<tr>
+<td>Project</td>
+<td>Context resets</td>
+<td>Recurring work with background documents</td>
+</tr>
+<tr>
+<td>Research</td>
+<td>Many sources needed</td>
+<td>Investigation with citations</td>
+</tr>
+<tr>
+<td>Artifact</td>
+<td>Output needs a life of its own</td>
+<td>A deliverable you will edit, share, version</td>
+</tr>
+</tbody>
+</table>
+<p>No feature is a “smarter mode”. Each fixes a specific weakness.</p>
+<p>Lookup family:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tool</th>
+<th>Use for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Search</td>
+<td>Finding one fact</td>
+</tr>
+<tr>
+<td>Thinking</td>
+<td>Reasoning over data you already hold</td>
+</tr>
+<tr>
+<td>Research</td>
+<td>Gathering many sources and citing them</td>
+</tr>
+</tbody>
+</table>
+<p>Three tiers:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tier</th>
+<th>Use for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fast, cheap</td>
+<td>Well-scoped, high-volume work</td>
+</tr>
+<tr>
+<td>Middle</td>
+<td>The sensible default</td>
+</tr>
+<tr>
+<td>Most capable</td>
+<td>When a wrong answer costs more than the compute</td>
+</tr>
+</tbody>
+</table>
+<p>Three axes: how good it must be, whether a human is waiting, and how
+often it runs. Volume is the axis people forget: one call on the
+expensive model is rounding error, the same choice a thousand times a
+day is a budget line.</p>
+<p>Long conversations:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Move</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Restart</td>
+<td>The chat has drifted across topics</td>
+</tr>
+<tr>
+<td>Summarise</td>
+<td>You need the thread but less detail</td>
+</tr>
+<tr>
+<td>Persist</td>
+<td>The underlying facts do not change and must survive</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-4">Example</h3>
+<p>100 short customer replies a day, speed and cost matter.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Why it fails</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The most capable model for every reply</td>
+<td>Capability the task never uses is pure spend</td>
+</tr>
+<tr>
+<td>Disable features to cut cost</td>
+<td>Still the wrong tier</td>
+</tr>
+<tr>
+<td>Switch platforms</td>
+<td>The mismatch travels with you</td>
+</tr>
+<tr>
+<td>A fast, cheap tier for simple high-volume work</td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<p>Maya has two jobs that morning: 100 short replies and one deep
+analysis. Running both on the same tier is a matching error, not a model
+problem.</p>
+<h3 id="hands-on-4">Hands-on</h3>
+<ol type="1">
+<li>List five things you do with Claude in a week.</li>
+<li>For each, pick a feature and name the weakness it fixes.</li>
+<li>For each, pick a tier and name the deciding axis.</li>
+<li>Re-run one expensive job on a cheaper tier and compare.</li>
+</ol>
+<h3 id="exercises-4">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Choose a feature for six real tasks</td>
+<td>10 min</td>
+<td>Each choice names the weakness fixed</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Choose a tier for each step of one workflow</td>
+<td>15 min</td>
+<td>At least two tiers appear</td>
+</tr>
+<tr>
+<td>3</td>
+<td>For one long chat, choose restart, summarise or persist</td>
+<td>10 min</td>
+<td>The reason cites how long the facts last</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-4">Pitfall</h3>
+<p>Choosing the most capable model “to be safe”. The exam rewards
+stepping down when the task is clear.</p>
+</section>
+<section id="m06">
+<h2 id="workflow-integration-d4-16">06 · Workflow Integration (D4,
+16%)</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Map the real week before automating anything.</li>
+<li>Pick the step with leverage, not the one that demos well.</li>
+<li>Design a pilot with criteria written first.</li>
+</ul>
+<h3 id="theory-5">Theory</h3>
+<p>Dan wants Maya’s prompt forwarded to the whole team by Friday. That
+is how most Claude rollouts die: a tool is not a workflow.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Step</th>
+<th>Action</th>
+<th>Common mistake</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Map the real week: documents, threads, calendar</td>
+<td>Asking people where their week goes instead of reading the
+material</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Split into steps, mark rule-based versus judgment</td>
+<td>Skipping the judgment steps</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Find where the hours leak</td>
+<td>Picking the demo-friendly step</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Analyse before automating</td>
+<td>Building a skill before the process is settled</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Pilot one person, one step, one week</td>
+<td>Rolling out to everyone</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Write the pass criteria first</td>
+<td>Writing them afterwards, when they bend to fit</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Measure, then widen</td>
+<td>Widening because it felt good</td>
+</tr>
+</tbody>
+</table>
+<p>Maya assumes the time sink is social copy. Mapping the week shows it
+is assembling the Friday review.</p>
+<h3 id="example-5">Example</h3>
+<p>Requirements for automating invoice processing; the process doc and
+three months of exception logs already exist.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ask Claude to write the requirements</td>
+<td>No internal evidence, generic output</td>
+</tr>
+<tr>
+<td>Run research on how other companies do it</td>
+<td>The real constraints are in your own documents</td>
+</tr>
+<tr>
+<td>Build a skill encoding the workflow first</td>
+<td>Freezing a process that is not settled</td>
+</tr>
+<tr>
+<td>Upload the documents and logs, split steps, classify, find gaps,
+then draft</td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<p>Pass criteria written in advance: every figure in the draft carries a
+source citation; the human review pass stays under one hour.</p>
+<h3 id="hands-on-5">Hands-on</h3>
+<ol type="1">
+<li>For one week, log every recurring task and its real duration.</li>
+<li>Pick the largest time sink.</li>
+<li>Split it into sub-steps and mark which need judgment.</li>
+<li>Write two measurable pass criteria for a small change.</li>
+<li>Run it for a week, measure, then decide.</li>
+</ol>
+<h3 id="exercises-5">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Map your week step by step</td>
+<td>20 min</td>
+<td>The largest time sink is named</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write two pass criteria before trying a change</td>
+<td>10 min</td>
+<td>Both are measurable</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Design a one-person, one-week pilot</td>
+<td>15 min</td>
+<td>A measurement date and a decision owner are named</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Draw before and after for one step</td>
+<td>15 min</td>
+<td>Who does what on each side is explicit</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-5">Pitfall</h3>
+<p>Automating the demo-friendly step. Leverage sits in the step that
+costs time.</p>
+</section>
+<section id="m07">
+<h2 id="configuration-and-knowledge-d5-12">07 · Configuration and
+Knowledge (D5, 12%)</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Separate instructions from knowledge.</li>
+<li>Put each rule at the right scope: personal, project,
+organisation.</li>
+<li>Keep knowledge from going stale.</li>
+</ul>
+<h3 id="theory-6">Theory</h3>
+<p>Maya pastes the same brand-voice paragraph into a new chat for the
+fifth time that week. The fix is not a better prompt; it is the right
+home for the context.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Place</th>
+<th>Answers</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Instructions</td>
+<td>How should Claude behave</td>
+<td>Tone, standing rules, prohibitions</td>
+</tr>
+<tr>
+<td>Knowledge</td>
+<td>What is true here</td>
+<td>Documents, price sheets, samples</td>
+</tr>
+</tbody>
+</table>
+<p>A project’s name and description are for humans. Claude does not read
+them.</p>
+<p>Instructions have three scopes:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Scope</th>
+<th>Reach</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Personal</td>
+<td>Every chat you open</td>
+<td>Personal preferences</td>
+</tr>
+<tr>
+<td>Project</td>
+<td>Inside the project</td>
+<td>Team agreements</td>
+</tr>
+<tr>
+<td>Organisation</td>
+<td>Everyone</td>
+<td>Company policy</td>
+</tr>
+</tbody>
+</table>
+<p>Durable rules belong in instructions; a one-off ask belongs in the
+prompt. When personal and organisation conflict, the organisation
+wins.</p>
+<p>Curating knowledge:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Practice</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>File names state content and date</td>
+<td>Avoids citing last quarter with confidence</td>
+</tr>
+<tr>
+<td>Related documents grouped</td>
+<td>Retrieval finds the right cluster</td>
+</tr>
+<tr>
+<td>Name the file when you need it</td>
+<td>Points at the right source</td>
+</tr>
+<tr>
+<td>Remove superseded documents</td>
+<td>Old files get used while they exist</td>
+</tr>
+</tbody>
+</table>
+<p>Connectors inherit your permissions: Claude sees what you can see.
+Actions wait for a human; drafts do not send themselves.</p>
+<h3 id="example-6">Example</h3>
+<p>Legal wants every contract review chat to use the firm checklist and
+a formal tone, without affecting other work.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Option</th>
+<th>Why it fails</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Paste the checklist at the start of each chat</td>
+<td>Exactly what Maya does every morning</td>
+</tr>
+<tr>
+<td>Put it in personal instructions</td>
+<td>Wrong scope: every chat that person opens is affected</td>
+</tr>
+<tr>
+<td>Rename the project</td>
+<td>Claude does not read names</td>
+</tr>
+<tr>
+<td>Project instructions for tone, checklist in knowledge</td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<p>A project named “Always formal” with no instruction inside answers
+normally.</p>
+<h3 id="hands-on-6">Hands-on</h3>
+<ol type="1">
+<li>Open a project you use.</li>
+<li>List everything in its instructions; mark items that are facts, not
+behaviour.</li>
+<li>Move the facts into knowledge.</li>
+<li>Rename knowledge files by content and date.</li>
+<li>Delete or replace superseded documents.</li>
+</ol>
+<h3 id="exercises-6">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Sort 10 items into instructions or knowledge</td>
+<td>15 min</td>
+<td>No item is both</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Rename and group 10 documents</td>
+<td>10 min</td>
+<td>Names state content and date</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Assign a scope to three rules</td>
+<td>10 min</td>
+<td>Durable rules sit at the wider scope</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Write a monthly knowledge review step</td>
+<td>15 min</td>
+<td>It names an owner</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-6">Pitfall</h3>
+<p>Putting rules into a knowledge document. A rule book inside knowledge
+is not a standing instruction.</p>
+</section>
+<section id="m08">
+<h2 id="governance-and-responsible-use-d6-15">08 · Governance and
+Responsible Use (D6, 15%)</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Place a proposal on the three policy tiers.</li>
+<li>Recognise data that must be handled before prompting.</li>
+<li>Know when to stop and ask the policy owner.</li>
+</ul>
+<h3 id="theory-7">Theory</h3>
+<p>Dan: “Write personalised financial advice emails to customers, and
+keep it quiet so legal does not slow us down.” The sentence carries two
+traps at once.</p>
+<p>Three policy tiers:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Universal</td>
+<td>No deception, no misleading health/legal/financial content, no fake
+media, no misuse of personal data</td>
+</tr>
+<tr>
+<td>High-risk</td>
+<td>A qualified professional reviews before delivery; the recipient is
+told AI was involved</td>
+</tr>
+<tr>
+<td>Additional</td>
+<td>Guidance for consumer-facing chatbots</td>
+</tr>
+</tbody>
+</table>
+<p>Four placement questions:</p>
+<ol type="1">
+<li>Is this deceptive?</li>
+<li>Does it advise or decide something consequential for a real
+person?</li>
+<li>What class of data goes in?</li>
+<li>What does company policy say, and who owns it?</li>
+</ol>
+<p>Data classes needing handling: government identifiers, account
+numbers, health records, payment cards, passwords, documents under
+NDA.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Handling</th>
+<th>Use for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Remove or anonymise identifiers</td>
+<td>Customer data</td>
+</tr>
+<tr>
+<td>Generalise</td>
+<td>Date of birth to age band</td>
+</tr>
+<tr>
+<td>Aggregate</td>
+<td>Revenue by region</td>
+</tr>
+<tr>
+<td>Refuse</td>
+<td>Clearly prohibited work</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-7">Example</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Conclusion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Personalised financial advice emails</td>
+<td>Claude drafts, a licensed reviewer signs off, customer is told AI
+helped</td>
+</tr>
+<tr>
+<td>Five invented testimonials for a landing page</td>
+<td>No; use real survey quotes, each verified</td>
+</tr>
+<tr>
+<td>“Internal only” analysis of named customer data</td>
+<td>Still gate it</td>
+</tr>
+<tr>
+<td>Incognito mode to “be compliant”</td>
+<td>Incognito does not change the data agreement</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hands-on-7">Hands-on</h3>
+<ol type="1">
+<li>Take a Claude proposal under discussion.</li>
+<li>Answer the four placement questions.</li>
+<li>Identify the data class and the handling.</li>
+<li>Write the reply to the proposer: yes, under what conditions, who
+signs off.</li>
+</ol>
+<h3 id="exercises-7">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Place five proposals on the three tiers</td>
+<td>15 min</td>
+<td>Each names a reviewer</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Classify six data types and their handling</td>
+<td>10 min</td>
+<td>None is “just use it”</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Reply to a “keep it quiet” request</td>
+<td>10 min</td>
+<td>Names the policy owner, decides nothing</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Write a gate checklist for the team</td>
+<td>15 min</td>
+<td>It has an explicit stop step</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-7">Pitfall</h3>
+<p>Treating a disclaimer at the end as the safeguard. Review happens
+before the decision reaches the recipient.</p>
+</section>
+<section id="m09">
+<h2 id="troubleshooting-and-optimization-d7-10">09 · Troubleshooting and
+Optimization (D7, 10%)</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Drop three wrong reflexes: regenerate, switch models, shout
+louder.</li>
+<li>Run the four-step ladder.</li>
+<li>Read symptoms to find the real cause.</li>
+</ul>
+<h3 id="theory-8">Theory</h3>
+<p>Thursday, same prompt, same chat, the output turns flat.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Reflex</th>
+<th>Why it fails</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Regenerate</td>
+<td>Adds no information, rerolls the dice</td>
+</tr>
+<tr>
+<td>Switch model</td>
+<td>A model cannot supply context it never received</td>
+</tr>
+<tr>
+<td>Add all-caps instructions</td>
+<td>Adds complexity; the right direction is simplification</td>
+</tr>
+</tbody>
+</table>
+<p>The four-step ladder:</p>
+<ol type="1">
+<li>Restate the ask simply and clearly.</li>
+<li>Add context as if briefing someone with no background.</li>
+<li>Break a complex task into steps.</li>
+<li>Give specific feedback: keep this, change that.</li>
+</ol>
+<p>Symptom table:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Generic output</td>
+<td>Missing specificity</td>
+<td>Add detail and one good example</td>
+</tr>
+<tr>
+<td>Off topic</td>
+<td>Goal unclear</td>
+<td>Restate the goal</td>
+</tr>
+<tr>
+<td>Wrong format</td>
+<td>No format was ever shown</td>
+<td>Show a sample</td>
+</tr>
+<tr>
+<td>Complex answer that wobbles</td>
+<td>Task needs splitting</td>
+<td>Split it</td>
+</tr>
+</tbody>
+</table>
+<p>A fabrication tell: running the same question twice yields two
+conclusions. Asking for the reasoning can expose a stale assumption, for
+example a constraint from Tuesday still being honoured.</p>
+<h3 id="example-8">Example</h3>
+<p>A flat brief where the four-step ladder passes: the ask is clear, the
+context was loaded.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Check</th>
+<th>Finding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Re-run and compare</td>
+<td>Two different answers: fabrication tell</td>
+</tr>
+<tr>
+<td>Ask for step-by-step reasoning</td>
+<td>The model still honours a stale constraint</td>
+</tr>
+<tr>
+<td>Conclusion</td>
+<td>Old context never cleared, not a weak model</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hands-on-8">Hands-on</h3>
+<ol type="1">
+<li>Take a recent poor output.</li>
+<li>Grade it against the symptom table.</li>
+<li>Run the ladder, one step at a time.</li>
+<li>Record which step changed the result.</li>
+<li>If still poor, re-run twice to check for fabrication.</li>
+</ol>
+<h3 id="exercises-8">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Run the ladder on one poor output</td>
+<td>20 min</td>
+<td>The responsible step is identified</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Classify five symptoms</td>
+<td>10 min</td>
+<td>Each maps to one fix</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Ask for the reasoning to expose a wrong assumption</td>
+<td>10 min</td>
+<td>The assumption is named</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-8">Pitfall</h3>
+<p>Hitting regenerate. The exam treats that as rerolling the dice and
+calling it debugging.</p>
+</section>
+<section id="m10">
+<h2 id="capstone-one-workday">10 · Capstone: One Workday</h2>
+<p><strong>Objectives</strong></p>
+<ul>
+<li>Run all seven domains in one real working day.</li>
+<li>See that the domains are not separate.</li>
+<li>Turn the four moves into habits.</li>
+</ul>
+<h3 id="theory-9">Theory</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Time</th>
+<th>Work</th>
+<th>Domain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Morning</td>
+<td>Launch brief: four parts, a sample, plan reviewed first</td>
+<td>D1</td>
+</tr>
+<tr>
+<td>Mid-morning</td>
+<td>A footnote on the press release: open the source, find last
+quarter’s figure</td>
+<td>D2</td>
+</tr>
+<tr>
+<td>Noon</td>
+<td>100 short replies on the fast tier; one deep analysis on the capable
+tier</td>
+<td>D3</td>
+</tr>
+<tr>
+<td>Early afternoon</td>
+<td>The update passes through a named human review box</td>
+<td>D4</td>
+</tr>
+<tr>
+<td>Afternoon</td>
+<td>Nobody pastes the brand voice; chats open inside a prepared
+project</td>
+<td>D5</td>
+</tr>
+<tr>
+<td>Mid-afternoon</td>
+<td>Dan hands over a named customer list, “internal only”</td>
+<td>D6</td>
+</tr>
+<tr>
+<td>End of day</td>
+<td>One flat output: run the ladder instead of regenerating</td>
+<td>D7</td>
+</tr>
+</tbody>
+</table>
+<p>The point: one day, one person, four moves. The exam mixes domains
+inside one scenario, so people who study each domain separately miss the
+join.</p>
+<h3 id="example-9">Example</h3>
+<p>Which domain owns the named review box? The answer is workflow
+integration, because review is a step in the process, verification made
+institutional. If the reviewer must be qualified, it is also governance.
+The right question is which aspect the scenario is asking about.</p>
+<h3 id="hands-on-9">Hands-on</h3>
+<ol type="1">
+<li>Pick a real working day.</li>
+<li>Log every Claude use and the move taken.</li>
+<li>At the end, count which domains appeared.</li>
+<li>Rewrite one of your processes as a four-step checklist.</li>
+</ol>
+<h3 id="exercises-9">Exercises</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Time</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Run a real day and log the domains</td>
+<td>1 day</td>
+<td>At least five domains appear</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Log the move for every Claude use</td>
+<td>1 day</td>
+<td>No use is left unclassified</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Rewrite one process as a four-step checklist</td>
+<td>30 min</td>
+<td>Someone else can follow it</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Re-run that process a week later</td>
+<td>1 week</td>
+<td>Before and after are comparable</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pitfall-9">Pitfall</h3>
+<p>Studying the seven domains as seven separate subjects. The exam mixes
+them in one scenario.</p>
+</section>
+
+
+    </div>
+  </div>
+
+  <footer class="lesson-footer">
+    <p>Source: course video. Figures checked October 2026.</p>
+    <p>Back to <a href="../index.html">home</a>.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/site-nav.js?v=3"></script>
+</body>
+</html>
