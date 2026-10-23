@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claude Certified Architect: Foundations (CCA-F) — Claude · CCA-F · giáo trình</title>
+<title>Claude Certified Architect: Foundations (CCA-F) — Claude · CCA-F · 12 bài</title>
 <link rel="stylesheet" href="../assets/course.css?v=3">
 <style>
   .toc li { margin: .3rem 0; }
@@ -17,10 +17,10 @@
 
 <header class="lesson-header">
   <div class="inner">
-    <div class="course-tag">Claude · CCA-F · giáo trình</div>
+    <div class="course-tag">Claude · CCA-F · 12 bài</div>
     <h1>Claude Certified Architect: Foundations (CCA-F)</h1>
-    <p class="subtitle">35 module: bảng quyết định, ví dụ, bài tập, bẫy. Phần thi tách riêng.</p>
-    <p class="lesson-meta"><span>35 module</span><span>5 domain</span><span>Nguồn: transcript video</span></p>
+    <p class="subtitle">Giáo trình 12 bài: mục tiêu, lý thuyết, ví dụ, mã, thực hành, bài tập, bẫy.</p>
+    <p class="lesson-meta"><span>12 bài</span><span>5 domain</span><span>Nguồn: transcript video</span></p>
   </div>
 </header>
 
@@ -31,62 +31,31 @@
       <nav class="toc">
         <strong>Trong trang này</strong>
         <ol>
-      <li><a href="#m01">01 · How This Exam Works</a></li>
-      <li><a href="#m02">02 · Deciding Whether You Need an Agent</a></li>
-      <li><a href="#m03">03 · Decomposition and Execution Patterns</a></li>
-      <li><a href="#m04">04 · Multi-Agent Topologies</a></li>
-      <li><a href="#m05">05 · Claude Code Configuration Hierarchy</a></li>
-      <li><a href="#m06">06 · Commands, Skills and Subagents</a></li>
-      <li><a href="#m07">07 · Claude Code in Automation</a></li>
-      <li><a href="#m08">08 · Prompt Engineering at System Scale</a></li>
-      <li><a href="#m09">09 · Structured Output and Evaluation</a></li>
-      <li><a href="#m10">10 · Tool Design Fundamentals</a></li>
-      <li><a href="#m11">11 · MCP Integration Architecture</a></li>
-      <li><a href="#m12">12 · Context Management</a></li>
-      <li><a href="#m13">13 · Scenario Lab A: Customer Support Under Constraints</a></li>
-      <li><a href="#m14">14 · Scenario Lab B: Multi-Agent Research System</a></li>
-      <li><a href="#m15">15 · The Agentic Loop</a></li>
-      <li><a href="#m16">16 · Subagent Spawning and Context Passing</a></li>
-      <li><a href="#m17">17 · Enforcement Gates and Structured Handoff</a></li>
-      <li><a href="#m18">18 · Agent SDK Hooks</a></li>
-      <li><a href="#m19">19 · Session State, Resumption and Forking</a></li>
-      <li><a href="#m20">20 · Built-in Tool Selection</a></li>
-      <li><a href="#m21">21 · Modular CLAUDE.md and the Memory Hierarchy</a></li>
-      <li><a href="#m22">22 · Skill and Command Frontmatter</a></li>
-      <li><a href="#m23">23 · Path-Specific Rules</a></li>
-      <li><a href="#m24">24 · Plan Mode versus Direct Execution</a></li>
-      <li><a href="#m25">25 · Iterative Refinement Techniques</a></li>
-      <li><a href="#m26">26 · CI Output Contracts and Review Isolation</a></li>
-      <li><a href="#m27">27 · Explicit Criteria and False Positives</a></li>
-      <li><a href="#m28">28 · Batch Processing Strategy</a></li>
-      <li><a href="#m29">29 · Multi-Pass and Independent Review</a></li>
-      <li><a href="#m30">30 · Preserving Facts Across Long Conversations</a></li>
-      <li><a href="#m31">31 · Escalation and Ambiguity Resolution</a></li>
-      <li><a href="#m32">32 · Error Propagation Across Multi-Agent Systems</a></li>
-      <li><a href="#m33">33 · Large Codebase Exploration and Crash Recovery</a></li>
-      <li><a href="#m34">34 · Human Review and Confidence Calibration</a></li>
-      <li><a href="#m35">35 · Provenance and Conflicting Sources</a></li>
+      <li><a href="#m01">01 · Bài thi và quyết định đầu tiên</a></li>
+      <li><a href="#m02">02 · Chia việc, pattern, topology</a></li>
+      <li><a href="#m03">03 · Cấu hình Claude Code</a></li>
+      <li><a href="#m04">04 · Headless, CI và hook</a></li>
+      <li><a href="#m05">05 · Prompt quy mô hệ thống và structured output</a></li>
+      <li><a href="#m06">06 · Thiết kế tool và MCP</a></li>
+      <li><a href="#m07">07 · Context và hai scenario lab</a></li>
+      <li><a href="#m08">08 · Vòng lặp agent và spawn subagent</a></li>
+      <li><a href="#m09">09 · Gate, handoff và hook của SDK</a></li>
+      <li><a href="#m10">10 · Session, tool dựng sẵn, bộ nhớ cấu hình</a></li>
+      <li><a href="#m11">11 · Từ plan mode đến review nhiều lượt</a></li>
+      <li><a href="#m12">12 · Escalation, lỗi đa agent, độ tin cậy</a></li>
         </ol>
       </nav>
     </aside>
     <div class="content">
 
-<p>Ghi chú 37 module, dựng từ playlist YouTube “Claude Certified
-Architect - Foundations - Free Course” (38 video), tháng 10/2026. Nguồn:
-<a href="https://www.youtube.com/playlist?list=PLTw_BnRTtaD4">playlist
-Architect</a>.</p>
-<blockquote>
-<p>Khóa này dạy <strong>quyết định kiến trúc</strong>: khi nào cần
-agent, chia việc thế nào, chọn topology gì, cấu hình ra sao, và bảo vệ
-lựa chọn đó trước người phản biện. Khác khóa Developer ở chỗ đáp án
-thường là “cái đơn giản nhất còn đúng”, không phải “cái đầy đủ
-nhất”.</p>
-<p>Đề luyện 20 câu theo dạng scenario: <a
-href="ccaf-architect/practice-exam.md">practice-exam.md</a>.</p>
-</blockquote>
+<p>Giáo trình 12 bài, gộp từ 35 module và đối chiếu tài liệu Anthropic,
+tháng 10/2026. Nguồn: <a
+href="https://www.youtube.com/playlist?list=PLTw_BnRTtaD4">playlist
+Architect</a> và <a
+href="https://www.youtube.com/watch?v=cLa3Qf9SUYs">khóa 16 bài</a>.</p>
+<p>Mỗi bài có: mục tiêu, lý thuyết, ví dụ, mã, thực hành, bài tập, bẫy.
+Phần thi tách riêng ở <a href="exam.html">mục Thi</a>.</p>
 <h2 class="plain" id="kỳ-thi">Kỳ thi</h2>
-<p>Tên chính thức: <strong>Claude Certified Architect - Foundations
-(CCA-F)</strong>, thi có giám sát.</p>
 <table class="mapping">
 <thead>
 <tr>
@@ -97,288 +66,143 @@ href="ccaf-architect/practice-exam.md">practice-exam.md</a>.</p>
 <tbody>
 <tr>
 <td>Số câu</td>
-<td>60, mỗi câu 1 đúng và 3 nhiễu</td>
+<td>60</td>
 </tr>
 <tr>
 <td>Thời gian</td>
-<td>120 phút, khoảng 2 phút mỗi câu</td>
+<td>120 phút</td>
 </tr>
 <tr>
-<td>Dạng</td>
-<td>multiple choice; không trừ điểm đoán, bỏ trống tính sai</td>
+<td>Điểm đạt</td>
+<td>720 trên thang 100 đến 1.000</td>
 </tr>
 <tr>
 <td>Scenario</td>
-<td>4 trong 6 kịch bản, mỗi kịch bản 15 câu</td>
-</tr>
-<tr>
-<td>Thang điểm</td>
-<td>100 đến 1.000, đạt 720</td>
+<td>4 trong 6 kịch bản, mỗi cái 15 câu</td>
 </tr>
 <tr>
 <td>Lệ phí</td>
-<td>49 USD</td>
-</tr>
-<tr>
-<td>Thi lại</td>
-<td>6 tháng một lần</td>
-</tr>
-<tr>
-<td>Hình thức</td>
-<td>trực tuyến có giám sát, ghi màn hình và camera</td>
+<td>49 USD, thi lại sau 6 tháng</td>
 </tr>
 </tbody>
 </table>
-<p>720 là <strong>điểm quy đổi</strong>, không phải 72%. Không suy ra
-được số câu đúng cần thiết. Tỉ lệ theo domain trong báo cáo điểm là chẩn
-đoán, không phải điều kiện đạt.</p>
-<h2 class="plain" id="năm-domain-chính-thức">Năm domain chính thức</h2>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Domain</th>
-<th>Trọng số</th>
-<th>Module</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Agentic Architecture &amp; Orchestration</td>
-<td>27%</td>
-<td>02, 03, 04, 15, 16, 17, 18, 19, 32, 33</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Tool Design &amp; MCP Integration</td>
-<td>18%</td>
-<td>10, 11, 20</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Claude Code Configuration &amp; Workflows</td>
-<td>20%</td>
-<td>05, 06, 07, 21, 22, 23, 24, 26</td>
-</tr>
-<tr>
-<td>4</td>
-<td>Prompt Engineering &amp; Structured Output</td>
-<td>20%</td>
-<td>08, 09, 25, 27, 28, 35</td>
-</tr>
-<tr>
-<td>5</td>
-<td>Context Management &amp; Reliability</td>
-<td>15%</td>
-<td>12, 13, 14, 29, 30, 31, 34, 36, 37</td>
-</tr>
-</tbody>
-</table>
-<p>Giờ học theo ngân sách 40 giờ: D1 10,8; D2 7,2; D3 8,0; D4 8,0; D5
-6,0.</p>
-<p>Sau khi chia theo trọng số, điều chỉnh theo độ phủ: D5 xuất hiện như
-domain chính ở phần lớn scenario, nên trải ra nhiều buổi thay vì gom một
-chỗ.</p>
-<h2 class="plain" id="sáu-scenario">Sáu scenario</h2>
-<p>Đề chọn 4 trong 6, mỗi cái 15 câu:</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Scenario</th>
-<th>Nội dung</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Customer Support Resolution Agent</td>
-<td>escalation, xác minh danh tính, giữ case fact</td>
-</tr>
-<tr>
-<td>Code Generation with Claude Code</td>
-<td>sửa nhiều file, plan mode, hook</td>
-</tr>
-<tr>
-<td>Multi-Agent Research System</td>
-<td>hub-and-spoke, <code>fork_session</code>, provenance</td>
-</tr>
-<tr>
-<td>Developer Productivity</td>
-<td>phân tầng <code>CLAUDE.md</code>, skill, rule</td>
-</tr>
-<tr>
-<td>Claude Code for CI/CD</td>
-<td><code>-p</code>, JSON output, review độc lập</td>
-</tr>
-<tr>
-<td>Structured Data Extraction</td>
-<td>JSON schema, validation-retry, Message Batches</td>
-</tr>
-</tbody>
-</table>
-<h2 class="plain" id="phản-mẫu-đề-thi-luôn-cài-làm-đáp-án-sai">Phản mẫu đề thi luôn
-cài làm đáp án sai</h2>
-<p>Gặp một trong các mẫu sau trong lựa chọn, gần như chắc chắn sai:</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Phản mẫu</th>
-<th>Đáp án đúng</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Dừng vòng lặp bằng parse văn xuôi hoặc đếm vòng</td>
-<td><code>stop_reason</code></td>
-</tr>
-<tr>
-<td>Luật nghiệp vụ tất định đặt trong prompt</td>
-<td>Hook</td>
-</tr>
-<tr>
-<td>Lỗi chung chung, hoặc nuốt lỗi</td>
-<td>Metadata lỗi có cấu trúc</td>
-</tr>
-<tr>
-<td>Sentiment hoặc confidence tự báo làm tín hiệu escalate</td>
-<td>Ba lý do hợp lệ ở module 31</td>
-</tr>
-<tr>
-<td>Review nhiều file trong một lượt</td>
-<td>Lượt theo file cộng lượt tích hợp</td>
-</tr>
-<tr>
-<td>Field <code>required</code> cho nguồn có thể thiếu</td>
-<td>Field nullable</td>
-</tr>
-<tr>
-<td>Rule của cả team đặt ở <code>~/.claude/CLAUDE.md</code></td>
-<td>Scope project, commit</td>
-</tr>
-</tbody>
-</table>
-<h2 class="plain" id="nguồn-chính-thức">Nguồn chính thức</h2>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Nguồn</th>
-<th>Địa chỉ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Cổng khóa học</td>
-<td><a
-href="https://anthropic.skilljar.com/">anthropic.skilljar.com</a></td>
-</tr>
-<tr>
-<td>Bốn khóa bắt buộc</td>
-<td>Claude Code in Action · Introduction to Model Context Protocol ·
-Introduction to Agent Skills · Building with the Claude API</td>
-</tr>
-<tr>
-<td>Study Guide PDF và practice exam</td>
-<td>phát hành trong SkillJar khi đăng ký kỳ thi</td>
-</tr>
-</tbody>
-</table>
-<p>Ngoài phạm vi thi: hosting và transport của MCP server, prompt
-caching. Prompt caching vào phạm vi ở khóa Professional.</p>
+<p>Năm domain: agentic architecture 27%, cấu hình Claude Code 20%,
+prompt và structured output 20%, tool và MCP 18%, context và reliability
+15%.</p>
 <section id="m01">
-<h2 id="how-this-exam-works">01 · How This Exam Works</h2>
+<h2 id="bài-thi-và-quyết-định-đầu-tiên">01 · Bài thi và quyết định đầu
+tiên</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Đọc đúng thể lệ, phân bổ thời gian theo trọng số.</li>
+<li>Phân loại một hệ thống thành workflow, agent hay hội thoại.</li>
+<li>Áp nguyên tắc can thiệp vừa đủ.</li>
+</ul>
+<h3 id="lý-thuyết">Lý thuyết</h3>
 <p>Bài thi đo cả tốc độ đọc. Scenario dài một đoạn văn, 60 câu trong 120
-phút, tức khoảng 2 phút mỗi câu.</p>
+phút, khoảng 2 phút mỗi câu.</p>
+<p>Ba hình thái, phân biệt bằng <strong>ai chọn hành động kế
+tiếp</strong>:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Hình thái</th>
+<th>Ai chọn bước sau</th>
+<th>Dấu hiệu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Workflow</td>
+<td>Người viết code</td>
+<td>Liệt kê được toàn bộ nhánh trước</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>Model</td>
+<td>Đường đi hiện ra trong lúc chạy</td>
+</tr>
+<tr>
+<td>Hội thoại</td>
+<td>Không có kế hoạch</td>
+<td>Trả lời từng lượt</td>
+</tr>
+</tbody>
+</table>
+<p>Câu hỏi duy nhất: viết được toàn bộ trình tự ra trước không. Được thì
+là workflow, kể cả khi mỗi bước rất khó. Có model, có tool, có vòng lặp
+mà mọi nhánh do người viết thì vẫn là workflow.</p>
+<p>Can thiệp vừa đủ: sửa đúng nguyên nhân với chi phí thấp nhất.</p>
 <table class="mapping">
 <colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
 </colgroup>
 <thead>
 <tr>
-<th>Việc</th>
-<th>Cách làm</th>
+<th>Triệu chứng</th>
+<th>Sửa đúng</th>
+<th>Sửa thừa</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Phân bổ thời gian</td>
-<td>Theo trọng số domain, không theo sở thích</td>
+<td>Chọn nhầm một trong hai tool</td>
+<td>Viết lại mô tả</td>
+<td>Thêm routing classifier</td>
 </tr>
 <tr>
-<td>Đọc stem</td>
-<td>Đọc kỹ nhưng có nhịp, đừng đọc lại 3 lần</td>
+<td>Review nhiều file bị nông</td>
+<td>Chia theo file, thêm bước tổng hợp</td>
+<td>Tăng context window</td>
 </tr>
 <tr>
-<td>Hiểu điểm</td>
-<td>720 là thang quy đổi, không phải phần trăm</td>
-</tr>
-<tr>
-<td>Ngoài phạm vi</td>
-<td>Đọc danh sách loại trừ ngang hàng danh sách trong phạm vi</td>
+<td>Cần chặn một hành vi tài chính</td>
+<td>Code gate</td>
+<td>Prompt mạnh hơn</td>
 </tr>
 </tbody>
 </table>
+<p>Ranh giới: hành động không đảo ngược thì dùng code, không dùng
+prompt.</p>
 <h3 id="ví-dụ">Ví dụ</h3>
-<p>Ngân sách 40 giờ, áp trọng số:</p>
+<p>Hệ thống trích hóa đơn có model, tool, retry, ghi sổ. Nhìn như
+agent.</p>
 <table class="mapping">
 <thead>
 <tr>
-<th>Domain</th>
-<th>Phép tính</th>
-<th>Giờ</th>
+<th>Câu hỏi</th>
+<th>Trả lời</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>D1</td>
-<td>40 × 27%</td>
-<td>10,8</td>
+<td>Viết được trình tự trước không</td>
+<td>Được: đọc, kiểm, retry nếu sai, ghi</td>
 </tr>
 <tr>
-<td>D2</td>
-<td>40 × 18%</td>
-<td>7,2</td>
+<td>Ai quyết định retry</td>
+<td>Code</td>
 </tr>
 <tr>
-<td>D3</td>
-<td>40 × 20%</td>
-<td>8,0</td>
-</tr>
-<tr>
-<td>D4</td>
-<td>40 × 20%</td>
-<td>8,0</td>
-</tr>
-<tr>
-<td>D5</td>
-<td>40 × 15%</td>
-<td>6,0</td>
+<td>Kết luận</td>
+<td>Workflow</td>
 </tr>
 </tbody>
 </table>
-<p>Nhưng D5 là domain chính trong 4 trên 6 scenario. Nếu dồn 6 giờ vào
-một buổi cuối tuần thì đến lúc thi phần lớn đã quên. Thay vào đó chia 6
-giờ thành 6 buổi 1 giờ, mỗi buổi gắn với một scenario.</p>
-<p>Với câu hỏi kiểu “MCP server transport nào phù hợp”, đáp án là bỏ
-qua: transport nằm ngoài phạm vi. Thời gian đó chuyển sang D1.</p>
+<p>Chi phí chọn sai: agent tốn thời gian gấp nhiều lần, ra cùng kết quả,
+và không có tín hiệu nào trong output báo đã chọn sai.</p>
+<h3 id="mã">Mã</h3>
+<p>Không có code đặc thù. Đây là bài về câu hỏi. Khi làm đề, viết hai
+cột: “các bước” và “ai chọn bước sau”.</p>
+<h3 id="thực-hành">Thực hành</h3>
+<ol type="1">
+<li>Chọn ba hệ thống bạn biết.</li>
+<li>Với mỗi cái, viết toàn bộ nhánh ra giấy.</li>
+<li>Viết được hết thì kết luận workflow.</li>
+<li>Ghi lại cái mất nếu chọn hình thái kia.</li>
+</ol>
 <h3 id="bài-tập">Bài tập</h3>
 <table class="mapping">
 <colgroup>
@@ -398,33 +222,72 @@ qua: transport nằm ngoài phạm vi. Thời gian đó chuyển sang D1.</p>
 <tbody>
 <tr>
 <td>1</td>
-<td>Lập bảng 40 giờ theo trọng số, rồi chia lại theo độ phủ</td>
-<td>20 phút</td>
-<td>D5 xuất hiện ở ít nhất 4 buổi khác nhau</td>
+<td>Phân loại 5 hệ thống</td>
+<td>15 phút</td>
+<td>Mỗi kết luận nêu ai chọn bước</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Đọc danh sách ngoài phạm vi, gạch bỏ 3 chủ đề bạn định học</td>
-<td>10 phút</td>
-<td>Mỗi chủ đề gạch có lý do “không được chấm”</td>
+<td>Thử viết hết nhánh của một “agent”</td>
+<td>20 phút</td>
+<td>Kết luận lại nếu viết được</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Bấm giờ đọc một scenario mẫu, trả lời trong 2 phút</td>
-<td>15 phút</td>
-<td>Đọc xong trong 70 giây, còn 50 giây trả lời</td>
+<td>Lập bảng giờ học theo trọng số</td>
+<td>10 phút</td>
+<td>Domain nặng nhất nhiều giờ nhất</td>
 </tr>
 </tbody>
 </table>
 <h3 id="bẫy">Bẫy</h3>
-<p>Học theo hứng thú. Người giỏi MCP nhưng không lập luận được
-orchestration sẽ trượt vì D1 chiếm hơn một phần tư số điểm.</p>
+<p>Nhầm độ khó với mức tự chủ. Đề luôn đưa hệ thống có model, tool, vòng
+lặp, và đáp án đúng là workflow vì mọi nhánh do người viết.</p>
 </section>
 <section id="m02">
-<h2 id="deciding-whether-you-need-an-agent">02 · Deciding Whether You
-Need an Agent</h2>
-<p>Ba hình thái, phân biệt bằng <strong>ai chọn hành động kế
-tiếp</strong>:</p>
+<h2 id="chia-việc-pattern-topology">02 · Chia việc, pattern,
+topology</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Chia việc theo đường nối tự nhiên, không theo token.</li>
+<li>Chọn pattern theo phụ thuộc dữ liệu.</li>
+<li>Chọn topology và nêu cái mất.</li>
+</ul>
+<h3 id="lý-thuyết-1">Lý thuyết</h3>
+<p>Chia theo <strong>đường nối của tài liệu</strong>: ranh giới file,
+bước khám phá. Chia theo số token cắt ngang mạch suy nghĩ và không bước
+sau nào cứu được.</p>
+<p>Mọi cách chia đều cần <strong>bước tái hợp</strong>: một bước chịu
+trách nhiệm tính nhất quán của kết quả cuối.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Dùng khi</th>
+<th>Giá</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sequential</td>
+<td>Bước sau cần output bước trước</td>
+<td>Thời gian cộng dồn</td>
+</tr>
+<tr>
+<td>Parallel</td>
+<td>Các bước độc lập</td>
+<td>Context nhân bản, nhiều điểm hỏng</td>
+</tr>
+<tr>
+<td>Adaptive</td>
+<td>Chưa biết phạm vi</td>
+<td>Chậm hơn kế hoạch cố định</td>
+</tr>
+</tbody>
+</table>
+<p>Trong Agent SDK, parallel nghĩa là coordinator phát nhiều task call
+trong <strong>một</strong> response. Gọi mỗi lượt một task là tuần tự,
+dù sơ đồ vẽ song song.</p>
 <table class="mapping">
 <colgroup>
 <col style="width: 33%" />
@@ -433,64 +296,74 @@ tiếp</strong>:</p>
 </colgroup>
 <thead>
 <tr>
-<th>Hình thái</th>
-<th>Ai chọn bước sau</th>
-<th>Dấu hiệu</th>
+<th>Topology</th>
+<th>Quan sát</th>
+<th>Lỗi khi hỏng</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Workflow</td>
-<td>Người viết code</td>
-<td>Liệt kê được toàn bộ nhánh trước</td>
+<td>Hub and spoke</td>
+<td>Một coordinator thấy mọi thứ</td>
+<td>Coordinator thấy ngay</td>
 </tr>
 <tr>
-<td>Agent</td>
-<td>Model, dựa trên thứ vừa học</td>
-<td>Đường đi hiện ra trong lúc chạy</td>
+<td>Pipeline</td>
+<td>Mỗi output vào đúng một input</td>
+<td>Phải xử lý ở mọi mối nối</td>
 </tr>
 <tr>
-<td>Conversational</td>
-<td>Không có kế hoạch</td>
-<td>Trả lời từng lượt</td>
+<td>Peer-to-peer</td>
+<td>Không có điểm trung tâm</td>
+<td>Mỗi agent phát hiện một lúc khác nhau</td>
 </tr>
 </tbody>
 </table>
-<p>Câu hỏi duy nhất: <strong>viết được toàn bộ trình tự ra trước
-không</strong>. Được thì là workflow, kể cả khi mỗi bước rất khó. Có
-model, có tool, có vòng lặp mà mọi nhánh do người viết thì vẫn là
-workflow.</p>
+<p>Hai luật subagent: mỗi subagent chỉ có tool của vai trò; coordinator
+chọn subagent theo câu hỏi, không chạy cả pipeline.</p>
 <h3 id="ví-dụ-1">Ví dụ</h3>
-<p>Hai hệ thống trông giống nhau:</p>
+<p>PR 14 file cần review bảo mật.</p>
 <table class="mapping">
 <colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
+<col style="width: 50%" />
+<col style="width: 50%" />
 </colgroup>
 <thead>
 <tr>
-<th>Hệ thống</th>
-<th>Mô tả</th>
-<th>Kết luận</th>
+<th>Cách</th>
+<th>Kết quả</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Trích hóa đơn</td>
-<td>Trích 12 field, kiểm tra, retry khi sai, ghi vào sổ</td>
-<td>Workflow: điều kiện retry do code quyết, mọi nhánh đã viết</td>
+<td>Một prompt chứa 14 file</td>
+<td>Nông đều, bỏ sót lỗi xuyên file</td>
 </tr>
 <tr>
-<td>Điều tra lỗi job đêm</td>
-<td>Không biết lỗi ở đâu, phải đọc log, thử giả thuyết</td>
-<td>Agent: đường đi chỉ hiện ra khi khám phá</td>
+<td>Chia theo token</td>
+<td>Mảnh này cảnh báo mẫu nguy hiểm, mảnh kia duyệt chính mẫu đó</td>
+</tr>
+<tr>
+<td>14 lượt theo file, cộng 1 lượt tích hợp</td>
+<td>Lượt tích hợp lần theo giá trị từ chỗ kiểm đến chỗ dùng</td>
 </tr>
 </tbody>
 </table>
-<p>Chi phí chọn sai: agent cho hệ thống thứ nhất tốn thời gian gấp nhiều
-lần và cho cùng kết quả, không có tín hiệu nào trong output báo rằng đã
-chọn sai hình thái.</p>
+<p>Hệ nghiên cứu 4 agent: câu hỏi “thủ đô của Pháp” chỉ cần searcher và
+reporter. Chạy cả bốn vẫn đúng nhưng tốn và thêm nhiễu.</p>
+<h3 id="mã-1">Mã</h3>
+<pre class="python"><code>tasks = [
+    {&quot;type&quot;: &quot;task&quot;, &quot;agent&quot;: &quot;searcher&quot;, &quot;prompt&quot;: &quot;...&quot;},
+    {&quot;type&quot;: &quot;task&quot;, &quot;agent&quot;: &quot;analyst&quot;, &quot;prompt&quot;: &quot;...&quot;},
+]</code></pre>
+<h3 id="thực-hành-1">Thực hành</h3>
+<ol type="1">
+<li>Chia một việc lớn theo đường nối tự nhiên.</li>
+<li>Ghi rõ bước nào chịu tính nhất quán.</li>
+<li>Chọn pattern theo phụ thuộc dữ liệu.</li>
+<li>Vẽ hub and spoke cho 4 agent, đếm mối nối nếu đổi sang
+pipeline.</li>
+</ol>
 <h3 id="bài-tập-1">Bài tập</h3>
 <table class="mapping">
 <colgroup>
@@ -510,99 +383,141 @@ chọn sai hình thái.</p>
 <tbody>
 <tr>
 <td>1</td>
-<td>Phân loại 5 hệ thống bạn biết thành workflow, agent,
-conversational</td>
+<td>Chia việc, ghi đường nối</td>
 <td>15 phút</td>
-<td>Mỗi kết luận nêu được ai chọn hành động kế tiếp</td>
+<td>Không mảnh nào cắt giữa luồng dữ liệu</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Lấy một task đang làm agent, thử viết toàn bộ nhánh ra giấy</td>
-<td>20 phút</td>
-<td>Nếu viết được hết thì kết luận lại là workflow</td>
+<td>Chỉ ra bước tái hợp</td>
+<td>10 phút</td>
+<td>Bước đó nhận output của tất cả</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Viết lý lẽ bảo vệ lựa chọn trước người phản biện</td>
-<td>10 phút</td>
-<td>Nêu được cái mất nếu chọn hình thái kia</td>
+<td>So hub and spoke với pipeline</td>
+<td>15 phút</td>
+<td>Đếm được số mối nối phải xử lý</td>
 </tr>
 </tbody>
 </table>
 <h3 id="bẫy-1">Bẫy</h3>
-<p>Nhầm độ khó với mức tự chủ. Task khó vẫn là workflow nếu viết được
-trình tự trước. Bài thi luôn đưa một hệ thống có model, tool, vòng lặp,
-xử lý lỗi, và đáp án đúng là workflow vì mọi nhánh do người viết.</p>
+<p>Token chunking cộng nối kết quả. Đề luôn kèm triệu chứng mâu thuẫn
+giữa các mảnh, đáp án phải có bước tái hợp.</p>
 </section>
 <section id="m03">
-<h2 id="decomposition-and-execution-patterns">03 · Decomposition and
-Execution Patterns</h2>
-<p>Chia việc theo <strong>đường nối tự nhiên của tài liệu</strong> (ranh
-giới file, bước khám phá), không chia theo số token. Chia theo token cắt
-ngang mạch suy nghĩ và không bước sau nào cứu được.</p>
-<p>Mọi cách chia đều cần <strong>bước tái hợp</strong>. Một bước phải
-chịu trách nhiệm về tính nhất quán của kết quả cuối.</p>
+<h2 id="cấu-hình-claude-code">03 · Cấu hình Claude Code</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Phân biệt ba tầng cấu hình và ai thắng.</li>
+<li>Chọn giữa command, skill, subagent.</li>
+<li>Đặt rule đúng scope.</li>
+</ul>
+<h3 id="lý-thuyết-2">Lý thuyết</h3>
+<p>Ba tầng file, đọc enterprise, user, project.</p>
 <table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
 <thead>
 <tr>
-<th>Pattern</th>
-<th>Dùng khi</th>
-<th>Giá phải trả</th>
+<th>Tầng</th>
+<th>Chứa</th>
+<th>Ví dụ</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Sequential</td>
-<td>Bước sau cần output bước trước</td>
-<td>Thời gian cộng dồn</td>
+<td>Enterprise</td>
+<td>Ràng buộc không được vi phạm</td>
+<td>Bảo mật, tuân thủ</td>
 </tr>
 <tr>
-<td>Parallel</td>
-<td>Các bước độc lập</td>
-<td>Context nhân bản, nhiều điểm hỏng</td>
+<td>User</td>
+<td>Sở thích cá nhân</td>
+<td>Độ dài, định dạng</td>
 </tr>
 <tr>
-<td>Adaptive</td>
-<td>Chưa biết phạm vi, phải khám phá trước</td>
-<td>Chậm hơn kế hoạch cố định</td>
+<td>Project</td>
+<td>Thỏa thuận nhóm</td>
+<td>ORM, framework test</td>
+</tr>
+</tbody>
+</table>
+<p>Tầng cụ thể hơn thắng, không phải tầng có quyền tổ chức cao hơn. Đây
+là thay thế directive xung đột, không phải trộn: enterprise vẫn áp ở chỗ
+project im lặng.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Công cụ</th>
+<th>Kích hoạt</th>
+<th>Chạy ở đâu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Slash command</td>
+<td>Người gõ tên</td>
+<td>Context chính</td>
+</tr>
+<tr>
+<td>Skill</td>
+<td>Tự động theo description</td>
+<td>Có thể tách context</td>
+</tr>
+<tr>
+<td>Subagent</td>
+<td>Coordinator giao</td>
+<td>Context riêng</td>
 </tr>
 </tbody>
 </table>
 <h3 id="ví-dụ-2">Ví dụ</h3>
-<p>PR 14 file cần review bảo mật:</p>
 <table class="mapping">
 <colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
 </colgroup>
 <thead>
 <tr>
-<th>Cách làm</th>
-<th>Kết quả</th>
+<th>Nhu cầu</th>
+<th>Chọn</th>
+<th>Vì sao</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Một prompt chứa cả 14 file</td>
-<td>Phân tích nông đều, bỏ sót lỗi xuyên file</td>
+<td>Checklist review, gọi khi review</td>
+<td>Command</td>
+<td>Người quyết định thời điểm</td>
 </tr>
 <tr>
-<td>Chia theo token</td>
-<td>Một mảnh cảnh báo mẫu nguy hiểm, mảnh khác duyệt chính mẫu đó</td>
+<td>Sinh sơ đồ mỗi khi bàn thiết kế</td>
+<td>Skill, description hẹp</td>
+<td>Tự kích hoạt theo ngữ cảnh</td>
 </tr>
 <tr>
-<td>14 lượt theo file, cộng 1 lượt tích hợp</td>
-<td>Lượt tích hợp lần theo giá trị từ chỗ kiểm tra đến chỗ dùng</td>
+<td>Quét toàn repo tìm chỗ dùng API</td>
+<td>Subagent</td>
+<td>Output lớn, cần context riêng</td>
 </tr>
 </tbody>
 </table>
-<p>Lượt tích hợp là bước tái hợp: nó bắt được thứ không lượt đơn lẻ nào
-thấy.</p>
+<h3 id="mã-2">Mã</h3>
+<pre class="json"><code>{
+  &quot;model&quot;: &quot;claude-opus-5-5&quot;,
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [&quot;Bash(rm -rf *)&quot;, &quot;Read(./.env)&quot;]
+  }
+}</code></pre>
+<p>File này commit để cả team dùng cùng model và cùng luật chặn.
+<code>CLAUDE.md</code> không ghi đè lẫn nhau: chúng cộng dồn.</p>
+<h3 id="thực-hành-2">Thực hành</h3>
+<ol type="1">
+<li>Chạy <code>/memory</code>, xem file nào đang nạp.</li>
+<li>Chuyển một rule cá nhân sang project scope, commit.</li>
+<li>Biến một prompt hay dán thành command.</li>
+<li>Viết description cho một skill, kiểm nó không bắn sai.</li>
+</ol>
 <h3 id="bài-tập-2">Bài tập</h3>
 <table class="mapping">
 <colgroup>
@@ -622,373 +537,37 @@ thấy.</p>
 <tbody>
 <tr>
 <td>1</td>
-<td>Chia một task lớn theo đường nối tự nhiên, ghi rõ đường nối</td>
+<td>Viết 3 rule vào 3 tầng, xác định ai thắng</td>
 <td>15 phút</td>
-<td>Không mảnh nào cắt giữa một luồng dữ liệu</td>
+<td>Giải thích bằng độ cụ thể</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Chỉ ra bước nào chịu trách nhiệm tính nhất quán cuối</td>
-<td>10 phút</td>
-<td>Bước đó có input là output của tất cả bước khác</td>
+<td>Chuyển prompt thành command</td>
+<td>15 phút</td>
+<td>Hai máy cho cùng kết quả</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Chọn pattern theo phụ thuộc dữ liệu, viết ra giá phải trả</td>
-<td>15 phút</td>
-<td>Nêu được cái gì nhân bản hoặc cộng dồn</td>
+<td>Viết description skill hẹp</td>
+<td>10 phút</td>
+<td>Nêu được khi nào không chạy</td>
 </tr>
 </tbody>
 </table>
 <h3 id="bẫy-2">Bẫy</h3>
-<p>Token chunking cộng nối kết quả. Nó giải bài toán context nên trông
-hiệu quả, nhưng đề thi luôn kèm một triệu chứng mâu thuẫn giữa các mảnh,
-và đáp án đúng thêm bước tái hợp.</p>
+<p>Nghĩ ba luật toàn cục cùng hướng thắng một luật project. Chỉ độ cụ
+thể quyết định.</p>
 </section>
 <section id="m04">
-<h2 id="multi-agent-topologies">04 · Multi-Agent Topologies</h2>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>Topology</th>
-<th>Quan sát</th>
-<th>Lỗi khi agent hỏng</th>
-<th>Khi dùng</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Hub and spoke</td>
-<td>Một coordinator thấy mọi thứ</td>
-<td>Coordinator thấy ngay</td>
-<td>Mặc định cho hệ nhiều agent</td>
-</tr>
-<tr>
-<td>Pipeline</td>
-<td>Mỗi output vào đúng một input</td>
-<td>Agent sau mới biết, phải xử lý ở mọi mối nối</td>
-<td>Các tầng cố định, tuyến tính</td>
-</tr>
-<tr>
-<td>Peer-to-peer</td>
-<td>Không có điểm trung tâm</td>
-<td>Mỗi agent phát hiện lỗi một lúc khác nhau</td>
-<td>Tránh cho việc cần phối hợp</td>
-</tr>
-</tbody>
-</table>
-<p>Hai luật về subagent:</p>
-<ol type="1">
-<li>Mỗi subagent chỉ có tool cho vai trò của nó.</li>
-<li>Coordinator chọn subagent nào chạy theo câu hỏi, không chạy cả
-pipeline.</li>
-</ol>
-<h3 id="ví-dụ-3">Ví dụ</h3>
-<p>Hệ nghiên cứu 4 agent: searcher, analyst, synthesizer, reporter.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Câu hỏi</th>
-<th>Chạy agent nào</th>
-<th>Lý do</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>“Thủ đô của Pháp”</td>
-<td>searcher, reporter</td>
-<td>Sự kiện đơn giản, analyst không thêm giá trị</td>
-</tr>
-<tr>
-<td>“Tổng hợp 6 tài liệu về thị trường”</td>
-<td>cả bốn</td>
-<td>Cần phân tích và tổng hợp</td>
-</tr>
-</tbody>
-</table>
-<p>Chạy cả bốn cho câu hỏi đầu vẫn cho kết quả đúng, nhưng tốn và có
-nguy cơ thêm nhiễu. Trường hợp tệ hơn: synthesizer được cấp web search,
-nó tự đi nghiên cứu thay vì tổng hợp, và báo cáo phủ một phần ba chủ đề
-dù mọi agent đều “thành công”.</p>
-<h3 id="bài-tập-3">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Vẽ hub and spoke cho một hệ 4 agent của bạn</td>
-<td>15 phút</td>
-<td>Mọi mũi tên đi qua coordinator</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Viết lại thành pipeline, ghi chỗ nào phải thêm xử lý lỗi</td>
-<td>10 phút</td>
-<td>Đếm được số mối nối phải xử lý</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Chọn topology và nêu cái mất khi chọn topology kia</td>
-<td>15 phút</td>
-<td>Nêu được observability hoặc latency</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-3">Bẫy</h3>
-<p>Pipeline cố định chạy hết mọi agent cho mọi câu hỏi. Nó trông kỹ
-lưỡng, nhưng làm loãng tập trung và cho báo cáo thiếu mà không ai thấy
-thiếu.</p>
-</section>
-<section id="m05">
-<h2 id="claude-code-configuration-hierarchy">05 · Claude Code
-Configuration Hierarchy</h2>
-<p>Ba tầng file, đọc theo thứ tự enterprise, user, project.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Tầng</th>
-<th>Chứa gì</th>
-<th>Ví dụ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Enterprise</td>
-<td>Ràng buộc không được vi phạm</td>
-<td>Bảo mật, tuân thủ, pháp lý</td>
-</tr>
-<tr>
-<td>User</td>
-<td>Sở thích cá nhân</td>
-<td>Độ dài câu trả lời, định dạng</td>
-</tr>
-<tr>
-<td>Project</td>
-<td>Thỏa thuận của nhóm</td>
-<td>ORM, framework test</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Tầng cụ thể hơn thắng</strong>, không phải tầng có quyền cao
-hơn về mặt tổ chức. Project thắng enterprise. Đây là thay thế directive
-xung đột, không phải trộn: enterprise vẫn áp dụng ở chỗ project im
-lặng.</p>
-<h3 id="ví-dụ-4">Ví dụ</h3>
-<p>Ba file cùng nói về truy vấn dữ liệu:</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Tầng</th>
-<th>Nội dung</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Enterprise</td>
-<td>Luôn dùng parameterized query</td>
-</tr>
-<tr>
-<td>User</td>
-<td>Thích raw SQL cho câu đơn giản</td>
-</tr>
-<tr>
-<td>Project</td>
-<td>Dùng SQLAlchemy ORM cho mọi truy cập database</td>
-</tr>
-</tbody>
-</table>
-<p>Kết quả: project thắng, nhưng vẫn thỏa enterprise vì SQLAlchemy dùng
-parameterized query bên dưới. Nếu user thắng thì project mất tính nhất
-quán và có nguy cơ SQL injection.</p>
-<h3 id="bài-tập-4">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết 3 rule giả định vào 3 tầng, xác định tầng nào thắng</td>
-<td>15 phút</td>
-<td>Giải thích bằng độ cụ thể, không bằng cấp bậc</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Tìm một rule đang để sai tầng trong cấu hình của bạn</td>
-<td>15 phút</td>
-<td>Nêu được ai bị ảnh hưởng nếu giữ nguyên</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Viết lý do vì sao không đưa lựa chọn framework vào enterprise</td>
-<td>10 phút</td>
-<td>Nêu được cái mất về tính linh hoạt của từng nhóm</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-4">Bẫy</h3>
-<p>Nghĩ rằng 3 luật toàn cục cùng nói một hướng thì thắng 1 luật
-project. Sai. Chỉ độ cụ thể quyết định.</p>
-</section>
-<section id="m06">
-<h2 id="commands-skills-and-subagents">06 · Commands, Skills and
-Subagents</h2>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>Công cụ</th>
-<th>Kích hoạt</th>
-<th>Chạy ở đâu</th>
-<th>Dùng khi</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Slash command</td>
-<td>Người gõ tên</td>
-<td>Context chính</td>
-<td>Cần người quyết định thời điểm</td>
-</tr>
-<tr>
-<td>Skill</td>
-<td>Tự động theo description</td>
-<td>Có thể tách context</td>
-<td>Cần áp dụng nhất quán mà không nhớ</td>
-</tr>
-<tr>
-<td>Subagent</td>
-<td>Coordinator giao</td>
-<td>Context riêng</td>
-<td>Việc nặng, cần cô lập</td>
-</tr>
-</tbody>
-</table>
-<p>Description của skill là điểm quyết định: viết như đang nói với đồng
-nghiệp khi nào nên bước vào.</p>
-<h3 id="ví-dụ-5">Ví dụ</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Nhu cầu</th>
-<th>Chọn</th>
-<th>Vì sao</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Checklist review, gọi khi review</td>
-<td>Command <code>/review</code></td>
-<td>Người quyết định thời điểm</td>
-</tr>
-<tr>
-<td>Sinh sơ đồ kiến trúc mỗi khi bàn thiết kế</td>
-<td>Skill, description nêu rõ “system design hoặc architecture
-overview”</td>
-<td>Tự kích hoạt theo ngữ cảnh</td>
-</tr>
-<tr>
-<td>Quét toàn repo tìm chỗ dùng một API</td>
-<td>Subagent</td>
-<td>Output lớn, cần context riêng</td>
-</tr>
-</tbody>
-</table>
-<p>Description quá rộng (“hỗ trợ thiết kế”) làm skill bắn cả khi vẽ
-class diagram, một việc nó không làm tốt.</p>
-<h3 id="bài-tập-5">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết description cho một skill của bạn</td>
-<td>10 phút</td>
-<td>Người khác đọc biết chính xác khi nào nó chạy</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Chuyển một prompt hay dán tay thành command</td>
-<td>15 phút</td>
-<td>Chạy lại cho cùng kết quả ở hai máy</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Xác định việc nào nên là subagent thay vì command</td>
-<td>10 phút</td>
-<td>Nêu được vấn đề context sẽ gặp</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-5">Bẫy</h3>
-<p>Chọn subagent vì nghe “chuyên nghiệp hơn”. Đề bài luôn có chi tiết
-“người dùng muốn tự kích hoạt”, và đó là manh mối cho command.</p>
-</section>
-<section id="m07">
-<h2 id="claude-code-in-automation">07 · Claude Code in Automation</h2>
+<h2 id="headless-ci-và-hook">04 · Headless, CI và hook</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Chạy Claude không người đúng cơ chế.</li>
+<li>Phân biệt hai họ hook.</li>
+<li>Viết hook chặn có chuyển hướng.</li>
+</ul>
+<h3 id="lý-thuyết-3">Lý thuyết</h3>
 <table class="mapping">
 <colgroup>
 <col style="width: 33%" />
@@ -1009,26 +588,129 @@ class diagram, một việc nó không làm tốt.</p>
 <td><code>claude headless</code>, <code>batch</code> không tồn tại</td>
 </tr>
 <tr>
-<td>Đưa context vào CI</td>
+<td>Context trong CI</td>
 <td><code>CLAUDE.md</code></td>
 <td>CI không có lịch sử phiên</td>
 </tr>
 <tr>
 <td>Ép luật bất biến</td>
 <td>Hook</td>
-<td>Prompt, vì prompt chỉ là xác suất</td>
+<td>Prompt, vì prompt là xác suất</td>
 </tr>
 <tr>
 <td>Chọn chế độ trả lời</td>
 <td>Theo nơi tiêu thụ output</td>
-<td>Coi đó là cài đặt hiệu năng</td>
+<td>Coi là cài đặt hiệu năng</td>
 </tr>
 </tbody>
 </table>
-<p>Hai họ hook, đừng lẫn: Claude Code hooks (shell, cấu hình theo repo
-hoặc team) và Agent SDK hooks (code trong tiến trình agent).</p>
-<h3 id="ví-dụ-6">Ví dụ</h3>
-<p>Pipeline treo khi gọi Claude. Chuỗi sửa đúng:</p>
+<p>Hai họ hook: Claude Code hooks (shell, theo repo hoặc team) và Agent
+SDK hooks (code trong tiến trình agent). Stem có “pipeline”, “team” là
+họ thứ nhất; “agent”, “tool result” là họ thứ hai.</p>
+<h3 id="ví-dụ-3">Ví dụ</h3>
+<p>Pipeline treo khi gọi Claude.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Bước</th>
+<th>Việc</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Thêm <code>-p</code></td>
+<td>Hết treo</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>--output-format json</code></td>
+<td>Hết prose</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Schema 5 field</td>
+<td>Comment đăng đúng chỗ</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Không dùng <code>stdin &lt; /dev/null</code></td>
+<td>Chỉ che triệu chứng</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-3">Mã</h3>
+<pre class="bash"><code>claude -p &quot;Review staged diff for security issues&quot; \
+  --output-format json \
+  --allowedTools &quot;Read,Grep,Glob&quot;</code></pre>
+<p>Hook chặn phải trả lý do và đường đi tiếp:</p>
+<pre class="python"><code>def before_tool(name, args, session):
+    if name == &quot;bash&quot; and args[&quot;command&quot;].startswith(&quot;rm -rf&quot;):
+        raise PermissionError(
+            &quot;Chặn xóa đệ quy. Dùng nhánh riêng rồi mở PR.&quot;
+        )</code></pre>
+<h3 id="thực-hành-3">Thực hành</h3>
+<ol type="1">
+<li>Viết lệnh headless có <code>-p</code> và json.</li>
+<li>Đặt một hook chặn.</li>
+<li>Cố tình chặn bằng lỗi trơ, quan sát agent tắc.</li>
+<li>Sửa hook trả lý do và tool thay thế.</li>
+</ol>
+<h3 id="bài-tập-3">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Viết lệnh CI đúng</td>
+<td>15 phút</td>
+<td>Không cờ bịa</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết hook có chuyển hướng</td>
+<td>20 phút</td>
+<td>Agent gọi được tool thay thế</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Phân loại 5 rule thành hook hay prompt</td>
+<td>10 phút</td>
+<td>Rule bất biến dùng hook</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-3">Bẫy</h3>
+<p>Chặn bằng hook nhưng trả lỗi trơ. Đề coi đó là lỗi thiết kế, không
+phải an toàn.</p>
+</section>
+<section id="m05">
+<h2 id="prompt-quy-mô-hệ-thống-và-structured-output">05 · Prompt quy mô
+hệ thống và structured output</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Viết system prompt như hợp đồng giao diện.</li>
+<li>Chọn few-shot hay chain of thought theo lỗi, không theo sở
+thích.</li>
+<li>Dùng schema đúng và biết schema không bảo đảm sự thật.</li>
+</ul>
+<h3 id="lý-thuyết-4">Lý thuyết</h3>
+<p>System prompt là hợp đồng: vai trò, ranh giới, khi nào escalate, hình
+dạng output. Không phải sổ tay ghi mọi thứ.</p>
 <table class="mapping">
 <colgroup>
 <col style="width: 33%" />
@@ -1037,32 +719,434 @@ hoặc team) và Agent SDK hooks (code trong tiến trình agent).</p>
 </colgroup>
 <thead>
 <tr>
-<th>Bước</th>
+<th>Triệu chứng</th>
+<th>Kỹ thuật</th>
+<th>Chi phí</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phân loại rõ, ổn định</td>
+<td>Zero shot</td>
+<td>Không</td>
+</tr>
+<tr>
+<td>Lưỡng lự ở ca biên</td>
+<td>Few shot, 2-4 ví dụ khác nhau</td>
+<td>Token mỗi request</td>
+</tr>
+<tr>
+<td>Cần suy luận nhiều bước</td>
+<td>Chain of thought</td>
+<td>Latency</td>
+</tr>
+</tbody>
+</table>
+<p>Dùng CoT cho phân loại là bẫy: thêm chi phí, không thêm chất
+lượng.</p>
+<p>Structured output: schema ràng buộc hình dạng, không ràng buộc sự
+thật.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tình huống</th>
+<th>Cấu hình</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loại tài liệu chưa biết</td>
+<td><code>tool_choice: any</code></td>
+</tr>
+<tr>
+<td>Có thể trả lời văn xuôi</td>
+<td><code>auto</code>, nhưng parser vỡ</td>
+</tr>
+<tr>
+<td>Đã biết chắc loại</td>
+<td>Force tên tool</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<thead>
+<tr>
+<th>Quy tắc schema</th>
+<th>Lý do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Không <code>required</code> cho nguồn có thể im lặng</td>
+<td>Model bịa giá trị</td>
+</tr>
+<tr>
+<td>Enum có <code>other</code> kèm chi tiết</td>
+<td>Enum dài vô hạn</td>
+</tr>
+<tr>
+<td>Validate sau khi nhận</td>
+<td>Schema chỉ làm ca xấu hiếm hơn</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-4">Ví dụ</h3>
+<p>Bản tóm tắt báo cáo năm có con số kiện tụng lạ.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Phương án</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gửi vì có trích dẫn</td>
+<td>Trích dẫn chưa mở thì chưa xác minh</td>
+</tr>
+<tr>
+<td>Nhờ model tự kiểm</td>
+<td>Cùng cơ chế sinh</td>
+</tr>
+<tr>
+<td>Yêu cầu trích nguyên văn, bỏ claim không nguồn</td>
+<td>Đúng</td>
+</tr>
+<tr>
+<td>Kiểm completeness bằng danh sách gốc</td>
+<td>Bắt được mục bị bỏ</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-4">Mã</h3>
+<pre class="python"><code>resp = client.messages.create(
+    model=&quot;claude-opus-5-5&quot;,
+    max_tokens=1024,
+    system=(
+        &quot;Bạn phân loại ticket. Trả JSON đúng schema. &quot;
+        &quot;Nếu không đủ thông tin, trả category=unclear, không đoán.&quot;
+    ),
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: ticket}],
+)</code></pre>
+<p>Với tài liệu không rõ loại, dùng <code>tool_choice: any</code> để
+buộc gọi tool và để model chọn schema.</p>
+<h3 id="thực-hành-4">Thực hành</h3>
+<ol type="1">
+<li>Viết system prompt dưới 200 token làm đúng một việc.</li>
+<li>Thêm few-shot cho ca biên, đo tỉ lệ sai.</li>
+<li>Viết schema có field nullable.</li>
+<li>Thêm validate sau schema, thử một output thiếu field.</li>
+</ol>
+<h3 id="bài-tập-4">Bài tập</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
 <th>Việc làm</th>
-<th>Vì sao</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>1</td>
-<td>Thêm <code>-p</code></td>
-<td>Chế độ không tương tác được tài liệu hóa</td>
+<td>Viết system prompt gọn</td>
+<td>20 phút</td>
+<td>Không chi tiết riêng của tool</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Đưa tiêu chí review vào <code>CLAUDE.md</code></td>
-<td>CI không có ngữ cảnh phiên như máy dev</td>
+<td>So zero shot và few-shot</td>
+<td>15 phút</td>
+<td>Có số lần sai</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Không dùng <code>stdin &lt; /dev/null</code></td>
-<td>Chỉ che triệu chứng, không sửa nguyên nhân</td>
+<td>Viết schema nullable</td>
+<td>15 phút</td>
+<td>Không field nào bắt buộc bừa</td>
 </tr>
 </tbody>
 </table>
-<p>Chặn commit trực tiếp lên main: hook trả về “Commit blocked. Push to
-a branch and open a PR instead.” Câu này vừa nêu lý do vừa chỉ
-đường.</p>
+<h3 id="bẫy-4">Bẫy</h3>
+<p>Đánh dấu mọi field <code>required</code>. Nó tạo bịa đặt, và đề coi
+là đáp án sai kinh điển.</p>
+</section>
+<section id="m06">
+<h2 id="thiết-kế-tool-và-mcp">06 · Thiết kế tool và MCP</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Chọn độ chi tiết tool.</li>
+<li>Viết mô tả đủ bốn câu.</li>
+<li>Đặt MCP server đúng scope, đúng primitive.</li>
+</ul>
+<h3 id="lý-thuyết-5">Lý thuyết</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Triệu chứng</th>
+<th>Sửa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Một tool làm nhiều việc, mô tả mờ</td>
+<td>Tách</td>
+</tr>
+<tr>
+<td>Quá nhiều tool, model chọn sai</td>
+<td>Gộp</td>
+</tr>
+<tr>
+<td>Thêm tham số <code>mode</code> để chia việc</td>
+<td>Sai: vẫn mơ hồ trong một mô tả</td>
+</tr>
+</tbody>
+</table>
+<p>Mô tả là tài liệu duy nhất model có. Bốn câu: làm gì, dùng khi nào,
+không dùng khi nào, tham số nghĩa gì và tool không làm được gì.</p>
+<p>MCP:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Quyết định</th>
+<th>Chọn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Server dùng chung</td>
+<td>Scope project, commit file cấu hình</td>
+</tr>
+<tr>
+<td>Thử nghiệm cá nhân</td>
+<td>Scope user</td>
+</tr>
+<tr>
+<td>Bí mật</td>
+<td>Biến môi trường</td>
+</tr>
+<tr>
+<td>Tích hợp phổ biến</td>
+<td>Server cộng đồng</td>
+</tr>
+<tr>
+<td>Danh mục nội dung</td>
+<td>Resources, không phải tool list_all</td>
+</tr>
+</tbody>
+</table>
+<p>Ba primitive, ba bên điều khiển: tools do model, resources do app,
+prompts do người dùng.</p>
+<h3 id="ví-dụ-5">Ví dụ</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Lỗi</th>
+<th>Nguyên nhân</th>
+<th>Sửa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chọn nhầm tool</td>
+<td>Mô tả thiếu câu ranh giới</td>
+<td>Viết lại mô tả</td>
+</tr>
+<tr>
+<td>Sai tham số</td>
+<td>Không nêu định dạng</td>
+<td>Nêu ví dụ <code>A10493</code></td>
+</tr>
+<tr>
+<td>Agent bỏ qua tool</td>
+<td>Không nêu “dùng khi nào”</td>
+<td>Thêm câu đó</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-5">Mã</h3>
+<pre class="python"><code>tools = [{
+    &quot;name&quot;: &quot;get_order_status&quot;,
+    &quot;description&quot;: (
+        &quot;Tra trạng thái đơn. Nhận order_id dạng ANNNNN. &quot;
+        &quot;Dùng cho câu hỏi về đơn, không dùng cho tài khoản hay hoàn tiền.&quot;
+    ),
+    &quot;input_schema&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {&quot;order_id&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Dạng ANNNNN&quot;}},
+        &quot;required&quot;: [&quot;order_id&quot;],
+        &quot;additionalProperties&quot;: False,
+    },
+    &quot;strict&quot;: True,
+}]</code></pre>
+<p>Cấu hình MCP không chứa secret:</p>
+<pre class="json"><code>{
+  &quot;mcpServers&quot;: {
+    &quot;inventory&quot;: {
+      &quot;command&quot;: &quot;python&quot;,
+      &quot;args&quot;: [&quot;-m&quot;, &quot;inventory_mcp&quot;],
+      &quot;env&quot;: { &quot;INVENTORY_TOKEN&quot;: &quot;${INVENTORY_TOKEN}&quot; }
+    }
+  }
+}</code></pre>
+<h3 id="thực-hành-5">Thực hành</h3>
+<ol type="1">
+<li>Viết lại mô tả một tool đủ bốn câu.</li>
+<li>Đo tỉ lệ gọi đúng trước và sau.</li>
+<li>Phân loại 6 capability vào ba primitive.</li>
+<li>Viết cấu hình MCP không chứa token.</li>
+</ol>
+<h3 id="bài-tập-5">Bài tập</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Viết mô tả đủ bốn câu</td>
+<td>20 phút</td>
+<td>Có câu “không dùng khi”</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Đo tỉ lệ gọi đúng</td>
+<td>15 phút</td>
+<td>Có số trước và sau</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Phân loại primitive</td>
+<td>10 phút</td>
+<td>Mỗi cái nêu bên điều khiển</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-5">Bẫy</h3>
+<p>Sửa lỗi chọn tool bằng cách thêm câu vào system prompt. Bước chọn chỉ
+đọc mô tả.</p>
+</section>
+<section id="m07">
+<h2 id="context-và-hai-scenario-lab">07 · Context và hai scenario
+lab</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Đặt ngân sách context và cắt tại biên.</li>
+<li>Giữ sự kiện giao dịch ngoài phần tóm tắt.</li>
+<li>Đọc scenario để tìm ràng buộc ràng buộc.</li>
+</ul>
+<h3 id="lý-thuyết-6">Lý thuyết</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Việc</th>
+<th>Làm ở đâu</th>
+<th>Không làm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ngân sách</td>
+<td>Đo từng nguồn trước</td>
+<td>Đoán</td>
+</tr>
+<tr>
+<td>Cắt bớt</td>
+<td>Tại biên, trong post-tool-use hook</td>
+<td>Để model thấy hết rồi compact</td>
+</tr>
+<tr>
+<td>Kết quả quá lớn</td>
+<td>Cắt, nói rõ đã cắt</td>
+<td>Bỏ im lặng</td>
+</tr>
+<tr>
+<td>Nén hội thoại</td>
+<td>Case facts block ngoài tóm tắt</td>
+<td>Dặn summarizer giữ chi tiết</td>
+</tr>
+</tbody>
+</table>
+<p>Context rot: cửa sổ càng đầy, độ chính xác càng giảm. Model nhớ đầu
+và cuối tốt hơn giữa.</p>
+<p>Scenario lab dạy một kỹ năng: tìm ràng buộc ràng buộc, rồi dùng nó
+làm bộ lọc loại trừ.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Ràng buộc</th>
+<th>Loại bỏ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hành động không đảo ngược</td>
+<td>Mọi cơ chế xác suất</td>
+</tr>
+<tr>
+<td>Mục tiêu tỉ lệ tự xử lý</td>
+<td>Escalate theo confidence</td>
+</tr>
+<tr>
+<td>Không có hành động không đảo ngược</td>
+<td>Enforcement gate</td>
+</tr>
+<tr>
+<td>Báo cáo có trích dẫn</td>
+<td>Handoff bằng văn xuôi</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-6">Ví dụ</h3>
+<p>Scenario A: agent support, mục tiêu 80% xử lý ngay lần đầu.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Phương án</th>
+<th>Bị loại vì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tự xử lý mọi ca</td>
+<td>Đoán ở ca mơ hồ</td>
+</tr>
+<tr>
+<td>Escalate khi confidence thấp</td>
+<td>Escalate ca xử lý được</td>
+</tr>
+<tr>
+<td>Tự xử lý ca rõ, escalate khi policy trống</td>
+<td>Sống sót</td>
+</tr>
+</tbody>
+</table>
+<p>Scenario B: hệ nghiên cứu 4 agent, báo cáo có trích dẫn. Điểm khác
+biệt so với A là context cô lập và yêu cầu truy nguồn, nên enforcement
+gate không còn chỗ đứng.</p>
+<h3 id="mã-6">Mã</h3>
+<pre class="python"><code>CASE = &quot;&quot;&quot;Số tiền: 247,83
+Ngày: 3 tháng 3
+Mã đơn: 4471
+Cam kết: hoàn trong 5 ngày làm việc&quot;&quot;&quot;</code></pre>
+<h3 id="thực-hành-6">Thực hành</h3>
+<ol type="1">
+<li>Đo token của 4 nguồn trong một hội thoại dài.</li>
+<li>Viết hook cắt một tool result xuống field cần thiết.</li>
+<li>Viết case facts cho một vụ thật.</li>
+<li>Với một brief, gạch ra ràng buộc và các phương án bị loại.</li>
+</ol>
 <h3 id="bài-tập-6">Bài tập</h3>
 <table class="mapping">
 <colgroup>
@@ -1082,67 +1166,96 @@ a branch and open a PR instead.” Câu này vừa nêu lý do vừa chỉ
 <tbody>
 <tr>
 <td>1</td>
-<td>Viết lệnh headless cho một pipeline giả định</td>
-<td>10 phút</td>
-<td>Không có cờ bịa, có <code>-p</code></td>
+<td>Đo token theo nguồn</td>
+<td>20 phút</td>
+<td>Có số từng nguồn</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Viết một hook chặn, kèm thông điệp chuyển hướng</td>
-<td>20 phút</td>
-<td>Thông điệp nêu lý do và việc cần làm tiếp</td>
+<td>Viết case facts block</td>
+<td>15 phút</td>
+<td>Mọi con số nguyên văn</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Phân biệt một rule nên là prompt hay hook</td>
-<td>10 phút</td>
-<td>Rule bất biến dùng hook, rule mềm dùng prompt</td>
+<td>Lập bảng ràng buộc, phương án bị loại</td>
+<td>15 phút</td>
+<td>Không phương án nào bị loại vì cảm tính</td>
 </tr>
 </tbody>
 </table>
 <h3 id="bẫy-6">Bẫy</h3>
-<p>Chặn bằng hook nhưng trả lỗi trơ. Agent không có đường đi tiếp, tương
-tác dừng. Đề thi coi đó là lỗi thiết kế.</p>
+<p>Cân nhắc ưu nhược điểm giữa các phương án. Nếu đang cân nhắc nghĩa là
+đã bỏ sót một phép loại trừ.</p>
 </section>
 <section id="m08">
-<h2 id="prompt-engineering-at-system-scale">08 · Prompt Engineering at
-System Scale</h2>
-<p>System prompt là <strong>hợp đồng giao diện</strong>: vai trò, ranh
-giới, khi nào escalate, hình dạng output. Không phải sổ tay ghi mọi
-thứ.</p>
+<h2 id="vòng-lặp-agent-và-spawn-subagent">08 · Vòng lặp agent và spawn
+subagent</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Viết vòng lặp chỉ dựa trên <code>stop_reason</code>.</li>
+<li>Truyền context tường minh cho subagent.</li>
+<li>Phát task song song đúng cách.</li>
+</ul>
+<h3 id="lý-thuyết-7">Lý thuyết</h3>
+<p>Vòng lặp: gửi request, đọc <code>stop_reason</code>, chạy tool, gửi
+kết quả, lặp.</p>
 <table class="mapping">
 <colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
+<col style="width: 50%" />
+<col style="width: 50%" />
 </colgroup>
 <thead>
 <tr>
-<th>Triệu chứng</th>
-<th>Kỹ thuật</th>
-<th>Chi phí nhận</th>
+<th>Thành phần</th>
+<th>Vai trò</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Phân loại rõ ràng, ổn định</td>
-<td>Zero shot</td>
-<td>Không</td>
+<td><code>stop_reason</code></td>
+<td>Tín hiệu dừng duy nhất đáng tin</td>
 </tr>
 <tr>
-<td>Model lưỡng lự ở ca biên</td>
-<td>Few shot, ví dụ đúng chỗ mơ hồ</td>
-<td>Token mỗi request</td>
+<td><code>tool_result</code> có <code>tool_use_id</code></td>
+<td>Mọi tool call phải được trả lời, đủ số</td>
 </tr>
 <tr>
-<td>Cần suy luận nhiều bước</td>
-<td>Chain of thought</td>
-<td>Latency và token</td>
+<td>Giới hạn số vòng</td>
+<td>Lưới an toàn, không phải cách kết thúc</td>
+</tr>
+</tbody>
+</table>
+<p>Spawn bằng task tool. Coordinator phải có <code>task</code> trong
+allowed tools; thiếu thì nó tự làm hết, không báo lỗi.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Việc</th>
+<th>Cách</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Song song</td>
+<td>Nhiều task call trong một response</td>
+</tr>
+<tr>
+<td>Tuần tự</td>
+<td>Một task mỗi lượt</td>
+</tr>
+<tr>
+<td>Giới hạn quyền</td>
+<td>Mỗi subagent chỉ tool của vai trò</td>
+</tr>
+<tr>
+<td>Truyền context</td>
+<td>Ghi tường minh, không có kế thừa</td>
 </tr>
 </tbody>
 </table>
 <h3 id="ví-dụ-7">Ví dụ</h3>
-<p>Agent support chọn nhầm tool khi người dùng nói “report”:</p>
+<p>Model trả 3 tool call trong một lượt.</p>
 <table class="mapping">
 <colgroup>
 <col style="width: 50%" />
@@ -1150,28 +1263,74 @@ thứ.</p>
 </colgroup>
 <thead>
 <tr>
-<th>Cách sửa</th>
+<th>Cách trả</th>
 <th>Kết quả</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Thêm mô tả tool chi tiết hơn</td>
-<td>Không hiệu quả, system prompt vẫn lấn át</td>
+<td>3 <code>tool_result</code> trong một user message</td>
+<td>Đúng</td>
 </tr>
 <tr>
-<td>Xóa câu nhắc đến “report” nằm gần một instruction không liên
-quan</td>
-<td>Hết nhầm</td>
+<td>Trả 2 trong 3</td>
+<td>Lỗi API</td>
 </tr>
 <tr>
-<td>Thêm 5 ví dụ few-shot định tuyến</td>
-<td>Tốn token mỗi request, vẫn có thể nhầm</td>
+<td>Mỗi kết quả một message</td>
+<td>Model học rằng batch không được hoan nghênh</td>
 </tr>
 </tbody>
 </table>
-<p>Few-shot dùng đúng chỗ: ba lần chạy ra ba định dạng khác nhau, và bạn
-cần đúng một hình dạng. Đưa 2-3 ví dụ thể hiện chính định dạng đó.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Tool</th>
+<th>Nếu cấp thừa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Searcher</td>
+<td>web search</td>
+<td></td>
+</tr>
+<tr>
+<td>Synthesizer</td>
+<td>không có web search</td>
+<td>Tự đi nghiên cứu, báo cáo thiếu một phần ba</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-7">Mã</h3>
+<pre class="python"><code>while True:
+    resp = client.messages.create(
+        model=&quot;claude-opus-5-5&quot;, max_tokens=2048,
+        messages=messages, tools=tools,
+    )
+    if resp.stop_reason != &quot;tool_use&quot;:
+        break
+    results = []
+    for block in resp.content:
+        if block.type == &quot;tool_use&quot;:
+            out = run_tool(block.name, block.input)
+            results.append({&quot;type&quot;: &quot;tool_result&quot;,
+                            &quot;tool_use_id&quot;: block.id, &quot;content&quot;: out})
+    messages.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: resp.content})
+    messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: results})</code></pre>
+<h3 id="thực-hành-7">Thực hành</h3>
+<ol type="1">
+<li>Viết vòng lặp không đọc text để dừng.</li>
+<li>Xử lý lượt có 3 tool call.</li>
+<li>Thêm giới hạn vòng, trả partial result khi hết.</li>
+<li>Viết payload handoff có cấu trúc giữa hai agent.</li>
+</ol>
 <h3 id="bài-tập-7">Bài tập</h3>
 <table class="mapping">
 <colgroup>
@@ -1191,896 +1350,39 @@ cần đúng một hình dạng. Đưa 2-3 ví dụ thể hiện chính định 
 <tbody>
 <tr>
 <td>1</td>
-<td>Đo độ dài system prompt hiện tại, tìm 3 câu có thể bỏ</td>
-<td>15 phút</td>
-<td>Mỗi câu bỏ đi không làm mất ràng buộc nào</td>
+<td>Viết vòng lặp đúng</td>
+<td>20 phút</td>
+<td>Không parse text</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Với một lỗi về định dạng, chọn giữa thêm luật và thêm ví dụ</td>
+<td>Xử lý 3 tool call</td>
 <td>15 phút</td>
-<td>Nêu được chi phí token của lựa chọn</td>
+<td>Trả đủ trong một message</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Viết một system prompt dưới 200 token làm đúng một việc</td>
-<td>20 phút</td>
-<td>Không có chi tiết riêng của tool bên trong</td>
+<td>Viết payload có claim, evidence, source, date</td>
+<td>15 phút</td>
+<td>Không field nào văn xuôi tự do</td>
 </tr>
 </tbody>
 </table>
 <h3 id="bẫy-7">Bẫy</h3>
-<p>Dùng chain of thought cho phân loại: thêm latency, không thêm chất
-lượng. Đề bài luôn có ràng buộc chi phí để loại phương án “dùng cả ba kỹ
-thuật”.</p>
+<p>Parse câu “tôi đã xong” trong text, hoặc dùng số vòng làm điều kiện
+dừng chính.</p>
 </section>
 <section id="m09">
-<h2 id="structured-output-and-evaluation">09 · Structured Output and
-Evaluation</h2>
-<p>Schema bảo đảm <strong>hình dạng</strong>, không bảo đảm <strong>sự
-thật</strong>. Một tổng tiền không khớp dòng hàng vẫn là JSON hợp
-lệ.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Tình huống</th>
-<th>Cấu hình</th>
-<th>Vì sao</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Loại tài liệu chưa biết</td>
-<td><code>tool_choice: any</code></td>
-<td>Bắt buộc gọi tool, model tự chọn schema</td>
-</tr>
-<tr>
-<td>Có thể trả lời bằng văn xuôi</td>
-<td><code>auto</code></td>
-<td>Sai: parser vỡ</td>
-</tr>
-<tr>
-<td>Đã biết chắc loại</td>
-<td>Force tên tool</td>
-<td>Sai: đoán sai loại là hỏng</td>
-</tr>
-</tbody>
-</table>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Quy tắc schema</th>
-<th>Lý do</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Không đánh <code>required</code> cho field nguồn có thể im lặng</td>
-<td>Model sẽ bịa giá trị</td>
-</tr>
-<tr>
-<td>Enum phải có <code>other</code> kèm chuỗi chi tiết</td>
-<td>Enum dài vô hạn, enum ngắn mất dữ liệu</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-8">Ví dụ</h3>
-<p>Retry sau khi trích xuất sai:</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Lỗi</th>
-<th>Mang gì vào lượt sau</th>
-<th>Kết quả</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Ngày sai định dạng</td>
-<td>Tài liệu gốc, kết quả sai, lỗi “không khớp ISO 8601”</td>
-<td>Model sửa đúng</td>
-</tr>
-<tr>
-<td>Thiếu field không có trong tài liệu</td>
-<td>Không có payload nào giúp</td>
-<td>Dừng, gắn cờ</td>
-</tr>
-<tr>
-<td>Tổng khác tổng dòng hàng</td>
-<td>Trích cả hai giá trị</td>
-<td>Gắn cờ xung đột, người quyết</td>
-</tr>
-</tbody>
-</table>
-<p>Ngày đến dưới 4 định dạng khác nhau: thêm few-shot ví dụ cả bốn định
-dạng, kèm luật chuẩn hóa “nếu mơ hồ thì gắn cờ, không đoán”.</p>
-<h3 id="bài-tập-8">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết schema cho trích hóa đơn, không field nào <code>required</code>
-bừa</td>
-<td>20 phút</td>
-<td>Mọi field thiếu được phép null</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Chạy 10 tài liệu, phân loại lỗi thành retryable và không</td>
-<td>15 phút</td>
-<td>Không retry ca thiếu thông tin</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Thêm few-shot cho một loại tài liệu có cấu trúc lạ</td>
-<td>15 phút</td>
-<td>Tỉ lệ trích đúng tăng, không cần pipeline mới</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-8">Bẫy</h3>
-<p>Đánh dấu mọi field <code>required</code> để “không thiếu gì”. Nó tạo
-ra bịa đặt, và đề thi coi đó là đáp án sai kinh điển.</p>
-</section>
-<section id="m10">
-<h2 id="tool-design-fundamentals">10 · Tool Design Fundamentals</h2>
-<p>Độ chi tiết của tool là cân bằng giữa <strong>mơ hồ trong một
-tool</strong> và <strong>quá nhiều lựa chọn giữa các tool</strong>.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Triệu chứng</th>
-<th>Sửa</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Một tool làm nhiều việc, mô tả mờ</td>
-<td>Tách thành nhiều tool</td>
-</tr>
-<tr>
-<td>Quá nhiều tool, model chọn sai</td>
-<td>Gộp lại</td>
-</tr>
-<tr>
-<td>Muốn thêm tham số <code>mode</code> để chia việc</td>
-<td>Sai: vẫn giữ mơ hồ trong một mô tả</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-9">Ví dụ</h3>
-<p>Tool <code>analyze_document</code> có <code>mode</code> gồm extract,
-summarize, verify.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Phương án</th>
-<th>Kết quả</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Giữ một tool với <code>mode</code></td>
-<td>Model vẫn phải chọn mode trong một mô tả mờ</td>
-</tr>
-<tr>
-<td>Tách ba tool, mỗi tool một câu ranh giới</td>
-<td>Chọn đúng ngay lần đầu</td>
-</tr>
-<tr>
-<td>Tách tiếp thành 18 tool</td>
-<td>Độ phức tạp chọn lựa tăng, phải gộp lại</td>
-</tr>
-</tbody>
-</table>
-<p>Câu ranh giới viết như sau: “Nhận order ID, trả trạng thái và danh
-sách hàng. Dùng cho câu hỏi về đơn, không dùng cho thông tin tài
-khoản.”</p>
-<p>Lỗi tool trả về: <code>is_error: true</code>, loại
-<code>permission</code>, <code>retryable: false</code>, kèm mô tả người
-đọc được. Agent đọc loại lỗi để quyết định retry hay escalate, không
-đoán.</p>
-<h3 id="bài-tập-9">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết lại mô tả hai tool dễ lẫn, thêm câu ranh giới</td>
-<td>15 phút</td>
-<td>Đọc xong không cần suy nghĩ vẫn chọn đúng</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Phân loại 5 lỗi tool thành 4 nhóm và cờ retryable</td>
-<td>15 phút</td>
-<td>Mỗi nhóm có hành vi khác nhau</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Tìm một tool nên tách hoặc nên gộp trong hệ của bạn</td>
-<td>15 phút</td>
-<td>Nêu được triệu chứng cụ thể</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-9">Bẫy</h3>
-<p>Thêm routing layer cho lỗi chọn nhầm tool. Nó bỏ qua khả năng hiểu
-ngôn ngữ bạn đang trả tiền, và không sửa nguyên nhân nằm ở mô tả.</p>
-</section>
-<section id="m11">
-<h2 id="mcp-integration-architecture">11 · MCP Integration
-Architecture</h2>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Quyết định</th>
-<th>Chọn</th>
-<th>Vì sao</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Server dùng chung cho team</td>
-<td>Scope project, commit file cấu hình</td>
-<td>Mọi người cùng cấu hình</td>
-</tr>
-<tr>
-<td>Thử nghiệm cá nhân</td>
-<td>Scope user</td>
-<td>Không làm hỏng cấu hình team</td>
-</tr>
-<tr>
-<td>Bí mật</td>
-<td>Biến môi trường</td>
-<td>Inline token chỉ cần một lần quên gitignore là mất</td>
-</tr>
-<tr>
-<td>Tích hợp phổ biến</td>
-<td>Dùng server cộng đồng</td>
-<td>Tự viết là nợ bảo trì vĩnh viễn</td>
-</tr>
-<tr>
-<td>Agent cần danh mục nội dung</td>
-<td>MCP resources</td>
-<td>Tool <code>list_all</code> tốn một call và dữ liệu cũ đi trong
-prompt</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-10">Ví dụ</h3>
-<p>Tích hợp GitHub cho cả team:</p>
-<pre><code>project/.mcp.json (commit)
-{
-  &quot;mcpServers&quot;: {
-    &quot;github&quot;: {
-      &quot;command&quot;: &quot;npx&quot;,
-      &quot;args&quot;: [&quot;-y&quot;, &quot;@modelcontextprotocol/server-github&quot;],
-      &quot;env&quot;: { &quot;GITHUB_TOKEN&quot;: &quot;${GITHUB_TOKEN}&quot; }
-    }
-  }
-}</code></pre>
-<p>Token nằm trong biến môi trường, không nằm trong file. Cách còn lại,
-dán token thật rồi thêm file vào gitignore, hỏng ngay khi có người clone
-mà không có gitignore hoặc CI không tôn trọng nó.</p>
-<p><code>tool_choice</code> là điều khiển <strong>một lượt</strong>,
-không phải workflow engine. Luật “xác minh danh tính trước khi hoàn
-tiền” không thể ép bằng <code>force</code> ở lượt đầu, vì lượt sau model
-vẫn hoàn tiền được. Phải là <strong>prerequisite gate</strong> trong
-code.</p>
-<h3 id="bài-tập-10">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết <code>.mcp.json</code> cho một server dùng chung, không có
-secret</td>
-<td>15 phút</td>
-<td>Grep file không thấy token</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Chỉ ra một luật nhiều lượt đang bị ép bằng tool_choice</td>
-<td>15 phút</td>
-<td>Đề xuất gate thay thế</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Quyết định scope cho ba server: team, cá nhân, thử nghiệm</td>
-<td>10 phút</td>
-<td>Mỗi quyết định nêu lý do chia sẻ</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-10">Bẫy</h3>
-<p>Dùng <code>force</code> để ép một luật nghiệp vụ nhiều bước. Nó tạo
-cảm giác an toàn giả và không giữ được qua các lượt.</p>
-</section>
-<section id="m12">
-<h2 id="context-management">12 · Context Management</h2>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Việc</th>
-<th>Làm ở đâu</th>
-<th>Không làm</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Đặt ngân sách context</td>
-<td>Đo từng nguồn tiêu thụ trước</td>
-<td>Đoán</td>
-</tr>
-<tr>
-<td>Cắt bớt</td>
-<td>Tại biên, trong post-tool-use hook</td>
-<td>Để model thấy hết rồi compact sau</td>
-</tr>
-<tr>
-<td>Kết quả quá lớn</td>
-<td>Cắt hoặc tóm tắt, <strong>nói rõ đã cắt</strong></td>
-<td>Bỏ im lặng</td>
-</tr>
-<tr>
-<td>Nén hội thoại</td>
-<td>Khối case facts riêng, ngoài phần tóm tắt</td>
-<td>Dặn summarizer “giữ chi tiết quan trọng”</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-11">Ví dụ</h3>
-<p><code>lookup_order</code> trả 43 field; hội thoại về trả hàng chỉ cần
-5.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Field giữ</th>
-<th>Field bỏ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>order_id, status, items, return_window, shipping_address</td>
-<td>38 field còn lại</td>
-</tr>
-</tbody>
-</table>
-<p>Nếu để cả 43 field rồi compact sau, model đã chú ý vào 38 field vô
-ích trước khi nén. Chi tiết hữu ích bị chôn.</p>
-<p>Case facts block cho một vụ hoàn tiền:</p>
-<pre><code>Số tiền: 247,83
-Ngày: 3 tháng 3
-Mã đơn: 4471
-Cam kết: hoàn tiền trong 5 ngày làm việc</code></pre>
-<p>Khối này chèn vào mọi prompt, không đi qua summarizer. Ở lượt 22, nếu
-chỉ còn câu “khách có vấn đề thanh toán”, agent sẽ hỏi lại điều khách đã
-nói.</p>
-<h3 id="bài-tập-11">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Đo token của 4 nguồn: system, tool schema, history, tool result</td>
-<td>20 phút</td>
-<td>Có số cho từng nguồn</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Viết hook cắt một tool result xuống còn field cần thiết</td>
-<td>20 phút</td>
-<td>Có ghi chú “đã cắt” trong output</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Viết case facts block cho một hội thoại dài của bạn</td>
-<td>15 phút</td>
-<td>Mọi con số, ngày, mã đơn đều nguyên văn</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-11">Bẫy</h3>
-<p>Dặn summarizer giữ chi tiết quan trọng. Chính phán đoán của nó là chỗ
-hỏng, và đề thi coi đây là đáp án sai.</p>
-</section>
-<section id="m13">
-<h2 id="scenario-lab-a-customer-support-under-constraints">13 · Scenario
-Lab A: Customer Support Under Constraints</h2>
-<p>Đọc scenario để tìm <strong>ràng buộc ràng buộc</strong> (binding
-constraint), không phải tóm tắt đề. Ràng buộc là <strong>bộ lọc loại
-trừ</strong>, không phải bối cảnh.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Ràng buộc</th>
-<th>Loại bỏ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Hành động không đảo ngược (hoàn tiền)</td>
-<td>Mọi cơ chế xác suất, gồm prompt và classifier</td>
-</tr>
-<tr>
-<td>Mục tiêu tỉ lệ tự xử lý</td>
-<td>Mọi ngữ cảnh escalate dựa trên tín hiệu nội bộ như confidence</td>
-</tr>
-<tr>
-<td>Giới hạn latency</td>
-<td>Kiến trúc nhiều tầng gọi nối tiếp</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-12">Ví dụ</h3>
-<p>Brief: agent support phải đạt 80% xử lý ngay lần đầu, có tool tra
-khách, tra đơn, hoàn tiền, escalate.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Phương án</th>
-<th>Bị loại vì</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Để agent tự xử lý mọi ca</td>
-<td>Đoán ở ca mơ hồ, tỉ lệ tự xử lý tụt</td>
-</tr>
-<tr>
-<td>Escalate khi confidence thấp</td>
-<td>Escalate cả ca agent xử lý được, cũng tụt</td>
-</tr>
-<tr>
-<td>Tự xử lý ca rõ, escalate khi policy trống hoặc khách yêu cầu</td>
-<td>Sống sót qua bộ lọc</td>
-</tr>
-</tbody>
-</table>
-<p>Mỗi phần của thiết kế phải truy về một ràng buộc: tool bị giới hạn vì
-ràng buộc thẩm quyền, gate hoàn tiền vì ràng buộc không đảo ngược, tiêu
-chí escalate vì mục tiêu tỉ lệ.</p>
-<h3 id="bài-tập-12">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Đọc một brief thật, viết ra một câu ràng buộc ràng buộc</td>
-<td>10 phút</td>
-<td>Nêu được nó loại bỏ phương án nào</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Lập bảng ràng buộc và phương án bị loại</td>
-<td>15 phút</td>
-<td>Không phương án nào bị loại chỉ vì “không thích”</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Viết thiết kế 4 phần, mỗi phần trỏ về một ràng buộc</td>
-<td>20 phút</td>
-<td>Không phần nào không có ràng buộc đỡ</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-12">Bẫy</h3>
-<p>Cân nhắc ưu nhược điểm giữa các phương án. Nếu đang cân nhắc nghĩa là
-đã bỏ sót một phép loại trừ.</p>
-</section>
-<section id="m14">
-<h2 id="scenario-lab-b-multi-agent-research-system">14 · Scenario Lab B:
-Multi-Agent Research System</h2>
-<p>Cùng phương pháp, ràng buộc khác, nên kết luận khác. Điều quan trọng
-là <strong>cái gì đã thay đổi so với scenario A</strong>.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Khác biệt</th>
-<th>Loại bỏ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Nhiều agent, context cô lập</td>
-<td>Mọi thiết kế dựa trên bộ nhớ chung</td>
-</tr>
-<tr>
-<td>Báo cáo có trích dẫn</td>
-<td>Handoff bằng văn xuôi; phải mang nguồn theo cấu trúc</td>
-</tr>
-<tr>
-<td>Nguồn không đáng tin</td>
-<td>Lấy trung bình các nguồn</td>
-</tr>
-<tr>
-<td>Không có hành động không đảo ngược</td>
-<td>Enforcement gate; mang từ scenario A sang là sai</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-13">Ví dụ</h3>
-<p>Bốn agent, mỗi agent trả về object:</p>
-<pre><code>{ claim, evidence_excerpt, source_url, published_at }</code></pre>
-<p>Nếu searcher trả về một đoạn văn xuôi, synthesizer không có URL để
-trích, và sẽ tạo trích dẫn từ ký ức. Báo cáo đọc rất mượt, nhưng mọi
-khẳng định không truy được về đâu.</p>
-<p>Coordinator còn phải kiểm <strong>độ phủ</strong>: chia chủ đề thành
-3 phần, cả 3 agent đều trả kết quả, nhưng không ai kiểm 3 phần đó có phủ
-hết chủ đề không.</p>
-<h3 id="bài-tập-13">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>So sánh hai scenario, liệt kê 4 điểm khác</td>
-<td>10 phút</td>
-<td>Mỗi điểm nêu được phương án bị loại</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Viết schema handoff giữa hai agent</td>
-<td>15 phút</td>
-<td>Có đủ claim, evidence, source, date</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Thiết kế bước coordinator kiểm độ phủ</td>
-<td>15 phút</td>
-<td>Phát hiện được chủ đề bị bỏ trống</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-13">Bẫy</h3>
-<p>Mang enforcement gate từ scenario A sang nơi không có hành động không
-đảo ngược. Nó thêm latency và chi phí cho một control không phục vụ
-gì.</p>
-</section>
-<section id="m15">
-<h2 id="the-agentic-loop">15 · The Agentic Loop</h2>
-<p>Vòng lặp chỉ đọc <code>stop_reason</code>. Không parse văn xuôi để
-đoán “model đã xong chưa”, không dùng bộ đếm vòng lặp làm điều kiện dừng
-chính.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Thành phần</th>
-<th>Vai trò</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>stop_reason</code></td>
-<td>Tín hiệu dừng duy nhất đáng tin</td>
-</tr>
-<tr>
-<td><code>tool_result</code> có <code>tool_use_id</code></td>
-<td>Mọi tool call phải được trả lời, đủ số lượng</td>
-</tr>
-<tr>
-<td>Giới hạn số vòng</td>
-<td>Lưới an toàn, không phải cách kết thúc task</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-14">Ví dụ</h3>
-<p>Model trả về 3 tool call trong một lượt:</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Cách trả</th>
-<th>Kết quả</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>3 <code>tool_result</code> trong một user message</td>
-<td>Đúng hợp đồng</td>
-</tr>
-<tr>
-<td>Trả 2 trong 3</td>
-<td>Lỗi API, không phải bỏ qua im lặng</td>
-</tr>
-<tr>
-<td>Trả mỗi kết quả một message</td>
-<td>Model học rằng batch không được hoan nghênh</td>
-</tr>
-</tbody>
-</table>
-<p>Phân chia trách nhiệm: phân loại đầu vào mơ hồ và chọn tool là việc
-của model. “Không hoàn tiền trước khi xác minh danh tính” là việc của
-code, vì tỉ lệ lỗi của prompt khác 0 và với tiền thì 0 là mức duy
-nhất.</p>
-<h3 id="bài-tập-14">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết vòng lặp chỉ dựa trên <code>stop_reason</code></td>
-<td>20 phút</td>
-<td>Không có chỗ nào đọc text để dừng</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Xử lý trường hợp model trả 3 tool call</td>
-<td>15 phút</td>
-<td>Trả đủ 3 result trong một message</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Thêm giới hạn vòng, trả partial result khi hết</td>
-<td>15 phút</td>
-<td>Không raise, nêu việc bị chặn</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-14">Bẫy</h3>
-<p>Parse câu “tôi đã xong” trong text, hoặc dùng số vòng làm điều kiện
-dừng chính. Cả hai đều là đáp án sai theo cấu trúc.</p>
-</section>
-<section id="m16">
-<h2 id="subagent-spawning-and-context-passing">16 · Subagent Spawning
-and Context Passing</h2>
-<p>Spawn bằng <strong>task tool</strong>. Coordinator phải có
-<code>task</code> trong allowed tools; thiếu thì nó tự làm hết, không
-báo lỗi.</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Việc</th>
-<th>Cách làm</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Chạy song song</td>
-<td>Nhiều task call trong <strong>một</strong> response</td>
-</tr>
-<tr>
-<td>Chạy tuần tự</td>
-<td>Một task mỗi lượt, dù sơ đồ vẽ song song</td>
-</tr>
-<tr>
-<td>Giới hạn quyền</td>
-<td>Mỗi subagent chỉ có tool của vai trò</td>
-</tr>
-<tr>
-<td>Truyền context</td>
-<td>Ghi tường minh vào prompt, không có kế thừa</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-15">Ví dụ</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Agent</th>
-<th>Tool được cấp</th>
-<th>Nếu cấp thừa</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Searcher</td>
-<td>web search</td>
-<td></td>
-</tr>
-<tr>
-<td>Analyst</td>
-<td>đọc tài liệu</td>
-<td></td>
-</tr>
-<tr>
-<td>Synthesizer</td>
-<td>không có web search</td>
-<td>Nó tự đi nghiên cứu, báo cáo thiếu một phần ba chủ đề</td>
-</tr>
-</tbody>
-</table>
-<p>Handoff sai: searcher trả một đoạn văn. Handoff đúng: mảng object
-<code>{claim, evidence, source, published_at}</code>, dán nguyên vào
-prompt của synthesizer kèm câu “trích theo field source”.</p>
-<h3 id="bài-tập-15">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết 3 agent definition, mỗi cái một bộ tool</td>
-<td>20 phút</td>
-<td>Không agent nào có tool ngoài vai trò</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Cho coordinator phát 2 task trong một response</td>
-<td>15 phút</td>
-<td>Hai task chạy song song thật</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Viết payload handoff có cấu trúc</td>
-<td>15 phút</td>
-<td>Không có field nào là văn xuôi tự do</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-15">Bẫy</h3>
-<p>Nghĩ parallel subagent là lập trình async. Trong SDK, parallel chỉ là
-nhiều task block trong một response; hạ tầng tự lo.</p>
-</section>
-<section id="m17">
-<h2 id="enforcement-gates-and-structured-handoff">17 · Enforcement Gates
-and Structured Handoff</h2>
-<p>Gate là code chặn tool cho tới khi điều kiện tiên quyết xong.</p>
+<h2 id="gate-handoff-và-hook-của-sdk">09 · Gate, handoff và hook của
+SDK</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Đặt gate cho hành vi không được sai.</li>
+<li>Viết handoff thay cho transcript.</li>
+<li>Dùng hook để chuẩn hóa và chặn.</li>
+</ul>
+<h3 id="lý-thuyết-8">Lý thuyết</h3>
+<p>Gate là code chặn tool tới khi điều kiện tiên quyết xong.</p>
 <table class="mapping">
 <colgroup>
 <col style="width: 50%" />
@@ -2099,101 +1401,44 @@ and Structured Handoff</h2>
 </tr>
 <tr>
 <td>Tiền, an toàn, pháp lý</td>
-<td>Thứ tự chỉ chưa tối ưu: prompt hoặc mô tả</td>
+<td>Thứ tự chỉ chưa tối ưu: prompt</td>
 </tr>
 </tbody>
 </table>
-<h3 id="ví-dụ-16">Ví dụ</h3>
-<p>Gate cho hoàn tiền:</p>
-<pre><code>if not session.verified_customer_id:
-    return {
-      is_error: True,
-      category: &quot;permission&quot;,
-      retryable: False,
-      message: &quot;Thiếu verified customer ID. Gọi get_customer trước.&quot;
-    }</code></pre>
-<p>Thông điệp nêu thiếu gì và tool nào cấp được, nên agent phục hồi
-trong một bước.</p>
-<p>Handoff cho người sau 9 lượt xử lý:</p>
+<p>Chặn phải trả lỗi có cấu trúc nêu thiếu gì và tool nào cấp được.</p>
+<p>Handoff cho người: payload thay transcript.</p>
 <table class="mapping">
 <thead>
 <tr>
 <th>Field</th>
-<th>Giá trị</th>
+<th>Trả lời</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>ID khách, ID đơn</td>
-<td>Lấy từ hệ thống, không lấy từ chat</td>
+<td>Việc gì</td>
 </tr>
 <tr>
 <td>Nguyên nhân gốc</td>
-<td>Hàng hỏng, đã xác minh bằng ảnh</td>
+<td>Chuyện gì</td>
 </tr>
 <tr>
-<td>Policy</td>
-<td>Loại hàng này không được bồi thường</td>
+<td>Bằng chứng</td>
+<td>Dựa vào đâu</td>
 </tr>
 <tr>
-<td>Hành động đề xuất</td>
-<td>Hoàn thiện nguyện hoặc đổi hàng</td>
+<td>Số tiền</td>
+<td>Rủi ro bao nhiêu</td>
 </tr>
 <tr>
-<td>Lý do</td>
-<td>Khoảng trống policy</td>
+<td>Đề xuất và lý do</td>
+<td>Cần làm gì</td>
 </tr>
 </tbody>
 </table>
-<h3 id="bài-tập-16">Bài tập</h3>
+<p>Hai họ hook:</p>
 <table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết gate cho một tool có hậu quả tiền</td>
-<td>20 phút</td>
-<td>Lỗi trả về nêu tool cấp điều kiện</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Viết handoff 5 field cho một ca thật</td>
-<td>15 phút</td>
-<td>Người đọc không cần mở transcript</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Phân biệt ca cần gate và ca chỉ cần sửa mô tả</td>
-<td>10 phút</td>
-<td>Mỗi ca nêu hậu quả cụ thể</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-16">Bẫy</h3>
-<p>Tăng cường system prompt cho luật phải giữ 100%. Prompt là xác suất,
-và đề thi gọi đây là đáp án sai kinh điển.</p>
-</section>
-<section id="m18">
-<h2 id="agent-sdk-hooks">18 · Agent SDK Hooks</h2>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
 <thead>
 <tr>
 <th>Hook</th>
@@ -2205,52 +1450,57 @@ và đề thi gọi đây là đáp án sai kinh điển.</p>
 <tr>
 <td>Post tool use</td>
 <td>Sau tool, trước khi model thấy</td>
-<td>Chuẩn hóa dữ liệu không đồng nhất, cắt bớt output dài</td>
+<td>Chuẩn hóa, cắt bớt</td>
 </tr>
 <tr>
 <td>Interception</td>
 <td>Trước khi tool chạy</td>
-<td>Chặn hành vi vi phạm chính sách</td>
+<td>Chặn vi phạm</td>
 </tr>
 </tbody>
 </table>
-<h3 id="ví-dụ-17">Ví dụ</h3>
-<p>Ba tool trả ba định dạng thời gian khác nhau:</p>
+<h3 id="ví-dụ-8">Ví dụ</h3>
+<p>Ba tool trả ba định dạng thời gian: epoch, ISO, mã số 3.</p>
 <table class="mapping">
 <thead>
 <tr>
 <th>Tool trả</th>
-<th>Hook đổi thành</th>
+<th>Hook đổi</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>1755300000000</code> (epoch)</td>
-<td>chuỗi ISO 8601</td>
+<td><code>1755300000000</code></td>
+<td>ISO 8601</td>
 </tr>
 <tr>
-<td>chuỗi ISO 8601</td>
+<td>ISO</td>
 <td>giữ nguyên</td>
 </tr>
 <tr>
 <td><code>status: 3</code></td>
-<td><code>status: "refunded"</code></td>
+<td><code>refunded</code></td>
 </tr>
 </tbody>
 </table>
-<p>Làm bằng prompt thì tốn token mỗi lượt và vẫn có lúc hiểu sai. Nếu sở
-hữu MCP server thì sửa tại nguồn còn tốt hơn.</p>
-<p>Hook chặn hoàn tiền trên 500: không chỉ chặn, mà trả về lý do và chỉ
-tool <code>escalate_to_human</code>. Chặn trơ làm agent tắc giữa
-đường.</p>
-<h3 id="bài-tập-17">Bài tập</h3>
+<p>Hoàn tiền trên 500: hook chặn và chỉ tool
+<code>escalate_to_human</code>. Chặn trơ làm agent tắc.</p>
+<h3 id="mã-8">Mã</h3>
+<pre class="python"><code>def post_tool_use(name, result):
+    if name == &quot;get_customer&quot; and isinstance(result.get(&quot;created&quot;), int):
+        result[&quot;created&quot;] = to_iso(result[&quot;created&quot;])
+    if name == &quot;billing&quot; and isinstance(result.get(&quot;status&quot;), int):
+        result[&quot;status&quot;] = {3: &quot;refunded&quot;}.get(result[&quot;status&quot;], &quot;unknown&quot;)
+    return result</code></pre>
+<h3 id="thực-hành-8">Thực hành</h3>
+<ol type="1">
+<li>Viết gate cho một tool có hậu quả tiền.</li>
+<li>Viết handoff 5 field cho một ca thật.</li>
+<li>Viết hook chuẩn hóa một định dạng lạ.</li>
+<li>Viết hook chặn có chuyển hướng.</li>
+</ol>
+<h3 id="bài-tập-8">Bài tập</h3>
 <table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
 <thead>
 <tr>
 <th>#</th>
@@ -2262,38 +1512,39 @@ tool <code>escalate_to_human</code>. Chặn trơ làm agent tắc giữa
 <tbody>
 <tr>
 <td>1</td>
-<td>Viết hook chuẩn hóa một định dạng lạ</td>
+<td>Viết gate</td>
 <td>20 phút</td>
-<td>Model không bao giờ thấy giá trị thô</td>
+<td>Lỗi nêu tool cấp điều kiện</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Viết hook chặn có chuyển hướng</td>
-<td>20 phút</td>
-<td>Agent gọi được tool thay thế</td>
+<td>Viết handoff</td>
+<td>15 phút</td>
+<td>Người đọc không cần transcript</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Phân loại 5 rule thành hook hoặc prompt</td>
-<td>10 phút</td>
-<td>Rule bất biến dùng hook</td>
+<td>Viết 2 hook</td>
+<td>25 phút</td>
+<td>Một chuẩn hóa, một chặn</td>
 </tr>
 </tbody>
 </table>
-<h3 id="bẫy-17">Bẫy</h3>
-<p>Chuẩn hóa sau khi model đã trả lời. Lúc đó không sửa được lập luận đã
-dựa trên dữ liệu lẫn lộn.</p>
+<h3 id="bẫy-8">Bẫy</h3>
+<p>Tăng cường system prompt cho luật phải giữ 100%. Prompt là xác
+suất.</p>
 </section>
-<section id="m19">
-<h2 id="session-state-resumption-and-forking">19 · Session State,
-Resumption and Forking</h2>
-<p>Ba lựa chọn khi quay lại việc đang làm, chọn theo <strong>độ cũ của
-dữ liệu</strong>, không theo giá.</p>
+<section id="m10">
+<h2 id="session-tool-dựng-sẵn-bộ-nhớ-cấu-hình">10 · Session, tool dựng
+sẵn, bộ nhớ cấu hình</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Chọn resume, fork hay phiên mới theo độ cũ.</li>
+<li>Chọn tool dựng sẵn đúng câu hỏi.</li>
+<li>Đặt rule đúng tầng và đúng scope.</li>
+</ul>
+<h3 id="lý-thuyết-9">Lý thuyết</h3>
 <table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
 <thead>
 <tr>
 <th>Tình huống</th>
@@ -2306,92 +1557,19 @@ dữ liệu</strong>, không theo giá.</p>
 <td>Resume</td>
 </tr>
 <tr>
-<td>Vài file đã đổi, biết rõ file nào</td>
+<td>Vài file đã đổi, biết rõ</td>
 <td>Resume kèm reanalysis có mục tiêu</td>
 </tr>
 <tr>
-<td>Baseline đổi rộng (refactor, merge lớn)</td>
+<td>Baseline đổi rộng</td>
 <td>Phiên mới với summary</td>
 </tr>
 <tr>
-<td>Cần nhiều nhánh không lẫn nhau</td>
+<td>Cần nhiều nhánh</td>
 <td>Fork</td>
 </tr>
 </tbody>
 </table>
-<h3 id="ví-dụ-18">Ví dụ</h3>
-<p>Hôm qua đã map module billing, qua đêm refactor chuyển 40 file.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Cách làm</th>
-<th>Kết quả</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Resume im lặng</td>
-<td>Agent trả lời tự tin về đường dẫn không còn tồn tại</td>
-</tr>
-<tr>
-<td>Resume, nêu tên 3 file đã đổi</td>
-<td>Chỉ đọc lại 3 file đó</td>
-</tr>
-<tr>
-<td>Phiên mới với summary</td>
-<td>Giữ kết luận về phần không đổi, đọc lại phần đã đổi</td>
-</tr>
-</tbody>
-</table>
-<p>Phiên mới nhận <strong>kết luận</strong>: module làm gì, entry point,
-câu hỏi mở. Không nhận raw tool output.</p>
-<h3 id="bài-tập-18">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Với 3 tình huống, chọn resume, fork hay fresh</td>
-<td>10 phút</td>
-<td>Mỗi lựa chọn dựa trên độ cũ</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Viết resume message nêu file đã đổi</td>
-<td>10 phút</td>
-<td>Ngắn hơn re-explore nhưng đủ cụ thể</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Viết summary cho một phiên mới</td>
-<td>15 phút</td>
-<td>Không có raw output nào lọt vào</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-18">Bẫy</h3>
-<p>Luôn resume vì rẻ hơn. Khi dữ liệu cũ, resume đắt hơn vì phải gỡ các
-kết luận sai.</p>
-</section>
-<section id="m20">
-<h2 id="built-in-tool-selection">20 · Built-in Tool Selection</h2>
 <table class="mapping">
 <thead>
 <tr>
@@ -2401,11 +1579,11 @@ kết luận sai.</p>
 </thead>
 <tbody>
 <tr>
-<td>Chuỗi này nằm ở đâu trong file</td>
+<td>Chuỗi này ở đâu trong file</td>
 <td>grep</td>
 </tr>
 <tr>
-<td>File nào khớp mẫu đường dẫn</td>
+<td>File nào khớp mẫu</td>
 <td>glob</td>
 </tr>
 <tr>
@@ -2414,94 +1592,12 @@ kết luận sai.</p>
 </tr>
 <tr>
 <td>Đổi đúng một chỗ</td>
-<td>edit, neo bằng chuỗi duy nhất</td>
+<td>edit, neo duy nhất</td>
 </tr>
 </tbody>
 </table>
-<h3 id="ví-dụ-19">Ví dụ</h3>
-<p>Câu hỏi “luồng refund làm gì”:</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Bước</th>
-<th>Tool</th>
-<th>Lý do</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Tìm entry point</td>
-<td>grep “def refund”</td>
-<td>Chưa biết file nào</td>
-</tr>
-<tr>
-<td>Đọc file đó</td>
-<td>read</td>
-<td>Biết file rồi</td>
-</tr>
-<tr>
-<td>Lần theo import</td>
-<td>đọc từng file con</td>
-<td>Hiểu logic</td>
-</tr>
-<tr>
-<td>Đổi timeout</td>
-<td>edit</td>
-<td>Sửa một chỗ</td>
-</tr>
-</tbody>
-</table>
-<p>Đọc cả thư mục refunds sẽ lấy về test, util, config, đốt context và
-làm loãng chỉ dẫn.</p>
-<p>Edit không tìm được neo duy nhất (<code>retries = 3</code> xuất hiện
-5 lần): mở rộng neo bằng header phía trên. Nếu file nhỏ và cần đổi cả 5
-chỗ thì read rồi write một lần.</p>
-<h3 id="bài-tập-19">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Với 4 câu hỏi khác nhau, chọn tool trước khi chạy</td>
-<td>10 phút</td>
-<td>Không câu nào chọn “đọc cả thư mục”</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Sửa một chỗ bằng edit, gặp neo trùng thì mở rộng</td>
-<td>15 phút</td>
-<td>Không dùng read+write ở lần đầu</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Đếm token tiết kiệm so với đọc cả thư mục</td>
-<td>10 phút</td>
-<td>Có số cụ thể</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-19">Bẫy</h3>
-<p>Đọc cả thư mục để trả lời một câu. Đề thi gọi đây là bẫy đốt
-context.</p>
-</section>
-<section id="m21">
-<h2 id="modular-claude.md-and-the-memory-hierarchy">21 · Modular
-CLAUDE.md and the Memory Hierarchy</h2>
-<p>Chẩn đoán bằng <code>/memory</code>: nó cho biết <strong>file nào
-đang được nạp</strong>, không cho biết nội dung đúng hay sai.</p>
+<p>Edit không tìm được neo: mở rộng neo bằng ngữ cảnh. File nhỏ và đổi
+nhiều chỗ thì read rồi write.</p>
 <table class="mapping">
 <thead>
 <tr>
@@ -2511,268 +1607,66 @@ CLAUDE.md and the Memory Hierarchy</h2>
 </thead>
 <tbody>
 <tr>
-<td>Áp dụng cho cả team</td>
-<td>Scope project, nằm trong version control</td>
-</tr>
-<tr>
-<td>Sở thích cá nhân</td>
-<td>Scope user</td>
-</tr>
-<tr>
-<td>Chuẩn phổ quát, luôn cần</td>
-<td><code>CLAUDE.md</code> gốc</td>
-</tr>
-<tr>
-<td>Theo chủ đề</td>
-<td><code>.claude/rules/*.md</code>, ghép bằng <code>import</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-20">Ví dụ</h3>
-<p>Quy ước commit message chạy đúng trên máy bạn, sai trên máy người
-mới.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Chẩn đoán</th>
-<th>Kết luận</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>/memory</code> trên máy bạn thấy
-<code>~/.claude/CLAUDE.md</code></td>
-<td>Rule nằm ở scope user</td>
-</tr>
-<tr>
-<td><code>/memory</code> trên máy người mới chỉ thấy file project</td>
-<td>Rule không được chia sẻ</td>
-</tr>
-</tbody>
-</table>
-<p>Sửa: chuyển rule sang <code>CLAUDE.md</code> ở repo và commit. Bảo
-người mới copy file user chỉ tái tạo lỗi trên máy thứ hai.</p>
-<p>File gốc 900 dòng nạp vào mọi lượt, kể cả khi gói đó chỉ làm
-deployment. Tách <code>testing.md</code>,
-<code>api-conventions.md</code>, rồi <code>import</code> đúng file
-cần.</p>
-<h3 id="bài-tập-20">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Chạy <code>/memory</code>, liệt kê file đang nạp</td>
-<td>5 phút</td>
-<td>Biết rule nào đến từ đâu</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Chuyển một rule cá nhân sang project scope</td>
-<td>15 phút</td>
-<td>Máy thứ hai thấy rule sau khi clone</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Tách file gốc theo chủ đề, thêm import</td>
-<td>20 phút</td>
-<td>Gói không liên quan không nạp file thừa</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-20">Bẫy</h3>
-<p>Nghĩ Claude hỏng hoặc bịa. Triệu chứng lệch giữa các máy luôn là câu
-hỏi về scope cấu hình.</p>
-</section>
-<section id="m22">
-<h2 id="skill-and-command-frontmatter">22 · Skill and Command
-Frontmatter</h2>
-<p>Scope quyết định bởi hai câu: <strong>ai cần dùng</strong>, và
-<strong>luôn nạp hay khi gọi</strong>.</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Ai cần</th>
-<th>Cách nạp</th>
-<th>Đặt ở</th>
-</tr>
-</thead>
-<tbody>
-<tr>
 <td>Cả team</td>
-<td>Khi gọi</td>
-<td><code>.claude/commands/</code>, <code>.claude/skills/</code></td>
-</tr>
-<tr>
-<td>Cả team</td>
-<td>Luôn</td>
-<td><code>CLAUDE.md</code> gốc</td>
+<td>Scope project, commit</td>
 </tr>
 <tr>
 <td>Cá nhân</td>
-<td>Khi gọi</td>
-<td><code>~/.claude/...</code></td>
+<td>Scope user</td>
+</tr>
+<tr>
+<td>Theo loại file</td>
+<td>Rule có glob <code>paths</code></td>
+</tr>
+<tr>
+<td>Theo thư mục</td>
+<td><code>CLAUDE.md</code> tại thư mục đó</td>
 </tr>
 </tbody>
 </table>
-<h3 id="ví-dụ-21">Ví dụ</h3>
-<p>Checklist review của team: mọi người cần, chỉ khi review. - Không
-phải <code>user scope</code>: đồng đội không thấy. - Không phải
-<code>CLAUDE.md</code>: nạp mọi lượt, tốn context vô ích. - Đúng:
-<code>.claude/commands/review.md</code>, commit.</p>
-<p>Frontmatter là cấu hình thực thi:</p>
+<h3 id="ví-dụ-9">Ví dụ</h3>
+<p>Refactor qua đêm chuyển 40 file.</p>
 <table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
 <thead>
 <tr>
-<th>Field</th>
-<th>Chặn được</th>
+<th>Cách</th>
+<th>Kết quả</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>context: fork</code></td>
-<td>Output khám phá tràn vào context chính</td>
+<td>Resume im lặng</td>
+<td>Trả lời tự tin về đường dẫn không còn</td>
 </tr>
 <tr>
-<td><code>allowed-tools</code></td>
-<td>Skill ghi/xóa ngoài phạm vi; runtime ép, không phải prompt</td>
+<td>Resume, nêu 3 file đổi</td>
+<td>Đọc lại đúng 3 file</td>
 </tr>
 <tr>
-<td><code>argument-hint</code></td>
-<td>Skill đoán tham số khi gọi thiếu</td>
+<td>Phiên mới với summary</td>
+<td>Giữ kết luận phần không đổi</td>
 </tr>
 </tbody>
 </table>
-<p>Biến thể cá nhân phải <strong>đặt tên khác</strong>, nếu không là ghi
-đè âm thầm hành vi của người khác khi cấu hình bị chia sẻ.</p>
-<h3 id="bài-tập-21">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Với 3 skill, chọn scope và chế độ nạp</td>
-<td>10 phút</td>
-<td>Mỗi lựa chọn nêu ai cần dùng</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Thêm <code>allowed-tools</code> cho một skill ghi file</td>
-<td>15 phút</td>
-<td>Không thể xóa ngoài phạm vi</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Đổi một skill output lớn sang <code>context: fork</code></td>
-<td>15 phút</td>
-<td>Context chính chỉ nhận bản tóm tắt</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-21">Bẫy</h3>
-<p>Đặt cùng tên cho biến thể cá nhân. Đề thi coi đó là cách thay đổi
-hành vi của người khác mà họ không biết.</p>
-</section>
-<section id="m23">
-<h2 id="path-specific-rules">23 · Path-Specific Rules</h2>
-<p>Rule trong <code>.claude/rules/*.md</code> có YAML front matter chứa
-<code>paths</code> (glob). Rule chỉ nạp khi đang sửa file khớp glob:
-<strong>kích hoạt có điều kiện, tất định</strong>.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Loại quy ước</th>
-<th>Đặt ở</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Thuộc về một loại file, ở đâu cũng vậy</td>
-<td>Rule có glob, ví dụ <code>**/*.test.tsx</code></td>
-</tr>
-<tr>
-<td>Thuộc về một thư mục cụ thể</td>
-<td><code>CLAUDE.md</code> ở thư mục đó</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-22">Ví dụ</h3>
+<p>Bốn mươi thư mục, mỗi nơi một rule test là bốn mươi bản sẽ lệch. Một
+rule có glob <code>**/*.test.tsx</code> thay được cả bốn mươi.</p>
+<h3 id="mã-9">Mã</h3>
 <pre class="yaml"><code>paths: [&quot;**/*.test.tsx&quot;]
 Mọi test dùng testing-library, không dùng enzyme.</code></pre>
+<pre class="json"><code>{
+  &quot;context&quot;: &quot;fork&quot;,
+  &quot;allowed-tools&quot;: [&quot;Read&quot;, &quot;Grep&quot;],
+  &quot;argument-hint&quot;: &quot;&lt;đường dẫn module&gt;&quot;
+}</code></pre>
+<h3 id="thực-hành-9">Thực hành</h3>
+<ol type="1">
+<li>Với ba tình huống, chọn resume, fork hay phiên mới.</li>
+<li>Viết resume message nêu file đã đổi.</li>
+<li>Viết một rule có <code>paths</code>, kiểm nó nạp đúng lúc.</li>
+<li>Viết frontmatter cho skill output lớn.</li>
+</ol>
+<h3 id="bài-tập-9">Bài tập</h3>
 <table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Cách làm</th>
-<th>Hệ quả</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Một rule với glob trên</td>
-<td>Sửa một chỗ, áp cho 40 thư mục</td>
-</tr>
-<tr>
-<td>40 file <code>CLAUDE.md</code> trong 40 thư mục</td>
-<td>Sửa một nơi, 39 nơi còn lại lệch</td>
-</tr>
-<tr>
-<td>Một file gốc có mục “Testing”</td>
-<td>Model phải suy luận, và vẫn nạp cả file</td>
-</tr>
-</tbody>
-</table>
-<p>Ngược lại, thư mục <code>vendor/</code> có quy ước riêng thuộc về vị
-trí, nên dùng <code>CLAUDE.md</code> tại thư mục đó.</p>
-<h3 id="bài-tập-22">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
 <thead>
 <tr>
 <th>#</th>
@@ -2784,34 +1678,40 @@ trí, nên dùng <code>CLAUDE.md</code> tại thư mục đó.</p>
 <tbody>
 <tr>
 <td>1</td>
-<td>Viết một rule có <code>paths</code> cho loại file của bạn</td>
+<td>Chọn session cho 3 ca</td>
 <td>10 phút</td>
-<td>Mở file khớp thì rule nạp, file khác thì không</td>
+<td>Dựa trên độ cũ</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Phân loại 3 quy ước thành theo loại file hay theo thư mục</td>
-<td>10 phút</td>
-<td>Mỗi cái nêu lý do</td>
+<td>Viết rule có glob</td>
+<td>15 phút</td>
+<td>Nạp đúng file, không nạp file khác</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Kiểm chứng bằng <code>/memory</code> ở cả hai trường hợp</td>
-<td>5 phút</td>
-<td>Thấy rule xuất hiện và biến mất đúng lúc</td>
+<td>Viết frontmatter</td>
+<td>15 phút</td>
+<td>Có giới hạn tool</td>
 </tr>
 </tbody>
 </table>
-<h3 id="bẫy-22">Bẫy</h3>
-<p>Từ “automatically” trong đề là bẫy: skill cần gọi, mục trong
-<code>CLAUDE.md</code> cần suy luận, chỉ rule theo đường dẫn mới tự kích
-hoạt tất định.</p>
+<h3 id="bẫy-9">Bẫy</h3>
+<p>Luôn resume vì rẻ hơn. Khi dữ liệu cũ, resume đắt hơn vì phải gỡ kết
+luận sai.</p>
 </section>
-<section id="m24">
-<h2 id="plan-mode-versus-direct-execution">24 · Plan Mode versus Direct
-Execution</h2>
-<p>Ba tín hiệu cần plan mode: có nhiều cách làm đúng, có quyết định kiến
-trúc, và blast radius lớn. Kích thước không phải tín hiệu.</p>
+<section id="m11">
+<h2 id="từ-plan-mode-đến-review-nhiều-lượt">11 · Từ plan mode đến review
+nhiều lượt</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Chọn plan hay direct theo ba tín hiệu.</li>
+<li>Thay văn xuôi bằng ví dụ và test.</li>
+<li>Thiết kế CI output và review tăng dần.</li>
+</ul>
+<h3 id="lý-thuyết-10">Lý thuyết</h3>
+<p>Plan mode khi: có nhiều cách làm đúng, có quyết định kiến trúc, blast
+radius lớn. Kích thước không phải tín hiệu.</p>
 <table class="mapping">
 <thead>
 <tr>
@@ -2821,103 +1721,20 @@ trúc, và blast radius lớn. Kích thước không phải tín hiệu.</p>
 </thead>
 <tbody>
 <tr>
-<td>Nhiều cách làm, phạm vi rộng</td>
-<td>Plan, rồi execute từng bước</td>
+<td>Nhiều cách, phạm vi rộng</td>
+<td>Plan rồi execute</td>
 </tr>
 <tr>
-<td>Cách làm rõ, một file</td>
+<td>Cách rõ, một file</td>
 <td>Direct</td>
 </tr>
 <tr>
 <td>Chưa biết codebase</td>
-<td>Plan, cộng explore subagent</td>
+<td>Plan cộng explore subagent</td>
 </tr>
 </tbody>
 </table>
-<h3 id="ví-dụ-23">Ví dụ</h3>
-<p>Đổi thư viện HTTP trên 45 file:</p>
 <table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Tín hiệu</th>
-<th>Giá trị</th>
-<th>Kết luận</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Blast radius</td>
-<td>45 file</td>
-<td>Rộng</td>
-</tr>
-<tr>
-<td>Nhiều cách</td>
-<td>Thay từng chỗ, viết adapter, refactor theo giai đoạn</td>
-<td>Có</td>
-</tr>
-<tr>
-<td>Đích</td>
-<td>Đã biết chính xác thư viện mới</td>
-<td>Rõ</td>
-</tr>
-</tbody>
-</table>
-<p>Kết quả: plan để chọn cách, execute để làm. Làm toàn bộ trong plan là
-over-engineer; làm toàn bộ direct thì sai cách là rollback 45 file.</p>
-<h3 id="bài-tập-23">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Chấm 3 task theo 3 tín hiệu</td>
-<td>10 phút</td>
-<td>Mỗi task ra một chế độ</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Chạy một task khám phá bằng explore subagent</td>
-<td>20 phút</td>
-<td>Context chính không thấy output thô</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Viết plan rồi execute từng bước cho một task</td>
-<td>25 phút</td>
-<td>Không bước nào phải làm lại</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-23">Bẫy</h3>
-<p>“Chạy direct rồi chuyển plan nếu phức tạp”. Độ phức tạp đã ghi trong
-yêu cầu, không phải chờ nó xuất hiện.</p>
-</section>
-<section id="m25">
-<h2 id="iterative-refinement-techniques">25 · Iterative Refinement
-Techniques</h2>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
 <thead>
 <tr>
 <th>Vấn đề</th>
@@ -2926,12 +1743,12 @@ Techniques</h2>
 </thead>
 <tbody>
 <tr>
-<td>Ba lần chạy ra ba kết quả</td>
-<td>Thay văn xuôi bằng 2-3 cặp input/output</td>
+<td>Ba lần ra ba kết quả</td>
+<td>Thay văn xuôi bằng cặp input/output</td>
 </tr>
 <tr>
 <td>Bug mô tả mơ hồ</td>
-<td>Thay bằng test case cụ thể, input và output mong đợi</td>
+<td>Test case cụ thể</td>
 </tr>
 <tr>
 <td>Yêu cầu thiếu ràng buộc</td>
@@ -2939,85 +1756,8 @@ Techniques</h2>
 </tr>
 </tbody>
 </table>
-<h3 id="ví-dụ-24">Ví dụ</h3>
-<p>“Chuẩn hóa địa chỉ cho hợp lý” cho ra ba định dạng khác nhau. Thay
-bằng cặp mẫu:</p>
+<p>CI:</p>
 <table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Input</th>
-<th>Output</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>123 Main Street, Springfield</code></td>
-<td><code>123 Main Street, Springfield, Illinois 62701</code></td>
-</tr>
-<tr>
-<td><code>Apt 4B, 500 Oak Lane, Chicago Heights</code></td>
-<td><code>500 Oak Lane, Apartment 4B, Chicago Heights, Illinois 60411</code></td>
-</tr>
-</tbody>
-</table>
-<p>Mẫu ghim cả thứ tự field lẫn cách xử lý số căn hộ, những thứ văn xuôi
-không nói rõ.</p>
-<p>Phỏng vấn: “trước khi viết code, hỏi tôi về invalidate, failure mode,
-yêu cầu nhất quán”. Câu hỏi trả về thường lộ ra điều bạn chưa nghĩ, ví
-dụ chuyện gì xảy ra khi cache lạnh.</p>
-<h3 id="bài-tập-24">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Thay một instruction mơ hồ bằng 3 cặp input/output</td>
-<td>15 phút</td>
-<td>Hai người chấm ra cùng kết quả</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Viết một test case cho bug thay vì mô tả nó</td>
-<td>10 phút</td>
-<td>Test fail trước khi sửa</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Gộp feedback theo mức tương tác</td>
-<td>10 phút</td>
-<td>Hai góp ý chạm nhau nằm cùng lượt</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-24">Bẫy</h3>
-<p>Thêm chi tiết vào câu instruction. Vấn đề không phải thiếu thông tin
-mà là còn chỗ để diễn giải.</p>
-</section>
-<section id="m26">
-<h2 id="ci-output-contracts-and-review-isolation">26 · CI Output
-Contracts and Review Isolation</h2>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
 <thead>
 <tr>
 <th>Thành phần</th>
@@ -3030,487 +1770,91 @@ Contracts and Review Isolation</h2>
 <td><code>-p</code></td>
 </tr>
 <tr>
-<td>Định dạng máy đọc</td>
+<td>Máy đọc</td>
 <td><code>--output-format json</code></td>
 </tr>
 <tr>
-<td>Hợp đồng dữ liệu</td>
-<td>JSON schema với <code>path</code>, <code>line</code>,
-<code>severity</code>, <code>issue</code>,
-<code>suggested fix</code></td>
+<td>Hợp đồng</td>
+<td><code>path</code>, <code>line</code>, <code>severity</code>,
+<code>issue</code>, <code>fix</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="ví-dụ-25">Ví dụ</h3>
-<p>Pipeline treo khi gọi Claude:</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Bước</th>
-<th>Việc làm</th>
-<th>Vì sao</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Thêm <code>-p</code></td>
-<td>Hết treo</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Thêm <code>--output-format json</code></td>
-<td>Hết prose</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Thêm schema 5 field</td>
-<td>Comment đăng đúng chỗ</td>
-</tr>
-</tbody>
-</table>
-<p>Review lại lần hai: PR thêm 3 commit, chạy lại bot đăng lại 14
-comment cũ. Sửa bằng cách đưa output lần trước vào prompt và yêu cầu chỉ
-báo cái mới hoặc còn hỏng.</p>
-<p>Phiên review phải khác phiên viết code. Cùng phiên thì model vẫn giữ
-lý lẽ đã tạo ra code.</p>
-<h3 id="bài-tập-25">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết lệnh CI có <code>-p</code> và json schema</td>
-<td>15 phút</td>
-<td>Không có cờ bịa</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Chạy review hai lần, lần hai chỉ báo delta</td>
-<td>20 phút</td>
-<td>Không comment trùng</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Tách phiên review khỏi phiên sinh code</td>
-<td>10 phút</td>
-<td>Reviewer nhận code và yêu cầu, không nhận transcript</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-25">Bẫy</h3>
-<p>Bỏ <code>stdin &lt; /dev/null</code> thay cho <code>-p</code>. Nó che
-triệu chứng và đề thi không chấp nhận.</p>
-</section>
-<section id="m27">
-<h2 id="explicit-criteria-and-false-positives">27 · Explicit Criteria
-and False Positives</h2>
-<p>Tiêu chí phải là <strong>luật phân loại có/không</strong>, không phải
-lời khuyên.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Câu mơ hồ</th>
-<th>Thay bằng</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>“Kiểm tra comment có chính xác không”</td>
-<td>“Chỉ báo khi hành vi được mô tả mâu thuẫn với code”</td>
-</tr>
-<tr>
-<td>“Chỉ báo finding có độ tin cậy cao”</td>
-<td>Bỏ hẳn; điểm tự tin chưa hiệu chỉnh là vô nghĩa</td>
-</tr>
-<tr>
-<td>“Mức nghiêm trọng: cao, trung bình, thấp”</td>
-<td>Mỗi mức gắn với một ví dụ code cụ thể</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-26">Ví dụ</h3>
-<p>Nhóm finding hiệu năng sai 70% số lần.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Tuần</th>
-<th>Việc làm</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Tuần 1</td>
-<td>Tắt cả nhóm hiệu năng</td>
-</tr>
-<tr>
-<td>Tuần 2-3</td>
-<td>Dựng lại: định nghĩa thế nào là vấn đề hiệu năng thật, thêm few-shot
-so sánh mẫu chấp nhận được với mẫu hỏng</td>
-</tr>
-<tr>
-<td>Tuần 4</td>
-<td>Bật lại</td>
-</tr>
-</tbody>
-</table>
-<p>Giữ nó bật và dặn “bỏ qua false positive” không hiệu quả: người dùng
-bỏ đọc cả nhóm bảo mật, và lỗi thật đi qua.</p>
-<h3 id="bài-tập-26">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết lại một instruction mơ hồ thành luật có/không</td>
-<td>10 phút</td>
-<td>Hai người áp ra cùng kết quả</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Gắn mỗi mức severity với một ví dụ code</td>
-<td>15 phút</td>
-<td>Không mức nào chỉ có tính từ</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Lập kế hoạch tắt, dựng lại, bật lại một nhóm nhiễu</td>
-<td>10 phút</td>
-<td>Có tiêu chí để bật lại</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-26">Bẫy</h3>
-<p>Dùng điểm tự tin để lọc. Model tự tin sai đúng ở nhóm tệ nhất, nên
-ngưỡng không lọc được gì.</p>
-</section>
-<section id="m28">
-<h2 id="batch-processing-strategy">28 · Batch Processing Strategy</h2>
-<p>Câu hỏi lọc: việc này chịu được chờ <strong>không có SLA, tới 24
-giờ</strong> không. Không phải “thường chạy trong một giờ”.</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Việc</th>
-<th>Batch?</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Báo cáo nợ kỹ thuật chạy đêm</td>
-<td>Được</td>
-</tr>
-<tr>
-<td>Check trước khi merge, người đang chờ</td>
-<td>Không</td>
-</tr>
-<tr>
-<td>Agent gọi tool nhiều lượt</td>
-<td>Không, API không hỗ trợ</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-27">Ví dụ</h3>
-<p>SLA 30 giờ, cửa sổ xử lý tối đa 24 giờ.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Cách tính</th>
-<th>Kết quả</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Dùng trường hợp tốt nhất (1 giờ)</td>
-<td>Gửi sát hạn, trượt SLA khi hàng đợi dài</td>
-</tr>
-<tr>
-<td>Dùng trường hợp xấu nhất</td>
-<td>30 − 24 = 6 giờ, gửi ít nhất 6 giờ một lần</td>
-</tr>
-</tbody>
-</table>
-<p>Lô 100 tài liệu, 9 tài liệu vượt giới hạn context. Không gửi lại cả
-100: lấy <code>custom_id</code> của 9 cái lỗi, chia nhỏ tài liệu, tạo
-request mới giữ nguyên <code>custom_id</code>.</p>
-<h3 id="bài-tập-27">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Phân loại 5 workload thành batch hoặc realtime</td>
-<td>10 phút</td>
-<td>Mỗi quyết định dựa trên có ai chờ</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Tính nhịp gửi cho một SLA cho trước</td>
-<td>10 phút</td>
-<td>Dùng cửa sổ xấu nhất</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Viết quy trình xử lý lại chỉ phần lỗi</td>
-<td>15 phút</td>
-<td>Không gửi lại request đã thành công</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-27">Bẫy</h3>
-<p>Thiết kế theo tốc độ trung bình. Không có SLA, nên xây quy trình đồng
-bộ trên giả định tốt nhất là bẫy.</p>
-</section>
-<section id="m29">
-<h2 id="multi-pass-and-independent-review">29 · Multi-Pass and
-Independent Review</h2>
-<p>Một lượt review trên nhiều file bị <strong>pha loãng chú ý</strong>,
-không phải thiếu dung lượng.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Lượt</th>
-<th>Phạm vi</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Per-file</td>
-<td>Lỗi cục bộ, style, logic trong một file</td>
-</tr>
-<tr>
-<td>Integration</td>
-<td>Luồng dữ liệu giữa các file, hợp đồng API, tính nhất quán</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-28">Ví dụ</h3>
-<p>PR 14 file, review một lượt:</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Hiện tượng</th>
-<th>Nguyên nhân</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>File đầu kỹ, file cuối lướt</td>
-<td>Chú ý trải mỏng</td>
-</tr>
-<tr>
-<td>Cùng một mẫu code bị chê ở file 3, duyệt ở file 11</td>
-<td>Model mất dấu</td>
-</tr>
-<tr>
-<td>Lỗi xuyên file không ai thấy</td>
-<td>Không có lượt nào nhìn toàn cục</td>
-</tr>
-</tbody>
-</table>
-<p>Cách sửa: 14 lượt theo file, cộng 1 lượt tích hợp. Model lớn hơn hay
-context lớn hơn không thay được cấu trúc.</p>
-<p>Không dùng bỏ phiếu đa số: bug chỉ bắt 1 trên 3 lần vẫn là bug thật,
-yêu cầu đồng thuận sẽ loại nó.</p>
-<h3 id="bài-tập-28">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Chia một PR lớn thành lượt theo file và lượt tích hợp</td>
-<td>15 phút</td>
-<td>Có bước nào nhìn được toàn cục</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Chạy lại review bằng phiên mới</td>
-<td>15 phút</td>
-<td>Kết quả khác lần tự review</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Thử bỏ phiếu đa số trên 3 lần chạy, xem mất gì</td>
-<td>10 phút</td>
-<td>Đếm được finding bị loại oan</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-28">Bẫy</h3>
-<p>Tăng context window hoặc dùng model mạnh hơn. Vấn đề là chất lượng
-chú ý, không phải sức chứa.</p>
-</section>
-<section id="m30">
-<h2 id="preserving-facts-across-long-conversations">30 · Preserving
-Facts Across Long Conversations</h2>
-<p>Case facts block: bản ghi <strong>nguyên văn</strong> các sự kiện
-giao dịch, nằm ngoài lịch sử bị nén, chèn vào mọi prompt.</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Giữ nguyên văn</th>
-<th>Không để summarizer quyết</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Số tiền, ngày, mã đơn</td>
-<td>Điều gì quan trọng</td>
-</tr>
-<tr>
-<td>Trạng thái, lời hứa và hạn</td>
-<td>Cách diễn đạt lại</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-29">Ví dụ</h3>
-<p>Lượt 4: “bị trừ 247,83 đô ngày 3 tháng 3, đơn 4471, hứa hoàn trong 5
-ngày làm việc.”</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Sau nhiều lần nén</th>
-<th>Nội dung còn lại</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Không có case facts block</td>
-<td>“Khách có vấn đề thanh toán”</td>
-</tr>
-<tr>
-<td>Có case facts block</td>
-<td>Đủ số tiền, ngày, mã đơn, hạn cam kết</td>
-</tr>
-</tbody>
-</table>
-<p>Hệ quả của bản mất chi tiết: agent hỏi lại điều khách đã nói, hoặc
-hoàn sai số tiền.</p>
-<p>Cắt bớt tool result tại biên là phòng ngừa; compaction là cứu hộ. Thứ
-tự input cũng quan trọng: model nhớ đầu và cuối tốt hơn giữa.</p>
-<h3 id="bài-tập-29">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Trích 5 sự kiện nguyên văn từ một hội thoại dài</td>
-<td>15 phút</td>
-<td>Không có chỗ nào diễn giải lại</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Tách block theo từng vấn đề trong phiên nhiều vấn đề</td>
-<td>10 phút</td>
-<td>Không lẫn ngữ cảnh giữa các vấn đề</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Đặt chi tiết quan trọng ở đầu hoặc cuối input</td>
-<td>10 phút</td>
-<td>Kiểm lại bằng câu hỏi về chi tiết đó</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-29">Bẫy</h3>
-<p>Dặn summarizer giữ chi tiết quan trọng. Chính phán đoán của nó là chỗ
-hỏng, và đề thi coi đây là đáp án sai.</p>
-</section>
-<section id="m31">
-<h2 id="escalation-and-ambiguity-resolution">31 · Escalation and
-Ambiguity Resolution</h2>
-<p>Đúng ba lý do chuyển cho người:</p>
+<p>Review tăng dần: đưa output lần trước, chỉ báo delta. Review độc lập:
+phiên khác phiên viết code.</p>
+<p>Batch: chỉ cho việc chịu được chờ tới 24 giờ. Kết quả về không theo
+thứ tự, ghép bằng <code>custom_id</code>.</p>
+<p>Review nhiều file: chia lượt theo file cộng một lượt tích hợp. Vấn đề
+là pha loãng chú ý, không phải dung lượng.</p>
+<h3 id="ví-dụ-10">Ví dụ</h3>
+<p>PR 14 file review một lượt: file đầu kỹ, file cuối lướt, cùng mẫu
+code bị chê ở file 3 và duyệt ở file 11. Sửa bằng 14 lượt file cộng 1
+lượt tích hợp.</p>
+<h3 id="mã-10">Mã</h3>
+<pre class="bash"><code>claude -p &quot;Review staged diff, output JSON per schema&quot; \
+  --output-format json \
+  --allowedTools &quot;Read,Grep,Glob&quot;</code></pre>
+<pre class="python"><code>requests = [{
+  &quot;custom_id&quot;: f&quot;ticket-{i}&quot;,
+  &quot;params&quot;: {&quot;model&quot;: &quot;claude-opus-5-5&quot;, &quot;max_tokens&quot;: 512,
+             &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: t}]},
+} for i, t in enumerate(tickets)]
+job = client.beta.messages.batches.create(requests=requests)</code></pre>
+<h3 id="thực-hành-10">Thực hành</h3>
 <ol type="1">
-<li>Khách yêu cầu gặp người.</li>
-<li>Policy trống hoặc cần ngoại lệ.</li>
-<li>Không tiến triển được sau khi đã điều tra.</li>
+<li>Chấm 3 task theo 3 tín hiệu plan.</li>
+<li>Thay một instruction mơ hồ bằng 3 cặp input/output.</li>
+<li>Viết lệnh CI có schema.</li>
+<li>Chạy review hai lần, lần hai chỉ báo delta.</li>
 </ol>
+<h3 id="bài-tập-10">Bài tập</h3>
 <table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Chấm task theo tín hiệu</td>
+<td>10 phút</td>
+<td>Mỗi task ra một chế độ</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết 3 cặp mẫu</td>
+<td>15 phút</td>
+<td>Hai người chấm cùng kết quả</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chạy review tăng dần</td>
+<td>20 phút</td>
+<td>Lần hai không trùng</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-10">Bẫy</h3>
+<p>Bỏ qua bước tích hợp. Review không có lượt tổng hợp sẽ bỏ lỗi xuyên
+file.</p>
+</section>
+<section id="m12">
+<h2 id="escalation-lỗi-đa-agent-độ-tin-cậy">12 · Escalation, lỗi đa
+agent, độ tin cậy</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Chuyển cấp đúng ba lý do.</li>
+<li>Truyền lỗi đủ để coordinator hành động.</li>
+<li>Chia độ chính xác theo đoạn, giữ provenance.</li>
+</ul>
+<h3 id="lý-thuyết-11">Lý thuyết</h3>
+<p>Đúng ba lý do chuyển người: khách yêu cầu, policy trống hoặc cần
+ngoại lệ, không tiến triển sau khi điều tra.</p>
+<table class="mapping">
 <thead>
 <tr>
 <th>Không phải lý do</th>
@@ -3520,58 +1864,94 @@ Ambiguity Resolution</h2>
 <tbody>
 <tr>
 <td>Ca phức tạp</td>
-<td>Policy rõ thì agent xử được; phức tạp không phải ranh giới thẩm
-quyền</td>
+<td>Policy rõ thì xử được</td>
 </tr>
 <tr>
-<td>Khách đang bực</td>
-<td>Cảm xúc không đo thẩm quyền; ca bực thường đơn giản</td>
+<td>Khách bực</td>
+<td>Cảm xúc không đo thẩm quyền</td>
 </tr>
 <tr>
 <td>Confidence thấp</td>
-<td>Model đã tự tin sai ở đúng ca khó, ngưỡng không cứu được</td>
+<td>Model tự tin sai ở ca khó</td>
 </tr>
 </tbody>
 </table>
-<h3 id="ví-dụ-30">Ví dụ</h3>
+<p>Lỗi subagent phải trả: loại lỗi, query đã thử, kết quả một phần, cách
+thay thế. Kết quả rỗng không phải lỗi.</p>
 <table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
 <thead>
 <tr>
-<th>Ca</th>
-<th>Đặc điểm</th>
+<th>Vấn đề</th>
+<th>Sửa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context degradation</td>
+<td>Scratchpad, tóm tắt theo pha, manifest</td>
+</tr>
+<tr>
+<td>Con số tổng che lỗi</td>
+<td>Chia theo loại tài liệu và field</td>
+</tr>
+<tr>
+<td>Confidence chưa hiệu chỉnh</td>
+<td>So với tập nhãn</td>
+</tr>
+<tr>
+<td>Nguồn xung đột</td>
+<td>Trả cả hai kèm nguồn, không lấy trung bình</td>
+</tr>
+<tr>
+<td>Mất nguồn khi tóm tắt</td>
+<td>Claim, evidence, URL, date xuyên mọi bước</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-11">Ví dụ</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tình huống</th>
 <th>Kết luận</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Đổi hàng hỏng, có ảnh</td>
-<td>Phức tạp: xác minh ảnh, kiểm loại hỏng, tính chi phí</td>
-<td>Tự xử lý, policy rõ</td>
+<td>Đổi hàng hỏng có ảnh, policy rõ</td>
+<td>Tự xử lý</td>
 </tr>
 <tr>
-<td>Hoàn tiền sau 45 ngày</td>
-<td>Đơn giản, nhưng policy chỉ 30 ngày</td>
-<td>Escalate, policy trống</td>
+<td>Hoàn tiền sau 45 ngày, policy 30 ngày</td>
+<td>Escalate</td>
+</tr>
+<tr>
+<td>90% hóa đơn chuẩn đạt 99%, 10% phụ lục đạt 79%</td>
+<td>Giữ người ở phụ lục</td>
+</tr>
+<tr>
+<td>Hai nguồn nói 4,2 và 7,1 tỷ</td>
+<td>Trả cả hai kèm phương pháp và ngày</td>
 </tr>
 </tbody>
 </table>
-<p>Ca thứ hai đơn giản hơn nhưng phải chuyển, vì ranh giới là thẩm quyền
-chứ không phải độ khó.</p>
-<p>Thiếu thông tin để xác định đúng khách: hỏi thêm. Đoán theo tên gần
-giống dẫn tới hoàn tiền sai tài khoản.</p>
-<h3 id="bài-tập-30">Bài tập</h3>
+<h3 id="mã-11">Mã</h3>
+<pre class="python"><code>return {
+    &quot;status&quot;: &quot;error&quot;,
+    &quot;failure_type&quot;: &quot;timeout&quot;,
+    &quot;query_attempted&quot;: q,
+    &quot;partial_results&quot;: found,
+    &quot;alternatives&quot;: [&quot;rephrase_query&quot;, &quot;different_engine&quot;],
+}</code></pre>
+<h3 id="thực-hành-11">Thực hành</h3>
+<ol type="1">
+<li>Phân loại 6 ca theo ba lý do escalate.</li>
+<li>Viết payload lỗi 4 field.</li>
+<li>Chia một pipeline thành đoạn, mỗi đoạn một tỉ lệ.</li>
+<li>Viết schema claim/evidence/URL/date.</li>
+</ol>
+<h3 id="bài-tập-11">Bài tập</h3>
 <table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
 <thead>
 <tr>
 <th>#</th>
@@ -3583,443 +1963,27 @@ giống dẫn tới hoàn tiền sai tài khoản.</p>
 <tbody>
 <tr>
 <td>1</td>
-<td>Phân loại 6 ca theo ba lý do hợp lệ</td>
+<td>Phân loại 6 ca escalate</td>
 <td>10 phút</td>
-<td>Không ca nào chuyển vì cảm xúc</td>
+<td>Không ca nào vì cảm xúc</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Viết luật hỏi thêm khi thiếu định danh</td>
-<td>10 phút</td>
-<td>Không có nhánh đoán</td>
+<td>Viết payload lỗi</td>
+<td>15 phút</td>
+<td>Đủ 4 field</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Đo tỉ lệ escalate trên mẫu giả định</td>
-<td>15 phút</td>
-<td>Nêu được ca nào chuyển sai</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-30">Bẫy</h3>
-<p>Escalate theo sentiment hoặc confidence. Cả hai đo sai biến và tạo
-escalate giả.</p>
-</section>
-<section id="m32">
-<h2 id="error-propagation-across-multi-agent-systems">32 · Error
-Propagation Across Multi-Agent Systems</h2>
-<p>Subagent lỗi phải trả payload có cấu trúc:</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Field</th>
-<th>Để coordinator làm gì</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Loại lỗi</td>
-<td>Phân biệt transient với sai query</td>
-</tr>
-<tr>
-<td>Query đã thử</td>
-<td>Thử lại có điều chỉnh</td>
-</tr>
-<tr>
-<td>Kết quả một phần</td>
-<td>Không bỏ phí công đã làm</td>
-</tr>
-<tr>
-<td>Cách thay thế</td>
-<td>Chọn hướng khác thay vì dừng cả workflow</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-31">Ví dụ</h3>
-<p>Searcher timeout giữa chủ đề, đã retry 3 lần.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Cách trả</th>
-<th>Coordinator nhận được gì</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>"search unavailable"</code></td>
-<td>Không biết nên thử lại hay đổi query</td>
-</tr>
-<tr>
-<td>Bốn field ở trên</td>
-<td>Thử lại với query đã viết lại, giữ 2 kết quả một phần</td>
-</tr>
-</tbody>
-</table>
-<p>Kết quả rỗng từ nguồn khỏe mạnh là <strong>finding hợp lệ</strong>,
-không phải lỗi. Hai trạng thái phải khác nhau trong biểu diễn, nếu không
-báo cáo nói “không phát hiện vấn đề” khi thực ra nguồn không truy cập
-được.</p>
-<p>Báo cáo phải có coverage annotation: mục E và F mỏng vì nguồn gián
-đoạn một phần.</p>
-<h3 id="bài-tập-31">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết schema lỗi 4 field cho một subagent</td>
-<td>15 phút</td>
-<td>Coordinator phân biệt được transient và bad query</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Phân biệt empty result và access failure trong code</td>
-<td>15 phút</td>
-<td>Hai trạng thái không dùng chung một giá trị</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Viết coverage annotation cho một báo cáo</td>
-<td>10 phút</td>
-<td>Nêu được mục nào mỏng và vì sao</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-31">Bẫy</h3>
-<p>Trả trạng thái chung chung sau khi đã retry. Nó trông có trách nhiệm
-nhưng bỏ mất thứ coordinator cần.</p>
-</section>
-<section id="m33">
-<h2 id="large-codebase-exploration-and-crash-recovery">33 · Large
-Codebase Exploration and Crash Recovery</h2>
-<p>Context degradation là mất dần chi tiết cụ thể: câu trả lời vẫn trôi
-chảy nhưng chuyển từ tên class, đường dẫn sang mô tả chung chung. Khác
-với ignorance (chưa từng có thông tin).</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Cơ chế</th>
-<th>Vai trò</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Scratchpad</td>
-<td>Ghi finding ngay khi tìm ra, không để cuối</td>
-</tr>
-<tr>
-<td>Tóm tắt theo pha</td>
-<td>Chuyển sang subagent pha sau</td>
-</tr>
-<tr>
-<td>State manifest</td>
-<td>Trạng thái công việc: xong, dở, đang làm khi crash</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-32">Ví dụ</h3>
-<p>Khám phá codebase lớn chia 4 pha:</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Pha</th>
-<th>Việc làm</th>
-<th>Đầu ra</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Khám phá vùng 1, ghi class, đường dẫn, câu hỏi mở vào
-<code>findings.md</code></td>
-<td>Đoạn tóm tắt ngắn</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Subagent nhận tóm tắt, khám phá vùng 2, ghi tiếp</td>
-<td>Tóm tắt tích lũy</td>
-</tr>
-<tr>
-<td>3-4</td>
-<td>Lặp lại</td>
-<td>Tóm tắt cuối</td>
-</tr>
-</tbody>
-</table>
-<p>Nếu giữ tất cả trong một hội thoại dài, đến pha 3 câu trả lời thành
-“các service thường có pattern…” thay vì tên class thật.</p>
-<p>Crash ở giờ thứ 5: resume trả lại lịch sử chat, manifest trả lại tiến
-độ. Cần cả hai.</p>
-<h3 id="bài-tập-32">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Chạy khám phá 2 pha với scratchpad</td>
-<td>25 phút</td>
-<td>Finding được ghi ngay, không để cuối</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Viết state manifest sau một pha</td>
-<td>10 phút</td>
-<td>Nêu được xong, dở, chưa bắt đầu</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Phát hiện degradation trong một phiên dài</td>
-<td>10 phút</td>
-<td>Chỉ ra câu trả lời mất tên cụ thể</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-32">Bẫy</h3>
-<p>Hỏi lại mạnh hơn hoặc restart từ đầu. Reask không lấy lại context đã
-mất; restart đốt token.</p>
-</section>
-<section id="m34">
-<h2 id="human-review-and-confidence-calibration">34 · Human Review and
-Confidence Calibration</h2>
-<p>Con số chính xác tổng hợp che mất lỗi. Phải chia theo <strong>loại
-tài liệu và từng field</strong>.</p>
-<table class="mapping">
-<thead>
-<tr>
-<th>Bước</th>
-<th>Việc làm</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Chia đoạn</td>
-<td>Tách theo loại tài liệu và field</td>
-</tr>
-<tr>
-<td>Quyết định</td>
-<td>Tự động riêng đoạn đạt; giữ người ở đoạn chưa đạt</td>
-</tr>
-<tr>
-<td>Hiệu chỉnh</td>
-<td>So điểm tự tin với tập nhãn để thành xác suất thật</td>
-</tr>
-<tr>
-<td>Lấy mẫu</td>
-<td>Lấy mẫu phân tầng định kỳ, vì đầu vào trôi</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-33">Ví dụ</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Đoạn</th>
-<th>Tỉ lệ</th>
-<th>Quyết định</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Hóa đơn chuẩn, 90% khối lượng</td>
-<td>99%</td>
-<td>Tự động</td>
-</tr>
-<tr>
-<td>Phụ lục viết tay, 10%</td>
-<td>79%</td>
-<td>Giữ người</td>
-</tr>
-<tr>
-<td>Riêng field “remittance advice” trong phụ lục</td>
-<td>gần 0%</td>
-<td>Không bao giờ tự động</td>
-</tr>
-</tbody>
-</table>
-<p>Con số tổng 97% trông đủ tốt để bỏ review, nhưng field gần 0% vẫn cho
-câu trả lời sai với độ tự tin cao.</p>
-<p>Hiệu chỉnh: điểm 0,94 không có nghĩa đúng 94% số lần. Phải so với tập
-500 tài liệu có đáp án rồi ánh xạ lại.</p>
-<h3 id="bài-tập-33">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Chia một pipeline thành đoạn theo loại và field</td>
+<td>Chia đoạn độ chính xác</td>
 <td>15 phút</td>
 <td>Mỗi đoạn có tỉ lệ riêng</td>
 </tr>
-<tr>
-<td>2</td>
-<td>Hiệu chỉnh điểm tự tin trên tập nhãn nhỏ</td>
-<td>20 phút</td>
-<td>Điểm sau hiệu chỉnh khớp tỉ lệ thật</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Lập lịch lấy mẫu phân tầng</td>
-<td>10 phút</td>
-<td>Có tần suất và cỡ mẫu</td>
-</tr>
 </tbody>
 </table>
-<h3 id="bẫy-33">Bẫy</h3>
-<p>Bỏ review dựa trên con số tổng, hoặc dùng một ngưỡng tự tin duy nhất.
-Cả hai đều bỏ qua đoạn đang hỏng.</p>
-</section>
-<section id="m35">
-<h2 id="provenance-and-conflicting-sources">35 · Provenance and
-Conflicting Sources</h2>
-<p>Mỗi finding từ subagent phải là object có cấu trúc: claim, trích dẫn
-nguyên văn, URL nguồn, ngày công bố. Bước tổng hợp được phép viết lại
-câu, nhưng phải giữ nguyên ba field còn lại.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Nguồn xung đột</th>
-<th>Xử lý</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Hai con số khác nhau</td>
-<td>Trả cả hai kèm nguồn và phương pháp; <strong>không lấy trung
-bình</strong></td>
-</tr>
-<tr>
-<td>Khác thời điểm</td>
-<td>Ngày công bố biến mâu thuẫn thành chuỗi thời gian</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-34">Ví dụ</h3>
-<p>Hai nguồn nói quy mô thị trường là 4,2 tỷ và 7,1 tỷ.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Cách làm</th>
-<th>Kết quả</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Lấy trung bình 5,65 tỷ</td>
-<td>Con số không nguồn nào nói, và mất luôn phát hiện rằng các nguồn
-không đồng ý</td>
-</tr>
-<tr>
-<td>Trả cả hai kèm định nghĩa thị trường và ngày</td>
-<td>Người đọc thấy đây có thể là hai định nghĩa khác nhau, không phải
-mâu thuẫn</td>
-</tr>
-</tbody>
-</table>
-<p>Định dạng theo loại nội dung: tài chính dùng bảng, tin tức dùng văn
-xuôi, kết quả kỹ thuật dùng danh sách.</p>
-<p>Mục “nguồn đã tham khảo” ở cuối báo cáo không thay được mapping claim
-với nguồn, vì mapping đã mất ở bước nén.</p>
-<h3 id="bài-tập-34">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Viết schema claim nguồn cho một subagent</td>
-<td>10 phút</td>
-<td>Có đủ 4 field</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Xử lý hai nguồn xung đột, không lấy trung bình</td>
-<td>15 phút</td>
-<td>Cả hai số còn nguyên kèm nguồn</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Chỉ ra bước nén làm mất provenance trong pipeline của bạn</td>
-<td>10 phút</td>
-<td>Nêu được chỗ cụ thể</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-34">Bẫy</h3>
-<p>Thêm mục “nguồn tham khảo” cuối báo cáo. Nó liệt kê nguồn nhưng không
-nối từng claim với nguồn tương ứng.</p>
+<h3 id="bẫy-11">Bẫy</h3>
+<p>Lấy trung bình hai nguồn xung đột. Con số đó không nguồn nào nói, và
+mất luôn phát hiện rằng các nguồn không đồng ý.</p>
 </section>
 
 
