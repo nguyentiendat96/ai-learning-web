@@ -486,6 +486,25 @@ Hai loại file, bốn nơi.
 
 Hệ quả: hai luật mâu thuẫn ở hai tầng `CLAUDE.md` không báo lỗi; cả hai cùng sống và model chọn.
 
+### Sáu chế độ quyền và khoản cấp đứng
+
+Cấp quyền một lần trong file rồi mọi phiên sau thừa hưởng: đó là khoản cấp đứng. Chế độ quyền, settings, context file và allow rule đều là khoản cấp đứng.
+
+| Chế độ | Chạy không hỏi | Ai quyết phần còn lại |
+|---|---|---|
+| default | Đọc | Người, tại prompt |
+| acceptEdits | Đọc, sửa file, lệnh hệ thống thường | Người |
+| plan | Đọc | Người, và sửa chờ kế hoạch được duyệt |
+| auto | Việc classifier duyệt | Model thứ hai |
+| dontAsk | Chỉ tool đã duyệt trước | Không ai: việc cần hỏi bị từ chối |
+| bypassPermissions | Mọi thứ | Không ai, chỉ dùng trong container |
+
+Hai điều đúng mọi chế độ: deny rule vẫn áp dụng, kể cả chế độ bỏ qua kiểm tra; allow rule mất nghĩa ở chế độ đó.
+
+Mở rộng chế độ để bớt hỏi là phản mẫu. Mệt vì bị hỏi là chi phí thật, nhưng không phải đánh giá rủi ro. Chọn chế độ theo blast radius, và đóng phần còn mở bằng deny rule ở scope project hoặc tổ chức.
+
+Scope theo người nhận: file project đã commit đi theo bản clone, file user chỉ trên máy bạn, file local là ngoại lệ cá nhân, managed do tổ chức đẩy và không gì dưới nó ghi đè. Hai lỗi có tên: quyết định của team để trong biến môi trường, và cấu hình viết dưới dạng tài liệu wiki.
+
 ### Ví dụ
 
 Ba kỹ sư, cùng repo, ba hành vi.

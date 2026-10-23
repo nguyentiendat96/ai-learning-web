@@ -1081,6 +1081,70 @@ Different Claudes</h2>
 </table>
 <p>Consequence: two contradictory <code>CLAUDE.md</code> rules raise no
 error; both live and the model chooses.</p>
+<h3 id="six-permission-modes-and-standing-grants">Six permission modes
+and standing grants</h3>
+<p>Authority handed over once in a file, then inherited by every later
+session: that is a standing grant. Permission modes, settings, context
+files and allow rules are all standing grants.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Runs without prompting</th>
+<th>Who decides the rest</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>default</td>
+<td>Reads</td>
+<td>A person, at a prompt</td>
+</tr>
+<tr>
+<td>acceptEdits</td>
+<td>Reads, edits, common filesystem commands</td>
+<td>A person</td>
+</tr>
+<tr>
+<td>plan</td>
+<td>Reads</td>
+<td>A person, and edits wait for an approved plan</td>
+</tr>
+<tr>
+<td>auto</td>
+<td>Whatever a classifier clears</td>
+<td>A second model</td>
+</tr>
+<tr>
+<td>dontAsk</td>
+<td>Only pre-approved tools</td>
+<td>Nobody: anything that would prompt is denied</td>
+</tr>
+<tr>
+<td>bypassPermissions</td>
+<td>Everything</td>
+<td>Nobody, which is why it belongs in a container</td>
+</tr>
+</tbody>
+</table>
+<p>Two facts hold in every mode: deny rules still apply, including in
+the mode that skips checks, and allow rules stop meaning anything
+there.</p>
+<p>Widening a mode to stop prompting is the anti-pattern. Prompt fatigue
+is a real cost but not a risk assessment. Size the mode to the blast
+radius, and close what remains with a deny rule at project or
+organisation scope.</p>
+<p>Scope follows the audience: the committed project file travels with
+the clone, the user file covers only your machine, the local file is a
+personal exception, managed settings are pushed by the organisation and
+nothing below overrides them. Two named failures: a team decision living
+in an environment variable, and configuration written as a wiki
+page.</p>
 <h3 id="example-5">Example</h3>
 <p>Three engineers, one repo, three behaviours.</p>
 <table class="mapping">

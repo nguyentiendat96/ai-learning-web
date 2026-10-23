@@ -475,6 +475,25 @@ Precedence: organisation > command line > `settings.local.json` > project `setti
 
 Consequence: two contradictory `CLAUDE.md` rules raise no error; both live and the model chooses.
 
+### Six permission modes and standing grants
+
+Authority handed over once in a file, then inherited by every later session: that is a standing grant. Permission modes, settings, context files and allow rules are all standing grants.
+
+| Mode | Runs without prompting | Who decides the rest |
+|---|---|---|
+| default | Reads | A person, at a prompt |
+| acceptEdits | Reads, edits, common filesystem commands | A person |
+| plan | Reads | A person, and edits wait for an approved plan |
+| auto | Whatever a classifier clears | A second model |
+| dontAsk | Only pre-approved tools | Nobody: anything that would prompt is denied |
+| bypassPermissions | Everything | Nobody, which is why it belongs in a container |
+
+Two facts hold in every mode: deny rules still apply, including in the mode that skips checks, and allow rules stop meaning anything there.
+
+Widening a mode to stop prompting is the anti-pattern. Prompt fatigue is a real cost but not a risk assessment. Size the mode to the blast radius, and close what remains with a deny rule at project or organisation scope.
+
+Scope follows the audience: the committed project file travels with the clone, the user file covers only your machine, the local file is a personal exception, managed settings are pushed by the organisation and nothing below overrides them. Two named failures: a team decision living in an environment variable, and configuration written as a wiki page.
+
 ### Example
 
 Three engineers, one repo, three behaviours.
