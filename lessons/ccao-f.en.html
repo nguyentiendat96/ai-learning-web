@@ -1797,6 +1797,45 @@ request for a human after being offered help is escalated.</p>
 <p>Ambiguous name match: always ask for one more identifier (email,
 phone, order id). Never pick the newest, most active or nearest
 account.</p>
+<h3 id="three-aup-layers-and-seven-high-risk-areas">Three AUP layers and
+seven high-risk areas</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Universal</td>
+<td>Eight prohibited clusters: illegal activity, severe harm, privacy
+violation, disinformation and election interference, surveillance and
+predictive policing, fraud and exploitation, platform abuse, sexual
+content</td>
+</tr>
+<tr>
+<td>High-risk</td>
+<td>Seven areas: legal, healthcare, insurance, finance, employment and
+housing, academic testing, media and journalism</td>
+</tr>
+<tr>
+<td>Additional</td>
+<td>Guidelines for chatbots, minors, and agentic use</td>
+</tr>
+</tbody>
+</table>
+<p>Two obligations in the high-risk layer: a qualified professional
+reviews before publication, and AI involvement is disclosed, at least at
+the start of the session. Ordinary wellness advice (sleep, stress,
+nutrition) is not healthcare.</p>
+<p>Claude checking itself is not a control: asking the model whether its
+own claim is correct does not replace a qualified human confirming
+it.</p>
 <h3 id="example-7">Example</h3>
 <table class="mapping">
 <colgroup>
@@ -1969,6 +2008,40 @@ louder.</li>
 <p>A fabrication tell: running the same question twice yields two
 conclusions. Asking for the reasoning can expose a stale assumption, for
 example a constraint from Tuesday still being honoured.</p>
+<h3 id="diagnosis-by-symptom">Diagnosis by symptom</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fabricated facts</td>
+<td>Allow “I do not know”, require quotes, restrict to the document</td>
+</tr>
+<tr>
+<td>Inconsistent formatting</td>
+<td>Structured output and few-shot</td>
+</tr>
+<tr>
+<td>Missing content in long input</td>
+<td>Move key data to the top and bottom, extract quotes first</td>
+</tr>
+<tr>
+<td>Shallow analysis</td>
+<td>Decompose into chained steps</td>
+</tr>
+</tbody>
+</table>
+<p>Retry fixes format, structure and arithmetic errors. When information
+is absent from the source, retry is useless: get the source or
+escalate.</p>
 <h3 id="example-8">Example</h3>
 <p>A flat brief where the four-step ladder passes: the ask is clear, the
 context was loaded.</p>

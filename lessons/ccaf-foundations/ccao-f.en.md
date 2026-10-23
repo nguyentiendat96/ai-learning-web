@@ -648,6 +648,18 @@ Nuance: an upset customer with a simple issue gets acknowledgement and a propose
 
 Ambiguous name match: always ask for one more identifier (email, phone, order id). Never pick the newest, most active or nearest account.
 
+### Three AUP layers and seven high-risk areas
+
+| Layer | Content |
+|---|---|
+| Universal | Eight prohibited clusters: illegal activity, severe harm, privacy violation, disinformation and election interference, surveillance and predictive policing, fraud and exploitation, platform abuse, sexual content |
+| High-risk | Seven areas: legal, healthcare, insurance, finance, employment and housing, academic testing, media and journalism |
+| Additional | Guidelines for chatbots, minors, and agentic use |
+
+Two obligations in the high-risk layer: a qualified professional reviews before publication, and AI involvement is disclosed, at least at the start of the session. Ordinary wellness advice (sleep, stress, nutrition) is not healthcare.
+
+Claude checking itself is not a control: asking the model whether its own claim is correct does not replace a qualified human confirming it.
+
 ### Example
 
 | Situation | Conclusion |
@@ -714,6 +726,17 @@ Symptom table:
 | Complex answer that wobbles | Task needs splitting | Split it |
 
 A fabrication tell: running the same question twice yields two conclusions. Asking for the reasoning can expose a stale assumption, for example a constraint from Tuesday still being honoured.
+
+### Diagnosis by symptom
+
+| Symptom | Fix |
+|---|---|
+| Fabricated facts | Allow "I do not know", require quotes, restrict to the document |
+| Inconsistent formatting | Structured output and few-shot |
+| Missing content in long input | Move key data to the top and bottom, extract quotes first |
+| Shallow analysis | Decompose into chained steps |
+
+Retry fixes format, structure and arithmetic errors. When information is absent from the source, retry is useless: get the source or escalate.
 
 ### Example
 

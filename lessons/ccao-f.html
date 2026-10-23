@@ -1766,6 +1766,42 @@ khi được đề nghị giúp thì chuyển.</p>
 <p>Trùng tên: luôn hỏi thêm một định danh (email, số điện thoại, mã
 đơn). Không chọn theo tài khoản mới nhất, hoạt động nhiều nhất hay gần
 nhất.</p>
+<h3 id="ba-tầng-aup-và-bảy-lĩnh-vực-rủi-ro-cao">Ba tầng AUP và bảy lĩnh
+vực rủi ro cao</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chuẩn chung</td>
+<td>Tám nhóm cấm: phi pháp, gây hại nghiêm trọng, xâm phạm riêng tư,
+thông tin sai lệch và can thiệp bầu cử, giám sát và dự đoán tội phạm,
+lừa đảo và bóc lột, lạm dụng nền tảng, nội dung khiêu dâm</td>
+</tr>
+<tr>
+<td>Rủi ro cao</td>
+<td>Bảy lĩnh vực: pháp lý, y tế, bảo hiểm, tài chính, việc làm và nhà ở,
+thi cử, báo chí</td>
+</tr>
+<tr>
+<td>Bổ sung</td>
+<td>Hướng dẫn riêng cho chatbot, người chưa thành niên, agentic</td>
+</tr>
+</tbody>
+</table>
+<p>Hai nghĩa vụ ở tầng rủi ro cao: người có chuyên môn duyệt trước khi
+công bố, và nói rõ AI tham gia, tối thiểu ở đầu phiên. Tư vấn sức khỏe
+thông thường (ngủ, căng thẳng, dinh dưỡng) không thuộc nhóm y tế.</p>
+<p>Claude tự kiểm không phải control: hỏi lại model “thông tin này đúng
+không” không thay được người có chuyên môn xác nhận.</p>
 <h3 id="ví-dụ-7">Ví dụ</h3>
 <table class="mapping">
 <colgroup>
@@ -1932,6 +1968,39 @@ Optimization (D7, 10%)</h2>
 <p>Dấu hiệu bịa: hai lần chạy cùng câu ra hai kết luận. Nhờ model giải
 thích từng bước có thể lộ giả định sai, ví dụ nó vẫn đang tuân theo ràng
 buộc cũ.</p>
+<h3 id="chẩn-đoán-theo-triệu-chứng">Chẩn đoán theo triệu chứng</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Triệu chứng</th>
+<th>Sửa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bịa dữ kiện</td>
+<td>Cho phép nói không biết, buộc trích, giới hạn vào tài liệu</td>
+</tr>
+<tr>
+<td>Định dạng không nhất quán</td>
+<td>Structured output và few-shot</td>
+</tr>
+<tr>
+<td>Bỏ sót nội dung ở input dài</td>
+<td>Đưa dữ liệu quan trọng lên đầu và cuối, trích nguyên văn trước</td>
+</tr>
+<tr>
+<td>Phân tích nông</td>
+<td>Chia thành chuỗi bước</td>
+</tr>
+</tbody>
+</table>
+<p>Retry chỉ sửa được lỗi định dạng, cấu trúc, số học. Thiếu thông tin
+trong nguồn thì retry vô ích, phải lấy nguồn hoặc escalate.</p>
 <h3 id="ví-dụ-8">Ví dụ</h3>
 <p>Bản brief nhạt, thang bốn bước đều pass: yêu cầu rõ, context đủ.</p>
 <table class="mapping">

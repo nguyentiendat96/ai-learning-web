@@ -647,6 +647,18 @@ Phân biệt: khách bực nhưng vấn đề đơn giản thì ghi nhận cảm
 
 Trùng tên: luôn hỏi thêm một định danh (email, số điện thoại, mã đơn). Không chọn theo tài khoản mới nhất, hoạt động nhiều nhất hay gần nhất.
 
+### Ba tầng AUP và bảy lĩnh vực rủi ro cao
+
+| Tầng | Nội dung |
+|---|---|
+| Chuẩn chung | Tám nhóm cấm: phi pháp, gây hại nghiêm trọng, xâm phạm riêng tư, thông tin sai lệch và can thiệp bầu cử, giám sát và dự đoán tội phạm, lừa đảo và bóc lột, lạm dụng nền tảng, nội dung khiêu dâm |
+| Rủi ro cao | Bảy lĩnh vực: pháp lý, y tế, bảo hiểm, tài chính, việc làm và nhà ở, thi cử, báo chí |
+| Bổ sung | Hướng dẫn riêng cho chatbot, người chưa thành niên, agentic |
+
+Hai nghĩa vụ ở tầng rủi ro cao: người có chuyên môn duyệt trước khi công bố, và nói rõ AI tham gia, tối thiểu ở đầu phiên. Tư vấn sức khỏe thông thường (ngủ, căng thẳng, dinh dưỡng) không thuộc nhóm y tế.
+
+Claude tự kiểm không phải control: hỏi lại model "thông tin này đúng không" không thay được người có chuyên môn xác nhận.
+
 ### Ví dụ
 
 | Tình huống | Kết luận |
@@ -713,6 +725,17 @@ Bảng triệu chứng:
 | Câu trả lời phức tạp mà lung lay | Việc cần chia nhỏ | Chia bước |
 
 Dấu hiệu bịa: hai lần chạy cùng câu ra hai kết luận. Nhờ model giải thích từng bước có thể lộ giả định sai, ví dụ nó vẫn đang tuân theo ràng buộc cũ.
+
+### Chẩn đoán theo triệu chứng
+
+| Triệu chứng | Sửa |
+|---|---|
+| Bịa dữ kiện | Cho phép nói không biết, buộc trích, giới hạn vào tài liệu |
+| Định dạng không nhất quán | Structured output và few-shot |
+| Bỏ sót nội dung ở input dài | Đưa dữ liệu quan trọng lên đầu và cuối, trích nguyên văn trước |
+| Phân tích nông | Chia thành chuỗi bước |
+
+Retry chỉ sửa được lỗi định dạng, cấu trúc, số học. Thiếu thông tin trong nguồn thì retry vô ích, phải lấy nguồn hoặc escalate.
 
 ### Ví dụ
 
