@@ -210,6 +210,18 @@ Tầng cụ thể hơn thắng, không phải tầng có quyền tổ chức cao
 | Skill | Tự động theo description | Có thể tách context |
 | Subagent | Coordinator giao | Context riêng |
 
+### Đường dẫn quyết định phạm vi
+
+| Tầng | Đường dẫn | Chia sẻ qua git |
+|---|---|---|
+| User | `~/.claude/CLAUDE.md` | Không |
+| Project | `.claude/CLAUDE.md` hoặc `CLAUDE.md` gốc | Có |
+| Thư mục | `<subdir>/CLAUDE.md` | Có, chỉ ảnh hưởng khi làm trong thư mục đó |
+
+`CLAUDE.md` trong thư mục con chỉ tác động xuống dưới, không lên trên.
+
+Chẩn đoán: hai đồng nghiệp cùng repo, cùng nhánh, hành vi khác nhau. Kiểm tầng user trước, vì file đó không đi qua git.
+
 ### Ví dụ
 
 | Nhu cầu | Chọn | Vì sao |
@@ -355,6 +367,14 @@ Structured output: schema ràng buộc hình dạng, không ràng buộc sự th
 | Enum có `other` kèm chi tiết | Enum dài vô hạn |
 | Validate sau khi nhận | Schema chỉ làm ca xấu hiếm hơn |
 
+### Tiêu chí ba nhóm
+
+Cấu trúc: **báo gì, ghi nhận gì, bỏ qua gì**. Ba nhóm rõ ràng, không dùng tính từ về độ tự tin.
+
+Khi một nhóm sai nhiều: tắt hẳn nhóm đó, sửa tiêu chí và few-shot, rồi bật lại. Giữ nó bật với lời dặn "hãy thận trọng" không hiệu quả và làm mất niềm tin vào cả các nhóm đúng.
+
+Mức nghiêm trọng phải neo bằng ví dụ code, không bằng tính từ.
+
 ### Ví dụ
 
 Bản tóm tắt báo cáo năm có con số kiện tụng lạ.
@@ -432,6 +452,29 @@ MCP:
 | Danh mục nội dung | Resources, không phải tool list_all |
 
 Ba primitive, ba bên điều khiển: tools do model, resources do app, prompts do người dùng.
+
+### Năm thành phần của mô tả tool
+
+| Thành phần | Nội dung |
+|---|---|
+| Mục đích chính | Một câu |
+| Hợp đồng đầu vào | Định dạng, kiểu, ràng buộc |
+| Ví dụ câu hỏi phù hợp | Chuỗi cụ thể |
+| Giới hạn | Những gì tool không làm |
+| Ranh giới với tool tương tự | "Dùng cho X. Với Y, dùng tool Z" |
+
+Thứ tự sửa khi chọn nhầm tool:
+
+| Cách | Hạng | Vì sao |
+|---|---|---|
+| Mở rộng mô tả | 1, đúng | Rẻ, đúng nguyên nhân |
+| Few-shot định tuyến | 2 | Chữa triệu chứng, tốn token mỗi call |
+| Gộp tool | 3 | Mất phân biệt ngữ nghĩa, refactor đắt |
+| Huấn luyện classifier | 4, sai | Thêm một call, thêm điểm hỏng |
+
+Dấu hiệu cần tách tool: mô tả có chữ "hoặc" hoặc "tùy theo" giữa các hành vi.
+
+Ba kết cục của một lần gọi tool: lỗi truy cập (`is_error: true`), chạy được nhưng rỗng (`is_error: false`, kết quả rỗng), và có dữ liệu. Gộp hai cái đầu làm hỏng mọi logic phục hồi.
 
 ### Ví dụ
 
@@ -525,6 +568,19 @@ Scenario lab dạy một kỹ năng: tìm ràng buộc ràng buộc, rồi dùng
 ### Đầu vào tổng hợp quá dài
 
 Khi đầu vào cho bước tổng hợp khoảng 75K token, model trích được 15K đầu và 10K cuối, bỏ giữa. Sửa bằng cách tái cấu trúc đầu vào: đưa kết luận quan trọng lên đầu mỗi khối, chia thành nhiều lượt tổng hợp theo chủ đề, hoặc tóm tắt từng nguồn trước khi ghép. Tăng cửa sổ không sửa được vấn đề.
+
+### Case facts dạng khối
+
+```
+<case_facts>
+- Mã khách: 4471
+- Đơn: #8891, đặt 2026-03-03
+- Hoàn tiền: 247,83
+- Hạn khách nêu: thứ Sáu 2026-05-22
+</case_facts>
+```
+
+Tóm tắt làm mất trước hết số tiền, ngày, mã đơn, phần trăm, lời hứa. Khối này chèn nguyên văn mọi prompt và không đi qua bước tóm tắt.
 
 ### Ví dụ
 

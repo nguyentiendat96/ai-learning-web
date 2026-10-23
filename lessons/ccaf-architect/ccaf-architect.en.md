@@ -247,6 +247,18 @@ Assuming three broad rules outvote one project rule. Only specificity decides.
 
 ---
 
+### Path decides scope
+
+| Tier | Path | Shared via git |
+|---|---|---|
+| User | `~/.claude/CLAUDE.md` | No |
+| Project | `.claude/CLAUDE.md` or root `CLAUDE.md` | Yes |
+| Directory | `<subdir>/CLAUDE.md` | Yes, only when working there |
+
+A directory `CLAUDE.md` scopes downward only, never upward.
+
+Diagnostic: two teammates, same repo, same branch, different behaviour. Check the user tier first, because that file never travels through git.
+
 ## 04 · Headless, CI and Hooks
 
 **Objectives**
@@ -396,6 +408,14 @@ Marking every field `required`. It induces fabrication and is the classic wrong 
 
 ---
 
+### Three criterion groups
+
+Structure: **what to flag, what to report, what to skip**. Three categories, no adjectives about confidence.
+
+When one category is noisy: disable it entirely, fix the criteria and examples, then re-enable. Leaving it on with "be conservative" does not work and erodes trust in the accurate categories too.
+
+Severity must be anchored with code examples, not adjectives.
+
 ## 06 · Tool Design and MCP
 
 **Objectives**
@@ -486,6 +506,29 @@ Fixing tool selection with a system prompt line. The selection step only reads t
 
 ---
 
+### Five components of a tool description
+
+| Component | Content |
+|---|---|
+| Primary purpose | One sentence |
+| Input contract | Formats, types, constraints |
+| Example queries | Concrete strings |
+| Limits | What it does not do |
+| Boundary vs similar tools | "Use for X. For Y, use tool Z" |
+
+Fix ranking for misrouting:
+
+| Fix | Rank | Why |
+|---|---|---|
+| Expand the description | 1, correct | Cheap, fixes the root cause |
+| Few-shot routing examples | 2 | Symptom fix, tokens on every call |
+| Merge tools | 3 | Loses semantic distinction, expensive refactor |
+| Train a classifier | 4, wrong | Extra call, extra failure point |
+
+Split signal: a description containing "or" or "depending on" between behaviours.
+
+Three outcomes of a tool call: access error (`is_error: true`), ran but empty (`is_error: false`, empty result), and data. Collapsing the first two breaks all recovery logic.
+
 ## 07 · Context and the Two Scenario Labs
 
 **Objectives**
@@ -559,6 +602,19 @@ Weighing pros and cons between options. If you are weighing, you missed an elimi
 ### Oversized synthesis input
 
 When the synthesis input reaches about 75K tokens, the model cites the first 15K and the last 10K and drops the middle. Fix it by restructuring the input: put key conclusions at the start of each block, split synthesis into several passes by topic, or summarise each source before merging. A larger window does not fix it.
+
+### Case facts block
+
+```
+<case_facts>
+- Customer: 4471
+- Order: #8891, placed 2026-03-03
+- Refund: 247.83
+- Customer deadline: Friday 2026-05-22
+</case_facts>
+```
+
+Summarisation loses amounts, dates, order ids, percentages and promises first. This block is injected verbatim into every prompt and never passes through summarisation.
 
 ## 08 · The Agentic Loop and Spawning Subagents
 

@@ -545,6 +545,42 @@ project im lặng.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="đường-dẫn-quyết-định-phạm-vi">Đường dẫn quyết định phạm vi</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Đường dẫn</th>
+<th>Chia sẻ qua git</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User</td>
+<td><code>~/.claude/CLAUDE.md</code></td>
+<td>Không</td>
+</tr>
+<tr>
+<td>Project</td>
+<td><code>.claude/CLAUDE.md</code> hoặc <code>CLAUDE.md</code> gốc</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Thư mục</td>
+<td><code>&lt;subdir&gt;/CLAUDE.md</code></td>
+<td>Có, chỉ ảnh hưởng khi làm trong thư mục đó</td>
+</tr>
+</tbody>
+</table>
+<p><code>CLAUDE.md</code> trong thư mục con chỉ tác động xuống dưới,
+không lên trên.</p>
+<p>Chẩn đoán: hai đồng nghiệp cùng repo, cùng nhánh, hành vi khác nhau.
+Kiểm tầng user trước, vì file đó không đi qua git.</p>
 <h3 id="ví-dụ-2">Ví dụ</h3>
 <table class="mapping">
 <colgroup>
@@ -865,6 +901,13 @@ thật.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="tiêu-chí-ba-nhóm">Tiêu chí ba nhóm</h3>
+<p>Cấu trúc: <strong>báo gì, ghi nhận gì, bỏ qua gì</strong>. Ba nhóm rõ
+ràng, không dùng tính từ về độ tự tin.</p>
+<p>Khi một nhóm sai nhiều: tắt hẳn nhóm đó, sửa tiêu chí và few-shot,
+rồi bật lại. Giữ nó bật với lời dặn “hãy thận trọng” không hiệu quả và
+làm mất niềm tin vào cả các nhóm đúng.</p>
+<p>Mức nghiêm trọng phải neo bằng ví dụ code, không bằng tính từ.</p>
 <h3 id="ví-dụ-4">Ví dụ</h3>
 <p>Bản tóm tắt báo cáo năm có con số kiện tụng lạ.</p>
 <table class="mapping">
@@ -1013,6 +1056,76 @@ không dùng khi nào, tham số nghĩa gì và tool không làm được gì.</
 </table>
 <p>Ba primitive, ba bên điều khiển: tools do model, resources do app,
 prompts do người dùng.</p>
+<h3 id="năm-thành-phần-của-mô-tả-tool">Năm thành phần của mô tả
+tool</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mục đích chính</td>
+<td>Một câu</td>
+</tr>
+<tr>
+<td>Hợp đồng đầu vào</td>
+<td>Định dạng, kiểu, ràng buộc</td>
+</tr>
+<tr>
+<td>Ví dụ câu hỏi phù hợp</td>
+<td>Chuỗi cụ thể</td>
+</tr>
+<tr>
+<td>Giới hạn</td>
+<td>Những gì tool không làm</td>
+</tr>
+<tr>
+<td>Ranh giới với tool tương tự</td>
+<td>“Dùng cho X. Với Y, dùng tool Z”</td>
+</tr>
+</tbody>
+</table>
+<p>Thứ tự sửa khi chọn nhầm tool:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Cách</th>
+<th>Hạng</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mở rộng mô tả</td>
+<td>1, đúng</td>
+<td>Rẻ, đúng nguyên nhân</td>
+</tr>
+<tr>
+<td>Few-shot định tuyến</td>
+<td>2</td>
+<td>Chữa triệu chứng, tốn token mỗi call</td>
+</tr>
+<tr>
+<td>Gộp tool</td>
+<td>3</td>
+<td>Mất phân biệt ngữ nghĩa, refactor đắt</td>
+</tr>
+<tr>
+<td>Huấn luyện classifier</td>
+<td>4, sai</td>
+<td>Thêm một call, thêm điểm hỏng</td>
+</tr>
+</tbody>
+</table>
+<p>Dấu hiệu cần tách tool: mô tả có chữ “hoặc” hoặc “tùy theo” giữa các
+hành vi.</p>
+<p>Ba kết cục của một lần gọi tool: lỗi truy cập
+(<code>is_error: true</code>), chạy được nhưng rỗng
+(<code>is_error: false</code>, kết quả rỗng), và có dữ liệu. Gộp hai cái
+đầu làm hỏng mọi logic phục hồi.</p>
 <h3 id="ví-dụ-5">Ví dụ</h3>
 <table class="mapping">
 <thead>
@@ -1189,6 +1302,15 @@ làm bộ lọc loại trừ.</p>
 luận quan trọng lên đầu mỗi khối, chia thành nhiều lượt tổng hợp theo
 chủ đề, hoặc tóm tắt từng nguồn trước khi ghép. Tăng cửa sổ không sửa
 được vấn đề.</p>
+<h3 id="case-facts-dạng-khối">Case facts dạng khối</h3>
+<pre><code>&lt;case_facts&gt;
+- Mã khách: 4471
+- Đơn: #8891, đặt 2026-03-03
+- Hoàn tiền: 247,83
+- Hạn khách nêu: thứ Sáu 2026-05-22
+&lt;/case_facts&gt;</code></pre>
+<p>Tóm tắt làm mất trước hết số tiền, ngày, mã đơn, phần trăm, lời hứa.
+Khối này chèn nguyên văn mọi prompt và không đi qua bước tóm tắt.</p>
 <h3 id="ví-dụ-6">Ví dụ</h3>
 <p>Scenario A: agent support, mục tiêu 80% xử lý ngay lần đầu.</p>
 <table class="mapping">

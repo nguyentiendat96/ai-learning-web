@@ -644,6 +644,38 @@ applies where the project is silent.</p>
 <h3 id="pitfall-2">Pitfall</h3>
 <p>Assuming three broad rules outvote one project rule. Only specificity
 decides.</p>
+<h3 id="path-decides-scope">Path decides scope</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tier</th>
+<th>Path</th>
+<th>Shared via git</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User</td>
+<td><code>~/.claude/CLAUDE.md</code></td>
+<td>No</td>
+</tr>
+<tr>
+<td>Project</td>
+<td><code>.claude/CLAUDE.md</code> or root <code>CLAUDE.md</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Directory</td>
+<td><code>&lt;subdir&gt;/CLAUDE.md</code></td>
+<td>Yes, only when working there</td>
+</tr>
+</tbody>
+</table>
+<p>A directory <code>CLAUDE.md</code> scopes downward only, never
+upward.</p>
+<p>Diagnostic: two teammates, same repo, same branch, different
+behaviour. Check the user tier first, because that file never travels
+through git.</p>
 </section>
 <section id="m04">
 <h2 id="headless-ci-and-hooks">04 · Headless, CI and Hooks</h2>
@@ -965,6 +997,13 @@ tool call and lets the model choose the schema.</p>
 <h3 id="pitfall-4">Pitfall</h3>
 <p>Marking every field <code>required</code>. It induces fabrication and
 is the classic wrong answer.</p>
+<h3 id="three-criterion-groups">Three criterion groups</h3>
+<p>Structure: <strong>what to flag, what to report, what to
+skip</strong>. Three categories, no adjectives about confidence.</p>
+<p>When one category is noisy: disable it entirely, fix the criteria and
+examples, then re-enable. Leaving it on with “be conservative” does not
+work and erodes trust in the accurate categories too.</p>
+<p>Severity must be anchored with code examples, not adjectives.</p>
 </section>
 <section id="m06">
 <h2 id="tool-design-and-mcp">06 · Tool Design and MCP</h2>
@@ -1140,6 +1179,76 @@ the application, prompts by the user.</p>
 <h3 id="pitfall-5">Pitfall</h3>
 <p>Fixing tool selection with a system prompt line. The selection step
 only reads the description.</p>
+<h3 id="five-components-of-a-tool-description">Five components of a tool
+description</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Component</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primary purpose</td>
+<td>One sentence</td>
+</tr>
+<tr>
+<td>Input contract</td>
+<td>Formats, types, constraints</td>
+</tr>
+<tr>
+<td>Example queries</td>
+<td>Concrete strings</td>
+</tr>
+<tr>
+<td>Limits</td>
+<td>What it does not do</td>
+</tr>
+<tr>
+<td>Boundary vs similar tools</td>
+<td>“Use for X. For Y, use tool Z”</td>
+</tr>
+</tbody>
+</table>
+<p>Fix ranking for misrouting:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Fix</th>
+<th>Rank</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Expand the description</td>
+<td>1, correct</td>
+<td>Cheap, fixes the root cause</td>
+</tr>
+<tr>
+<td>Few-shot routing examples</td>
+<td>2</td>
+<td>Symptom fix, tokens on every call</td>
+</tr>
+<tr>
+<td>Merge tools</td>
+<td>3</td>
+<td>Loses semantic distinction, expensive refactor</td>
+</tr>
+<tr>
+<td>Train a classifier</td>
+<td>4, wrong</td>
+<td>Extra call, extra failure point</td>
+</tr>
+</tbody>
+</table>
+<p>Split signal: a description containing “or” or “depending on” between
+behaviours.</p>
+<p>Three outcomes of a tool call: access error
+(<code>is_error: true</code>), ran but empty
+(<code>is_error: false</code>, empty result), and data. Collapsing the
+first two breaks all recovery logic.</p>
 </section>
 <section id="m07">
 <h2 id="context-and-the-two-scenario-labs">07 · Context and the Two
@@ -1307,6 +1416,16 @@ the first 15K and the last 10K and drops the middle. Fix it by
 restructuring the input: put key conclusions at the start of each block,
 split synthesis into several passes by topic, or summarise each source
 before merging. A larger window does not fix it.</p>
+<h3 id="case-facts-block">Case facts block</h3>
+<pre><code>&lt;case_facts&gt;
+- Customer: 4471
+- Order: #8891, placed 2026-03-03
+- Refund: 247.83
+- Customer deadline: Friday 2026-05-22
+&lt;/case_facts&gt;</code></pre>
+<p>Summarisation loses amounts, dates, order ids, percentages and
+promises first. This block is injected verbatim into every prompt and
+never passes through summarisation.</p>
 </section>
 <section id="m08">
 <h2 id="the-agentic-loop-and-spawning-subagents">08 · The Agentic Loop
