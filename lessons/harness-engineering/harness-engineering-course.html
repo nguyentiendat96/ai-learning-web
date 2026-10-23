@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Understanding Harness Engineering — Khóa học tương tác</title>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#0a1120; --bg-soft:#0e1729; --panel:#111c33; --panel-2:#15213c;
+  --border:#233252; --border-2:#2d3f66;
+  --text:#e8eef9; --muted:#93a6c7; --muted-2:#64748b;
+  --accent:#38bdf8; --accent-2:#818cf8; --green:#34d399; --amber:#fbbf24; --red:#f87171;
+  --keybg:linear-gradient(135deg, rgba(56,189,248,.13), rgba(129,140,248,.10));
+  --codebg:#0b1428; --hover:rgba(56,189,248,.08);
+  --radius:14px; --sw:302px;
+  color-scheme:dark;
+}
+html[data-theme="light"]{
+  --bg:#f5f7fb; --bg-soft:#eef2f9; --panel:#ffffff; --panel-2:#f4f7fd;
+  --border:#dce4f1; --border-2:#c3d0e6;
+  --text:#16233c; --muted:#5a6b8c; --muted-2:#8fa3c4;
+  --accent:#0284c7; --accent-2:#5b5ef0; --green:#047857; --amber:#a16207; --red:#dc2626;
+  --keybg:linear-gradient(135deg, rgba(2,132,199,.09), rgba(91,94,240,.08));
+  --codebg:#eef2f9; --hover:rgba(2,132,199,.07);
+  color-scheme:light;
+}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:15.5px;line-height:1.65;}
+
+/* ---------- topbar ---------- */
+#progressTrack{position:fixed;top:0;left:0;right:0;height:3px;background:transparent;z-index:100}
+#progressBar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s ease}
+#topbar{position:fixed;top:3px;left:0;right:0;height:60px;background:color-mix(in srgb,var(--bg) 88%, transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;
+  padding:0 16px;z-index:90}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0}
+.logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.brandTitle{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brandSub{font-size:11px;color:var(--muted)}
+#tabs{display:flex;gap:4px;margin-left:18px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+#tabs::-webkit-scrollbar{display:none}
+.tab{background:transparent;border:1px solid transparent;color:var(--muted);font:inherit;font-size:13px;
+  padding:7px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.tab:hover{background:var(--hover);color:var(--text)}
+.tab.active{background:var(--panel);border-color:var(--border);color:var(--text);font-weight:600}
+.topActions{display:flex;gap:6px}
+.iconbtn{background:var(--panel);border:1px solid var(--border);color:var(--text);font:inherit;font-size:13px;
+  padding:7px 11px;border-radius:9px;cursor:pointer}
+.iconbtn:hover{border-color:var(--accent)}
+#menuBtn{display:none;background:var(--panel);border:1px solid var(--border);color:var(--text);
+  font-size:16px;padding:5px 10px;border-radius:9px;cursor:pointer}
+
+/* ---------- layout ---------- */
+#layout{display:flex}
+#sidebar{position:fixed;top:63px;bottom:0;left:0;width:var(--sw);overflow-y:auto;background:var(--bg-soft);
+  border-right:1px solid var(--border);padding:14px 10px 40px;z-index:60;transition:transform .25s ease}
+#sidebar::-webkit-scrollbar{width:8px}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.homeLink{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;cursor:pointer;
+  color:var(--muted);font-size:13.5px;font-weight:600;margin-bottom:8px}
+.homeLink:hover{background:var(--hover);color:var(--text)}
+.homeLink.active{background:var(--panel);color:var(--text);border:1px solid var(--border)}
+.partBlock{margin:12px 0 4px}
+.partHead{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;cursor:pointer}
+.partHead:hover{background:var(--hover)}
+.partNum{flex:0 0 auto;font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--accent);
+  border:1px solid var(--border-2);border-radius:7px;padding:2px 7px;background:var(--panel)}
+.partTitle{font-size:12.5px;font-weight:700;color:var(--text);flex:1;min-width:0}
+.partCount{font-size:10.5px;color:var(--muted-2)}
+.secList{list-style:none;margin:2px 0 0;padding:0 0 0 10px}
+.secItem{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;border-radius:8px;cursor:pointer;
+  color:var(--muted);font-size:12.8px;line-height:1.4}
+.secItem:hover{background:var(--hover);color:var(--text)}
+.secItem.active{background:var(--panel);color:var(--text);border:1px solid var(--border)}
+.secItem .done{flex:0 0 auto;font-size:11px;margin-top:2px}
+.secItem .n{color:var(--muted-2);font-weight:700;flex:0 0 auto}
+.secItem.done-sec .t{text-decoration:line-through;text-decoration-color:var(--green);opacity:.75}
+
+main{margin-left:var(--sw);flex:1;min-width:0;padding:92px 34px 140px}
+.wrap{max-width:860px;margin:0 auto}
+
+/* ---------- generic ---------- */
+h1{font-size:clamp(26px,3.4vw,38px);line-height:1.18;margin:.2em 0 .35em}
+h2{font-size:22px;margin:1.2em 0 .5em}
+h3{font-size:17px;margin:1.1em 0 .4em}
+a{color:var(--accent)}
+p{margin:.55em 0}
+ul,ol{margin:.5em 0;padding-left:1.35em}
+li{margin:.28em 0}
+code{background:var(--codebg);border:1px solid var(--border);border-radius:6px;padding:1px 6px;
+  font-size:.86em;font-family:"Cascadia Code",Consolas,"SF Mono",Menlo,monospace;color:var(--accent)}
+.formula{background:var(--codebg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;
+  font-family:"Cascadia Code",Consolas,monospace;font-size:14px;margin:12px 0;overflow-x:auto;color:var(--text)}
+.formula .hl{color:var(--accent)}
+.kbd{display:inline-block;border:1px solid var(--border-2);border-bottom-width:2px;border-radius:6px;
+  padding:0 6px;font-size:11.5px;font-family:monospace;background:var(--panel)}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.4px;color:var(--accent);
+  border:1px solid var(--border-2);background:var(--panel);border-radius:99px;padding:2px 10px;margin-right:6px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin:14px 0}
+.card.clickable{cursor:pointer;transition:border-color .15s, transform .15s}
+.card.clickable:hover{border-color:var(--accent);transform:translateY(-1px)}
+.grid{display:grid;gap:12px}
+.grid.c2{grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.grid.c3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.keybox{background:var(--keybg);border:1px solid var(--border-2);border-left:4px solid var(--accent);
+  border-radius:12px;padding:14px 18px;margin:18px 0}
+.keybox .lbl{font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--accent);text-transform:uppercase;margin-bottom:4px}
+.keybox .txt{font-weight:600}
+.warnbox{background:color-mix(in srgb, var(--amber) 10%, transparent);border:1px solid color-mix(in srgb, var(--amber) 40%, var(--border));
+  border-left:4px solid var(--amber);border-radius:12px;padding:14px 18px;margin:16px 0}
+.warnbox .lbl{font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--amber);text-transform:uppercase;margin-bottom:4px}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.8px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--panel-2);font-size:12.5px;letter-spacing:.3px}
+tr:nth-child(even) td{background:color-mix(in srgb,var(--panel) 55%, transparent)}
+.hr{height:1px;background:var(--border);border:0;margin:26px 0}
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--border-2);
+  color:var(--text);font:inherit;font-size:13.5px;font-weight:600;padding:9px 16px;border-radius:10px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;color:#fff}
+.btn.green{background:color-mix(in srgb,var(--green) 18%, transparent);border-color:color-mix(in srgb,var(--green) 55%, var(--border));color:var(--green)}
+.btn:disabled{opacity:.45;cursor:default}
+.pagefoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:34px;flex-wrap:wrap}
+.metabar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:6px;color:var(--muted);font-size:12.5px}
+
+/* ---------- quiz ---------- */
+.qopt{display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--border);
+  border-radius:11px;padding:12px 16px;margin:8px 0;font:inherit;font-size:14.5px;color:var(--text);cursor:pointer;transition:border-color .12s}
+.qopt:hover{border-color:var(--accent)}
+.qopt.correct{border-color:var(--green);background:color-mix(in srgb,var(--green) 14%, transparent)}
+.qopt.wrong{border-color:var(--red);background:color-mix(in srgb,var(--red) 14%, transparent)}
+.qopt.disabled{cursor:default;opacity:.85}
+.qmeta{display:flex;justify-content:space-between;color:var(--muted);font-size:12.5px;margin-bottom:6px}
+.qexpl{display:none;margin-top:10px;padding:12px 16px;border-radius:10px;border:1px dashed var(--border-2);
+  background:var(--bg-soft);font-size:13.8px}
+.qexpl.show{display:block}
+.scoreRing{width:130px;height:130px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  margin:16px auto;font-size:30px;font-weight:800;background:conic-gradient(var(--accent) 0 0, var(--border) 0);
+  position:relative}
+.scoreRing .inner{width:104px;height:104px;border-radius:50%;background:var(--panel);display:flex;
+  align-items:center;justify-content:center;flex-direction:column}
+.scoreRing .inner .sub{font-size:11px;font-weight:600;color:var(--muted)}
+
+/* ---------- flashcards ---------- */
+.fcScene{perspective:1200px;margin:18px auto;max-width:640px}
+.fcard{position:relative;width:100%;min-height:270px;transform-style:preserve-3d;transition:transform .5s;
+  cursor:pointer}
+.fcard.flip{transform:rotateY(180deg)}
+.fcFace{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--border);border-radius:18px;
+  background:var(--panel);padding:26px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.fcFace.back{transform:rotateY(180deg);background:var(--panel-2)}
+.fcTerm{font-size:23px;font-weight:800}
+.fcHint{color:var(--muted);font-size:12.5px;margin-top:14px}
+.fcDef{font-size:15.5px;line-height:1.6}
+.fcCounter{text-align:center;color:var(--muted);font-size:13px}
+.fcBar{display:flex;justify-content:center;gap:10px;margin:16px 0;flex-wrap:wrap}
+
+/* ---------- ref ---------- */
+.accItem{border:1px solid var(--border);border-radius:12px;background:var(--panel);margin:10px 0;overflow:hidden}
+.accHead{display:flex;align-items:center;gap:10px;padding:13px 18px;cursor:pointer;font-weight:700;font-size:14.5px}
+.accHead:hover{background:var(--hover)}
+.accHead .chev{margin-left:auto;transition:transform .2s;color:var(--muted)}
+.accItem.open .chev{transform:rotate(90deg)}
+.accBody{display:none;padding:2px 18px 18px;font-size:14px}
+.accItem.open .accBody{display:block}
+.mis{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0}
+.misRow{border:1px solid var(--border);border-radius:10px;padding:11px 15px;background:var(--bg-soft)}
+.misRow .q{color:var(--red);font-weight:700}
+.misRow .a{color:var(--muted);margin-top:3px}
+.misRow .a b{color:var(--green)}
+.failTable td:first-child{white-space:nowrap;font-weight:700;color:var(--accent);font-size:12.5px}
+.q15{counter-reset:qq;list-style:none;padding:0}
+.q15 li{position:relative;padding:10px 14px 10px 46px;border:1px solid var(--border);border-radius:10px;margin:8px 0;background:var(--bg-soft)}
+.q15 li::before{counter-increment:qq;content:counter(qq);position:absolute;left:12px;top:10px;width:22px;height:22px;
+  border-radius:50%;background:var(--panel);border:1px solid var(--border-2);display:flex;align-items:center;
+  justify-content:center;font-size:11.5px;font-weight:800;color:var(--accent)}
+
+/* ---------- home ---------- */
+.hero{padding:26px 0 8px}
+.hero .eyebrow{color:var(--accent);font-weight:800;font-size:12px;letter-spacing:1.6px;text-transform:uppercase}
+.hero .sub{font-size:17px;color:var(--muted);max-width:700px}
+.statRow{display:flex;gap:26px;flex-wrap:wrap;margin:22px 0 8px}
+.stat .v{font-size:26px;font-weight:800;color:var(--accent)}
+.stat .l{font-size:12px;color:var(--muted)}
+.ctaRow{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.partCard .pc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.partCard .pc-title{font-weight:800;font-size:15.5px}
+.partCard .pc-sub{color:var(--muted);font-size:13px;min-height:38px}
+.partCard .pc-prog{height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:12px}
+.partCard .pc-prog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+
+/* ---------- misc ---------- */
+#scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel);
+  border:1px solid var(--border-2);color:var(--text);padding:11px 20px;border-radius:12px;font-size:13.5px;
+  box-shadow:0 10px 32px rgba(0,0,0,.35);transition:transform .3s;z-index:200;pointer-events:none;max-width:88vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.print-root{display:none}
+body.printing .print-root{display:block}
+body.printing #topbar,body.printing #layout,body.printing #progressTrack,body.printing .toast{display:none}
+.print-root{padding:30px 44px;max-width:900px;margin:0 auto}
+.print-root .psec{page-break-inside:avoid;margin-bottom:34px}
+.print-root .ppart{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);
+  border-bottom:2px solid var(--accent);padding-bottom:6px;margin:40px 0 18px;page-break-before:always}
+.print-root h1{font-size:30px}
+@media print{
+  body{background:#fff;color:#111}
+  :root{--text:#111;--muted:#555;--border:#ccc;--panel:#fff;--bg:#fff;--bg-soft:#fff;--codebg:#f2f2f2;--keybg:#f6f9ff}
+}
+@media(max-width:960px){
+  #menuBtn{display:block}
+  #sidebar{transform:translateX(-102%)}
+  #sidebar.open{transform:none}
+  #scrim.show{display:block}
+  main{margin-left:0;padding:86px 18px 120px}
+  .brandTitle{display:none}
+  #tabs{margin-left:6px}
+}
+</style>
+</head>
+<body>
+<div id="progressTrack"><div id="progressBar"></div></div>
+<header id="topbar">
+  <button id="menuBtn" aria-label="Mở mục lục">☰</button>
+  <div class="brand" id="brandBtn">
+    <div class="logo">HE</div>
+    <div style="min-width:0">
+      <div class="brandTitle">Understanding Harness Engineering</div>
+      <div class="brandSub">Khóa học tương tác · 43 mục · tiếng Việt</div>
+    </div>
+  </div>
+  <nav id="tabs">
+    <button class="tab active" data-view="home">Tổng quan</button>
+    <button class="tab" data-view="learn">Bài học</button>
+    <button class="tab" data-view="quiz">Quiz</button>
+    <button class="tab" data-view="cards">Flashcards</button>
+    <button class="tab" data-view="ref">Bảng tra</button>
+  </nav>
+  <div class="topActions">
+    <button class="iconbtn" id="flowsBtn" title="Sơ đồ & flow của toàn bộ handbook (design.html)">🗺 Sơ đồ</button>
+    <button class="iconbtn" id="printBtn" title="Xuất toàn bộ khóa học ra PDF">⬇ PDF</button>
+    <button class="iconbtn" id="themeBtn" title="Đổi sáng/tối">◐</button>
+  </div>
+</header>
+
+<div id="layout">
+  <aside id="sidebar"></aside>
+  <div id="scrim"></div>
+  <main><div class="wrap" id="view"></div></main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   DATA — COURSE
+   ========================================================= */
+const PARTS = [
+  { id:'p0', num:'0', title:'Định hướng', sub:'Cuốn handbook này là gì, dùng thế nào', sections:['s0'] },
+  { id:'p1', num:'I', title:'Từ model call đến agent', sub:'Agent là gì; vòng lặp tối thiểu; harness kiểm soát gì; phân biệt các khái niệm gốc', sections:['s1','s2','s3','s4'] },
+  { id:'p2', num:'II', title:'Thiết kế tool & giao diện', sub:'ACI, 4 thuộc tính tool, tool như một phần input, lỗi tool, MCP', sections:['s5','s6','s7','s8','s9','s10','s11'] },
+  { id:'p3', num:'III', title:'Context & bộ nhớ', sub:'Context chủ động, progressive disclosure, durable state, compaction, structured state', sections:['s12','s13','s14','s15','s16','s17'] },
+  { id:'p4', num:'IV', title:'Môi trường & an toàn', sub:'Sandbox, approval vs containment, credentials, provenance & prompt injection', sections:['s18','s19','s20','s21','s22'] },
+  { id:'p5', num:'V', title:'Điều khiển vòng lặp & kiểm chứng', sub:'Điểm dừng, budgets, verification, deterministic enforcement, feedback loops', sections:['s23','s24','s25','s26','s27','s28'] },
+  { id:'p6', num:'VI', title:'Chạy dài hạn & phân tán', sub:'Durability, recovery, idempotency, concurrency, subagents', sections:['s29','s30','s31','s32','s33'] },
+  { id:'p7', num:'VII', title:'Kỹ thuật môi trường agent', sub:'Agent legibility, cơ chế vs văn xuôi, observability, eval harness, noise, giả định hết hạn', sections:['s34','s35','s36','s37','s38','s39'] },
+  { id:'p8', num:'VIII', title:'Tổng hợp', sub:'Failure modes, misconceptions, mental model production, bức tranh hoàn chỉnh', sections:['s40','s41','s42','s43'] },
+];
+
+const SECTIONS = {
+s0: { n:'0', t:'Định hướng: cuốn sách này học cái gì', en:'Orientation',
+body:`
+<p><b>Luận điểm trung tâm.</b> Một language model giỏi <b>chưa đủ</b> để tạo ra một working agent. Phải có thứ gì đó quyết định model nhìn thấy gì, cho nó làm được gì, thực thi hành động, trả kết quả về, lưu trạng thái, phân quyền, phục hồi sau lỗi, quyết định khi nào dừng và xác minh xem task có thật sự thành công không. Cái "máy móc bao quanh" đó gọi là <b>agent harness</b>.</p>
+<p>Handbook này (của tác giả @techNmak, kiểm tra tài liệu 10/2026) là một sổ tay kỹ thuật ngắn về <b>tầng hệ thống</b> bao quanh quá trình thực thi model agentic.</p>
+<h3>Hai định nghĩa dùng xuyên suốt</h3>
+<ul>
+<li><b>Agent harness</b> — runtime & cơ chế điều khiển nằm ngay quanh model, cho phép nó hành động qua nhiều bước.</li>
+<li><b>Harness engineering</b> — kỷ luật kỹ thuật rộng hơn: thiết kế interface, chính sách context, state, môi trường thực thi, cơ chế kiểm soát, feedback, phục hồi và xác minh để công việc agentic trở nên đáng tin cậy.</li>
+</ul>
+<p class="muted small">⚠️ Tác giả nói rõ: đây là taxonomy biên tập của riêng handbook, không phải chuẩn công nghiệp. Các hãng lớn (Microsoft, Anthropic, OpenAI) dùng thuật ngữ này hơi khác nhau — terminology còn non trẻ.</p>
+<h3>15 mục tiêu học tập (bạn sẽ giải thích được sau khóa này)</h3>
+<ol>
+<li>Vì sao một lần gọi model chưa phải là agent.</li>
+<li>Cách một agent loop tối thiểu hoạt động.</li>
+<li>Model, harness, session, tool, sandbox khác nhau ở đâu.</li>
+<li>Vì sao thiết kế tool thay đổi hành vi agent.</li>
+<li>Vì sao MCP hữu ích nhưng không mô tả một kiến trúc agent hoàn chỉnh.</li>
+<li>Vì sao context chủ động khác với durable state.</li>
+<li>Vì sao compaction là mất mát (lossy).</li>
+<li>Permissions, containment, credentials và approvals giải quyết các vấn đề khác nhau thế nào.</li>
+<li>Vì sao lỗi tool cần error semantics mà model có thể dùng được.</li>
+<li>Vì sao retry trở nên nguy hiểm quanh các side effect không idempotent.</li>
+<li>Vì sao verification phải tách khỏi "tự khai hoàn thành".</li>
+<li>Agent chạy dài thừa hưởng các bài toán durability & consistency quen thuộc ra sao.</li>
+<li>Khi nào subagent giúp ích và khi nào chi phí phối hợp lấn át.</li>
+<li>Evaluation đo cả model lẫn harness cùng lúc thế nào.</li>
+<li>Vì sao các giả định của harness phải được kiểm tra lại khi model tiến bộ.</li>
+</ol>
+<h3>Cách học với trang này</h3>
+<ul>
+<li><b>Bài học</b> — đọc tuần tự 8 phần, đánh dấu <i>đã học</i> để theo dõi tiến độ (lưu tự động trên máy bạn).</li>
+<li><b>Quiz</b> — trộn ngẫu nhiên từ kho 40 câu, chấm điểm ngay kèm giải thích.</li>
+<li><b>Flashcards</b> — 38 thuật ngữ then chốt, lật thẻ để nhớ.</li>
+<li><b>Bảng tra</b> — cheat sheet: 13 failure modes, 12 ngộ nhận, 15 câu hỏi production, thuật ngữ, nguồn.</li>
+<li><b>⬇ PDF</b> — xuất toàn bộ khóa học để in/đọc offline.</li>
+</ul>`,
+key:'Model thông minh chưa đủ. Thứ biến năng lực của model thành công việc hoàn thành đáng tin cậy chính là harness — và đó là môn học của khóa này.'},
+
+s1: { n:'1', t:'Một lần gọi model chưa phải là agent', en:'A model call is not an agent',
+body:`
+<p>Viết trừu tượng một lần gọi LM:</p>
+<div class="formula">y ~ p<span class="hl">θ</span>(· | c)</div>
+<p>trong đó <code>c</code> là context đưa vào, <code>y</code> là output. Biểu thức này <b>không</b> hàm ý rằng một shell command sẽ chạy, browser sẽ mở, file sẽ đổi, API sẽ retry, hay công việc sẽ tiếp tục sau câu trả lời đầu tiên.</p>
+<h3>Mental model của handbook</h3>
+<div class="formula">agent system ≈ <span class="hl">model</span> + <span class="hl">harness</span> + <span class="hl">environment</span></div>
+<ul>
+<li><b>Model</b> — cung cấp learned capability (khả năng đã học).</li>
+<li><b>Harness</b> — quyết định inference được nối vào hành động và lặp lại theo thời gian như thế nào.</li>
+<li><b>Environment</b> — chứa external state mà hành động đọc hoặc ghi.</li>
+</ul>
+<p>Anthropic phân biệt <b>workflows</b> (đường thực thi do application code quy định phần lớn) với <b>agents</b> (model tự chọn hành động/chiến lược động). Microsoft cũng có phân biệt tương tự giữa agent thường, workflow và harness agent cho công việc nhiều bước dài hơi.</p>`,
+key:'Ranh giới quan trọng không phải "chatbot vs agent" như nhãn marketing, mà là: model output có tham gia vào một vòng tương tác có kiểm soát với external state hay không.'},
+
+s2: { n:'2', t:'Vòng lặp agent tối thiểu', en:'The minimal agent loop',
+body:`
+<p>Mô hình hóa harness bằng 4 đối tượng tiến hóa:</p>
+<ul>
+<li><code>s_t</code> — state (durable/working) trước bước t</li>
+<li><code>c_t = G(s_t)</code> — context được <b>chọn</b> cho lần gọi model kế tiếp</li>
+<li><code>a_t = M(c_t)</code> — output của model (có thể là action request)</li>
+<li><code>o_t = E(a_t)</code> — observation từ environment nếu action thực thi</li>
+</ul>
+<p>Harness cập nhật state:</p>
+<div class="formula">s<span class="hl">(t+1)</span> = U(s<span class="hl">t</span>, a<span class="hl">t</span>, o<span class="hl">t</span>)</div>
+<p><span class="muted small">(formalization của tác giả — không phải API chuẩn)</span></p>
+<h3>Vòng lặp</h3>
+<div class="formula">Task → assemble active context → model invocation
+     → final output?  ──(final)──► kết thúc
+     └─(action request)─► policy / approval / tool routing
+          → execute in environment → observation + state update → lặp lại</div>
+<p>Runner hiện đại thường làm biến thể: gọi model → soi response → nếu final thì return → nếu có tool request thì thực thi, ghép kết quả vào, gọi lại model.</p>
+<p><b>ReAct</b> (ICLR 2023) là tiền thân nghiên cứu: interleave reasoning và task actions để observation bên ngoài ảnh hưởng đến quyết định sau. Điểm tinh tế: harness hiện đại <b>không cần</b> expose/persist private reasoning traces để giữ ý tưởng cốt lõi: <b>act → observe → update → continue</b>.</p>`,
+key:'Vòng lặp này là trái tim của mọi agent system. Mọi thứ phía sau (tool, context, sandbox, budget, verification) chỉ là chi tiết hóa từng mắt xích của nó.'},
+
+s3: { n:'3', t:'Harness thực sự kiểm soát cái gì', en:'What the harness actually controls',
+body:`
+<p>Harness có thể quyết định:</p>
+<ul>
+<li>instructions & state nào vào context tiếp theo;</li>
+<li>tool nào <b>visible</b>; tool schemas biểu diễn thế nào;</li>
+<li>tool call nào được <b>permitted</b>; có cần human approval không;</li>
+<li>tool thực thi thế nào; kết quả được biến đổi ra sao trước khi trả về model;</li>
+<li>history persist thế nào; context compact thế nào;</li>
+<li>khi nào tạo subagents;</li>
+<li>errors trả về thế nào; retries xử lý ra sao;</li>
+<li>budgets nào kết thúc run;</li>
+<li>cần evidence gì trước khi chấp nhận "done";</li>
+<li>traces & metrics ghi lại thế nào; resume sau gián đoạn ra sao.</li>
+</ul>
+<p>Không harness nào sở hữu tất cả — hệ thống có thể delegate state/execution/policy/recovery cho component khác. Vì vậy <b>"harness" nên được hiểu là khái niệm về control-plane</b>, không phải tên một thư viện hay process cụ thể.</p>
+<p><b>Ví dụ thời điểm viết:</b> OpenAI Agents API quản sessions, orchestration, context compaction, recovery — còn application chọn tools & environment. Microsoft Harness compose chat clients, context providers, persistence, compaction, approvals, observability, bounded looping. <span class="muted small">(Tác giả ghi chú: OpenAI Agents API đang public beta; nhiều phần của Microsoft còn experimental/pre-release — đây là ảnh chụp thời điểm, không phải định nghĩa vĩnh viễn.)</span></p>`,
+key:'Danh sách này chính là "bảng phân công trách nhiệm" của harness. Khi thiết kế hoặc debug một hệ agent, hãy đi qua từng dòng: việc này ai làm, làm thế nào, fail ra sao?'},
+
+s4: { n:'4', t:'Model, harness, session, tool, sandbox', en:'Model, harness, session, tool, and sandbox',
+body:`
+<table>
+<tr><th>Thuật ngữ</th><th>Ý nghĩa dùng được</th></tr>
+<tr><td><b>Model</b></td><td>Hệ thống inference đã học</td></tr>
+<tr><td><b>Agent</b></td><td>Model vận hành trong vòng action hướng đến task</td></tr>
+<tr><td><b>Harness</b></td><td>Runtime/cơ chế điều khiển vòng đó</td></tr>
+<tr><td><b>Session</b></td><td>Container logic của history/state cho công việc; <b>durability phụ thuộc implementation</b></td></tr>
+<tr><td><b>Context</b></td><td>Thông tin cấp cho <b>một</b> lần gọi model cụ thể</td></tr>
+<tr><td><b>Tool</b></td><td>Capability gọi được, expose cho model</td></tr>
+<tr><td><b>Sandbox</b></td><td>Môi trường thực thi có kiểm soát</td></tr>
+<tr><td><b>Workflow</b></td><td>Cấu trúc thực thi do code quy định phần lớn</td></tr>
+<tr><td><b>Evaluation harness</b></td><td>Hạ tầng chạy và chấm điểm evaluation</td></tr>
+</table>
+<p>Cách các hãng implement khác nhau, nhưng cách tách khái niệm vẫn hữu ích:</p>
+<ul>
+<li><b>Anthropic (Managed Agents):</b> session = append-only log; harness = gọi model và route tool calls; sandbox = chạy code và sửa file.</li>
+<li><b>OpenAI (sandbox architecture):</b> harness = control plane (model calls, routing, approvals, tracing, recovery, run state); sandbox = execution plane (đọc/ghi file, chạy lệnh, cài dependencies, snapshot state).</li>
+</ul>`,
+key:'Các mảnh này có thể được implement khác nhau, nhưng cách tách khái niệm vẫn cần thiết vì chúng THẤT BẠI theo cách khác nhau và mang giả định tin cậy khác nhau.'},
+
+s5: { n:'5', t:'Giao diện agent–máy tính (ACI)', en:'An agent-computer interface',
+body:`
+<p>Model không tương tác với "cái máy tính" trừu tượng — nó tương tác với <b>một interface cụ thể</b>.</p>
+<p>Harness lập trình có thể expose:</p>
+<div class="formula">read_file(path, start_line, end_line)
+search_code(query)
+apply_patch(path, patch)
+run_tests(target)</div>
+<p>Harness khác chỉ expose:</p>
+<div class="formula">shell(command)</div>
+<p>Cả hai có thể thao tác cùng một repo — <b>nhưng không tạo ra cùng một bài toán cho model</b>.</p>
+<p><b>SWE-agent</b> (NeurIPS 2024) formalize ý này thành <b>Agent-Computer Interface (ACI)</b>: đừng giả định interface xây cho human developer tự động tối ưu cho LM; thiết kế interface <b>chính là biến thực nghiệm</b>. Nhóm tác giả thiết kế cơ chế điều hướng repo, edit, test, feedback quanh hành vi agent rồi <i>đo</i> ảnh hưởng.</p>
+<p>Số liệu lịch sử của paper: <b>12.5% pass@1 trên SWE-bench</b> và <b>87.7% trên HumanEvalFix</b> — tác giả nhấn mạnh đây là kết quả cho model/harness/task/eval <i>cụ thể</i>, không phải claim phổ quát. Đóng góp lâu dài là <b>câu hỏi kỹ thuật</b>.</p>`,
+key:'Capability chỉ "có mặt", hay được expose ở dạng model có thể dùng một cách đáng tin cậy? — ACI biến câu hỏi thiết kế thành biến đo lường được.'},
+
+s6: { n:'6', t:'Affordance, Contract, Observation, Feedback', en:'Bốn thuộc tính phân tích tool',
+body:`
+<p>Cách phân tích mọi tool hướng-agent qua 4 câu hỏi:</p>
+<ul>
+<li><b>Affordance</b> — tool <i>làm được gì</i>?</li>
+<li><b>Contract</b> — model <i>yêu cầu thao tác</i> bằng cách nào?</li>
+<li><b>Observation</b> — thông tin gì <i>trả về</i>?</li>
+<li><b>Feedback</b> — kết quả có <i>làm hành động đúng tiếp theo dễ hơn</i> không?</li>
+</ul>
+<h3>Ví dụ: sửa file</h3>
+<table>
+<tr><th>Interface</th><th>Ưu</th><th>Nhược cho model</th></tr>
+<tr><td><b>Raw shell</b></td><td>Affordance khổng lồ</td><td>Phải tự chọn lệnh, quote path đúng, tự suy diễn output, tự phục hồi lỗi format</td></tr>
+<tr><td><b>Structured patch tool</b></td><td>Intent dễ diễn đạt, outcome dễ verify</td><td>Thu hẹp action surface</td></tr>
+</table>
+<p>Không interface nào thắng tuyệt đối — thiết kế đúng phụ thuộc model, task, environment, evaluation.</p>`,
+key:'Cấu trúc interface trở thành một phần của ĐỘ KHÓ HIỆU DỤNG của task. Đây là điều SWE-agent chứng minh bằng thực nghiệm.'},
+
+s7: { n:'7', t:'Tool là một phần INPUT của model', en:'Tools are part of the model input',
+body:`
+<p>Insight dễ bỏ qua: <b>tool không chỉ là code thực thi</b>. Tên, mô tả, arguments, cách biểu diễn kết quả — thường đều được đặt <b>vào context</b> của model. Nghĩa là thiết kế tool ảnh hưởng đến inference <b>trước cả khi tool được gọi</b>.</p>
+<p>Anthropic khuyến nghị: mục đích rõ ràng, tham số không mơ hồ, namespacing, response content hữu ích, kết quả tiết kiệm token.</p>
+<p>Tách chi phí thành hai phần:</p>
+<div class="formula">C<span class="hl">tool</span> = C<span class="hl">selection</span> + C<span class="hl">observation</span></div>
+<ul>
+<li><b>C_selection</b> — độ khó <i>chọn đúng</i> tool & arguments.</li>
+<li><b>C_observation</b> — gánh nặng context/reasoning do <i>kết quả trả về</i> gây ra.</li>
+</ul>
+<p>Hệ quả: một tool có backend API thanh lịch vẫn có thể <b>tệ cho agent</b> nếu mô tả overlap với tool khác, hoặc kết quả dump dữ liệu vô can vào context window.</p>`,
+key:'Tool design là thiết kế input của model. Đừng đánh giá tool bằng chất lượng API backend — hãy đánh giá bằng chi phí chọn lựa + chi phí tiêu thụ kết quả.'},
+
+s8: { n:'8', t:'Nhiều tool hơn có thể làm quyết định khó hơn', en:'More tools can make the decision harder',
+body:`
+<p>Sáu tool gần như trùng chức năng:</p>
+<div class="formula">search() · find() · lookup() · query() · grep() · retrieve()</div>
+<p>Từ góc nhìn capability truyền thống: trông "giàu". Từ góc nhìn model: <b>mỗi tool thêm vào là một lựa chọn thêm vào action space</b> → điểm quyết định mơ hồ.</p>
+<p>Anthropic báo cáo failure mode phổ biến: tool sets phình to/overlap tạo <b>ambiguous decision points</b>. Khuyến nghị: chọn <i>ít</i> operation <i>khác biệt</i> hơn, dùng namespacing để tách nhóm capability liên quan, và <b>evaluate naming schemes</b> thay vì giả định một quy ước phổ quát.</p>`,
+key:'Tool count KHÔNG phải thước đo đơn điệu của năng lực agent. Thêm tool có thể tăng reachable behavior nhưng đồng thời làm selection khó hơn — trade-off này phải được ĐO trên representative tasks, không giải quyết bằng thẩm mỹ.'},
+
+s9: { n:'9', t:'Kết quả tool phải là context "tín hiệu cao"', en:'Tool results should return high-signal context',
+body:`
+<p>Agent hỏi một customer record. API low-level trả về hàng trăm field, internal IDs, pagination metadata, image variants, audit records, storage keys…</p>
+<ul>
+<li>Chương trình do người viết có thể <b>bỏ qua field vô ích với chi phí gần bằng 0</b>.</li>
+<li>Một LM phải "tiêu thụ" toàn bộ text trả về <b>qua context budget của nó</b>.</li>
+</ul>
+<p>Khuyến nghị (Anthropic): trả high-signal information; dùng filter & pagination cho kết quả lớn; expose chế độ concise vs detailed khi phù hợp.</p>
+<h3>Checklist đánh giá kết quả tool</h3>
+<ul>
+<li>Có trả đủ thông tin cho <b>quyết định kế tiếp</b> không?</li>
+<li>Có bỏ payload vô can không?</li>
+<li>Có giữ <b>identifiers</b> cần cho hành động sau không?</li>
+<li>Khi bị truncate, có giải thích cách lấy thêm không?</li>
+<li>Format có dễ diễn giải không?</li>
+</ul>`,
+key:'Tool output là một phần của context engineering. Kết quả tool phải được đánh giá bằng "giá trị tín hiệu", không chỉ bằng "đúng/sai".'},
+
+s10: { n:'10', t:'Lỗi tool cũng là observation', en:'Tool errors are observations too',
+body:`
+<p>Một tool failure có thể: (a) kết thúc run; (b) trigger retry tự động; (c) trả lỗi <b>model-visible</b> để phục hồi. <b>Ba semantics này khác nhau hoàn toàn.</b></p>
+<p>Ví dụ <code>deploy_service(environment="prod")</code> fail vì branch không tồn tại. Kết quả <code>Error.</code> mù mờ buộc model <i>đoán</i>. Kết quả tốt hơn:</p>
+<div class="formula">status: failed
+reason: branch_not_found
+requested_branch: release/2.4
+available_branches: [...]
+side_effects: none
+retryable: true</div>
+<p><span class="muted small">(Exact schema tùy ứng dụng — nguyên tắc chung thì không.)</span></p>
+<p><b>OpenAI Agents SDK:</b> <code>toolNotFoundBehavior = return_error_to_model</code> biến unresolved function-tool call thành lỗi model-visible để run tiếp tục; <code>toolErrorFormatter</code> tùy biến thông điệp lỗi. <b>Anthropic:</b> khuyến nghị actionable validation errors thay vì mã mù mờ hay raw traceback.</p>`,
+key:'Lỗi phục hồi được phải cho model đủ thông tin để chọn bước đi tốt hơn — mà không giả vờ rằng thao tác đã thất bại kia thành công.'},
+
+s11: { n:'11', t:'MCP là lớp tương tác, không phải agent loop hoàn chỉnh', en:'MCP is an interoperability layer',
+body:`
+<p><b>MCP (Model Context Protocol)</b> chuẩn hóa interface giữa AI applications và external capabilities. Core server spec xoay quanh server primitives: <b>prompts, resources, tools</b>. <b>Tasks</b> là extension opt-in riêng, không thuộc core.</p>
+<p class="muted small">Độ chín của Tasks: các nguồn first-party mâu thuẫn nhau (một trang liệt kê là official extension, README lại ghi experimental/not official, spec page đánh dấu Draft) → handbook coi là optional extension đang tiến hóa, không gán status duy nhất.</p>
+<p><b>Tasks draft hiện hành:</b> server có thể trả async task handle cho <code>tools/call</code>; định nghĩa <code>tasks/get</code>, <code>tasks/update</code>, <code>tasks/cancel</code>; khuyến nghị client persist task IDs ra durable storage để polling resume sau crash/restart.</p>
+<h3>MCP KHÔNG quyết định</h3>
+<ul>
+<li>model loop được schedule thế nào;</li>
+<li>active context được chọn thế nào;</li>
+<li>task được đánh giá hoàn thành thế nào;</li>
+<li>action nào cần approval; side effects retry thế nào;</li>
+<li>sandbox được provision thế nào; nhiều agent coordinate ra sao;</li>
+<li>toàn bộ agent được evaluate thế nào.</li>
+</ul>
+<p><b>Chi tiết tinh tế:</b> protocol state và tool outcome không nên bị gộp — tool result với <code>isError: true</code> vẫn <i>hoàn thành task ở tầng protocol</i>, còn JSON-RPC execution errors dùng <i>trạng thái failed</i> của task.</p>`,
+key:'Safe mental model: MCP là "interoperable capability interface" — không phải "entire agent architecture". Harness có thể dùng MCP nhiều mà vẫn sở hữu các policy ở nơi khác.'},
+
+s12: { n:'12', t:'Context chủ động là quyết định của harness', en:'Active context is a harness decision',
+body:`
+<p>Mỗi lần gọi model chỉ thấy một context <b>hữu hạn</b>. Harness quyết định cái gì vào đó. Thành phần tiềm năng:</p>
+<ul>
+<li>system & developer instructions; user task hiện tại;</li>
+<li>recent message history; tool schemas; tool results;</li>
+<li>retrieved documentation; plans & todo state;</li>
+<li>summaries của work trước; file/repo state;</li>
+<li>memory records; outputs từ subagents.</li>
+</ul>
+<p>Chính sách ngây thơ "đưa vào tất cả mọi thứ có thể quan trọng" sẽ thất bại vì <b>hai lý do</b>:</p>
+<ol>
+<li>Context capacity là hữu hạn.</li>
+<li><b>Relevance vẫn quan trọng kể cả khi capacity lớn</b>: tài liệu vô can <i>cạnh tranh attention</i> với bằng chứng hữu ích, làm bài toán quyết định khó hơn.</li>
+</ol>
+<p>Anthropic vì thế xem context là <b>constrained resource</b>: just-in-time retrieval, token-efficient tools, compaction, structured memory, subagents.</p>`,
+key:'"Có chỗ trong context window" không phải lý do để nhét vào. Relevance và capacity là hai ràng buộc độc lập — harness phải chọn lọc chủ động.'},
+
+s13: { n:'13', t:'Progressive disclosure thay vì "nhồi" instruction khối lớn', en:'Progressive disclosure instead of monolithic instructions',
+body:`
+<p><b>Case study OpenAI Codex-first:</b> một file instruction khổng lồ trong repo tích tụ quá nhiều hướng dẫn → ngốn context, khó maintain, khó verify bằng máy. Họ chuyển sang <b>entry-point document ngắn</b>, trỏ agent đến các structured repository-local sources of truth.</p>
+<h3>Pattern progressive disclosure</h3>
+<ol>
+<li>Đủ thông tin để <b>định hướng</b>;</li>
+<li>Biến thông tin sâu hơn thành <b>discoverable</b>;</li>
+<li>Chỉ <b>load chi tiết khi task cần</b>.</li>
+</ol>
+<p>Cùng lý do tool interfaces cần search, filters, concise modes. <b>Availability ≠ relevance.</b></p>
+<h3>Agent Skills</h3>
+<p>Gói instruction + scripts/resources tái sử dụng, <i>được discover và load khi relevant</i>. Khác tool: tool có interface chính là callable action; skill là reusable guidance mà model dựa vào <i>khi quyết định cách làm việc</i>. Microsoft phân biệt skill với <b>explicit workflow</b> (đường do app định) — khuyến nghị workflow khi cần checkpointing, thứ tự dự đoán được, hoặc non-idempotent side effects.</p>`,
+key:'Nghiên cứu 2026: 307 skill-induced failures (125 functional + 182 efficiency regressions) trên 2 benchmark cụ thể — KHÔNG phải base rate phổ quát. Kết luận: skill phải được evaluate, không được giả định có lợi; và provenance của skill là vấn đề bảo mật.'},
+
+s14: { n:'14', t:'Durable history và active context là hai bề mặt khác nhau', en:'Durable history and active context are different state surfaces',
+body:`
+<p>Task dài có thể có <i>nhiều history hơn</i> mức một lần inference nên thấy.</p>
+<ul>
+<li><b>Anthropic Managed Agents:</b> append-only session log nằm <b>ngoài</b> active context window. Harness retrieve <i>các lát cắt</i> và biến đổi trước khi đưa chọn lọc vào model.</li>
+<li><b>OpenAI Agents API:</b> tách durable session khỏi context-management của managed harness.</li>
+</ul>
+<p>Hai state surfaces <b>overlap nhưng nhìn chung không cái nào chứa cái kia</b>:</p>
+<ul>
+<li>Durable history có thể nằm ngoài lần gọi model kế tiếp;</li>
+<li>Active context có thể chứa material <i>ephemeral</i> chưa từng được store: user message hiện tại, live tool schemas, runtime metadata tạm.</li>
+</ul>`,
+key:'Persistent availability KHÔNG hàm ý automatic inclusion vào mọi inference call — và inclusion trong một inference call KHÔNG hàm ý durable storage. "Có lưu" ≠ "được thấy"; "được thấy" ≠ "được lưu".'},
+
+s15: { n:'15', t:'Compaction là mất mát', en:'Compaction is lossy',
+body:`
+<p>Khi hội thoại quá lớn, chiến lược phổ biến là thay chi tiết cũ bằng summary ngắn. Giảm active-context cost — <b>nhưng cũng mất thông tin</b>.</p>
+<p>Gọi <code>H</code> là history, <code>C(H)</code> là bản compact:</p>
+<div class="formula">C(H) ≠ H</div>
+<p>Không được giả định phép biến đổi bảo toàn mọi chi tiết mà các bước tương lai có thể cần. Anthropic cảnh báo thẳng: quyết định context-retention có thể tạo failure vì <i>turn tương lai cần thông tin mà trước đó trông không quan trọng</i>.</p>`,
+key:'Compaction phải được hiểu là CONTEXT TRANSFORMATION — không đồng nghĩa với xóa durable history. Câu hỏi kỹ thuật: thông tin nào được phép tóm tắt, thông tin nào phải còn truy hồi trực tiếp, và làm sao agent lấy lại được chi tiết đã bỏ về sau?'},
+
+s16: { n:'16', t:'Case study: thay đổi harness có thể đổi chất lượng agent', en:'Harness changes can alter agent quality',
+body:`
+<p><b>Postmortem Claude Code tháng 4/2026 (Anthropic):</b> API & inference layer <i>không bị ảnh hưởng</i>, nhưng ba thay đổi ở <b>tầng sản phẩm</b> đã đổi chất lượng trải nghiệm:</p>
+<ol>
+<li>Default reasoning-effort bị giảm cho một số model — sau đó revert sau feedback;</li>
+<li>Session optimization định "xóa reasoning cũ sau idle" dính bug lặp lại hành vi xóa ở các turn sau → Claude trông <i>hay quên và lặp</i>;</li>
+<li>Instruction system-prompt định giảm verbosity lại làm <b>giảm 3%</b> trên một broader evaluation cho cả Opus 4.6 lẫn 4.7 — bị revert.</li>
+</ol>
+<p class="muted small">Ý nghĩa không phải ba cơ chế này quan trọng phổ quát, mà là kiến trúc.</p>`,
+key:'Chất lượng agent quan sát được có thể đổi khi cấu hình product/harness đổi — dù API và inference layer không đổi. Prompt construction, reasoning settings, context retention, tool interfaces… đều là MỘT PHẦN hành vi của hệ agent đã deploy.'},
+
+s17: { n:'17', t:'Trạng thái làm việc có cấu trúc', en:'Structured working state',
+body:`
+<p>Natural-language history không phải cách duy nhất để bảo toàn tiến độ. Task dài thường hưởng lợi từ artifact tường minh:</p>
+<ul>
+<li>todo lists, issue trackers, checklists;</li>
+<li>feature status files, progress notes;</li>
+<li>test results, output manifests;</li>
+<li>git commits; generated plans.</li>
+</ul>
+<p><b>Anthropic long-running-agent experiments:</b> dùng <b>initializer session</b> để chuẩn bị structured artifacts, rồi các coding session sau làm tiến độ từng phần, để lại state rõ ràng cho session kế tiếp — ví dụ: feature lists, git history, progress notes, initialization script.</p>`,
+key:'Đây KHÔNG phải "hidden model memory" — mà là EXTERNAL REPRESENTATIONS of task state. Nhờ đó chúng inspectable, editable, versionable và recoverable bởi session tương lai hoặc con người.'},
+
+s18: { n:'18', t:'Môi trường thực thi', en:'Execution environments',
+body:`
+<p>Có agent chỉ đọc dữ liệu. Nhưng một khi agent có thể gây <b>side effects</b>, execution environment trở thành <b>một phần của kiến trúc</b>.</p>
+<p>Sandbox có thể cung cấp: filesystem access, shell execution, installed packages, mounted data, network access, browser/computer control, ports, snapshots, resource limits.</p>
+<p>OpenAI sandbox docs tách rõ execution plane này khỏi harness control plane.</p>`,
+key:'The environment determines both capability and failure mode. Một plan đúng có thể fail vì thiếu package. Một môi trường ràng buộc kém có thể "thành công" trong khi tạo rủi ro bảo mật không chấp nhận được. Harness engineering KHÔNG THỂ dừng ở prompt design.'},
+
+s19: { n:'19', t:'Sandbox là ranh giới cô lập, không phải nhạc trưởng', en:'A sandbox is an isolation boundary, not the orchestrator',
+body:`
+<p>Hai bộ câu hỏi khác nhau:</p>
+<table>
+<tr><th>Sandbox trả lời</th><th>Harness trả lời</th></tr>
+<tr><td>Process chạm được file nào?</td><td>Model thấy gì tiếp theo?</td></tr>
+<tr><td>Chạy được lệnh nào?</td><td>Tool call nào thực thi?</td></tr>
+<tr><td>Có outbound networking không?</td><td>Call này cần approval không?</td></tr>
+<tr><td>Credentials/mounts nào visible?</td><td>Trả kết quả gì? Loop tiếp hay dừng?</td></tr>
+<tr><td>State nào sống sót qua container?</td><td>Sau failure thì sao?</td></tr>
+</table>
+<p>Trong prototype hai thứ có thể đặt chung chỗ — nhưng phải <b>lý luận tách biệt</b>. Giữ control plane <i>bên ngoài</i> untrusted execution bảo vệ được session state, audit logs, credentials và policy khỏi code do model sinh ra chạy trong sandbox.</p>`,
+key:'Sandbox = "cái gì có thể chạm tới". Harness = "cái gì nên xảy ra tiếp". Gộp hai câu hỏi này trong đầu là nguồn gốc của nhiều thiết kế sai.'},
+
+s20: { n:'20', t:'Approval và containment giải quyết hai bài toán khác nhau', en:'Approval and containment solve different problems',
+body:`
+<p><b>Human approval</b> có giá trị khi hành động có hậu quả nên nằm dưới kiểm soát người: xóa production data, gửi communication ra ngoài, chuyển tiền, nâng quyền, publish changes.</p>
+<p>Nhưng approval <b>không phải</b> kiến trúc bảo mật hoàn chỉnh:</p>
+<ul>
+<li>Anthropic báo cáo người dùng <b>approve ~93%</b> permission prompt của Claude Code trong telemetry của bài containment → <b>approval fatigue</b>. (Số liệu sản phẩm riêng của Anthropic, không phổ quát.)</li>
+<li>Red-team nội bộ 2/2026: malicious prompt gửi qua user <b>exfiltrate credentials thành công 24/25 lần retry</b>. Thứ đứng vững khi model-layer intent checks thất bại: <b>ranh giới filesystem & egress ở tầng môi trường</b>.</li>
+</ul>
+<p>Containment trả lời câu hỏi khác: <i>kể cả khi mọi safeguard hành vi cấp cao hơn đều thất bại, agent chạm được tới đâu?</i> — filesystem boundaries, network egress rules, VMs, containers, credential isolation.</p>`,
+key:'Human review controls DECISIONS. Containment controls REACHABLE CAPABILITY. Hai thứ khác nhau — và chỉ containment mới là thứ "đỡ" được khi phán đoán ở tầng model bị lừa.'},
+
+s21: { n:'21', t:'Giữ credentials ngoài vùng thực thi không tin cậy', en:'Keep credentials out of untrusted execution',
+body:`
+<p>Model-generated code chạy trong sandbox <i>có chứa</i> long-lived credentials → prompt injection, malicious dependency, hoặc lệnh sai có thể <b>đọc</b> secrets đó.</p>
+<p>Giải pháp cấu trúc (Anthropic Managed Agents): credentials sống <b>ngoài</b> execution sandbox, dùng qua <b>controlled proxies</b> hoặc cơ chế resource-specific — thay vì expose trực tiếp cho generated code.</p>
+<div class="formula">A resource that never enters the sandbox
+cannot be read directly from that sandbox.</div>`,
+key:'Đây là ranh giới MẠNH HƠN câu "dặn model đừng truy cập secrets": một bên là INSTRUCTION, bên kia THAY ĐỔI REACHABLE STATE SPACE. Thứ không tồn tại trong sandbox thì không thể đọc từ sandbox.'},
+
+s22: { n:'22', t:'Observation có provenance (nguồn gốc)', en:'Observations have provenance',
+body:`
+<p>Input của agent <b>không chỉ</b> đến từ user. Harness có thể đặt vào context: web pages, emails, issue descriptions, documents, files, database records, MCP resources, skill instructions & resources, tool results, subagent reports, stored memory.</p>
+<p>Những observation đó <b>có thể chứa instruction thù địch hoặc gây nhầm lẫn</b> — prompt injection.</p>
+<div class="formula">o<span class="hl">i</span> = (content, source, trust, time, permissions)</div>
+<p class="muted small">(mental model, không phải wire format) — Mọi string không bình đẳng chỉ vì chúng đều trở thành token. System instruction và text scrape từ website bất kỳ có thể cùng vào context nhưng provenance và authority khác hẳn nhau.</p>
+<ul>
+<li><b>Egress allowlist = capability grant</b>, không chỉ destination filter: từng có ca "approved network domain" cho phép exfiltration qua legit API.</li>
+<li><b>Trust escalation:</b> parent agent coi subagent output là "an toàn hơn" raw tool output một cách mặc nhiên.</li>
+<li><b>AgentDojo</b> (NeurIPS 2024): 97 realistic tasks, 629 security test cases (email, banking, travel, messaging) — benchmark tồn tại chính vì tool data có thể chứa adversarial instructions.</li>
+<li><b>Skills cũng là trust boundary:</b> skill chứa instruction + code → chỉ dùng từ nguồn tin cậy hoặc audit; Microsoft khuyến nghị đối xử như <i>third-party code</i>; provider của họ mặc định yêu cầu approval cho load/read/run skill.</li>
+</ul>`,
+key:'Harness phải theo dõi provenance và authority của mọi thứ nó đưa vào context. Dữ liệu tool không tin cậy, skill nạp ngoài, subagent report — tất cả đều là bề mặt tấn công, không phải "chỉ là text".'},
+
+s23: { n:'23', t:'Điều kiện dừng là một phần của harness', en:'Stopping conditions are part of the harness',
+body:`
+<p>Một vòng autonomous cần luật <b>khi nào dừng</b>. Các khả năng:</p>
+<ul>
+<li>model trả final output;</li>
+<li>task predicate verifiable được thỏa;</li>
+<li>cần human input; guardrail chặn; cancellation request đến;</li>
+<li>tool vào terminal failure;</li>
+<li>resource budget cạn (turns, time, tokens, cost…).</li>
+</ul>
+<div class="formula">task complete ≠ turn budget exhausted</div>
+<p>OpenAI Agents SDK có maximum-turn limits: chạm limit → <i>dừng loop</i> — nhưng <b>không chứng minh task thành công</b>. Microsoft Harness cũng expose bounded-loop & iteration limits.</p>`,
+key:'Một "stop" có thể nghĩa: success / policy block / timeout / budget exhaustion / failure / human handoff. Các trạng thái này KHÔNG được gộp thành một chữ "done" chung chung — nếu không, observability và recovery đều hỏng.'},
+
+s24: { n:'24', t:'Budgets giới hạn quyền tự chủ', en:'Budgets limit autonomy',
+body:`
+<div class="formula">B = (B<span class="hl">turns</span>, B<span class="hl">tokens</span>, B<span class="hl">time</span>, B<span class="hl">cost</span>, B<span class="hl">tools</span>, B<span class="hl">concurrency</span>)</div>
+<p class="muted small">(notation khái niệm — không phải mọi platform expose từng budget)</p>
+<p><b>Design point:</b> autonomy bị chặn bởi tài nguyên, không chỉ bởi permission.</p>
+<ul>
+<li>Cho phép agent gọi database — nhưng vẫn có thể giới hạn 20 tool calls.</li>
+<li>Cho phép subagents — nhưng giới hạn concurrent workers.</li>
+<li>Browser agent chạy được 10 phút — không phải mãi mãi.</li>
+</ul>`,
+key:'Budget biến "keep trying" từ hành vi VÔ BIÊN thành OPERATIONAL POLICY — và làm failure dễ phân loại hơn: timeout khác với verified success.'},
+
+s25: { n:'25', t:'Verification khác với "tự khai hoàn thành"', en:'Verification is different from self-reported completion',
+body:`
+<p>Agent có thể tuyên bố: <i>"The bug is fixed."</i> — Đó là <b>claim</b>, không phải <b>evidence</b>.</p>
+<p>Bằng chứng mạnh hơn cho software work:</p>
+<ul>
+<li>bản reproduction gốc không còn fail;</li>
+<li>regression tests pass;</li>
+<li>app được exercise end-to-end;</li>
+<li>affected state đổi đúng kỳ vọng.</li>
+</ul>
+<p><b>Anthropic long-running-agent work:</b> phát hiện coding agents đánh dấu feature complete mà <i>không test end-to-end đầy đủ</i>. Harness của họ cải thiện bằng cách bắt buộc explicit verification với browser automation + structured feature status.</p>
+<p><b>τ-bench (ICLR 2025):</b> success được đánh giá bằng cách so <b>final database state</b> với <b>annotated goal state</b> — thay vì tin lời agent. Benchmark còn giới thiệu <b>pass^k</b>: đo mức thành công <i>nhất quán qua nhiều lần chạy</i>. Chi tiết thú vị: conversational user trong τ-bench cũng do LM mô phỏng → trajectory không deterministic dù final state được so với goal annotation.</p>`,
+key:'Bất cứ khi nào có thể, completion phải được gắn với OBSERVABLE STATE ngoài assertion của model. Deterministic property → ưu tiên verification deterministic. Subjective property → evaluator riêng hoặc con người.'},
+
+s26: { n:'26', t:'Ràng buộc bằng máy vs phán đoán của model', en:'Deterministic enforcement vs model judgment',
+body:`
+<p>Một số quyết định <b>thật sự cần diễn giải</b>: search result này có relevant không? file nào nên xem tiếp? explanation này có thỏa ý user không?</p>
+<p>Một số ràng buộc <b>thường kiểm tra được bằng máy</b>:</p>
+<ul>
+<li>JSON có valid không?</li>
+<li>số tiền có vượt ngưỡng cho phép không?</li>
+<li>path có nằm ngoài mounted directory không?</li>
+<li>dependency edge có bị cấm không?</li>
+<li>run có vượt tool-call budget không?</li>
+</ul>
+<div class="formula">Use deterministic enforcement where the property is
+mechanically decidable. Use model or human judgment
+where interpretation is genuinely required.</div>
+<p>(guideline, không phải theorem). OpenAI Agents SDK: input/output/tool guardrails validate hoặc block execution. Codex-first repo: chuyển một số architectural rules từ <b>prose → linters & structural tests</b>.</p>`,
+key:'"The model should not have to remember a rule that the system can cheaply enforce." — Đừng bắt model NHỚ điều mà hệ thống có thể ÉP với chi phí rẻ.'},
+
+s27: { n:'27', t:'Generator và evaluator là hai vai khác nhau', en:'Generator and evaluator are different roles',
+body:`
+<p>Một số output không thể check hoàn toàn bằng test deterministic: chất lượng văn xuôi, chất lượng thiết kế, độ đầy đủ của research, planning mơ hồ, diễn giải policy.</p>
+<p>Anthropic thử nghiệm <b>tách generation khỏi evaluation</b> trong long-running application work: các vai riêng để generate → critique → iterate.</p>
+<ul>
+<li>Điểm cốt lõi <b>không phải</b> "mọi task cần nhiều agent";</li>
+<li>Mà là: <b>producing an answer và judging an answer là hai operation khác nhau</b>.</li>
+<li>Và: evaluator <b>vẫn có thể sai</b> → model-based grader phải được coi là một component cũng có thể lỗi, bản thân độ tin cậy của nó cần được evaluate.</li>
+<li>Nơi nào có deterministic checks → vẫn mạnh hơn.</li>
+</ul>`,
+key:'Đừng để người viết bài tự chấm bài — nhưng cũng đừng tin người chấm tuyệt đối. Evaluator là một component có xác suất sai riêng, cần được đo như mọi component khác.'},
+
+s28: { n:'28', t:'Feedback loop cho agent bằng chứng bên ngoài', en:'Feedback loops give the agent external evidence',
+body:`
+<p>One-shot model chỉ <i>đề xuất</i> output. Agent thường làm được điều hữu ích hơn:</p>
+<div class="formula">1. act  →  2. observe the consequence  →  3. revise</div>
+<p>Feedback hữu ích cho coding/operational work: compiler output, unit tests, integration tests, screenshots, browser state, logs, metrics, traces, database contents, API responses.</p>
+<p><b>OpenAI harness-engineering report:</b> expose application state, logs, metrics, traces cho Codex để agent tự inspect & verify thay đổi của mình.</p>
+<div class="formula">A tool that changes state but cannot expose
+the resulting state creates a weak feedback loop.</div>`,
+key:'Harness design một phần là việc làm cho GROUND TRUTH TRỞ NÊN QUERYABLE. Nếu agent đổi được state nhưng không quan sát được hậu quả, nó đang bay mù.'},
+
+s29: { n:'29', t:'Agent chạy dài thừa hưởng bài toán durability', en:'Long-running agents inherit durability problems',
+body:`
+<p>Tool call 5 giây fail → retry, hầu như không cần coordination. Task kéo dài hàng giờ/ngày → khác hẳn. Trong lúc chạy dài:</p>
+<ul>
+<li>harness có thể crash; worker có thể biến mất;</li>
+<li>sandbox có thể bị reclaim; network có thể đứt;</li>
+<li>user có thể pause; approval có thể đến muộn hàng giờ.</li>
+</ul>
+<p><b>Google Agent Executor</b> được thiết kế quanh đúng bài toán này: event logs, snapshots, resumption, distributed execution cho agents/harnesses/tools/sandboxes. <span class="muted small">(Lưu ý tác giả: repo còn cảnh báo concepts/specs đang refine, có thể đổi lớn trước stable release.)</span></p>
+<p><b>Anthropic Managed Agents:</b> durable session nằm <i>ngoài</i> harness để harness fail có thể restart và <b>resume từ session log</b>.</p>`,
+key:'Khi agent work trở nên dài và phân tán, harness thừa hưởng các concerns hệ thống quen thuộc: durability, recovery, consistency, retries, failure isolation. Đây là bài toán distributed systems mặc áo mới.'},
+
+s30: { n:'30', t:'Recovery cần phân biệt control state và world state', en:'Recovery requires control state and world state',
+body:`
+<p>Ví dụ kinh điển: harness gọi <code>create_ticket(...)</code>. Remote system <b>đã tạo ticket</b>. Rồi network đứt <b>trước khi</b> harness nhận response.</p>
+<p>Sau restart, harness biết nó <i>định</i> gọi tool — nhưng <b>không biết side effect bên ngoài đã commit chưa</b>. Chạy lại mù quáng → tạo ticket trùng.</p>
+<p>Bốn thứ không nhất thiết chuyển tiếp atomic:</p>
+<div class="formula">requested action → executed action → observed result → committed task state</div>
+<p>Durable event log giúp harness <i>nhớ mình đã request gì và quan sát gì</i> — nhưng <b>không tự động làm mọi external side effect an toàn để lặp lại</b>.</p>`,
+key:'"Tôi đã yêu cầu" khác "nó đã xảy ra" khác "tôi đã thấy kết quả" khác "nó đã commit". Recovery đúng phải reconcile được bốn trạng thái này — event log là điều kiện cần, chưa đủ.'},
+
+s31: { n:'31', t:'Idempotency quan trọng cho retry', en:'Idempotency matters for retries',
+body:`
+<p>Idempotent (theo nghĩa systems): lặp lại cùng một intended operation có cùng intended effect như làm một lần:</p>
+<div class="formula">f(f(s)) = f(s)</div>
+<ul>
+<li><code>set_ticket_status(id, "closed")</code> — thường thiết kế được để idempotent.</li>
+<li><code>charge_card(...)</code>, <code>send_email(...)</code>, <code>create_order(...)</code> — <b>không tự nhiên an toàn để lặp</b>.</li>
+</ul>
+<p>Cơ chế cho hệ agent đáng tin:</p>
+<ul>
+<li>idempotency keys; unique operation IDs;</li>
+<li>deduplication records; transactional writes;</li>
+<li>read-before-retry checks; tool-specific retry policies.</li>
+</ul>
+<p><b>RFC 9110</b> dùng cùng khái niệm cho HTTP request semantics và giải thích tại sao idempotency quan trọng khi client mất response.</p>`,
+key:'Automatic retry là TOOL-SPECIFIC POLICY, không phải universal recovery strategy. "Tool fail thì cứ retry" là một trong những ngộ nhận nguy hiểm nhất — với charge_card, nó là nhân đôi tiền.'},
+
+s32: { n:'32', t:'Concurrency tạo bài toán nhất quán', en:'Concurrency creates consistency problems',
+body:`
+<p>Subagents & distributed workers thao tác trên shared state đồng thời → câu hỏi quen thuộc:</p>
+<ul>
+<li>Updates commit theo thứ tự nào?</li>
+<li>Hai worker có thể ghi đè nhau không? Cùng claim một task được không?</li>
+<li>Event stream nào là authoritative?</li>
+<li>Conflicting side effects được phát hiện thế nào?</li>
+</ul>
+<p><b>Google Agent Executor</b> gọi tên thẳng <i>session consistency</i> và dùng architectural constraints để giảm corruption.</p>
+<p>Giải pháp tùy ứng dụng: serialize writes, hoặc partition state theo task/resource.</p>`,
+key:'Multi-agent concurrency KHÔNG CHỈ là prompting problem — nó là STATE-CONSISTENCY problem. Đây là bài toán database/distributed systems cổ điển, đừng mong prompt giải được.'},
+
+s33: { n:'33', t:'Subagent là một lựa chọn của harness', en:'Subagents are a harness choice',
+body:`
+<p>Harness có thể giao toàn bộ task cho một model instance — hoặc delegate subtask độc lập cho agent khác.</p>
+<p><b>Delegation giúp:</b> tăng throughput khi công việc decompose sạch.</p>
+<p><b>Delegation tạo:</b></p>
+<ul>
+<li>duplicated work; inconsistent assumptions;</li>
+<li>communication overhead; token cost cao hơn;</li>
+<li>error propagation; conflict trên shared state.</li>
+</ul>
+<p><b>Bằng chứng — Google Research, 180 agent configurations:</b> hiệu ứng kiến trúc phụ thuộc mạnh vào cấu trúc task. Trong setup của họ:</p>
+<ul>
+<li>Centralized coordination cải thiện Finance-Agent <b>+80.9%</b> so với single-agent baseline;</li>
+<li><b>Mọi</b> multi-agent variant được test đều <b>giảm</b> hiệu năng trên task tuần tự PlanCraft <b>39–70%</b>.</li>
+</ul>
+<p class="muted small">(Kết quả của setup đó, không phải scaling law phổ quát.)</p>`,
+key:'Delegation phải được biện minh bằng TASK DECOMPOSITION — không phải bằng niềm tin "nhiều agent hơn là tốt hơn". Trên công việc tuần tự chặt, coordination cost có thể lấn át toàn bộ lợi ích.'},
+
+s34: { n:'34', t:'Agent legibility — "dễ đọc" đối với agent', en:'Agent legibility',
+body:`
+<p>OpenAI dùng cụm <b>agent legibility</b>: làm cho thông tin agent cần trở nên <i>discoverable từ chính các hệ thống nó có thể inspect</i>.</p>
+<ul>
+<li><b>Repo code:</b> structured documentation, predictable package boundaries, ownership rõ, test entry points, searchable logs, local metrics, runnable application state.</li>
+<li><b>Data system:</b> schemas & metadata discoverable.</li>
+<li><b>UI work:</b> screenshots, DOM state, cách launch app deterministic.</li>
+</ul>
+<p>Đây <b>hơn cả</b> "chất lượng documentation": hệ thống có thể dễ hiểu với tác giả gốc vì họ mang <b>tribal knowledge</b> (kiến thức truyền miệng) mà agent không có.</p>`,
+key:'Harness engineering đẩy các giả định quan trọng RA THÀNH ARTIFACT INSPECTABLE ĐƯỢC. Kiến thức nằm trong đầu người là kiến thức agent không bao giờ có — phải viết ra, cấu trúc hóa, đặt ở nơi discoverable.'},
+
+s35: { n:'35', t:'Cơ chế mạnh hơn văn xuôi cho luật có thể ép', en:'Mechanisms are stronger than prose',
+body:`
+<p>Ví dụ: luật kiến trúc <i>"Domain A không được import internal implementation của Domain B"</i>.</p>
+<ul>
+<li><b>Cách 1:</b> viết luật vào file instruction → dựa vào việc model nhớ và tuân.</li>
+<li><b>Cách 2:</b> viết <b>structural test</b> reject dependency bị cấm → <b>đổi failure mode</b>: agent không cần nhớ hoàn hảo nữa; trạng thái sai <i>fail verification</i> luôn.</li>
+</ul>
+<p>OpenAI báo cáo dùng custom linters + structural tests để enforce architectural rules trong Codex-first repo.</p>
+<p>Instruction vẫn hữu ích vì không phải thuộc tính nào cũng formalize được. Nhưng với luật objective và mechanically checkable: <b>encode vào code giảm phụ thuộc vào sự tuân thủ của model</b>.</p>`,
+key:'Ở đâu có thể encode luật thành cơ chế, sự tuân thủ trở thành bất khả xâm phạm về mặt cấu trúc — model không thể "quên" một failing test.'},
+
+s36: { n:'36', t:'Observability có hai khán giả', en:'Observability has two audiences',
+body:`
+<p>Truyền thống: observability giúp <b>engineer</b> hiểu software đang chạy. Hệ agent: thêm khán giả thứ hai — <b>chính agent</b>.</p>
+<table>
+<tr><th>Cho human operators</th><th>Cho agent</th></tr>
+<tr><td>model turns, tool calls, tool failures</td><td>application logs, traces</td></tr>
+<tr><td>latency, token use, cost, retries</td><td>screenshots, browser state</td></tr>
+<tr><td>approval events, final outcomes</td><td>test results, resource state</td></tr>
+<tr><td>→ giúp người DEBUG HARNESS</td><td>→ cho model BẰNG CHỨNG về hệ thống nó đang làm việc</td></tr>
+</table>
+<p>OpenAI Codex-first: expose logs, metrics, traces <i>trực tiếp</i> cho coding agents.</p>`,
+key:'Hai khán giả, hai bộ tín hiệu, hai mục đích. Thiết kế observability cho agent system mà chỉ nghĩ tới con người là bỏ sót một nửa vòng feedback.'},
+
+s37: { n:'37', t:'Agent harness vs evaluation harness', en:'Agent harness vs evaluation harness',
+body:`
+<ul>
+<li><b>Agent harness</b> — cho phép model <i>vận hành</i>.</li>
+<li><b>Evaluation harness</b> — <i>đo</i> hệ quả hoạt động đến đâu: chạy task end-to-end, provision môi trường ổn định, ghi trials, chạy graders, tổng hợp kết quả.</li>
+</ul>
+<p>Benchmark độc lập củng cố tầm quan trọng của môi trường trong eval:</p>
+<ul>
+<li><b>τ-bench:</b> đánh giá trên final DB state + độ tin cậy qua lặp lại.</li>
+<li><b>ToolSandbox</b> (NAACL 2025): stateful tool use với implicit dependencies giữa các tool, hội thoại on-policy, milestones trung gian/cuối trên trajectory tùy ý.</li>
+</ul>
+<p>Cả hai khiến agent <i>khó được "credit" chỉ nhờ transcript trông hợp lý</i>.</p>
+<div class="formula">measured agent performance = F(model, harness, environment, task, grader)</div>
+<p class="muted small">(không phải statistical model — lời nhắc về dependency)</p>`,
+key:'Đổi harness có thể đổi kết quả MÀ KHÔNG ĐỔI model weights. Đổi environment cũng vậy. Vì thế mọi con số benchmark phải đọc kèm câu hỏi: đo trên hệ nào, môi trường nào, grader nào?'},
+
+s38: { n:'38', t:'Môi trường có thể thay đổi điểm benchmark', en:'The environment can change the benchmark score',
+body:`
+<p>Static Q&A benchmarks chủ yếu chấm output model. Agentic coding benchmarks gồm: cài package, compile, chạy test, spawn process, dùng disk, áp lực CPU/memory, tương tác tool lặp lại → <b>hạ tầng trở thành một phần của task</b>.</p>
+<p><b>Thí nghiệm Anthropic trên Terminal-Bench 2.0:</b></p>
+<ul>
+<li>Chênh <b>6 điểm phần trăm</b> giữa cấu hình ít tài nguyên nhất và nhiều nhất (p &lt; 0.01).</li>
+<li>Từ 1x đến ~3x resource headroom: infrastructure failures <b>giảm mạnh</b> nhưng success scores <b>trong khoảng nhiễu thống kê</b> (p = 0.40).</li>
+<li>Trên ~3x: tài nguyên thêm bắt đầu <b>enable strategies thay đổi success</b> một cách thực chất.</li>
+</ul>
+<p>→ Khuyến nghị: <b>hoài nghi các khoảng cách leaderboard dưới 3 điểm phần trăm</b> khi methodology tài nguyên không được ghi rõ và khớp.</p>`,
+key:'Kết luận đúng KHÔNG phải "nhiều RAM làm model thông minh hơn" — mà là: agentic benchmark đo TƯƠNG TÁC giữa hành vi model và tài nguyên runtime. So sánh có nghĩa cần đủ chi tiết để tái lập điều kiện vận hành.'},
+
+s39: { n:'39', t:'Giả định của harness có "hạn sử dụng"', en:'Harness assumptions can expire',
+body:`
+<p>Harness thường chứa <b>workaround cho hành vi model đã biết</b> — nhưng các workaround đó không nên giả định là vĩnh viễn.</p>
+<ul>
+<li><b>Anthropic:</b> context-reset machinery được thêm vì Claude Sonnet 4.5 có thể <i>kết thúc sớm</i> gần context limit — đến Opus 4.5 thì không cần nữa → reset trở thành <i>dead weight</i>.</li>
+<li><b>RetroForge comparison:</b> solo Opus 4.5 chạy <b>20 phút, $9</b>; fuller harness chạy <b>6 giờ, $200</b> — chất lượng tốt hơn đáng kể nhưng <b>hơn 20x chi phí</b>.</li>
+<li><b>Opus 4.6:</b> bỏ thêm scaffolding (kể cả sprint decomposition). Planner vẫn hữu ích; evaluator trở nên <i>task-dependent</i> — giá trị nhất khi task ở <b>rìa năng lực của model</b>.</li>
+<li><b>OpenAI:</b> coi Codex harness là <i>versioned system</i> tiến hóa song song với model capabilities.</li>
+</ul>`,
+key:'Mỗi thành phần harness là một GIẢ THUYẾT về giới hạn hiện tại của model — phải biện minh cả QUALITY LIFT lẫn EXECUTION COST cho đúng model & phân bố task đang phục vụ. Khi model đổi, TEST LẠI GIẢ THUYẾT; nếu không harness sẽ tích tụ các lớp lỗi thời tăng latency, token cost, complexity và failure modes mới.'},
+
+s40: { n:'40', t:'13 failure modes thường gặp', en:'Common failure modes',
+body:`
+<p>Production harness phải làm cho failure <b>observable và classifiable</b>. Danh sách như một "checklist chẩn đoán":</p>
+<table class="failTable">
+<tr><th>Loại</th><th>Mô tả</th></tr>
+<tr><td>Tool-selection</td><td>Capability có, nhưng model chọn sai tool.</td></tr>
+<tr><td>Tool-contract</td><td>Tool đúng, nhưng arguments không hợp lệ.</td></tr>
+<tr><td>Observation</td><td>Action thành công, nhưng thông tin trả về nhiễu/mơ hồ/thiếu.</td></tr>
+<tr><td>Context</td><td>Thông tin quan trọng bị bỏ, stale, chôn lấp, hoặc mất do compaction.</td></tr>
+<tr><td>State</td><td>Mất dấu tiến độ, approvals, plans, hoặc hành động trước.</td></tr>
+<tr><td>Environment</td><td>Packages/files/browser state/resources/permissions khác giả định.</td></tr>
+<tr><td>Verification</td><td>Model tuyên bố thành công mà không test kết quả bên ngoài.</td></tr>
+<tr><td>Authorization</td><td>Bị chặn khỏi việc hợp lệ, hoặc được cấp nhiều quyền hơn cần.</td></tr>
+<tr><td>Recovery</td><td>Retry nhân bản side effect, hoặc restart không reconcile được control state với world state.</td></tr>
+<tr><td>Coordination</td><td>Subagents trùng việc, lệch giả định, tốn nhiều tài nguyên điều phối hơn giải task.</td></tr>
+<tr><td>Budget</td><td>Run tiêu hết turns/time/tokens/cost/concurrency trước khi tới terminal state thành công.</td></tr>
+<tr><td>Provenance / prompt-injection</td><td>Dữ liệu tool không tin cậy, nội dung retrieve, stored state, skills, subagent output bị coi là instruction có thẩm quyền → chuyển hướng agent.</td></tr>
+<tr><td>Skill-induced</td><td>Skill load đúng chủ đề nhưng khiến việc bắt buộc bị làm sai/bỏ sót, hoặc thêm procedure thừa gây efficiency regression đo được.</td></tr>
+</table>`,
+key:'Harness engineering phần lớn là công việc biến các loại failure rộng này thành thuộc tính hệ thống OBSERVABLE và TESTABLE — chứ không phải sửa từng ca riêng lẻ.'},
+
+s41: { n:'41', t:'12 ngộ nhận phổ biến', en:'Common misconceptions',
+body:`
+<div class="mis">
+<div class="misRow"><div class="q">"Harness là system prompt."</div><div class="a"><b>Không.</b> Instruction chỉ là một phần; harness còn sở hữu state, tool dispatch, approvals, compaction, recovery, budgets, verification.</div></div>
+<div class="misRow"><div class="q">"Harness là sandbox."</div><div class="a"><b>Không.</b> Harness điều khiển công việc; sandbox chỉ là MỘT NƠI công việc chạy.</div></div>
+<div class="misRow"><div class="q">"MCP là agent."</div><div class="a"><b>Không.</b> MCP chuẩn hóa capability surfaces; agent loop & policies vẫn cần orchestration riêng.</div></div>
+<div class="misRow"><div class="q">"Context window = memory."</div><div class="a"><b>Không.</b> Durable state có thể nằm ngoài context hiện tại.</div></div>
+<div class="misRow"><div class="q">"Compaction giữ nguyên hội thoại."</div><div class="a"><b>Không.</b> Summary là biểu diễn mất mát, trừ khi thông tin bỏ đi còn recoverable ở chỗ khác.</div></div>
+<div class="misRow"><div class="q">"Càng nhiều tool càng tốt."</div><div class="a"><b>Không.</b> Overlap + kết quả nhiễu làm selection & reasoning khó hơn.</div></div>
+<div class="misRow"><div class="q">"Có human approval là chạy gì cũng an toàn."</div><div class="a"><b>Không.</b> Approval và environmental containment giải quyết hai bài toán khác nhau.</div></div>
+<div class="misRow"><div class="q">"Tool fail thì cứ retry."</div><div class="a"><b>Không tự động.</b> Hành động có side effect có thể cần idempotency/dedup semantics.</div></div>
+<div class="misRow"><div class="q">"Agent nói xong là xong."</div><div class="a"><b>Không.</b> Self-report yếu hơn observable verification.</div></div>
+<div class="misRow"><div class="q">"Nhiều agent hơn là tốt hơn."</div><div class="a"><b>Không phổ quát.</b> Coordination cost có thể lấn át trên công việc tuần tự chặt.</div></div>
+<div class="misRow"><div class="q">"Model tốt hơn → mọi cải tiến harness cũ vẫn hữu ích."</div><div class="a"><b>Không.</b> Scaffolding có thể trở nên không cần thiết khi hành vi model đổi.</div></div>
+<div class="misRow"><div class="q">"Skill chỉ là prompt template vô hại."</div><div class="a"><b>Không.</b> Skill chứa instruction, resources và executable scripts; third-party skill nên được coi là code/config mang provenance — review, sandbox, approval-gate theo capability.</div></div>
+</div>`,
+key:'Mỗi ngộ nhận ở đây đều là một cái bẫy thiết kế. Học thuộc 12 câu này là cách nhanh nhất để không mắc lỗi kiến trúc cơ bản.'},
+
+s42: { n:'42', t:'Mental model production: 15 câu hỏi kiểm tra', en:'A production mental model',
+body:`
+<p>Khi đánh giá một agent system, hỏi 15 câu này:</p>
+<ol>
+<li><b>Model thực sự nhận được gì?</b> — Instructions, history, tool schemas, retrieved state, summaries, artifacts.</li>
+<li><b>Ai điều khiển loop?</b> — Application code, managed harness, workflow engine, hay agent khác.</li>
+<li><b>Những action nào available?</b> — Function tools, MCP tools, shell, browser, files, APIs, subagents.</li>
+<li><b>Action thực thi ở đâu?</b> — Trusted process, local machine, container, VM, remote service.</li>
+<li><b>Cái gì sống sót qua turn / crash?</b> — Session events, files, snapshots, external side effects.</li>
+<li><b>Luật nào được ÉP bằng máy?</b> — Schemas, mounts, network boundaries, approvals, tests, budgets.</li>
+<li><b>Errors biểu diễn thế nào?</b> — Fatal exception, retry, model-visible observation, human escalation.</li>
+<li><b>Action nào an toàn để retry?</b> — Idempotent, deduplicated, hay không cả hai.</li>
+<li><b>Agent lấy ground truth bằng cách nào?</b> — Tests, logs, browser state, database state, external responses.</li>
+<li><b>Cái gì chứng minh completion?</b> — Model claim, deterministic validator, external state, evaluator, hay con người.</li>
+<li><b>Run dừng thế nào nếu mãi không thành công?</b> — Turn/time/token/tool/cost/policy budgets.</li>
+<li><b>Sau gián đoạn thì sao?</b> — Resume, retry, reprovision, rollback, restart.</li>
+<li><b>Observation không tin cậy có mang instruction được không?</b> — Web data, tool output, files, memory, loaded skills, subagent reports.</li>
+<li><b>Subagents được coordinate thế nào?</b> — Task boundaries, shared state, merge policy, concurrency limits.</li>
+<li><b>Harness được evaluate thế nào?</b> — Ablations, representative tasks, stable environments, outcome metrics.</li>
+</ol>`,
+key:'A system that cannot answer these questions may still work in a demo. It is much harder to reason about in production. — Trả lời không nổi 15 câu này thì demo vẫn chạy được, nhưng production thì không thể lý giải nổi.'},
+
+s43: { n:'43', t:'Bức tranh hoàn chỉnh', en:'The complete mental model',
+body:`
+<div class="formula">              Durable session / task state
+                       │
+             ┌─────────▼──────────────────────┐
+             │            HARNESS             │
+             │  context selection             │
+             │  model loop                    │
+             │  tool routing                  │
+             │  policy / approval             │
+             │  verification                  │
+             │  retry / recovery              │
+             │  budgets                       │
+             └───┬────────────────────▲───────┘
+      context    │                    │  observation
+                 ▼                    │
+             ┌───────┐        ┌───────────────────────┐
+  Task ────► │ MODEL │──action►│ Tools / MCP / Sandboxes│
+             └───────┘        │ Files / APIs / Browser │
+                              └───────────────────────┘
+
+  Hard boundaries: permissions · credentials · filesystem · network · schemas · budgets
+  Feedback: tests · UI state · logs · metrics · traces · outcomes · graders</div>
+<h3>Các câu chốt của cả cuốn sách</h3>
+<ul>
+<li><b>Model</b> cung cấp learned capability; <b>harness</b> quyết định capability đó được nối vào công việc thế nào.</li>
+<li><b>Persistent session/state</b> quyết định cái gì sống sót qua turn/restart.</li>
+<li><b>Context policy</b> quyết định model nhìn thấy gì bây giờ.</li>
+<li><b>Execution environment</b> quyết định cái gì thực sự xảy ra được.</li>
+<li><b>Permissions & containment</b> quyết định failure chạm tới đâu.</li>
+<li><b>Feedback</b> nói cho hệ biết hành động có hiệu quả không.</li>
+<li><b>Verification</b> quyết định "done" có bằng chứng hay không.</li>
+<li><b>Recovery</b> quyết định công việc có tiếp tục được sau gián đoạn không.</li>
+<li><b>Evaluation</b> quyết định harness đang giúp việc hay chỉ thêm máy móc.</li>
+</ul>`,
+key:'Đó là toàn bộ harness engineering: model cung cấp năng lực — harness quyết định năng lực đó được nối vào công việc như thế nào, và mọi mắt xích đều phải kiểm chứng được bằng bằng chứng bên ngoài model.'},
+};
+
+/* =========================================================
+   QUIZ — 40 câu, mỗi lượt rút 15 câu ngẫu nhiên
+   ========================================================= */
+const QUIZ = [
+{q:'Điểm khác biệt cốt lõi giữa một "model call" và một "agent" theo handbook?',
+ o:['Agent dùng model lớn hơn','Model output tham gia vòng tương tác có kiểm soát với external state','Agent có system prompt dài hơn','Agent luôn có nhiều tool hơn'],
+ a:1, e:'Mục 1 — ranh giới thật là vòng tương tác với external state, không phải nhãn "chatbot vs agent".'},
+{q:'Trong mental model agent system ≈ model + harness + environment, harness đóng vai gì?',
+ o:['Cung cấp learned capability','Chứa external state','Quyết định inference được nối vào hành động và lặp theo thời gian thế nào','Thay thế model khi model lỗi'],
+ a:2, e:'Mục 1 — model = capability, environment = state, harness = cầu nối & vòng lặp.'},
+{q:'Trong vòng lặp tối thiểu, c_t = G(s_t) biểu diễn gì?',
+ o:['Context được chọn cho lần gọi model kế tiếp','Action model đề xuất','Observation từ environment','State sau khi cập nhật'],
+ a:0, e:'Mục 2 — G là hàm chọn context từ state.'},
+{q:'"Session" trong định nghĩa của handbook là gì?',
+ o:['Bộ nhớ vĩnh viễn của model','Container logic của history/state; durability phụ thuộc implementation','Nơi chạy code an toàn','Tập tool được expose'],
+ a:1, e:'Mục 4 — session là container logic; độ bền tùy cách implement (ví dụ append-only log).'},
+{q:'Agent-Computer Interface (ACI) nhấn mạnh điều gì?',
+ o:['Dùng shell luôn là tốt nhất','Interface cho human tự động tối ưu cho model','Thiết kế interface là biến thực nghiệm ảnh hưởng đến hiệu năng agent','Model không cần interface'],
+ a:2, e:'SWE-agent — mục 5. Interface design được đo như một biến, không giả định.'},
+{q:'Bộ 4 thuộc tính để phân tích tool hướng-agent là gì?',
+ o:['Speed, Cost, Safety, Logging','Affordance, Contract, Observation, Feedback','Input, Output, Cache, Retry','Name, Version, Owner, Docs'],
+ a:1, e:'Mục 6 — làm gì / yêu cầu thế nào / trả về gì / có giúp bước tiếp không.'},
+{q:'C_tool = C_selection + C_observation nghĩa là gì?',
+ o:['Chi phí chọn đúng tool/args + gánh nặng tiêu thụ kết quả trả về','Chi phí build tool + chi phí maintain','Chi phí token + chi phí tiền','Chi phí model + chi phí sandbox'],
+ a:0, e:'Mục 7 — tool design ảnh hưởng cả lúc chọn lẫn lúc đọc kết quả.'},
+{q:'Vì sao nhiều tool hơn có thể làm agent kém hơn?',
+ o:['Vì tool chiếm RAM','Vì mỗi tool thêm là một lựa chọn thêm, dễ overlap gây quyết định mơ hồ','Vì model không hỗ trợ nhiều tool','Vì tool luôn tăng chi phí mạng'],
+ a:1, e:'Mục 8 — tool count không phải thước đo đơn điệu của năng lực.'},
+{q:'Kết quả tool tốt nên được đánh giá thế nào? (đúng nhất)',
+ o:['Chỉ cần đúng về mặt dữ liệu','Trả thông tin cho quyết định kế tiếp, bỏ payload vô can, giữ identifiers, giải thích truncation','Càng nhiều chi tiết càng tốt','Luôn trả full bản ghi'],
+ a:1, e:'Mục 9 — tool output là context engineering.'},
+{q:'Khi tool fail, dạng kết quả nào giúp model phục hồi tốt nhất?',
+ o:['"Error."','Raw traceback dài','Lỗi có cấu trúc: reason, side_effects, retryable, gợi ý','Im lặng dừng run'],
+ a:2, e:'Mục 10 — lỗi model-visible có ngữ nghĩa hành động được.'},
+{q:'Phát biểu nào ĐÚNG về MCP?',
+ o:['MCP là kiến trúc agent hoàn chỉnh','MCP quyết định cách schedule model loop','MCP là lớp tương tác chuẩn hóa capabilities; agent loop và policies vẫn cần orchestration riêng','MCP Tasks đã stable trong core spec'],
+ a:2, e:'Mục 11 — interoperable capability interface, không phải entire agent architecture.'},
+{q:'Trong MCP Tasks, tool result với isError: true nghĩa là gì ở tầng protocol?',
+ o:['Task bị failed','Task vẫn completed ở protocol level; JSON-RPC errors mới dùng failed state','Connection bị đứt','Model phải retry vô hạn'],
+ a:1, e:'Mục 11 — protocol state và tool outcome không nên bị gộp.'},
+{q:'Vì sao không nên nhồi mọi thứ vào context?',
+ o:['Vì tốn tiền','Vì capacity hữu hạn và nội dung vô can cạnh tranh attention','Vì model không đọc được văn bản dài','Vì luật dữ liệu'],
+ a:1, e:'Mục 12 — relevance và capacity là hai ràng buộc độc lập.'},
+{q:'Progressive disclosure là gì?',
+ o:['Giấu bớt thông tin khỏi user','Định hướng đủ dùng → thông tin sâu discoverable → load chi tiết khi cần','Load toàn bộ tài liệu trước','Xóa instruction cũ'],
+ a:1, e:'Mục 13 — availability ≠ relevance.'},
+{q:'Nghiên cứu skill-induced failures (2026) cho thấy gì?',
+ o:['Skill luôn cải thiện kết quả','307 ca lỗi xác nhận: 125 functional + 182 efficiency regressions (trên 2 benchmark cụ thể — không phải base rate phổ quát)','Skill không ảnh hưởng gì','Skill chỉ dành cho chatbot'],
+ a:1, e:'Mục 13 — kết luận: skill phải được evaluate, không được giả định có lợi.'},
+{q:'Vì sao phải tách durable history khỏi active context?',
+ o:['Để tiết kiệm ổ cứng','Hai bề mặt khác nhau: lưu không có nghĩa được thấy; thấy không có nghĩa được lưu','Vì model ghét history','Vì session log bị giới hạn dung lượng'],
+ a:1, e:'Mục 14 — persistent ≠ included; included ≠ persisted.'},
+{q:'Compaction có đặc tính gì?',
+ o:['Bảo toàn mọi chi tiết','Là lossy (C(H) ≠ H); là context transformation, không phải xóa durable history','Là nén không mất mát như zip','Chỉ áp dụng cho ảnh'],
+ a:1, e:'Mục 15 — câu hỏi kỹ thuật: cái gì được tóm tắt, cái gì phải còn truy hồi được.'},
+{q:'Case study Claude Code tháng 4/2026 chứng minh điều gì?',
+ o:['Model bị downgrade','Chất lượng agent có thể đổi bởi thay đổi tầng product/harness dù API/inference không đổi','Bug không bao giờ do harness','Prompt không quan trọng'],
+ a:1, e:'Mục 16 — prompt construction, reasoning settings, context retention đều là một phần hành vi của hệ agent deploy.'},
+{q:'Structured working state KHÔNG bao gồm cái nào?',
+ o:['Todo lists, progress notes','Git commits, feature status files','Hidden model memory','Output manifests'],
+ a:2, e:'Mục 17 — chúng là external representations, inspectable/versionable/recoverable.'},
+{q:'Câu hỏi nào SANDBOX trả lời (không phải harness)?',
+ o:['Model thấy gì tiếp theo?','Process chạm được file nào, chạy được lệnh nào, egress ra sao?','Tool call nào thực thi?','Có cần approval không?'],
+ a:1, e:'Mục 19 — sandbox = cái gì có thể chạm tới; harness = cái gì nên xảy ra tiếp.'},
+{q:'Vì sao tỷ lệ approve ~93% là vấn đề?',
+ o:['Vì user thích bấm nút','Vì approval fatigue: prompt quá thường xuyên làm giảm hiệu quả của cơ chế phê duyệt','Vì 93% là quá thấp','Vì approval không tồn tại'],
+ a:1, e:'Mục 20 — telemetry của Anthropic: approval nhiều → người dùng bấm theo quán tính.'},
+{q:'Red-team 24/25 lần exfiltrate credentials dạy điều gì?',
+ o:['Không cần bảo mật','Ranh giới tầng môi trường (filesystem, egress) là defense đứng vững khi intent checks thất bại','Nên cấm mọi file','Model đủ thông minh để tự chống'],
+ a:1, e:'Mục 20 — containment controls reachable capability, không phụ thuộc phán đoán model.'},
+{q:'Nguyên tắc "keep credentials out of untrusted execution" dựa trên đâu?',
+ o:['Nói model đừng đọc secrets','Resource không bao giờ vào sandbox thì không thể đọc trực tiếp từ sandbox','Mã hóa tên biến','Xóa logs định kỳ'],
+ a:1, e:'Mục 21 — instruction vs reachable state space: ranh giới cấu trúc mạnh hơn lời dặn.'},
+{q:'Provenance của observation được mô hình hóa thế nào?',
+ o:['(content, source, trust, time, permissions)','(text, tokens)','(user, bot)','(fast, slow)'],
+ a:0, e:'Mục 22 — mọi string không bình đẳng chỉ vì đều thành token.'},
+{q:'Trust escalation là gì?',
+ o:['Subagent tự nâng quyền','Parent agent mặc nhiên coi subagent output an toàn hơn raw tool output','Skill cài malware','User approve nhiều lần'],
+ a:1, e:'Mục 22 — subagent report cũng là một bề mặt tấn công.'},
+{q:'Completion khác termination thế nào?',
+ o:['Giống hệt nhau','Task complete ≠ turn budget exhausted; stop có thể là success/block/timeout/budget/failure/handoff','Termination luôn tốt hơn','Completion chỉ khi model nói xong'],
+ a:1, e:'Mục 23 — các trạng thái dừng không được gộp thành một chữ "done".'},
+{q:'Budget vector nên gồm những gì?',
+ o:['Chỉ tokens','Turns, tokens, time, cost, tools, concurrency','Chỉ tiền','CPU, RAM, disk'],
+ a:1, e:'Mục 24 — autonomy bị chặn bởi tài nguyên, không chỉ permission.'},
+{q:'τ-bench đánh giá thành công bằng cách nào?',
+ o:['Tin lời agent','So final database state với annotated goal state; pass^k đo độ nhất quán qua nhiều lần chạy','Chấm điểm văn phong','Đếm số token'],
+ a:1, e:'Mục 25 — completion gắn với observable state ngoài assertion của model.'},
+{q:'Khi nào nên dùng deterministic enforcement?',
+ o:['Khi property là mechanically decidable','Khi cần diễn giải nghệ thuật','Không bao giờ','Chỉ khi có approval của user'],
+ a:0, e:'Mục 26 — cái gì máy kiểm được rẻ thì đừng bắt model nhớ.'},
+{q:'Vì sao tách generator và evaluator?',
+ o:['Để tốn thêm tiền','Vì producing và judging là hai operation khác nhau, và evaluator cũng có thể sai nên cần được evaluate','Vì model không tự đánh giá được','Vì quy định'],
+ a:1, e:'Mục 27 — grader là một component fallible, không phải chân lý.'},
+{q:'Feedback loop "mạnh" cần gì?',
+ o:['Tool thay đổi được state','Tool thay đổi state VÀ expose được state kết quả để verify','Càng nhiều log càng tốt','Chỉ cần model tự báo cáo'],
+ a:1, e:'Mục 28 — nếu không thấy được hậu quả, agent đang bay mù.'},
+{q:'Vì sao retry tự động nguy hiểm?',
+ o:['Vì tốn tiền','Vì quanh non-idempotent side effects, retry có thể nhân bản hiệu ứng (charge 2 lần, gửi 2 email)','Vì mạng chậm','Vì log bị trùng'],
+ a:1, e:'Mục 31 — automatic retry là tool-specific policy, không phải universal strategy.'},
+{q:'Google Research phát hiện gì về multi-agent (180 cấu hình)?',
+ o:['Multi-agent luôn tốt hơn','Hiệu ứng phụ thuộc cấu trúc task: +80.9% trên Finance-Agent, nhưng giảm 39–70% trên PlanCraft','Multi-agent không bao giờ hoạt động','Chỉ cần 2 agent là tối ưu'],
+ a:1, e:'Mục 33 — delegation phải được biện minh bằng task decomposition.'},
+{q:'Agent legibility là gì?',
+ o:['Log đẹp','Làm thông tin agent cần trở nên discoverable từ hệ thống nó inspect được','Viết docs dài hơn','Đặt tên biến rõ'],
+ a:1, e:'Mục 34 — đẩy giả định quan trọng ra thành artifact inspectable.'},
+{q:'"Mechanisms are stronger than prose" nghĩa là gì?',
+ o:['Viết instruction dài hơn','Luật cơ học kiểm tra được thì encode thành test/linter thay vì dựa vào model nhớ','Dùng văn phong mạnh hơn','Bỏ hết instruction'],
+ a:1, e:'Mục 35 — đổi failure mode: trạng thái sai fail verification.'},
+{q:'Terminal-Bench 2.0 cho thấy điều gì?',
+ o:['Nhiều RAM làm model thông minh hơn','Agentic benchmark đo tương tác giữa hành vi model và tài nguyên runtime; nên hoài nghi gap dưới 3pp thiếu methodology','Benchmark không bị ảnh hưởng bởi hạ tầng','CPU không quan trọng'],
+ a:1, e:'Mục 38 — 6pp chênh lệch; 1x–3x infra fail giảm nhưng success trong nhiễu (p=0.40).'},
+{q:'"Every harness component is a hypothesis" nghĩa là gì?',
+ o:['Harness nên bất biến','Mỗi component giả định về giới hạn hiện tại của model; khi model đổi phải test lại, nếu không sẽ tích tụ dead weight','Cần viết test cho mọi dòng code','Component nào cũng có bug'],
+ a:1, e:'Mục 39 — RetroForge: 20 phút/$9 solo vs 6 giờ/$200 fuller harness.'},
+{q:'Đâu là verification failure?',
+ o:['Model chọn sai tool','Model tuyên bố thành công mà không test kết quả bên ngoài','Package thiếu','Budget cạn'],
+ a:1, e:'Mục 40 — self-report yếu hơn observable verification.'},
+{q:'Đâu KHÔNG phải misconception theo handbook?',
+ o:['"Context window equals memory"','"If a tool failed, retry it"','"Harness cần được evaluate và test lại khi model đổi"','"MCP is the agent"'],
+ a:2, e:'Mục 41 — câu này ĐÚNG; ba câu còn lại là ngộ nhận.'},
+{q:'Bộ 15 câu hỏi production dùng để làm gì?',
+ o:['Phỏng vấn tuyển dụng','Đánh giá một hệ agent: model thấy gì, ai điều khiển loop, cái gì sống sót, cái gì chứng minh completion…','Tính chi phí token','Đo tốc độ model'],
+ a:1, e:'Mục 42 — trả lời không nổi thì demo chạy được nhưng production khó lý giải.'},
+];
+
+/* =========================================================
+   FLASHCARDS
+   ========================================================= */
+const CARDS = [
+['Agent harness','Runtime & cơ chế điều khiển quanh model, cho phép nó hành động qua nhiều bước: context, tool routing, state, approvals, recovery…'],
+['Harness engineering','Kỷ luật rộng hơn: thiết kế interface, context policy, state, environment, controls, feedback, recovery, verification cho công việc agentic đáng tin cậy.'],
+['Agent vs Workflow','Workflow: đường thực thi do application code quy định phần lớn. Agent: model tự chọn hành động/chiến lược động.'],
+['Minimal agent loop','c_t=G(s_t) → a_t=M(c_t) → (final | action) → o_t=E(a_t) → s_{t+1}=U(s_t,a_t,o_t). Act-observe-update-continue.'],
+['Control plane (harness)','Routing, approvals, tracing, recovery, run state — quyết định "cái gì nên xảy ra tiếp".'],
+['Execution plane (sandbox)','Đọc/ghi file, chạy lệnh, cài dependencies, snapshot state — quyết định "cái gì có thể chạm tới".'],
+['Session','Container logic của history/state cho công việc đang diễn ra; durability tùy implementation (có thể là append-only log).'],
+['ACI (Agent-Computer Interface)','Thiết kế interface cho model như một biến thực nghiệm — không giả định interface cho human là tối ưu cho LM (SWE-agent).'],
+['Affordance','Tool LÀM ĐƯỢC GÌ — operation surface.'],
+['Contract','Model YÊU CẦU thao tác bằng cách nào — schema, tham số.'],
+['Observation','Thông tin TRẢ VỀ sau khi tool chạy.'],
+['Feedback','Kết quả có LÀM HÀNH ĐỘNG ĐÚNG TIẾP THEO DỄ HƠN không.'],
+['C_tool','C_selection + C_observation: chi phí chọn đúng tool/args + gánh nặng tiêu thụ kết quả trả về.'],
+['High-signal result','Kết quả tool trả đủ thông tin cho quyết định kế tiếp, bỏ payload vô can, giữ identifiers, giải thích truncation.'],
+['Model-visible error','Lỗi trả về cho model để phục hồi: reason, side_effects, retryable, gợi ý bước tiếp — thay vì "Error." mù mờ.'],
+['MCP','Lớp chuẩn hóa interface giữa AI app và capabilities (prompts/resources/tools). KHÔNG quyết định loop, context, completion, approval, retry…'],
+['MCP Tasks (draft)','Async task handle cho tools/call; tasks/get/update/cancel; khuyến nghị persist task IDs để polling resume sau crash.'],
+['Active context','Thông tin cấp cho MỘT lần gọi model; do harness chọn lọc từ state + nguồn khác.'],
+['Durable session state','History bền vững nằm ngoài context window (ví dụ append-only log); retrieve từng lát cắt khi cần.'],
+['Progressive disclosure','Orient đủ dùng → làm thông tin sâu discoverable → load chi tiết khi task cần. Availability ≠ relevance.'],
+['Agent Skills','Gói instruction + resources + scripts, load khi relevant. Phải được evaluate (307 ca lỗi đã xác nhận) và quản provenance như third-party code.'],
+['Compaction','Biến đổi context LOSSY: C(H) ≠ H. Là context transformation — không đồng nghĩa xóa durable history.'],
+['Structured working state','Artifact ngoài model: todos, issue trackers, progress notes, git commits, feature status files, manifests… inspectable & recoverable.'],
+['Sandbox','Ranh giới cô lập: file nào, lệnh nào, network nào, credentials nào, state nào với tới được.'],
+['Containment','Kiểm soát REACHABLE CAPABILITY: filesystem boundaries, egress rules, VMs, credential isolation. Khác với approval (kiểm soát quyết định).'],
+['Approval fatigue','Prompt phê duyệt quá thường xuyên làm giảm hiệu quả (~93% approve trong telemetry Claude Code).'],
+['Provenance','o_i = (content, source, trust, time, permissions). System instruction và text scrape từ web không cùng thẩm quyền dù cùng thành token.'],
+['Trust escalation','Parent agent mặc nhiên coi subagent output là an toàn hơn raw tool output — một lỗ hổng.'],
+['Stopping conditions','Luật dừng: final output, verifiable predicate, human input, guardrail, terminal failure, budget cạn, cancellation.'],
+['Budgets','(turns, tokens, time, cost, tools, concurrency). Biến "keep trying" thành operational policy.'],
+['Verification vs self-report','Claim ≠ evidence. Xong = reproduction hết fail, tests pass, state đổi đúng — observable bên ngoài model.'],
+['pass^k','Chỉ số của τ-bench đo mức thành công NHẤT QUÁN qua k lần chạy lặp lại.'],
+['Idempotency','f(f(s)) = f(s). set_status thường idempotent; charge/send/create thì không — cần idempotency keys, dedup records…'],
+['Durable event log','Ghi nhớ requested/observed để resume — nhưng KHÔNG tự làm external side effect an toàn để lặp lại.'],
+['Agent legibility','Làm thông tin agent cần discoverable từ hệ thống nó inspect được; đẩy tribal knowledge ra thành artifact.'],
+['Eval harness','Hạ tầng ĐO: chạy task end-to-end, provision môi trường, ghi trials, chạy graders, tổng hợp kết quả.'],
+['measured performance','F(model, harness, environment, task, grader) — đổi harness/environment đổi kết quả dù model weights không đổi.'],
+['Harness assumption','Mỗi component là giả thuyết về giới hạn hiện tại của model — khi model đổi phải test lại, kẻo tích tụ dead weight.'],
+];
+
+/* =========================================================
+   REFERENCE (Bảng tra)
+   ========================================================= */
+const REFS = [
+{title:'Phần 1 — Luận điểm & định hướng & mục lục', content:`
+<p class="muted small">Handbook gốc: "Understanding Harness Engineering" — @techNmak, Special Topic trong series Understanding AI. Bản khóa học này là ghi chú học tập tiếng Việt, tóm lược + giảng giải 43 mục.</p>
+<p><b>Luận điểm:</b> a capable language model is not, by itself, a working agent.</p>`},
+{title:'Phần 2 — 26 nguồn tham khảo (nhóm theo chủ đề)', content:`
+<p><b>Nghiên cứu nền tảng:</b></p>
+<ul class="small">
+<li>ReAct: Synergizing Reasoning and Acting in LMs — ICLR 2023 (arXiv 2210.03629)</li>
+<li>SWE-agent: Agent-Computer Interfaces — NeurIPS 2024 (arXiv 2405.15793)</li>
+<li>AgentDojo: prompt injection benchmark — NeurIPS 2024 D&B</li>
+<li>τ-bench: Tool-Agent-User Interaction — ICLR 2025 (arXiv 2406.12045)</li>
+<li>ToolSandbox: stateful conversational eval — NAACL 2025 Findings</li>
+<li>Agent Skills Can Be Harmful: 307 skill-induced failures — arXiv 2608.11888, 2026</li>
+</ul>
+<p><b>Anthropic engineering:</b> How we contain Claude across products (2026) · Building effective agents · Writing effective tools for agents (2025) · Effective context engineering · Effective harnesses for long-running agents (2025) · Demystifying evals (2026) · Quantifying infrastructure noise in agentic coding evals (2026) · Harness design for long-running application development (2026) · Scaling Managed Agents (2026) · An update on recent Claude Code quality reports (2026) · Agent Skills docs.</p>
+<p><b>OpenAI:</b> Harness engineering: leveraging Codex in an agent-first world (2026) · Agents API & SDK & Sandbox docs · Introducing the Agents API (2026).</p>
+<p><b>Khác:</b> Microsoft Agent Framework — Agent Harness & Agent Skills docs · Google Cloud — Introducing Agent Executor (2026) · Google Research — Towards a science of scaling agent systems (2026) · MCP specs (core server, extensions, Tasks draft) · RFC 9110 HTTP Semantics §9.2.2.</p>
+<p class="muted small">Toàn bộ URL chi tiết xem phần REFERENCES trang 47–48 của PDF gốc.</p>`},
+];
+
+/* =========================================================
+   APP STATE
+   ========================================================= */
+const LS_PROG='he_progress_v1', LS_THEME='he_theme_v1', LS_CARDS='he_cards_v1';
+let done = new Set(); let current = {view:'home', sec:'s0'}; let quizState=null; let cardState=null;
+
+try { const p=JSON.parse(localStorage.getItem(LS_PROG)||'[]'); done=new Set(p); } catch(e){}
+try { const th=localStorage.getItem(LS_THEME); if(th) document.documentElement.dataset.theme=th; } catch(e){}
+
+function saveProg(){ try{ localStorage.setItem(LS_PROG, JSON.stringify([...done])); }catch(e){} updateProgress(); }
+function updateProgress(){
+  const total=Object.keys(SECTIONS).length;
+  const pct=Math.round(done.size/total*100);
+  document.getElementById('progressBar').style.width=pct+'%';
+}
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1900);
+}
+function secTitle(id){ const s=SECTIONS[id]; return s ? (s.n==='0'?'':s.n+'. ')+s.t : ''; }
+function partOf(id){ return PARTS.find(p=>p.sections.includes(id)); }
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+function renderSidebar(){
+  const sb=document.getElementById('sidebar');
+  let h=`<div class="homeLink ${current.view==='home'?'active':''}" data-home="1">🏠 Tổng quan khóa học</div>`;
+  for(const part of PARTS){
+    const tot=part.sections.length;
+    const dn=part.sections.filter(s=>done.has(s)).length;
+    h+=`<div class="partBlock">
+      <div class="partHead" data-part="${part.id}">
+        <span class="partNum">${part.num}</span>
+        <span class="partTitle">${part.title}</span>
+        <span class="partCount">${dn}/${tot}</span>
+      </div><ul class="secList">`;
+    for(const sid of part.sections){
+      const s=SECTIONS[sid]; const isDone=done.has(sid);
+      const act=(current.view==='learn'&&current.sec===sid)?'active':'';
+      h+=`<li class="secItem ${act} ${isDone?'done-sec':''}" data-sec="${sid}">
+        <span class="done">${isDone?'✅':'·'}</span><span class="n">${s.n}</span><span class="t">${s.t}</span></li>`;
+    }
+    h+=`</ul></div>`;
+  }
+  sb.innerHTML=h;
+  sb.querySelector('[data-home]')?.addEventListener('click',()=>{ current.view='home'; setTab('home'); render(); closeSidebar(); });
+  sb.querySelectorAll('.partHead').forEach(el=>el.addEventListener('click',()=>{ openPart(el.dataset.part); }));
+  sb.querySelectorAll('.secItem').forEach(el=>el.addEventListener('click',()=>{ openSection(el.dataset.sec); }));
+}
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('scrim').classList.remove('show'); }
+function openSection(id){ current={view:'learn',sec:id}; setTab('learn'); render(); closeSidebar(); window.scrollTo({top:0}); }
+function openPart(pidd){ current={view:'part',part:pidd}; setTab('learn'); render(); closeSidebar(); window.scrollTo({top:0}); }
+
+/* =========================================================
+   VIEWS
+   ========================================================= */
+function render(){
+  renderSidebar(); updateProgress();
+  const v=document.getElementById('view');
+  if(current.view==='home') v.innerHTML=viewHome();
+  else if(current.view==='part') v.innerHTML=viewPart(current.part);
+  else if(current.view==='learn') v.innerHTML=viewSection(current.sec);
+  else if(current.view==='quiz') v.innerHTML=viewQuiz();
+  else if(current.view==='cards') v.innerHTML=viewCards();
+  else if(current.view==='ref') v.innerHTML=viewRef();
+  bindView();
+}
+
+function viewHome(){
+  const total=Object.keys(SECTIONS).length;
+  return `
+  <div class="hero">
+    <div class="eyebrow">Khóa học tương tác · ghi chú tiếng Việt</div>
+    <h1>Understanding<br>Harness Engineering</h1>
+    <p class="sub">Từ agent loop và giao diện tool đến context, sandbox, verification và công việc chạy dài hạn — <b>toàn bộ tầng hệ thống bao quanh model</b>, giải thích như một người thầy.</p>
+    <div class="statRow">
+      <div class="stat"><div class="v">${total}</div><div class="l">bài học</div></div>
+      <div class="stat"><div class="v">8</div><div class="l">phần chủ đề</div></div>
+      <div class="stat"><div class="v">${QUIZ.length}</div><div class="l">câu hỏi quiz</div></div>
+      <div class="stat"><div class="v">${CARDS.length}</div><div class="l">flashcards</div></div>
+    </div>
+    <div class="ctaRow">
+      <button class="btn primary" data-go="sec:s1">▶ Bắt đầu học (Mục 1)</button>
+      <button class="btn" data-go="sec:s0">Đọc định hướng</button>
+      <button class="btn" data-go="quiz">Làm quiz thử</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">Luận điểm trung tâm</h2>
+    <p>Một language model giỏi <b>chưa đủ</b> để tạo ra một working agent. Phải có thứ gì đó quyết định model nhìn thấy gì, cho nó làm được gì, thực thi hành động, trả kết quả về, lưu trạng thái, phân quyền, phục hồi sau lỗi, quyết định khi nào dừng và xác minh xem task có thật sự thành công không. Cái "máy móc bao quanh" đó là <b>agent harness</b>.</p>
+    <div class="grid c2" style="margin-top:14px">
+      <div class="card" style="margin:0;background:var(--bg-soft)">
+        <b>Agent harness</b>
+        <p class="small muted" style="margin:6px 0 0">Runtime & cơ chế điều khiển nằm ngay quanh model, cho phép nó hành động qua nhiều bước.</p>
+      </div>
+      <div class="card" style="margin:0;background:var(--bg-soft)">
+        <b>Harness engineering</b>
+        <p class="small muted" style="margin:6px 0 0">Kỷ luật rộng hơn: interface, context policy, state, environment, controls, feedback, recovery, verification.</p>
+      </div>
+    </div>
+  </div>
+  <h2>Lộ trình 8 phần</h2>
+  <div class="grid c2">
+    ${PARTS.map(p=>{
+      const dn=p.sections.filter(s=>done.has(s)).length; const tot=p.sections.length;
+      return `<div class="card clickable partCard" data-part="${p.id}">
+        <div class="pc-top"><span class="partNum">${p.num}</span><span class="pc-title">${p.title}</span></div>
+        <div class="pc-sub">${p.sub}</div>
+        <div class="pc-prog"><i style="width:${Math.round(dn/tot*100)}%"></i></div>
+        <div class="small muted" style="margin-top:6px">${dn}/${tot} mục đã học</div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="keybox"><div class="lbl">Cách học hiệu quả</div>
+    <div class="txt">Học từng phần → làm quiz ngay → dùng flashcards để nhớ thuật ngữ → quay lại quiz sau vài ngày. Chủ động tự giải thích lại bằng lời của bạn là cách kiểm tra hiểu biết tốt nhất.</div>
+  </div>`;
+}
+
+function viewPart(pid){
+  const p=PARTS.find(x=>x.id===pid); if(!p) return '';
+  return `
+  <div class="metabar"><span class="tag">PHẦN ${p.num}</span></div>
+  <h1 style="font-size:30px">${p.title}</h1>
+  <p class="muted">${p.sub}</p>
+  <div class="grid c2" style="margin-top:18px">
+    ${p.sections.map(sid=>{ const s=SECTIONS[sid]; const isDone=done.has(sid); return `
+      <div class="card clickable" data-sec="${sid}">
+        <div class="small muted">Mục ${s.n} · ${isDone?'✅ đã học':'chưa học'}</div>
+        <div style="font-weight:800;margin:4px 0 6px">${s.t}</div>
+        <div class="small muted" style="font-style:italic">${s.en}</div>
+      </div>`; }).join('')}
+  </div>`;
+}
+
+function viewSection(id){
+  const s=SECTIONS[id]; if(!s) return '';
+  const p=partOf(id);
+  const ids=Object.keys(SECTIONS); const idx=ids.indexOf(id);
+  const prev=idx>0?ids[idx-1]:null, next=idx<ids.length-1?ids[idx+1]:null;
+  const isDone=done.has(id);
+  return `
+  <div class="metabar">
+    <span class="tag">PHẦN ${p.num} · ${p.title}</span>
+    <span>Mục ${s.n}/43</span><span>·</span><span>${s.en}</span>
+  </div>
+  <h1>${s.t}</h1>
+  ${s.body}
+  <div class="keybox"><div class="lbl">🔑 Điểm mấu chốt</div><div class="txt">${s.key}</div></div>
+  <div class="pagefoot">
+    <button class="btn ${isDone?'green':''}" data-toggle="${id}">${isDone?'✅ Đã học (bỏ đánh dấu)':'◻ Đánh dấu đã học'}</button>
+    <div style="display:flex;gap:8px">
+      ${prev?`<button class="btn" data-sec="${prev}">← Mục ${SECTIONS[prev].n}</button>`:''}
+      ${next?`<button class="btn primary" data-sec="${next}">Mục ${SECTIONS[next].n} →</button>`:`<button class="btn primary" data-go="quiz">Làm quiz →</button>`}
+    </div>
+  </div>`;
+}
+
+/* ---------- QUIZ ---------- */
+const QUIZ_N=15;
+function shuffle(a){ const r=a.slice(); for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; }
+function viewQuiz(){
+  if(!quizState){
+    return `
+    <h1>Quiz — kiểm tra hiểu biết</h1>
+    <p class="muted">Mỗi lượt rút ngẫu nhiên <b>${QUIZ_N} câu</b> từ kho ${QUIZ.length} câu. Trả lời xong từng câu sẽ thấy giải thích + tham chiếu mục tương ứng trong bài học.</p>
+    <div class="card" style="text-align:center;padding:38px">
+      <div style="font-size:44px">🧠</div>
+      <h2 style="margin:10px 0 4px">Sẵn sàng chưa?</h2>
+      <p class="muted small">Câu hỏi bám sát 43 mục — đừng đoán mò, hãy chọn theo hiểu biết thật.</p>
+      <button class="btn primary" data-quiz="start" style="margin-top:10px">▶ Bắt đầu ${QUIZ_N} câu</button>
+    </div>`;
+  }
+  const st=quizState;
+  if(st.i>=st.items.length) return viewQuizResult();
+  const q=st.items[st.i];
+  return `
+  <div class="qmeta"><span>Câu ${st.i+1} / ${st.items.length}</span><span>Đúng: ${st.score} ✓</span></div>
+  <div style="height:6px;background:var(--border);border-radius:3px;margin-bottom:18px;overflow:hidden">
+    <div style="height:100%;width:${Math.round(st.i/st.items.length*100)}%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .25s"></div>
+  </div>
+  <h2 style="margin-top:0">${q.q}</h2>
+  <div id="qopts">
+    ${q.o.map((opt,i)=>`<button class="qopt" data-qi="${i}">${String.fromCharCode(65+i)}. ${opt}</button>`).join('')}
+  </div>
+  <div class="qexpl" id="qexpl"><b>Giải thích:</b> ${q.e}</div>
+  ${st.answered?`<div style="margin-top:14px"><button class="btn primary" data-quiz="next">${st.i===st.items.length-1?'Xem kết quả →':'Câu tiếp theo →'}</button></div>`:''}`;
+}
+function viewQuizResult(){
+  const st=quizState; const pct=Math.round(st.score/st.items.length*100);
+  const msg = pct>=80?'Xuất sắc! Bạn nắm rất chắc tầng hệ thống.':pct>=60?'Khá tốt — ôn thêm các mục bị sai rồi làm lại.':'Hãy đọc lại các mục tương ứng và thử lượt khác — đây là lúc flashcards phát huy tác dụng.';
+  return `
+  <h1>Kết quả</h1>
+  <div class="scoreRing" style="background:conic-gradient(${pct>=60?'var(--green)':'var(--amber)'} ${pct}%, var(--border) ${pct}%)">
+    <div class="inner"><div>${pct}%</div><div class="sub">${st.score}/${st.items.length} đúng</div></div>
+  </div>
+  <p style="text-align:center" class="muted">${msg}</p>
+  <h3>Xem lại câu sai</h3>
+  ${st.items.map((q,i)=>{
+    const wrong = st.wrong.has(i);
+    return `<div class="card" style="padding:14px 18px;${wrong?'border-color:var(--red)':'border-color:var(--green)'}">
+      <div class="small ${wrong?'':'muted'}">${wrong?'❌':'✅'} Câu ${i+1}: ${q.q}</div>
+      <div class="small muted" style="margin-top:6px">Đáp án: <b style="color:var(--text)">${q.o[q.a]}</b></div>
+      <div class="small muted" style="margin-top:4px">${q.e}</div>
+    </div>`;
+  }).join('')}
+  <div class="pagefoot"><button class="btn primary" data-quiz="restart">🔄 Làm lượt khác (câu mới)</button>
+  <button class="btn" data-go="sec:s1">Ôn lại bài học</button></div>`;
+}
+function quizAnswer(i){
+  const st=quizState; if(st.answered) return;
+  const q=st.items[st.i]; st.answered=true;
+  if(i===q.a) st.score++; else st.wrong.add(st.i);
+  const opts=document.querySelectorAll('#qopts .qopt');
+  opts.forEach((el,k)=>{
+    el.classList.add('disabled');
+    if(k===q.a) el.classList.add('correct');
+    else if(k===i) el.classList.add('wrong');
+  });
+  document.getElementById('qexpl').classList.add('show');
+  const btn=document.createElement('div');
+  btn.style.marginTop='14px';
+  btn.innerHTML=`<button class="btn primary" data-quiz="next">${st.i===st.items.length-1?'Xem kết quả →':'Câu tiếp theo →'}</button>`;
+  document.getElementById('qexpl').after(btn);
+}
+function quizStart(){
+  const items=shuffle(QUIZ).slice(0,QUIZ_N);
+  quizState={items, i:0, score:0, answered:false, wrong:new Set()};
+  render();
+}
+function quizNext(){
+  quizState.i++; quizState.answered=false;
+  render();
+}
+
+/* ---------- CARDS ---------- */
+function viewCards(){
+  if(!cardState){
+    let known=[]; try{ known=JSON.parse(localStorage.getItem(LS_CARDS)||'[]'); }catch(e){}
+    cardState={order:shuffle(CARDS.map((_,i)=>i)), i:0, only:null, known:new Set(known)};
+  }
+  const st=cardState;
+  const c=CARDS[st.order[st.i]];
+  return `
+  <h1>Flashcards — thuật ngữ then chốt</h1>
+  <p class="muted">Bấm vào thẻ để lật. Đánh dấu "đã nhớ" để lọc ra những thẻ cần ôn.</p>
+  <div class="fcBar">
+    <button class="btn" data-card="shuffle">🔀 Xáo trộn</button>
+    <button class="btn ${st.only==='known'?'green':''}" data-card="filter-known">Chỉ thẻ đã nhớ</button>
+    <button class="btn ${st.only==='unknown'?'green':''}" data-card="filter-unknown">Chỉ thẻ chưa nhớ</button>
+  </div>
+  <div class="fcScene"><div class="fcard" id="fcard">
+    <div class="fcFace front"><div class="fcTerm">${c[0]}</div><div class="fcHint">bấm để xem định nghĩa 👆</div></div>
+    <div class="fcFace back"><div class="fcDef">${c[1]}</div><div class="fcHint">bấm để quay lại</div></div>
+  </div></div>
+  <div class="fcCounter">Thẻ ${st.i+1} / ${st.order.length} · Đã nhớ: ${st.known.size}/${CARDS.length}</div>
+  <div class="fcBar">
+    <button class="btn" data-card="prev">← Trước</button>
+    <button class="btn ${st.known.has(st.order[st.i])?'green':''}" data-card="known">${st.known.has(st.order[st.i])?'✅ Đã nhớ':'◻ Đánh dấu đã nhớ'}</button>
+    <button class="btn" data-card="next">Sau →</button>
+  </div>`;
+}
+function cardFlip(){ document.getElementById('fcard')?.classList.toggle('flip'); }
+function cardMove(d){
+  const st=cardState;
+  if(d>0) st.i=(st.i+1)%st.order.length; else st.i=(st.i-1+st.order.length)%st.order.length;
+  render();
+}
+function cardToggleKnown(){
+  const st=cardState; const idx=st.order[st.i];
+  if(st.known.has(idx)) st.known.delete(idx); else st.known.add(idx);
+  try{ localStorage.setItem(LS_CARDS, JSON.stringify([...st.known])); }catch(e){}
+  render();
+}
+function cardShuffle(){ cardState.order=shuffle(cardState.order); cardState.i=0; render(); toast('Đã xáo trộn 🔀'); }
+function cardFilter(mode){
+  const st=cardState;
+  if(st.only===mode){ st.only=null; st.order=shuffle(CARDS.map((_,i)=>i)); st.i=0; render(); return; }
+  const pred = mode==='known' ? i=>st.known.has(i) : i=>!st.known.has(i);
+  const ord=CARDS.map((_,i)=>i).filter(pred);
+  if(!ord.length){ toast('Không có thẻ nào trong nhóm này'); return; }
+  st.only=mode; st.order=shuffle(ord); st.i=0; render();
+}
+
+/* ---------- REF ---------- */
+function viewRef(){
+  const fails=[
+    ['Tool-selection','Capability có, nhưng model chọn sai tool.'],
+    ['Tool-contract','Tool đúng, nhưng arguments không hợp lệ.'],
+    ['Observation','Action thành công, nhưng thông tin trả về nhiễu, mơ hồ, hoặc thiếu.'],
+    ['Context','Thông tin quan trọng bị bỏ, stale, chôn lấp, hoặc mất do compaction.'],
+    ['State','Mất dấu tiến độ, approvals, plans, hoặc hành động trước.'],
+    ['Environment','Packages/files/browser state/resources/permissions khác giả định.'],
+    ['Verification','Model tuyên bố thành công mà không test kết quả bên ngoài.'],
+    ['Authorization','Bị chặn khỏi việc hợp lệ, hoặc được cấp nhiều quyền hơn cần.'],
+    ['Recovery','Retry nhân bản side effect, hoặc restart không reconcile được control state với world state.'],
+    ['Coordination','Subagents trùng việc, lệch giả định, tốn nhiều tài nguyên điều phối hơn giải task.'],
+    ['Budget','Run tiêu hết turns/time/tokens/cost/concurrency trước terminal state thành công.'],
+    ['Provenance / prompt-injection','Dữ liệu tool, nội dung retrieve, stored state, skills, subagent output bị coi là instruction có thẩm quyền → chuyển hướng agent.'],
+    ['Skill-induced','Skill load đúng chủ đề nhưng làm việc bắt buộc sai/sót, hoặc thêm procedure thừa gây efficiency regression.'],
+  ];
+  const q15=[
+    'Model thực sự nhận được gì? — instructions, history, tool schemas, retrieved state, summaries, artifacts.',
+    'Ai điều khiển loop? — application code, managed harness, workflow engine, hay agent khác.',
+    'Những action nào available? — function tools, MCP tools, shell, browser, files, APIs, subagents.',
+    'Action thực thi ở đâu? — trusted process, local machine, container, VM, remote service.',
+    'Cái gì sống sót qua turn kế tiếp / process crash? — session events, files, snapshots, external side effects.',
+    'Luật nào được ép bằng máy? — schemas, mounts, network boundaries, approvals, tests, budgets.',
+    'Errors được biểu diễn thế nào? — fatal exception, retry, model-visible observation, human escalation.',
+    'Action nào an toàn để retry? — idempotent, deduplicated, hay không cả hai.',
+    'Agent lấy ground truth bằng cách nào? — tests, logs, browser state, database state, external responses.',
+    'Cái gì chứng minh completion? — model claim, deterministic validator, external state, evaluator, human.',
+    'Run dừng thế nào nếu mãi không thành công? — turn/time/token/tool/cost/policy budgets.',
+    'Sau gián đoạn thì sao? — resume, retry, reprovision, rollback, restart.',
+    'Observation không tin cậy có mang instruction được không? — web data, tool output, files, memory, loaded skills, subagent reports.',
+    'Subagents được coordinate thế nào? — task boundaries, shared state, merge policy, concurrency limits.',
+    'Harness được evaluate thế nào? — ablations, representative tasks, stable environments, outcome metrics.',
+  ];
+  return `
+  <h1>Bảng tra cứu nhanh</h1>
+  <p class="muted">Cheat sheet dùng khi thiết kế, review hoặc debug một agent system.</p>
+
+  <div class="accItem open"><div class="accHead">⚠️ 13 failure modes thường gặp <span class="chev">›</span></div>
+    <div class="accBody">
+      <table class="failTable"><tr><th>Loại</th><th>Mô tả</th></tr>
+      ${fails.map(f=>`<tr><td>${f[0]}</td><td>${f[1]}</td></tr>`).join('')}
+      </table>
+    </div>
+  </div>
+
+  <div class="accItem"><div class="accHead">🚫 12 ngộ nhận phổ biến (bấm để xem) <span class="chev">›</span></div>
+    <div class="accBody">
+      <div class="mis">
+        <div class="misRow"><div class="q">"Harness là system prompt."</div><div class="a"><b>Không.</b> Instruction chỉ là một phần; harness còn sở hữu state, tool dispatch, approvals, compaction, recovery, budgets, verification.</div></div>
+        <div class="misRow"><div class="q">"Harness là sandbox."</div><div class="a"><b>Không.</b> Harness điều khiển công việc; sandbox chỉ là một nơi công việc chạy.</div></div>
+        <div class="misRow"><div class="q">"MCP là agent."</div><div class="a"><b>Không.</b> MCP chuẩn hóa capability surfaces; loop & policies vẫn cần orchestration riêng.</div></div>
+        <div class="misRow"><div class="q">"Context window = memory."</div><div class="a"><b>Không.</b> Durable state có thể nằm ngoài context hiện tại.</div></div>
+        <div class="misRow"><div class="q">"Compaction giữ nguyên hội thoại."</div><div class="a"><b>Không.</b> Summary là lossy trừ khi thông tin bỏ đi còn recoverable chỗ khác.</div></div>
+        <div class="misRow"><div class="q">"Càng nhiều tool càng tốt."</div><div class="a"><b>Không.</b> Overlap + kết quả nhiễu làm selection & reasoning khó hơn.</div></div>
+        <div class="misRow"><div class="q">"Có approval là chạy gì cũng an toàn."</div><div class="a"><b>Không.</b> Approval và containment giải quyết hai bài toán khác nhau.</div></div>
+        <div class="misRow"><div class="q">"Tool fail thì cứ retry."</div><div class="a"><b>Không tự động.</b> Side-effecting ops có thể cần idempotency/dedup semantics.</div></div>
+        <div class="misRow"><div class="q">"Agent nói xong là xong."</div><div class="a"><b>Không.</b> Self-report yếu hơn observable verification.</div></div>
+        <div class="misRow"><div class="q">"Nhiều agent hơn là tốt hơn."</div><div class="a"><b>Không phổ quát.</b> Coordination cost có thể lấn át trên công việc tuần tự chặt.</div></div>
+        <div class="misRow"><div class="q">"Model tốt hơn → mọi cải tiến harness cũ vẫn hữu ích."</div><div class="a"><b>Không.</b> Scaffolding có thể thành dead weight khi hành vi model đổi.</div></div>
+        <div class="misRow"><div class="q">"Skill chỉ là prompt template vô hại."</div><div class="a"><b>Không.</b> Chứa instruction + resources + scripts; phải coi như third-party code.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="accItem"><div class="accHead">📋 15 câu hỏi kiểm tra hệ agent production <span class="chev">›</span></div>
+    <div class="accBody"><ol class="q15">${q15.map(x=>`<li>${x}</li>`).join('')}</ol></div>
+  </div>
+
+  <div class="accItem"><div class="accHead">📖 Về tài liệu gốc <span class="chev">›</span></div>
+    <div class="accBody">
+      ${REFS.map(r=>`<h3 style="margin-top:6px">${r.title}</h3>${r.content}`).join('')}
+    </div>
+  </div>
+
+  <div class="keybox"><div class="lbl">Mẹo dùng</div>
+    <div class="txt">In trang này (hoặc bấm ⬇ PDF trên thanh tiêu đề) để có bản offline. Ctrl+P = in toàn bộ khóa học; nút ⬇ PDF xuất đầy đủ 43 mục.</div>
+  </div>`;
+}
+
+/* =========================================================
+   BIND / EVENTS
+   ========================================================= */
+function bindView(){
+  const v=document.getElementById('view');
+  v.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>{
+    const g=el.dataset.go;
+    if(g.startsWith('sec:')) openSection(g.slice(4));
+    else if(g==='quiz'){ setTab('quiz'); current.view='quiz'; render(); }
+  }));
+  v.querySelectorAll('[data-sec]').forEach(el=>el.addEventListener('click',()=>openSection(el.dataset.sec)));
+  v.querySelectorAll('[data-part]').forEach(el=>el.addEventListener('click',()=>openPart(el.dataset.part)));
+  v.querySelectorAll('[data-toggle]').forEach(el=>el.addEventListener('click',()=>{
+    const id=el.dataset.toggle;
+    if(done.has(id)){ done.delete(id); toast('Đã bỏ đánh dấu'); } else { done.add(id); toast('✅ Đã học xong mục này!'); }
+    saveProg(); render();
+  }));
+  // quiz binds
+  v.querySelectorAll('[data-quiz]').forEach(el=>el.addEventListener('click',()=>{
+    const a=el.dataset.quiz;
+    if(a==='start'||a==='restart') quizStart();
+    else if(a==='next') quizNext();
+  }));
+  v.querySelectorAll('.qopt').forEach(el=>el.addEventListener('click',()=>quizAnswer(parseInt(el.dataset.qi,10))));
+  // cards binds
+  document.getElementById('fcard')?.addEventListener('click',cardFlip);
+  v.querySelectorAll('[data-card]').forEach(el=>el.addEventListener('click',()=>{
+    const a=el.dataset.card;
+    if(a==='next'){cardMove(1);return;} if(a==='prev'){cardMove(-1);return;}
+    if(a==='known'){cardToggleKnown();return;} if(a==='shuffle'){cardShuffle();return;}
+    if(a==='filter-known'){cardFilter('known');return;} if(a==='filter-unknown'){cardFilter('unknown');return;}
+  }));
+  // accordions (ref)
+  v.querySelectorAll('.accHead').forEach(el=>el.addEventListener('click',()=>el.parentElement.classList.toggle('open')));
+}
+
+function setTab(view){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===view));
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  const view=t.dataset.view;
+  if(view==='learn'){ current={view:current.view==='part'?'part':'learn', part:current.part, sec:current.sec||'s0'}; }
+  else current.view=view;
+  setTab(view); render(); window.scrollTo({top:0});
+}));
+document.getElementById('brandBtn').addEventListener('click',()=>{ current.view='home'; setTab('home'); render(); window.scrollTo({top:0}); });
+document.getElementById('menuBtn').addEventListener('click',()=>{
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('scrim').classList.toggle('show');
+});
+document.getElementById('scrim').addEventListener('click',closeSidebar);
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  const cur=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=cur;
+  try{ localStorage.setItem(LS_THEME,cur); }catch(e){}
+  toast(cur==='dark'?'🌙 Chế độ tối':'☀️ Chế độ sáng');
+});
+document.addEventListener('keydown',e=>{
+  if(current.view!=='learn') return;
+  const ids=Object.keys(SECTIONS); const idx=ids.indexOf(current.sec);
+  if(e.key==='ArrowRight'&&idx<ids.length-1) openSection(ids[idx+1]);
+  if(e.key==='ArrowLeft'&&idx>0) openSection(ids[idx-1]);
+});
+
+/* ---------- FLOWS (design.html) ---------- */
+document.getElementById('flowsBtn').addEventListener('click',()=>window.open('design.html','_blank'));
+
+/* ---------- EXPORT PDF ---------- */
+document.getElementById('printBtn').addEventListener('click',()=>{
+  const root=document.createElement('div'); root.className='print-root';
+  let h=`<h1>Understanding Harness Engineering</h1>
+  <p class="muted">Khóa học tương tác — bản in đầy đủ 43 mục. Nguồn: handbook của @techNmak (Understanding AI Series); ghi chú học tập tiếng Việt.</p>`;
+  for(const p of PARTS){
+    h+=`<div class="ppart">Phần ${p.num} — ${p.title}</div>`;
+    for(const sid of p.sections){
+      const s=SECTIONS[sid];
+      h+=`<div class="psec"><h2>${s.n==='0'?'':'Mục '+s.n+' — '}${s.t}</h2><div class="muted small">${s.en}</div>${s.body}
+      <div class="keybox"><div class="lbl">Điểm mấu chốt</div><div class="txt">${s.key}</div></div></div>`;
+    }
+  }
+  root.innerHTML=h;
+  document.body.appendChild(root);
+  document.body.classList.add('printing');
+  window.print();
+  setTimeout(()=>{ root.remove(); document.body.classList.remove('printing'); },400);
+});
+
+/* ---------- INIT ---------- */
+updateProgress();
+render();
+</script>
+</body>
+</html>

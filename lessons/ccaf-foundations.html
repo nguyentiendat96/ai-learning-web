@@ -1,0 +1,2630 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Certified Associate: bộ 9 module — Claude · CCAO-F · bản cũ</title>
+<link rel="stylesheet" href="../assets/course.css?v=2">
+<style>
+  .toc li { margin: .3rem 0; }
+  /* heading numbers are written in the source, so the CSS counter is off here */
+  h2 { counter-increment: none; }
+  h2::before { content: none; }
+  @media (max-width: 760px) { .toc { display: block; } }
+</style>
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Claude · CCAO-F · bản cũ</div>
+    <h1>Claude Certified Associate: bộ 9 module</h1>
+    <p class="subtitle">Bộ 9 module theo playlist cũ. Bản mới đủ 6 phần mỗi bài nằm ở giáo trình 12 bài.</p>
+    <p class="lesson-meta"><span>9 module</span><span>bản cũ</span><span>Nguồn: transcript video</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong trang này</strong>
+    <ol>
+      <li><a href="#m01">01 · Prompt Anatomy và Task Decomposition</a></li>
+      <li><a href="#m02">02 · Đánh giá output trông đúng</a></li>
+      <li><a href="#m03">03 · Uốn output cho đúng người đọc</a></li>
+      <li><a href="#m04">04 · Chọn feature và chọn model</a></li>
+      <li><a href="#m05">05 · Thiết kế workflow quanh Claude</a></li>
+      <li><a href="#m06">06 · Projects, Instructions và Knowledge</a></li>
+      <li><a href="#m07">07 · Governance, dữ liệu nhạy cảm và responsible use</a></li>
+      <li><a href="#m08">08 · Troubleshooting output kém</a></li>
+      <li><a href="#m09">09 · Capstone: đưa một quy trình thật vào production</a></li>
+    </ol>
+  </nav>
+
+<section id="m01">
+<h2 id="prompt-anatomy-và-task-decomposition">01 · Prompt Anatomy và
+Task Decomposition</h2>
+<p>Domain D1 (14%) · Video 01 (4:36)</p>
+<h2 id="ý-chính">Ý chính</h2>
+<p>Prompt đáng tin có 5 khối. Thiếu khối nào thì sửa khối đó, không viết
+lại từ đầu.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Trả lời</th>
+<th>Dấu hiệu thiếu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Role</td>
+<td>Áp chuẩn của ai</td>
+<td>Output đúng nhưng sai chuẩn nghề</td>
+</tr>
+<tr>
+<td>Context</td>
+<td>Tình huống gì</td>
+<td>Model tự đoán, bịa bối cảnh</td>
+</tr>
+<tr>
+<td>Task</td>
+<td>Động từ chính xác</td>
+<td>Model chọn việc dễ nhất nghe giống yêu cầu</td>
+</tr>
+<tr>
+<td>Constraint</td>
+<td>Cấm gì</td>
+<td>Output đúng nhưng không dùng được</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>Đầu ra dùng ngay được chưa</td>
+<td>Phải sửa tay trước khi dùng</td>
+</tr>
+</tbody>
+</table>
+<p>Thứ tự viết: Task, Context, Constraint, Format. Role để cuối vì ít
+khi tạo khác biệt.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Chẩn đoán</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Output đều đều, mục nào cũng một đoạn hợp lý</td>
+<td>Yêu cầu quá lớn, cần decomposition</td>
+</tr>
+<tr>
+<td>Output sai hướng ngay từ câu đầu</td>
+<td>Task verb sai hoặc thiếu</td>
+</tr>
+<tr>
+<td>Output đúng nhưng phải viết lại</td>
+<td>Constraint hoặc Format thiếu</td>
+</tr>
+<tr>
+<td>Output đúng chuẩn nhưng lệch ngữ cảnh</td>
+<td>Context thiếu</td>
+</tr>
+</tbody>
+</table>
+<p>Task decomposition: cắt theo chỗ xuất hiện phán đoán, không cắt theo
+độ dài. Mỗi điểm phán đoán là một checkpoint.</p>
+<h2 id="ví-dụ">Ví dụ</h2>
+<p>Tình huống: bạn phải gửi báo cáo tuần về phản hồi khách hàng cho
+trưởng phòng.</p>
+<p>Prompt hỏng:</p>
+<pre><code>Tóm tắt phản hồi khách hàng tuần này cho tôi.</code></pre>
+<p>Kết quả thường gặp: một đoạn văn đều đều, liệt kê chung chung, không
+có số, không phân loại, phải viết lại hoàn toàn.</p>
+<p>Chẩn đoán theo bảng trên: thiếu Task verb (tóm tắt là động từ mở),
+thiếu Constraint (không nói được bịa), thiếu Format (không nói ai đọc,
+dùng làm gì).</p>
+<p>Prompt sửa:</p>
+<pre><code>&lt;context&gt;
+Dữ liệu: 148 phản hồi khách hàng tuần 12, xuất từ CRM, có các cột:
+ngày, kênh, nội dung, điểm hài lòng 1-5, mã đơn hàng.
+Người đọc: trưởng phòng vận hành, họp 15 phút sáng thứ hai.
+&lt;/context&gt;
+
+&lt;task&gt;
+Trích ra các vấn đề lặp lại, nhóm theo nguyên nhân gốc, và đếm số phản hồi mỗi nhóm.
+&lt;/task&gt;
+
+&lt;constraints&gt;
+- Chỉ dùng nội dung có trong dữ liệu, không suy đoán nguyên nhân ngoài dữ liệu.
+- Nhóm nào dưới 3 phản hồi thì gộp vào &quot;Khác&quot;.
+- Không đề xuất giải pháp.
+&lt;/constraints&gt;
+
+&lt;format&gt;
+Bảng Markdown, cột: Nhóm vấn đề, Số phản hồi, Ví dụ đại diện (trích nguyên văn), Mức độ.
+Tối đa 8 dòng. Dưới bảng: 3 dòng tóm tắt điều thay đổi so với tuần trước.
+&lt;/format&gt;</code></pre>
+<p>Khác biệt: Task có động từ cụ thể, Constraint chặn bịa và chặn lan
+sang phần đề xuất, Format nói rõ người đọc và kích thước.</p>
+<p>Khi báo cáo vẫn chưa đạt, đổi một khối mỗi lần và nêu dự đoán trước
+khi chạy: “nếu thêm ràng buộc trích nguyên văn, bảng sẽ có bằng chứng
+kiểm được”.</p>
+<h2 id="bài-tập">Bài tập</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Lấy một task thật đang làm. Viết đủ 5 khối, ghi rõ khối nào bạn thấy
+khó nhất và vì sao</td>
+<td>15 phút</td>
+<td>Đọc lại, người khác làm theo được mà không hỏi</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chạy prompt chỉ có Task. Ghi lại output. Thêm lần lượt Context,
+Constraint, Format, mỗi lần một khối</td>
+<td>20 phút</td>
+<td>Ghi được khối nào tạo khác biệt lớn nhất, kèm ví dụ trước và
+sau</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Lấy một yêu cầu quá lớn. Chia thành chuỗi 3 bước, đặt checkpoint ở
+chỗ có phán đoán</td>
+<td>30 phút</td>
+<td>So sánh được: chuỗi có checkpoint sửa ít hơn bao nhiêu lần</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Chạy cùng một task với 3 cách mô tả Role khác nhau</td>
+<td>10 phút</td>
+<td>Kết luận được Role có đổi output hay không, trong task của bạn</td>
+</tr>
+</tbody>
+</table>
+<p>Bài 3 là bài quan trọng nhất. Ghi lại số lần phải sửa tay ở mỗi cách,
+đó là thước đo thật.</p>
+<h2 id="đọc-thêm">Đọc thêm</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices">Prompting
+best practices</a></td>
+<td>Mục clarity, XML tags, role prompting</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview">Prompt
+engineering overview</a></td>
+<td>Khi nào prompt engineering không phải câu trả lời</td>
+</tr>
+</tbody>
+</table>
+<p>Điểm khác biệt cần biết: tài liệu Anthropic khuyến nghị dùng XML tag
+để tách khối, đúng tinh thần 5 khối ở trên nhưng ở mức cú pháp.</p>
+</section>
+<section id="m02">
+<h2 id="đánh-giá-output-trông-đúng">02 · Đánh giá output trông đúng</h2>
+<p>Domain D2 (21%) · Video 02 (5:10)</p>
+<h2 id="ý-chính-1">Ý chính</h2>
+<p>Fluency không phải accuracy. Câu trả lời càng trôi chảy, càng dễ bỏ
+qua lỗi. Bịa đặt tập trung ở chỗ có độ chính xác cao: trích dẫn, số
+liệu, tên riêng. Lập luận chung quanh đó thường vẫn đúng, và chính kiểu
+đúng một phần này làm người đọc mất cảnh giác.</p>
+<p>Ba lượt kiểm, luôn theo thứ tự:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Lượt</th>
+<th>Việc làm</th>
+<th>Sai thường gặp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Đánh dấu mọi claim kiểm chứng được, chưa phán xét</td>
+<td>Vừa thấy claim đã kiểm ngay, bỏ sót claim khác</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Sắp theo hậu quả</td>
+<td>Kiểm theo thứ tự xuất hiện trong bài</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Kiểm tại nguồn</td>
+<td>Hỏi lại chính AI “có chắc không”</td>
+</tr>
+</tbody>
+</table>
+<p>Hai kiểu hỏng:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Kiểu</th>
+<th>Nghĩa</th>
+<th>Cách bắt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Inaccuracy</td>
+<td>Có chi tiết sai</td>
+<td>Kiểm từng claim</td>
+</tr>
+<tr>
+<td>Incompleteness</td>
+<td>Đúng hết, thiếu thứ làm đổi kết luận</td>
+<td>So với reference viết trước</td>
+</tr>
+</tbody>
+</table>
+<p>Incompleteness khó thấy vì mọi câu đều đúng. Phải có reference bên
+ngoài, và phải viết trước khi đọc output. Viết sau thì checklist đã bị
+nhiễm.</p>
+<p>Quy trình 5 bước, khoảng 10 phút:</p>
+<ol type="1">
+<li>Phân loại output theo kiểu: phân tích, tóm tắt, khuyến nghị.</li>
+<li>Trích claim quan trọng.</li>
+<li>Làm lộ giả định ẩn.</li>
+<li>Xếp hạng theo hậu quả.</li>
+<li>Kiểm phần trên đường ranh giới, ghi lại phần đã chọn không
+kiểm.</li>
+</ol>
+<p>Bước 5 là bước hay bị bỏ. Nó biến rủi ro vô hình thành câu nói được
+với người nhận.</p>
+<p>Escalation: niềm tin vào output không phải căn cứ để gửi. Năm yếu tố,
+chấm nhanh:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Yếu tố</th>
+<th>Câu hỏi</th>
+<th>Nếu xấu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reversibility</td>
+<td>Gửi sai có rút lại được không</td>
+<td>Không rút được thì nâng mức</td>
+</tr>
+<tr>
+<td>Blast radius</td>
+<td>Sai thì lan tới đâu</td>
+<td>Lan rộng thì nâng mức</td>
+</tr>
+<tr>
+<td>Authority</td>
+<td>Mình có quyền quyết không</td>
+<td>Không có quyền thì chuyển</td>
+</tr>
+<tr>
+<td>Verifiability</td>
+<td>Mình kiểm được không, người khác kiểm được không</td>
+<td>Mình không kiểm được nhưng người khác được thì chuyển</td>
+</tr>
+<tr>
+<td>Regulatory exposure</td>
+<td>Có ràng buộc pháp lý không</td>
+<td>Có thì chuyển</td>
+</tr>
+</tbody>
+</table>
+<p>Verifiability là yếu tố tinh tế nhất, vì nó không hiện ra như một rủi
+ro. Câu hỏi đúng: “cái này có phải của mình để gửi không”, không phải
+“cái này có đúng không”.</p>
+<h2 id="ví-dụ-1">Ví dụ</h2>
+<p>Output mẫu:</p>
+<pre><code>Theo báo cáo của Gartner năm 2024, 78% doanh nghiệp châu Âu đã dùng
+trợ lý AI trong vận hành, tăng từ 41% năm 2023. Ba rào cản chính là
+chi phí, thiếu kỹ năng, và lo ngại tuân thủ. Xu hướng này dự kiến
+đạt 90% vào 2026.</code></pre>
+<p>Lượt 1, đánh dấu claim kiểm chứng được:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Kiểm chứng được</th>
+<th>Hậu quả nếu sai</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gartner 2024</td>
+<td>Có</td>
+<td>Cao, dùng để trích dẫn trong tài liệu nội bộ</td>
+</tr>
+<tr>
+<td>78% doanh nghiệp châu Âu</td>
+<td>Có</td>
+<td>Cao</td>
+</tr>
+<tr>
+<td>Tăng từ 41% năm 2023</td>
+<td>Có</td>
+<td>Trung bình</td>
+</tr>
+<tr>
+<td>Ba rào cản là chi phí, kỹ năng, tuân thủ</td>
+<td>Có, nhưng phụ thuộc nguồn</td>
+<td>Trung bình</td>
+</tr>
+<tr>
+<td>Dự kiến 90% vào 2026</td>
+<td>Có</td>
+<td>Thấp, nếu đã ghi là dự kiến</td>
+</tr>
+</tbody>
+</table>
+<p>Lượt 2, sắp theo hậu quả: kiểm hai số liệu trước, phần còn lại
+sau.</p>
+<p>Lượt 3, kiểm tại nguồn: tra báo cáo gốc. Trường hợp thường gặp là báo
+cáo không tồn tại, hoặc tồn tại nhưng số khác, hoặc số đúng nhưng phạm
+vi khác (doanh nghiệp lớn thay vì toàn bộ).</p>
+<p>Phần incompleteness: nếu câu hỏi ban đầu là “có nên đầu tư trợ lý AI
+không”, output trên thiếu hoàn toàn chiều ngược lại, gồm chi phí triển
+khai và các case thất bại. Mọi câu trong output đều đúng, nhưng kết luận
+mà người đọc rút ra thì sai. Chỉ reference viết trước mới bắt được.</p>
+<p>Ghi chú cuối cho người nhận, mẫu:</p>
+<pre><code>Đã kiểm tại nguồn: hai số liệu Gartner (không khớp, xem ghi chú).
+Chưa kiểm: danh sách ba rào cản, và dự báo 2026.
+Không dùng hai ý này cho quyết định ngân sách.</code></pre>
+<h2 id="bài-tập-1">Bài tập</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Viết reference list 10 mục cho một output bạn sắp nhận, trước khi
+đọc output</td>
+<td>10 phút</td>
+<td>List có mục mà output không nhắc tới</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chấm output theo accuracy và completeness, mỗi thứ 1-5, ghi lý do
+bằng trích dẫn</td>
+<td>15 phút</td>
+<td>Hai điểm khác nhau, và giải thích được vì sao</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chạy quy trình 5 bước trên một output thật, viết note gửi kèm</td>
+<td>20 phút</td>
+<td>Note nêu rõ phần không kiểm, không chỉ phần đã kiểm</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Chấm 4 output của bạn theo 5 yếu tố escalation</td>
+<td>15 phút</td>
+<td>Có ít nhất một case kết luận “chuyển”, kèm lý do</td>
+</tr>
+</tbody>
+</table>
+<p>Bài 4 hay bị làm sai theo hướng “output đúng nên tự gửi”. Ghi riêng
+cột Verifiability, đừng gộp vào cột “độ tin cậy”.</p>
+<h2 id="đọc-thêm-1">Đọc thêm</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/test-and-evaluate/develop-tests">Define
+success criteria and build evaluations</a></td>
+<td>Cách viết tiêu chí đo được thay vì cảm nhận</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices">Prompting
+best practices</a></td>
+<td>Mục giảm bịa đặt, yêu cầu trích dẫn nguồn</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="m03">
+<h2 id="uốn-output-cho-đúng-người-đọc">03 · Uốn output cho đúng người
+đọc</h2>
+<p>Domain D2 (21%) · Video 03 (2:36)</p>
+<h2 id="ý-chính-2">Ý chính</h2>
+<p>Output chính xác mà người đọc không hành động được thì vẫn là output
+hỏng. Audience adaptation không phải chỉnh tone, mà là điền bốn chiều
+trước khi viết:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Chiều</th>
+<th>Câu hỏi</th>
+<th>Ảnh hưởng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prior knowledge</td>
+<td>Họ đã biết gì</td>
+<td>Quyết định phần nào giải thích, phần nào bỏ</td>
+</tr>
+<tr>
+<td>Decision</td>
+<td>Họ sẽ làm gì khác sau khi đọc</td>
+<td>Quyết định nội dung nào đứng đầu</td>
+</tr>
+<tr>
+<td>Attention</td>
+<td>Họ đọc bao lâu, ở đâu</td>
+<td>Quyết định độ dài và format</td>
+</tr>
+<tr>
+<td>Register</td>
+<td>Giọng phù hợp</td>
+<td>Quyết định từ ngữ, không quyết định nội dung</td>
+</tr>
+</tbody>
+</table>
+<p>Hai chiều đầu gánh phần lớn. Nếu câu trả lời cho Decision là “hiểu rõ
+hơn” thì chưa có decision, và output sẽ không dẫn tới hành động nào.</p>
+<p>Xử lý khi hai audience khác nhau:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Khác nhau ở</th>
+<th>Cách làm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decision</td>
+<td>Regenerate từ nguồn, không sửa bản cũ</td>
+</tr>
+<tr>
+<td>Prior knowledge hoặc attention</td>
+<td>Adapt bản cũ</td>
+</tr>
+<tr>
+<td>Register</td>
+<td>Adapt bản cũ</td>
+</tr>
+</tbody>
+</table>
+<p>Viết lại từ nguồn khi decision đổi, vì bản cũ đã cấu trúc theo một
+quyết định khác.</p>
+<p>Tiêu chí chấm phải viết trước khi đọc candidate. Tiêu chí tốt:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Thuộc tính</th>
+<th>Nghĩa</th>
+<th>Phép thử</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Observable</td>
+<td>Hai người chấm ra cùng kết quả</td>
+<td>Đọc lên, người khác chấm được ngay</td>
+</tr>
+<tr>
+<td>Discriminating</td>
+<td>Phân biệt được bản tốt và bản kém</td>
+<td>Có ít nhất một bản fail</td>
+</tr>
+<tr>
+<td>Weighted</td>
+<td>Có trọng số</td>
+<td>Biết tiêu chí nào nặng hơn</td>
+</tr>
+<tr>
+<td>Must-have</td>
+<td>Fail là loại</td>
+<td>Không cộng bù bằng điểm chỗ khác</td>
+</tr>
+</tbody>
+</table>
+<p>Format chọn theo việc output sẽ đi đâu, không theo cái nào trông
+đẹp:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Output sẽ</th>
+<th>Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đọc một lần rồi bỏ</td>
+<td>Inline trong chat</td>
+</tr>
+<tr>
+<td>Được lưu, sửa, chia sẻ</td>
+<td>Artifact hoặc tài liệu riêng</td>
+</tr>
+<tr>
+<td>Đưa vào tool khác</td>
+<td>Bảng, CSV, JSON</td>
+</tr>
+<tr>
+<td>Là quy trình cho người làm</td>
+<td>Các bước đánh số</td>
+</tr>
+</tbody>
+</table>
+<p>Artifact bị dùng quá mức vì nghe chuyên nghiệp. Phép thử: cái này có
+được giữ lại và sửa không. Nếu không, để inline.</p>
+<h2 id="ví-dụ-2">Ví dụ</h2>
+<p>Cùng một phát hiện: “Tỉ lệ lỗi nhập liệu tăng từ 2,1% lên 4,8% trong
+quý, tập trung ở chi nhánh mở sau tháng 6.”</p>
+<p>Bản cho trưởng phòng vận hành:</p>
+<pre><code>Quý này tỉ lệ lỗi nhập liệu tăng gấp đôi, từ 2,1% lên 4,8%.
+Toàn bộ mức tăng nằm ở bốn chi nhánh mở sau tháng 6.
+Hai chi nhánh còn lại đi ngang.
+
+Việc cần quyết: có dừng mở chi nhánh mới trong quý 4 để
+ổn định quy trình nhập liệu không.</code></pre>
+<p>Bản cho nhóm kỹ thuật:</p>
+<pre><code>Lỗi nhập liệu: 2,1% lên 4,8% trong quý.
+Phân rã theo nguồn: 4 chi nhánh mới đóng góp 100% mức tăng.
+Chi nhánh cũ không đổi.
+
+Giả thuyết: form nhập liệu phiên bản mới được phát hành cùng
+lúc với đợt mở chi nhánh, tháng 7.
+Cần kiểm: đối chiếu log lỗi với ngày phát hành form, tách hiệu ứng
+chi nhánh mới khỏi hiệu ứng form mới.</code></pre>
+<p>Hai bản khác nhau ở Decision, nên phải viết lại từ dữ liệu gốc, không
+phải rút gọn bản này thành bản kia. Bản đầu dẫn tới quyết định mở chi
+nhánh, bản sau dẫn tới một phép kiểm kỹ thuật.</p>
+<p>Bảng tiêu chí viết trước, ví dụ cho bản dành cho trưởng phòng:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Loại</th>
+<th>Cách chấm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nêu được một quyết định cụ thể</td>
+<td>Must-have</td>
+<td>Đọc xong trả lời được “cần quyết gì”</td>
+</tr>
+<tr>
+<td>Mọi số có nguồn trong dữ liệu gốc</td>
+<td>Must-have</td>
+<td>Đối chiếu từng số</td>
+</tr>
+<tr>
+<td>Không quá 6 dòng</td>
+<td>Nice-to-have</td>
+<td>Đếm dòng</td>
+</tr>
+<tr>
+<td>Không dùng thuật ngữ kỹ thuật</td>
+<td>Nice-to-have</td>
+<td>Liệt kê từ chuyên môn</td>
+</tr>
+</tbody>
+</table>
+<h2 id="bài-tập-2">Bài tập</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Lấy một output đã viết. Điền bảng 4 chiều cho hai người đọc khác
+nhau</td>
+<td>15 phút</td>
+<td>Hai dòng Decision khác nhau, không phải cùng một câu diễn đạt
+lại</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết 3 tiêu chí must-have trước khi đọc hai bản nháp có sẵn</td>
+<td>15 phút</td>
+<td>Một bản fail rõ ràng, và bạn thấy được điều đó trước khi đọc</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Cùng một nội dung, tạo 3 phiên bản: inline, bảng, tài liệu giữ
+lại</td>
+<td>20 phút</td>
+<td>Giải thích được phiên bản nào dùng cho việc gì</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Chấm lại một output cũ của bạn bằng tiêu chí vừa viết</td>
+<td>10 phút</td>
+<td>Có ít nhất một phát hiện bạn chưa từng thấy</td>
+</tr>
+</tbody>
+</table>
+<p>Bài 2 phải làm đúng thứ tự: viết tiêu chí trước, mở bản nháp sau. Nếu
+đã đọc rồi thì làm lại với bộ nháp khác.</p>
+<h2 id="đọc-thêm-2">Đọc thêm</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices">Prompting
+best practices</a></td>
+<td>Mục định dạng output, độ dài, XML tags</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/test-and-evaluate/develop-tests">Define
+success criteria and build evaluations</a></td>
+<td>Chuyển tiêu chí thành bộ chấm đo được</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="m04">
+<h2 id="chọn-feature-và-chọn-model">04 · Chọn feature và chọn model</h2>
+<p>Domain D3 (12%) · Video 04 (4:17)</p>
+<h2 id="ý-chính-3">Ý chính</h2>
+<p>Chi phí lớn nhất thường không phải token, mà là dựng lại context mỗi
+lần làm lại cùng một việc. Chọn feature bằng ba câu hỏi:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Có</th>
+<th>Không</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Việc này có lặp lại</td>
+<td>Project</td>
+<td>Chat thường</td>
+</tr>
+<tr>
+<td>Cần thông tin ngoài</td>
+<td>Search, Research hoặc connector</td>
+<td>Dùng kiến thức sẵn có</td>
+</tr>
+<tr>
+<td>Output được giữ hoặc sửa</td>
+<td>Artifact</td>
+<td>Inline</td>
+</tr>
+</tbody>
+</table>
+<p>Project cho việc không lặp lại là overhead thuần. Đây là lỗi phổ biến
+ngay sau khi học về project.</p>
+<p>Chọn model theo lượng phán đoán và giá của lỗi, không theo mức độ
+quan trọng của việc.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Loại subtask</th>
+<th>Tier phù hợp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trích xuất, phân loại, định dạng</td>
+<td>Tier rẻ, làm cẩn thận</td>
+</tr>
+<tr>
+<td>Viết, tổng hợp có hướng dẫn rõ</td>
+<td>Tier giữa</td>
+</tr>
+<tr>
+<td>Lập luận nhiều bước, quyết định mơ hồ</td>
+<td>Tier đắt</td>
+</tr>
+</tbody>
+</table>
+<p>Task quan trọng nhưng phán đoán thấp, ví dụ trích ngày từ hợp đồng,
+là task tier rẻ. Trả giá tier đắt không làm nó chính xác hơn, chỉ thêm
+chi phí.</p>
+<p>Với task đơn bước, đặc tả rõ, ngắn, các tier thường cho output gần
+như giống nhau. Hãy kiểm bằng thực nghiệm trước khi trả giá cao.</p>
+<p>Lineup hiện tại, kiểm tháng 10/2026:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Model</th>
+<th>Model ID</th>
+<th>Giá vào / ra mỗi 1M token</th>
+<th>Context</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude Fable 5.1</td>
+<td><code>claude-fable-5-1</code></td>
+<td>10 / 50 USD</td>
+<td>1M</td>
+<td>Lập luận khó, agent chạy dài</td>
+</tr>
+<tr>
+<td>Claude Opus 5.5</td>
+<td><code>claude-opus-5-5</code></td>
+<td>4 / 20 USD</td>
+<td>1M</td>
+<td>Coding và knowledge work dài hơi, mặc định cho phần lớn việc</td>
+</tr>
+<tr>
+<td>Claude Sonnet 5.5</td>
+<td><code>claude-sonnet-5-5</code></td>
+<td>2 / 10 USD</td>
+<td>1M</td>
+<td>Việc hằng ngày cần nhanh và đủ tốt</td>
+</tr>
+<tr>
+<td>Claude Haiku 5.5</td>
+<td><code>claude-haiku-5-5</code></td>
+<td>từ 0,10 / 0,50 USD</td>
+<td>1M</td>
+<td>Phân loại, trích xuất, khối lượng lớn</td>
+</tr>
+</tbody>
+</table>
+<p>Giá và tên model thay đổi. Kiểm lại ở <a
+href="https://platform.claude.com/docs/en/models/overview">Models
+overview</a> trước khi dùng cho quyết định ngân sách.</p>
+<p>Contamination: hội thoại dài hỏng theo hai đường.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Đường</th>
+<th>Biểu hiện</th>
+<th>Cách xử lý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Volume</td>
+<td>Chi tiết cũ biến mất khỏi câu trả lời</td>
+<td>Tóm tắt, hoặc đưa tài liệu vào project</td>
+</tr>
+<tr>
+<td>Contamination</td>
+<td>Output quay lại hướng đã bị loại</td>
+<td>Khởi động lại với handover</td>
+</tr>
+</tbody>
+</table>
+<p>Tóm tắt một hội thoại đã nhiễm thì bản tóm tắt cũng nhiễm. Cách đúng
+là restart với bản bàn giao ghi trạng thái, không ghi lịch sử.</p>
+<h2 id="ví-dụ-3">Ví dụ</h2>
+<p>Task: xử lý yêu cầu bồi thường bảo hiểm, 60 yêu cầu mỗi tuần.</p>
+<p>Phân rã và chọn tier:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Bước subtask</th>
+<th>Phán đoán</th>
+<th>Lỗi tốn gì</th>
+<th>Tier</th>
+<th>Feature</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trích ngày, số tiền, mã hợp đồng từ PDF</td>
+<td>Thấp</td>
+<td>Sửa được, phát hiện được</td>
+<td>Haiku 5.5</td>
+<td>Chat hoặc tool</td>
+</tr>
+<tr>
+<td>Phân loại loại tổn thất theo danh mục</td>
+<td>Thấp, có danh mục đóng</td>
+<td>Sửa được</td>
+<td>Haiku 5.5</td>
+<td>Chat</td>
+</tr>
+<tr>
+<td>Viết bản tóm tắt hồ sơ cho người xử lý</td>
+<td>Trung bình</td>
+<td>Người đọc vẫn kiểm</td>
+<td>Sonnet 5.5</td>
+<td>Project</td>
+</tr>
+<tr>
+<td>Đánh giá có dấu hiệu bất thường cần điều tra</td>
+<td>Cao</td>
+<td>Bỏ sót thì tốn kém, không đảo ngược</td>
+<td>Opus 5.5</td>
+<td>Project, có checkpoint</td>
+</tr>
+</tbody>
+</table>
+<p>Kết luận thường gặp: dùng một model cho cả pipeline là sai cả hai
+chiều. Bước 1 và 2 dư thừa năng lực, bước 4 thiếu.</p>
+<p>Ví dụ contamination:</p>
+<pre><code>Bạn: Tóm tắt hợp đồng theo hướng rủi ro pháp lý.
+AI:   [bản phân tích]
+Bạn: Không, tôi cần hướng vận hành, không phải pháp lý.
+AI:   [bản mới, vẫn nghiêng pháp lý]
+Bạn: Tóm tắt lại toàn bộ hội thoại rồi làm lại theo hướng vận hành.
+AI:   [bản tóm tắt đã chứa khung pháp lý, bản mới vẫn lệch]</code></pre>
+<p>Bản bàn giao đúng:</p>
+<pre><code>Trạng thái:
+- Hợp đồng số 4471, hiệu lực 2024-2026, giá trị 2,4 tỷ.
+- Mục tiêu: bản tóm tắt cho đội vận hành, 1 trang, tập trung nghĩa vụ
+  thực hiện hằng tháng.
+- Đã loại: phân tích rủi ro pháp lý, tranh chấp, điều khoản phạt.
+- Ràng buộc: mọi mục phải kèm số điều khoản.</code></pre>
+<p>Điểm cần thấy: bản bàn giao không kể lại chuyện gì đã xảy ra, chỉ nêu
+trạng thái và những gì đã bị loại.</p>
+<h2 id="bài-tập-3">Bài tập</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Phân rã một task thật thành 4-6 subtask, điền bảng phán đoán và giá
+lỗi</td>
+<td>20 phút</td>
+<td>Có ít nhất hai subtask nằm ở hai tier khác nhau</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Dự đoán tier cho từng subtask, rồi chạy phần phán đoán nặng trên hai
+model</td>
+<td>20 phút</td>
+<td>Kết luận được tier nào thừa, tier nào thiếu, có ví dụ output</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chẩn đoán một hội thoại dài của bạn: volume hay contamination</td>
+<td>15 phút</td>
+<td>Nêu được bằng chứng cụ thể trong transcript</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Viết bản bàn giao cho hội thoại đó, khởi động lại</td>
+<td>15 phút</td>
+<td>Bản mới không lặp lại hướng đã bị loại</td>
+</tr>
+</tbody>
+</table>
+<p>Bài 2 phải ghi dự đoán trước khi chạy. Không ghi thì không học được
+gì từ kết quả.</p>
+<h2 id="đọc-thêm-3">Đọc thêm</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://platform.claude.com/docs/en/models/overview">Models
+overview</a></td>
+<td>Bảng model, giá, context, ngày kiểm</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/about-claude/models/choosing-a-model">Choosing
+the right model</a></td>
+<td>Hai cách chọn model ban đầu: efficiency-first và
+capability-first</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/build-with-claude/context-windows">Context
+windows</a></td>
+<td>Context rot, compaction, cách context đầy lên</td>
+</tr>
+<tr>
+<td><a
+href="https://support.claude.com/en/articles/9517075-what-are-projects">What
+are projects?</a></td>
+<td>Project là gì, chứa gì</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="m05">
+<h2 id="thiết-kế-workflow-quanh-claude">05 · Thiết kế workflow quanh
+Claude</h2>
+<p>Domain D4 (16%) · Video 05 (5:20)</p>
+<h2 id="ý-chính-4">Ý chính</h2>
+<p>Câu trả lời có giá trị nhất của một buổi đánh giá fit thường là “chưa
+nên”. Quy trình bị tự động hóa vì có người hào hứng, không vì nó phù
+hợp. Thất bại hiện ra vài tháng sau: một workflow không ai dùng nhưng
+không ai nói ra.</p>
+<p>Năm tiêu chí, chấm từng bước của quy trình thật:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Câu hỏi</th>
+<th>Mức nguy hiểm khi fail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Input availability</td>
+<td>Đầu vào có sẵn, đúng định dạng</td>
+<td>Trung bình, sửa được</td>
+</tr>
+<tr>
+<td>Output verifiability</td>
+<td>Có cách biết output đúng hay sai</td>
+<td>Cao</td>
+</tr>
+<tr>
+<td>Judgment locus</td>
+<td>Phán đoán chỉ định được hay là chính công việc</td>
+<td>Cao</td>
+</tr>
+<tr>
+<td>Error tolerance</td>
+<td>Sai thì chịu được không</td>
+<td>Phụ thuộc ngành</td>
+</tr>
+<tr>
+<td>Volume</td>
+<td>Tần suất nhân thời gian</td>
+<td>Thấp, chỉ ảnh hưởng ROI</td>
+</tr>
+</tbody>
+</table>
+<p>Hai tiêu chí giữa gánh phần lớn trọng lượng. Không ai kiểm được
+output thì hệ thống đang sản xuất tài liệu không kiểm chứng được. Phán
+đoán không chỉ định được thì không nên giao cho model.</p>
+<p>Hầu hết quy trình thật là partial fit. Câu trả lời đúng thường là tự
+động hóa phần này thôi.</p>
+<p>Augment hay redesign:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Lựa chọn</th>
+<th>Làm gì</th>
+<th>Đổi gì</th>
+<th>Giá</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Augment</td>
+<td>Giữ hình dạng, tăng tốc một bước</td>
+<td>Ít</td>
+<td>Thấp, dễ áp dụng</td>
+</tr>
+<tr>
+<td>Redesign</td>
+<td>Đổi quy trình vì ràng buộc cũ đã nới</td>
+<td>Nhiều</td>
+<td>Cao, cần change management</td>
+</tr>
+</tbody>
+</table>
+<p>Phép thử: binding constraint có thực sự dịch chuyển. Nếu ràng buộc cũ
+vẫn còn thì redesign chỉ tạo hỗn loạn.</p>
+<p>Đường an toàn: augment trước, chạy shadow mode, rồi redesign bằng số
+liệu từ shadow mode.</p>
+<p>Cảnh báo quan trọng nhất của module: redesign có thể làm dịch chuyển
+ngầm một control. Nếu trách nhiệm với lỗi chuyển từ người này sang người
+khác hoặc sang model, phải nêu tên và được duyệt. Không được gộp vào mục
+tiêu hiệu suất.</p>
+<p>Bốn động tác để dùng Claude nghĩ cùng, không phải viết hộ:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Động tác</th>
+<th>Prompt</th>
+<th>Dấu hiệu thất bại</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Premortem</td>
+<td>Giả định kế hoạch đã thất bại, viết 5 lý do</td>
+<td>Chỉ nêu lý do ai cũng biết</td>
+</tr>
+<tr>
+<td>Stakeholder mapping</td>
+<td>Liệt kê bên bị ảnh hưởng, điều họ mất</td>
+<td>Bỏ sót bên có quyền phủ quyết</td>
+</tr>
+<tr>
+<td>Assumption surfacing</td>
+<td>Liệt kê giả định, xếp theo mức dễ vỡ</td>
+<td>Trả về điều hiển nhiên</td>
+</tr>
+<tr>
+<td>Adversarial review</td>
+<td>Tấn công kế hoạch như người phản đối</td>
+<td>Khen rồi góp ý nhẹ</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ví-dụ-4">Ví dụ</h2>
+<p>Quy trình: xử lý hóa đơn nhà cung cấp, 400 hóa đơn mỗi tháng, 3 người
+làm.</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Input availability</th>
+<th>Verifiability</th>
+<th>Judgment</th>
+<th>Error tolerance</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nhận và phân loại hóa đơn</td>
+<td>Cao</td>
+<td>Cao, sai thì thấy ngay</td>
+<td>Thấp</td>
+<td>Cao</td>
+<td>Tự động được</td>
+</tr>
+<tr>
+<td>Nhập dữ liệu vào hệ thống</td>
+<td>Cao</td>
+<td>Cao, đối chiếu được</td>
+<td>Thấp</td>
+<td>Trung bình</td>
+<td>Tự động, có kiểm ngẫu nhiên</td>
+</tr>
+<tr>
+<td>Đối chiếu với đơn đặt hàng</td>
+<td>Trung bình</td>
+<td>Trung bình</td>
+<td>Trung bình</td>
+<td>Thấp</td>
+<td>Chỉ hỗ trợ, người quyết</td>
+</tr>
+<tr>
+<td>Xử lý ngoại lệ và tranh chấp</td>
+<td>Thấp</td>
+<td>Thấp</td>
+<td>Cao</td>
+<td>Thấp</td>
+<td>Giữ nguyên</td>
+</tr>
+</tbody>
+</table>
+<p>Kết luận: automate hai bước đầu, giữ hai bước sau. Đây là augment,
+không phải redesign. Binding constraint của quy trình là xử lý ngoại lệ,
+và ràng buộc đó không dịch chuyển.</p>
+<p>Nếu ai đó đề xuất bỏ bước đối chiếu vì model làm tốt, đó là control
+bị dịch chuyển ngầm: trách nhiệm phát hiện sai chuyển từ người sang
+model, và không ai còn chịu trách nhiệm khi model bỏ sót.</p>
+<p>Brief gửi stakeholder, mẫu:</p>
+<pre><code>Claim: tự động hai bước đầu giảm 40% thời gian xử lý.
+Bằng chứng: 60 hóa đơn chạy shadow mode, 58 khớp sau kiểm.
+
+Giới hạn:
+- Không xử lý hóa đơn ngoại tệ.
+- Không xử lý hóa đơn thiếu mã đơn hàng, chiếm 12% tháng trước.
+
+Failure mode và cách phát hiện:
+- Phân loại sai: kiểm ngẫu nhiên 10% hằng tuần.
+- Bỏ sót hóa đơn: đối chiếu số lượng với sổ nhận hằng ngày.
+
+Ask: duyệt chạy song song 2 tháng trước khi tắt quy trình cũ.</code></pre>
+<p>Mọi giới hạn đều kiểm được. “Nó không hoàn hảo” thì không kiểm được,
+nên không phải giới hạn.</p>
+<h2 id="bài-tập-4">Bài tập</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Chấm 5 tiêu chí cho từng bước của một quy trình thật</td>
+<td>25 phút</td>
+<td>Có bước kết luận “không nên”, kèm lý do</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết kế hoạch shadow mode: chạy bao lâu, đo gì, so với gì</td>
+<td>20 phút</td>
+<td>Biết trước khi nào thì dừng, không phải sau khi thấy kết quả</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chạy 4 động tác trên một kế hoạch của bạn</td>
+<td>25 phút</td>
+<td>Ít nhất một động tác nêu ra điều bạn chưa nghĩ tới</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Viết brief 4 phần cho kế hoạch đó</td>
+<td>20 phút</td>
+<td>Mỗi giới hạn đều kiểm được bởi người đọc</td>
+</tr>
+</tbody>
+</table>
+<p>Bài 3: nếu cả 4 động tác đều chỉ trả về điều bạn đã biết, ghi lại và
+prompt mạnh hơn. Kết quả đó cũng là một phát hiện.</p>
+<h2 id="đọc-thêm-4">Đọc thêm</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a
+href="https://www.anthropic.com/engineering/building-effective-agents">Building
+effective agents</a></td>
+<td>Năm pattern workflow: chaining, routing, parallelization,
+orchestrator-workers, evaluator-optimizer</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/test-and-evaluate/develop-tests">Define
+success criteria and build evaluations</a></td>
+<td>Đo shadow mode bằng tiêu chí, không bằng cảm nhận</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="m06">
+<h2 id="projects-instructions-và-knowledge">06 · Projects, Instructions
+và Knowledge</h2>
+<p>Domain D5 (12%) · Video 06 (4:53)</p>
+<h2 id="ý-chính-5">Ý chính</h2>
+<p>Project gồm hai loại nội dung, và lẫn chúng là lỗi cấu hình phổ biến
+nhất.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>Trả lời</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Instructions</td>
+<td>Việc này làm thế nào</td>
+<td>Luật đứng, tone, ràng buộc, hình dạng output, điều cấm</td>
+</tr>
+<tr>
+<td>Knowledge</td>
+<td>Việc này làm với cái gì</td>
+<td>Tài liệu, dữ liệu, ví dụ, mẫu</td>
+</tr>
+</tbody>
+</table>
+<p>Phép thử: nếu sự thật nền thay đổi thì cái này có đổi không. Có thì
+là knowledge.</p>
+<p>Instructions tốt phải nói ba thứ:</p>
+<ol type="1">
+<li>Điều không được làm.</li>
+<li>Hình dạng output mặc định.</li>
+<li>Làm gì khi thiếu thông tin.</li>
+</ol>
+<p>Knowledge tốt phải current, authoritative, necessary, consistent. Nếu
+một tài liệu không cần cho task thì bỏ, vì nó vừa chiếm context vừa tạo
+nhiễu.</p>
+<p>Phép thử đồng nghiệp: giao project cho người khác dùng thử. Chỗ nào
+họ hỏi lại chính là chỗ instruction còn thiếu.</p>
+<p>Hai kiểu hỏng của knowledge:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Kiểu</th>
+<th>Chuyện gì xảy ra</th>
+<th>Cách chặn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Upload lỗi thời</td>
+<td>Tài liệu cũ vẫn nằm đó, không cảnh báo</td>
+<td>Ghi ngày trong tiêu đề, thêm instruction đánh dấu nội dung cũ</td>
+</tr>
+<tr>
+<td>Connector quá rộng</td>
+<td>Với tới dữ liệu ngoài dự định</td>
+<td>Hỏi ba câu phạm vi trước khi bật</td>
+</tr>
+</tbody>
+</table>
+<p>Ba câu hỏi phạm vi, hỏi trước khi bật connector:</p>
+<ol type="1">
+<li>Nó với tới được gì.</li>
+<li>Dữ liệu trong phạm vi đó là của ai.</li>
+<li>Còn ai khác dùng project này.</li>
+</ol>
+<p>Bốn kiểu drift. Project không hỏng, nó trôi:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Drift</th>
+<th>Biểu hiện</th>
+<th>Nguyên nhân</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Knowledge</td>
+<td>Trả lời tự tin nhưng lỗi thời</td>
+<td>Tài liệu nguồn bị thay thế</td>
+</tr>
+<tr>
+<td>Instruction</td>
+<td>Output bị sửa tay nhiều</td>
+<td>Luật đứng không còn đúng thực tế</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>Mỗi hội thoại phải sửa nhiều hơn</td>
+<td>Task đổi, project không đổi</td>
+</tr>
+<tr>
+<td>Ownership</td>
+<td>Không ai giải thích được một luật</td>
+<td>Người dựng project đã rời đi</td>
+</tr>
+</tbody>
+</table>
+<p>Ownership drift mở đường cho ba kiểu còn lại. Ba control:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Control</th>
+<th>Cách làm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Named owner</td>
+<td>Ghi tên người chịu trách nhiệm trong instructions</td>
+</tr>
+<tr>
+<td>Review cadence</td>
+<td>Gắn với sự kiện thật, ví dụ kỳ chốt sổ, không phải nhắc lịch</td>
+</tr>
+<tr>
+<td>Drift signal</td>
+<td>Instruction buộc project báo cáo cấu hình mỗi lần dùng</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ví-dụ-5">Ví dụ</h2>
+<p>Project: hỗ trợ viết báo cáo bán hàng hằng tuần.</p>
+<p>Instructions, bản tốt:</p>
+<pre><code>Bạn viết báo cáo bán hàng tuần cho trưởng phòng kinh doanh.
+
+Cách làm:
+- Luôn bắt đầu bằng ba con số: doanh thu, số đơn, giá trị đơn trung bình.
+- So sánh với tuần trước và cùng kỳ năm trước.
+- Nêu nguyên nhân chỉ khi có trong dữ liệu.
+
+Không được làm:
+- Không suy đoán nguyên nhân ngoài dữ liệu.
+- Không đề xuất hành động.
+- Không làm tròn số doanh thu.
+
+Khi thiếu dữ liệu:
+- Nêu rõ &quot;thiếu&quot; và tên chỉ số, không bỏ qua im lặng.
+
+Hình dạng:
+- Bảng 6 dòng, sau đó 3 dòng nhận định.
+- Tiếng Việt, không dùng từ tiếng Anh khi có từ tương đương.
+
+Chủ project: Nguyễn Văn A, nhóm Phân tích.
+Rà soát: sau mỗi kỳ chốt sổ tháng.</code></pre>
+<p>Knowledge, bản tốt:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tài liệu</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>2026-09-danh-muc-san-pham.xlsx</code></td>
+<td>Có ngày trong tên</td>
+</tr>
+<tr>
+<td><code>2026-09-chinh-sach-gia.md</code></td>
+<td>Đang hiệu lực</td>
+</tr>
+<tr>
+<td><code>mau-bao-cao-3-thang-gan-nhat.md</code></td>
+<td>Ba mẫu tốt nhất, không phải toàn bộ lịch sử</td>
+</tr>
+<tr>
+<td><code>dinh-nghia-chi-so.md</code></td>
+<td>Định nghĩa từng chỉ số, tránh hiểu khác nhau</td>
+</tr>
+</tbody>
+</table>
+<p>Những gì không đưa vào: báo cáo cũ hơn 3 tháng, biên bản họp, tài
+liệu sản phẩm đã ngừng.</p>
+<p>Drift signal, đặt trong instructions:</p>
+<pre><code>Mỗi lần trả lời, thêm một dòng cuối:
+&quot;Đang dùng: &lt;số tài liệu knowledge&gt; tài liệu, cập nhật mới nhất &lt;ngày&gt;.&quot;
+Nếu tài liệu mới nhất cũ hơn 30 ngày, thêm cảnh báo.</code></pre>
+<p>Dòng này chạy miễn phí vì nó bám vào việc đang làm, và làm lỗi thời
+hiện ra ngay trong output.</p>
+<h2 id="bài-tập-5">Bài tập</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Liệt kê 10 nhu cầu của một project thật, phân loại instruction hay
+knowledge</td>
+<td>15 phút</td>
+<td>Không mục nào lẫn hai loại</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết instructions đủ 3 phần: cấm, hình dạng, thiếu dữ liệu</td>
+<td>20 phút</td>
+<td>Người khác đọc xong làm được mà không hỏi</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Giao project cho một đồng nghiệp, ghi lại mọi câu họ hỏi</td>
+<td>15 phút</td>
+<td>Mỗi câu hỏi ánh xạ được thành một dòng instruction còn thiếu</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Chạy rà soát 4 kiểu drift trên project của bạn</td>
+<td>20 phút</td>
+<td>Mỗi kiểu có kết luận có hoặc không, kèm bằng chứng</td>
+</tr>
+</tbody>
+</table>
+<p>Bài 3 là bài duy nhất kiểm được instructions có thật sự đủ hay
+không.</p>
+<h2 id="đọc-thêm-5">Đọc thêm</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a
+href="https://support.claude.com/en/articles/9517075-what-are-projects">What
+are projects?</a></td>
+<td>Workspace, lịch sử chat, knowledge base</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices">Prompting
+best practices</a></td>
+<td>Viết instruction rõ, dùng XML tag để tách phần</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="m07">
+<h2 id="governance-dữ-liệu-nhạy-cảm-và-responsible-use">07 · Governance,
+dữ liệu nhạy cảm và responsible use</h2>
+<p>Domain D6 (15%) · Video 07 (5:03)</p>
+<blockquote>
+<p>Đây là khung ra quyết định, không phải tư vấn pháp lý. Quy định của
+tổ chức và luật áp dụng mới là căn cứ cuối cùng.</p>
+</blockquote>
+<h2 id="ý-chính-6">Ý chính</h2>
+<p>Quyết định dán hay không dán dữ liệu diễn ra trong khoảng hai giây.
+Phương pháp chậm sẽ không được dùng, nên cần ba xô:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Xô</th>
+<th>Định nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Safe</td>
+<td>Bạn sẵn sàng email nó cho đồng nghiệp</td>
+<td>Tài liệu công khai, dữ liệu đã công bố</td>
+</tr>
+<tr>
+<td>Restricted</td>
+<td>Dùng được sau khi biến đổi</td>
+<td>Dữ liệu khách hàng đã bỏ định danh</td>
+</tr>
+<tr>
+<td>Never</td>
+<td>Có quy định, hợp đồng hoặc luật nói không</td>
+<td>Bí mật thương mại theo hợp đồng, dữ liệu bị cấm chuyển ra ngoài</td>
+</tr>
+</tbody>
+</table>
+<p>Năm phép biến đổi cho xô giữa:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Phép</th>
+<th>Làm gì</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Remove</td>
+<td>Bỏ trường định danh</td>
+<td>Xóa tên, số điện thoại</td>
+</tr>
+<tr>
+<td>Replace</td>
+<td>Thay bằng giá trị giả</td>
+<td>Tên thành “khách A”</td>
+</tr>
+<tr>
+<td>Generalize</td>
+<td>Làm thô giá trị</td>
+<td>Ngày sinh thành nhóm tuổi</td>
+</tr>
+<tr>
+<td>Aggregate</td>
+<td>Gộp thành tổng</td>
+<td>Doanh thu theo vùng thay vì theo người</td>
+</tr>
+<tr>
+<td>Synthesize</td>
+<td>Tạo dữ liệu mẫu cùng hình dạng</td>
+<td>Dùng dữ liệu giả để thử prompt</td>
+</tr>
+</tbody>
+</table>
+<p>Phép thử tổ hợp: từng trường riêng lẻ vô hại nhưng cộng lại có thể
+định danh một người. Năm trường như tuổi, giới tính, quận, nghề, mức
+lương có thể chỉ ra đúng một người.</p>
+<p>Phân loại quá tay cũng có giá, và giá đó vô hình: không ai báo cáo
+việc phân tích họ đã không chạy. Đừng biến xô Never thành mặc định.</p>
+<p>Tính phù hợp thuộc về task, không thuộc về công cụ. Cùng một dữ liệu
+có thể ổn để tóm tắt nhưng sai để ra quyết định về một người. Bốn câu
+hỏi:</p>
+<ol type="1">
+<li>Ai chịu hậu quả.</li>
+<li>Nếu việc này được biết ra, bạn có thấy ổn không.</li>
+<li>Có con người thực sự chịu trách nhiệm không.</li>
+<li>Việc này có thay thế một hành vi được quản lý không.</li>
+</ol>
+<p>Disclosure test: một bước “có người review” không phải control nếu
+người review không thực tế có thể nói không. Hỏi: đã từng có ai nói
+không chưa. Ở khối lượng lớn, review không có quyền thì chỉ là hình
+thức.</p>
+<p>Đọc policy:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Việc làm</th>
+<th>Sai thường gặp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Đọc điều kiện kích hoạt theo nghĩa đen</td>
+<td>Đọc theo ý mình muốn</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Tìm điều khoản có điều kiện khớp tình huống</td>
+<td>Chọn điều khoản gần chủ đề nhất</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Không có điều khoản nào chi phối thì escalate</td>
+<td>Tự cho là được phép</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Câu chữ mơ hồ thì hỏi mục đích điều khoản</td>
+<td>Tự diễn giải rộng</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Phán đoán sẽ lặp lại thì xin quyết định</td>
+<td>Tự quyết và giữ kín tiền lệ</td>
+</tr>
+</tbody>
+</table>
+<p>Khi mọi policy đều pass mà vẫn thấy sai, việc cần làm không phải tìm
+câu trả lời sạch mà tạo một quyết định có lý lẽ và ghi lại:</p>
+<ol type="1">
+<li>Nêu các bên bị ảnh hưởng.</li>
+<li>Nêu các lợi ích chính đáng đang xung đột.</li>
+<li>Kiểm tra nếu làm ở quy mô lớn thì sao.</li>
+<li>Ghi lại lý luận và người ra quyết định.</li>
+</ol>
+<p>Bản ghi là deliverable. Không có bản ghi thì quyết định không tồn tại
+khi bị hỏi lại.</p>
+<h2 id="ví-dụ-6">Ví dụ</h2>
+<p>Phân loại 8 đầu vào:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Đầu vào</th>
+<th>Xô</th>
+<th>Lý do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Báo cáo thường niên đã công bố</td>
+<td>Safe</td>
+<td>Công khai</td>
+</tr>
+<tr>
+<td>Danh sách khách hàng có tên và số điện thoại</td>
+<td>Never nếu chưa được phép, Restricted sau khi thay tên</td>
+<td>Định danh trực tiếp</td>
+</tr>
+<tr>
+<td>Hợp đồng lao động của một nhân viên</td>
+<td>Never</td>
+<td>Dữ liệu cá nhân, có ràng buộc hợp đồng</td>
+</tr>
+<tr>
+<td>Doanh thu theo quận, 10 quận</td>
+<td>Safe hoặc Restricted tùy quy mô</td>
+<td>Tổng hợp, nhưng quận nhỏ có thể định danh</td>
+</tr>
+<tr>
+<td>Email nội bộ về một sự cố</td>
+<td>Restricted</td>
+<td>Có thể chứa tên và thông tin chưa công bố</td>
+</tr>
+<tr>
+<td>Mã lỗi hệ thống không kèm dữ liệu người</td>
+<td>Safe</td>
+<td>Không định danh</td>
+</tr>
+<tr>
+<td>Bảng lương đã ẩn tên, còn chức danh và thâm niên</td>
+<td>Restricted, kiểm tổ hợp</td>
+<td>Tổ hợp có thể chỉ ra một người</td>
+</tr>
+<tr>
+<td>Biên bản họp có tên khách hàng</td>
+<td>Restricted sau khi thay tên</td>
+<td>Nội dung hợp lệ, định danh cần bỏ</td>
+</tr>
+</tbody>
+</table>
+<p>Ca policy mơ hồ, ví dụ điều khoản ghi “không đưa dữ liệu mật vào công
+cụ AI chưa đăng ký”:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Cách đọc</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đọc rộng: không đưa dữ liệu mật vào mọi công cụ AI</td>
+<td>Sai, vượt điều kiện kích hoạt</td>
+</tr>
+<tr>
+<td>Đọc đúng: chỉ cấm công cụ chưa đăng ký</td>
+<td>Dùng công cụ đã đăng ký là được phép</td>
+</tr>
+<tr>
+<td>Không đọc: dùng công cụ chưa đăng ký nhưng “chắc không sao”</td>
+<td>Sai, và không có bản ghi</td>
+</tr>
+</tbody>
+</table>
+<p>Điều cần thấy: điều khoản bị đọc rộng hơn điều kiện của nó, theo cả
+hai hướng. Đọc hẹp quá thì bỏ qua ràng buộc, đọc rộng quá thì chặn việc
+hợp lệ.</p>
+<h2 id="bài-tập-6">Bài tập</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Phân loại 8 đầu vào thật từ công việc của bạn vào 3 xô</td>
+<td>15 phút</td>
+<td>Mỗi mục có lý do, không chỉ có nhãn</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chạy phép thử tổ hợp trên một bảng dữ liệu của bạn</td>
+<td>15 phút</td>
+<td>Tìm được ít nhất một tổ hợp có thể định danh</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Lấy một điều khoản policy thật, đọc điều kiện kích hoạt theo nghĩa
+đen</td>
+<td>20 phút</td>
+<td>Nêu được một trường hợp điều khoản không áp dụng dù nghe có vẻ áp
+dụng</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Viết bản ghi quyết định 4 phần cho một ca khó</td>
+<td>25 phút</td>
+<td>Người ngoài đọc hiểu vì sao quyết định như vậy</td>
+</tr>
+</tbody>
+</table>
+<p>Bài 3 là bài dễ sai nhất. Ghi nguyên văn điều khoản trước khi diễn
+giải.</p>
+<h2 id="đọc-thêm-6">Đọc thêm</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://www.anthropic.com/legal/aup">Anthropic Usage
+Policy</a></td>
+<td>Các nhóm hành vi bị cấm và yêu cầu sử dụng có trách nhiệm</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices">Prompting
+best practices</a></td>
+<td>Mục cải thiện tính trung thực của output</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="m08">
+<h2 id="troubleshooting-output-kém">08 · Troubleshooting output kém</h2>
+<p>Domain D7 (10%) · Video 08 (3:57)</p>
+<h2 id="ý-chính-7">Ý chính</h2>
+<p>Khi quy trình bắt đầu kém, phản xạ là viết lại prompt. Prompt hiếm
+khi là nguyên nhân thật.</p>
+<p>Quy trình chẩn đoán:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Việc làm</th>
+<th>Bằng chứng cần có</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Lấy một output fail cụ thể, kèm input của nó</td>
+<td>Trích nguyên văn, không mô tả</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Lấy một output từng tốt để chứng minh là regression</td>
+<td>Cùng loại input, khác thời điểm</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Diff mọi điều kiện: input, người dùng, cấu hình, phiên bản</td>
+<td>Bảng so sánh</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Tách prompt khỏi input bằng test bốn ô</td>
+<td>Kết quả từng ô</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Hỏi chuẩn “tốt” có thay đổi không</td>
+<td>Người dùng xác nhận</td>
+</tr>
+</tbody>
+</table>
+<p>Test bốn ô:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Ô</th>
+<th>Prompt</th>
+<th>Input</th>
+<th>Kết quả nói lên điều gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Cũ</td>
+<td>Cũ</td>
+<td>Mốc so sánh</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Mới</td>
+<td>Cũ</td>
+<td>Prompt có phải nguyên nhân</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Cũ</td>
+<td>Mới</td>
+<td>Input có phải nguyên nhân</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Mới</td>
+<td>Mới</td>
+<td>Lỗi chỉ xuất hiện khi cả hai đổi</td>
+</tr>
+</tbody>
+</table>
+<p>Nếu ô 1 cũng hỏng thì vấn đề không nằm ở prompt lẫn input. Đó là lúc
+kiểm ô thứ năm: chuẩn của người dùng đã cao lên, không có gì hỏng
+cả.</p>
+<p>Vòng lặp thật cần baseline:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Việc làm</th>
+<th>Thiếu thì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline</td>
+<td>Đo output hiện tại trước khi đổi</td>
+<td>Mọi tuyên bố sau đó không phản chứng được</td>
+</tr>
+<tr>
+<td>Bộ input cố định</td>
+<td>5 input đại diện, giữ nguyên</td>
+<td>Kết quả không so sánh được giữa các lần</td>
+</tr>
+<tr>
+<td>Rubric</td>
+<td>3 mức, tiêu chí rõ</td>
+<td>Chấm theo cảm nhận</td>
+</tr>
+<tr>
+<td>Một thay đổi</td>
+<td>Chỉ đổi một biến</td>
+<td>Không biết thay đổi nào tạo kết quả</td>
+</tr>
+<tr>
+<td>Đo lại</td>
+<td>Chấm cả tiêu chí cũ</td>
+<td>Không thấy chỗ bị hỏng kèm theo</td>
+</tr>
+<tr>
+<td>Chấm blind</td>
+<td>Không nhìn lúc tạo output</td>
+<td>Bị neo theo thứ vừa xem</td>
+</tr>
+</tbody>
+</table>
+<p>Tối ưu hiệu suất, bốn đòn, theo thứ tự:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Đòn</th>
+<th>Việc làm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Configuration</td>
+<td>Đưa context lặp lại vào instructions hoặc project</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>Sửa nguồn bị lệch format thay vì thêm bước làm sạch</td>
+</tr>
+<tr>
+<td>Tier</td>
+<td>Khớp tier với subtask, không dùng một tier cho cả pipeline</td>
+</tr>
+<tr>
+<td>Steps</td>
+<td>Bỏ bước không còn tạo ra giá trị</td>
+</tr>
+</tbody>
+</table>
+<p>Thời gian thật thường không nằm ở generation mà ở correction và
+reformatting. Đo trước khi tối ưu.</p>
+<p>Không cắt verification hay điểm quyết định của con người. Nếu một
+bước tồn tại vì rủi ro, tối ưu cách làm cho nó rẻ hơn, không bỏ nó.</p>
+<h2 id="ví-dụ-7">Ví dụ</h2>
+<p>Tình huống: báo cáo tuần tự nhiên kém từ tháng trước. Ba người dùng,
+cùng một prompt.</p>
+<p>Bước 1, output fail:</p>
+<pre><code>Tuần này doanh thu tăng tốt. Các nhóm đều đóng góp tích cực.
+Nhìn chung bức tranh khả quan.</code></pre>
+<p>Không có số, không có so sánh, câu nào cũng đúng và vô dụng.</p>
+<p>Bước 2, output từng tốt, cùng loại input:</p>
+<pre><code>Doanh thu 2,41 tỷ, tăng 6,2% so với tuần trước, tăng 3,1% so cùng kỳ.
+Nhóm A đóng góp 1,8 tỷ, nhóm B 0,4 tỷ, nhóm C 0,2 tỷ.</code></pre>
+<p>Bước 3, diff điều kiện:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Điều kiện</th>
+<th>Trước</th>
+<th>Sau</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompt</td>
+<td>Không đổi</td>
+<td>Không đổi</td>
+</tr>
+<tr>
+<td>Nguồn dữ liệu</td>
+<td>Bảng tính tháng 8</td>
+<td>Bảng tính tháng 9, thêm 4 cột trống</td>
+</tr>
+<tr>
+<td>Người dùng</td>
+<td>Một người</td>
+<td>Ba người</td>
+</tr>
+<tr>
+<td>Cấu hình</td>
+<td>Không có project</td>
+<td>Có project, knowledge thêm 12 tài liệu</td>
+</tr>
+</tbody>
+</table>
+<p>Bước 4, test bốn ô:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Ô</th>
+<th>Prompt</th>
+<th>Input</th>
+<th>Kết quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Cũ</td>
+<td>Cũ</td>
+<td>Tốt</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Mới</td>
+<td>Cũ</td>
+<td>Tốt</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Cũ</td>
+<td>Mới</td>
+<td>Kém</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Mới</td>
+<td>Mới</td>
+<td>Kém</td>
+</tr>
+</tbody>
+</table>
+<p>Kết luận: prompt không phải nguyên nhân, input mới là. Cột trống
+trong bảng tính tháng 9 làm bước tính toán trả về rỗng, và model bù bằng
+câu chung chung. Đây là ví dụ của việc model che lỗi dữ liệu, không phải
+lỗi model.</p>
+<p>Sửa: chuẩn hóa nguồn dữ liệu, thêm instruction “nếu một chỉ số không
+tính được thì báo thiếu, không viết nhận định chung”.</p>
+<p>Vòng lặp sau khi sửa:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Mức 1</th>
+<th>Mức 2</th>
+<th>Mức 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Có đủ 3 chỉ số bắt buộc</td>
+<td>Không có</td>
+<td>Có 1-2</td>
+<td>Đủ 3</td>
+</tr>
+<tr>
+<td>Số khớp nguồn</td>
+<td>Sai</td>
+<td>Đúng một phần</td>
+<td>Khớp hoàn toàn</td>
+</tr>
+<tr>
+<td>Không có câu nhận định vô nghĩa</td>
+<td>Có</td>
+<td>Ít</td>
+<td>Không</td>
+</tr>
+</tbody>
+</table>
+<p>Baseline trước khi sửa: 5 input, cả 5 ở mức 1. Sau khi sửa: 4 mức 3,
+1 mức 2.</p>
+<h2 id="bài-tập-7">Bài tập</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Viết baseline cho một quy trình: 5 input, rubric 3 mức</td>
+<td>20 phút</td>
+<td>Chấm lại lần hai ra cùng kết quả</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chạy test bốn ô cho một lỗi có thật</td>
+<td>20 phút</td>
+<td>Kết luận được nguyên nhân nằm ở prompt, input hay chuẩn</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Đo thời gian thực tế theo 4 nhóm: generation, correction,
+reformatting, chờ</td>
+<td>20 phút</td>
+<td>Biết nhóm nào lớn nhất, bằng số</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Chọn một đòn tối ưu và đo lại sau khi áp dụng</td>
+<td>15 phút</td>
+<td>Có số trước và sau, và không tiêu chí nào bị giảm</td>
+</tr>
+</tbody>
+</table>
+<p>Bài 3 hay cho kết quả bất ngờ: phần lớn thời gian không nằm ở
+model.</p>
+<h2 id="đọc-thêm-7">Đọc thêm</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/test-and-evaluate/develop-tests">Define
+success criteria and build evaluations</a></td>
+<td>Thiết kế bộ input, rubric, eval</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/about-claude/models/choosing-a-model">Choosing
+the right model</a></td>
+<td>Đổi model so với đổi prompt: khi nào cái nào đúng</td>
+</tr>
+<tr>
+<td><a href="https://platform.claude.com/docs/en/models/overview">Models
+overview</a></td>
+<td>Effort và tier, hai đòn tối ưu khác nhau</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="m09">
+<h2 id="capstone-đưa-một-quy-trình-thật-vào-production">09 · Capstone:
+đưa một quy trình thật vào production</h2>
+<p>Cross-domain · Video 09 (5:13)</p>
+<h2 id="ý-chính-8">Ý chính</h2>
+<p>Capstone có bốn bước, và bước 1 quyết định phần lớn kết quả.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Bước</th>
+<th>Việc làm</th>
+<th>Deliverable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Scope</td>
+<td>Bảng scope, tiêu chí thành công, kill criterion</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Build</td>
+<td>Project, instructions, bộ prompt, bộ input thử</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Validate</td>
+<td>Bằng chứng đo được, control document</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Brief</td>
+<td>Bản trình bày một trang cho stakeholder</td>
+</tr>
+</tbody>
+</table>
+<p>Chọn quy trình theo ba điều kiện:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Điều kiện</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Có input thật</td>
+<td>Không có thì không test được</td>
+</tr>
+<tr>
+<td>Lặp lại</td>
+<td>Không lặp thì không có giá trị</td>
+</tr>
+<tr>
+<td>Kiểm được output đúng sai</td>
+<td>Không kiểm được thì không validate được</td>
+</tr>
+</tbody>
+</table>
+<p>Chọn quy trình nhàm chán. Quy trình thú vị thường có phán đoán tranh
+cãi, output không kiểm chứng được, và phức tạp, đúng ba thứ làm capstone
+thất bại.</p>
+<p>Scope vào một bước, không phải cả quy trình. Viết rõ phần nằm ngoài
+scope, vì đó là chỗ tranh cãi sẽ xảy ra.</p>
+<p>Bước 2 phải xây cho người khác chạy được, không phải cho bạn chạy
+được. Quy trình production thất bại ở input kỳ quặc mà không ai thiết kế
+cho, không phải ở happy path.</p>
+<p>Bước 3: control không có trigger chỉ là hy vọng. Một control phải trả
+lời bốn câu: cái gì có thể sai, cái gì bắt được, ai sở hữu, khi nó kích
+hoạt thì làm gì.</p>
+<p>Bước 4: gọi sản phẩm là validated with known risks, không phải
+finished.</p>
+<h2 id="ví-dụ-8">Ví dụ</h2>
+<p>Scope sheet hoàn chỉnh:</p>
+<pre><code>Quy trình: rà soát ngoại lệ trong đối soát thanh toán.
+Bước trong scope: phân loại 120 ngoại lệ mỗi tuần thành 5 nhóm
+và gắn mức ưu tiên.
+
+Ngoài scope (ghi rõ, không làm):
+- Không xử lý ngoại lệ.
+- Không liên hệ khách hàng.
+- Không sửa dữ liệu gốc.
+
+Tiêu chí thành công:
+- Phân loại đúng từ 90% trở lên trên 40 ngoại lệ gán nhãn tay.
+- Không bỏ sót ngoại lệ nào ở nhóm ưu tiên cao.
+- Người rà soát giảm thời gian từ 6 giờ xuống dưới 2 giờ mỗi tuần.
+
+Điều không được tệ đi:
+- Không được tăng số ngoại lệ bị bỏ sót so với hiện tại.
+
+Kill criterion:
+- Nếu độ chính xác dưới 75% sau 3 vòng sửa, dừng dự án.
+
+Input thật: file xuất từ hệ thống đối soát, 4 tuần gần nhất.</code></pre>
+<p>Control document:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Cái gì có thể sai</th>
+<th>Cái gì bắt được</th>
+<th>Ai sở hữu</th>
+<th>Khi kích hoạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phân loại sai nhóm ưu tiên cao</td>
+<td>Kiểm 100% nhóm ưu tiên cao bằng người</td>
+<td>Trưởng nhóm đối soát</td>
+<td>Sửa nhãn, ghi lại ca sai</td>
+</tr>
+<tr>
+<td>Bỏ sót ngoại lệ khi đọc file</td>
+<td>Đối chiếu số lượng dòng vào và ra</td>
+<td>Người chạy quy trình</td>
+<td>Chạy lại từ file gốc</td>
+</tr>
+<tr>
+<td>Tài liệu phân loại lỗi thời</td>
+<td>Instruction báo ngày tài liệu mới nhất</td>
+<td>Chủ project</td>
+<td>Cập nhật tài liệu, chạy lại tuần đó</td>
+</tr>
+<tr>
+<td>Người dùng tin output quá mức</td>
+<td>Kiểm ngẫu nhiên 10% mỗi tuần</td>
+<td>Trưởng nhóm</td>
+<td>Ghi nhận, điều chỉnh hướng dẫn</td>
+</tr>
+</tbody>
+</table>
+<p>Bản brief cuối:</p>
+<pre><code>Claim: phân loại tự động đạt 92% trên 40 ngoại lệ gán nhãn tay,
+giảm thời gian rà soát từ 6 giờ xuống 1,8 giờ mỗi tuần.
+
+Số chưa đẹp: 2 trong 40 ca bị xếp nhầm nhóm, cả hai đều ở nhóm
+trung bình, không ảnh hưởng thứ tự ưu tiên.
+
+Giới hạn:
+- Không xử lý ngoại lệ bằng ngoại tệ.
+- Không đáng tin khi file nguồn thiếu cột mã đơn.
+- Không thay thế quyết định của người rà soát.
+
+Failure mode và cách phát hiện:
+- Phân loại sai: kiểm 100% nhóm ưu tiên cao, 10% các nhóm khác.
+- Bỏ sót: đối chiếu số dòng.
+- Lỗi thời: cảnh báo ngày tài liệu ngay trong output.
+
+Rủi ro tôi thấy khó chịu nhất: người dùng có thể ngừng kiểm tay
+nhóm ưu tiên cao sau vài tuần ổn.
+
+Ask: duyệt chạy song song 4 tuần, sau đó quyết định bỏ bước phân loại tay.</code></pre>
+<h2 id="bài-tập-8">Bài tập</h2>
+<p>Đây là bài tập lớn, làm trong khoảng 2 giờ, chia 4 chặng.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Chặng</th>
+<th>Việc làm</th>
+<th>Deliverable</th>
+<th>Thời gian</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Chọn 3 quy trình ứng viên, chấm theo 3 điều kiện, chọn 1</td>
+<td>Bảng so sánh, có lý do loại</td>
+<td>25 phút</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết scope sheet đủ 6 mục</td>
+<td>File scope</td>
+<td>25 phút</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Xây project: instructions, knowledge, 5 input thử</td>
+<td>Project chạy được</td>
+<td>40 phút</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Validate và viết control document</td>
+<td>Bảng bằng chứng, 4 control</td>
+<td>30 phút</td>
+</tr>
+</tbody>
+</table>
+<p>Tự chấm bằng bảng sau. Dưới 8 điểm thì chưa nên trình bày.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Điểm</th>
+<th>Cách kiểm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scope chỉ một bước, có phần ngoài scope</td>
+<td>0-2</td>
+<td>Đọc lại, có dòng “ngoài scope”</td>
+</tr>
+<tr>
+<td>Tiêu chí thành công đo được</td>
+<td>0-2</td>
+<td>Có số, có cách đo</td>
+</tr>
+<tr>
+<td>Có kill criterion thật</td>
+<td>0-1</td>
+<td>Là ngưỡng, không phải lời hứa</td>
+</tr>
+<tr>
+<td>Test bằng input kỳ quặc, ghi lại chỗ vỡ</td>
+<td>0-2</td>
+<td>Có ít nhất một ca vỡ và cách sửa</td>
+</tr>
+<tr>
+<td>Mỗi control có trigger và người sở hữu</td>
+<td>0-2</td>
+<td>Không có control nào chỉ là “theo dõi”</td>
+</tr>
+<tr>
+<td>Brief nêu số chưa đẹp và một rủi ro khó chịu</td>
+<td>0-1</td>
+<td>Đọc thấy cả hai</td>
+</tr>
+</tbody>
+</table>
+<p>Kinh nghiệm chung: chặng 4 là chặng làm người ta phải quay lại chặng
+2. Một tiêu chí không đo được nghĩa là scope đã viết sai, và phát hiện
+điều đó lúc này là mục đích của capstone.</p>
+<h2 id="đọc-thêm-8">Đọc thêm</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a
+href="https://www.anthropic.com/engineering/building-effective-agents">Building
+effective agents</a></td>
+<td>Chọn pattern khi quy trình có nhiều bước</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/test-and-evaluate/develop-tests">Define
+success criteria and build evaluations</a></td>
+<td>Bộ input và rubric cho bước validate</td>
+</tr>
+<tr>
+<td><a
+href="https://platform.claude.com/docs/en/about-claude/models/choosing-a-model">Choosing
+the right model</a></td>
+<td>Chọn tier cho từng bước sau khi đã có số đo</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+  <footer class="lesson-footer">
+    <p>Nguồn: video khóa học. Số liệu và giá kiểm tháng 10/2026.</p>
+    <p>Quay lại <a href="../index.html">trang chủ</a>.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/site-nav.js?v=2"></script>
+</body>
+</html>

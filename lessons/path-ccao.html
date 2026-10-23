@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đường leo thang CCAO-F · 12 chặng</title>
+<link rel="stylesheet" href="../assets/course.css?v=2">
+<style>
+  .path-head { display:flex; gap:1rem; align-items:baseline; flex-wrap:wrap; }
+  .bar { height:8px; background:var(--line); border-radius:4px; overflow:hidden; margin:.8rem 0 1.4rem; }
+  .bar > i { display:block; height:100%; width:0; background:var(--accent); transition:width .3s; }
+  .stage { border:1px solid var(--line); border-radius:10px; padding:1rem 1.1rem; margin:.9rem 0; background:#fff; }
+  .stage.locked { opacity:.55; }
+  .stage.done { border-color:var(--accent); }
+  .stage-head { display:flex; justify-content:space-between; gap:1rem; align-items:baseline; }
+  .stage h3 { margin:0; font-size:1.05rem; }
+  .badge { font:600 .72rem/1 var(--sans); letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  .stage.done .badge { color:var(--accent); }
+  .q { margin:1rem 0 .4rem; font-weight:600; }
+  .opts { display:grid; gap:.35rem; margin:.4rem 0 .6rem; }
+  .opt { display:flex; gap:.55rem; align-items:flex-start; padding:.45rem .6rem; border:1px solid var(--line); border-radius:7px; cursor:pointer; font-size:.94rem; }
+  .opt:hover { border-color:var(--accent); }
+  .opt input { margin-top:.25rem; }
+  .opt.right { border-color:#2e7d32; background:#f2f8f2; }
+  .opt.wrong { border-color:#b3261e; background:#fdf3f2; }
+  .why { font-size:.9rem; color:var(--muted); margin:.3rem 0 .9rem; display:none; }
+  .why.show { display:block; }
+  .actions { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
+  button { font:inherit; padding:.45rem .9rem; border-radius:7px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
+  button.ghost { background:transparent; color:var(--accent); }
+  button:disabled { opacity:.5; cursor:default; }
+  .score { font-size:.9rem; color:var(--muted); }
+  .reset { margin-top:2rem; }
+</style>
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">CCAO-F · Đường leo thang</div>
+    <h1>12 chặng, mỗi chặng một cửa</h1>
+    <p class="subtitle">Đọc bài, làm 5 câu, đạt 4 câu mới mở chặng sau. Tiến độ lưu trong trình duyệt này.</p>
+  </div>
+</header>
+
+<main>
+  <div class="path-head">
+    <strong id="progressText">0 / 12 chặng</strong>
+    <span class="score" id="hint">Bắt đầu ở chặng 01.</span>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+
+  <div id="stages"></div>
+
+  <div class="reset">
+    <button class="ghost" id="reset">Xóa tiến độ và làm lại từ đầu</button>
+  </div>
+</main>
+
+<script>
+const KEY = 'ccao.path.v1';
+const PASS = 4;
+
+const stages = [
+  {
+    id: 1, title: '01 · Bốn động tác', anchor: 'm01',
+    recap: 'Verify, match, gate, escalate. Mọi đáp án đúng là một trong bốn.',
+    qs: [
+      { q: 'Claude tóm tắt quy định và trích "subsection 4B2". Sếp hỏi gửi đi không. Làm gì?',
+        o: ['Gửi vì Claude nghe chắc chắn', 'Hỏi Claude tự chấm độ tin cậy', 'Mở quy định, kiểm 4B2 có đúng vậy không', 'Sửa cho trang trọng hơn rồi gửi'],
+        a: 2, why: 'Verify: mở nguồn. Ba phương án kia dựa vào sự tự tin hoặc hình thức.' },
+      { q: 'Dan đưa bảng tính có tên và số tài khoản, nói "chỉ phân tích nội bộ".',
+        o: ['Tải lên vì nội bộ', 'Tải lên và dặn Claude đừng lưu', 'Bỏ không làm', 'Ẩn danh định danh rồi phân tích'],
+        a: 3, why: 'Gate: nội bộ không phải ngoại lệ policy; chỉ dẫn cho model không phải control.' },
+      { q: 'Câu hỏi về thuế trên hóa đơn khách hàng. Động tác chính?',
+        o: ['Verify', 'Match', 'Gate', 'Escalate'],
+        a: 3, why: 'Thuộc lĩnh vực rủi ro cao, cần người có chuyên môn duyệt và nói rõ AI tham gia.' },
+      { q: 'Câu multiple response ghi "chọn 2". Điều đó có nghĩa gì?',
+        o: ['Đề muốn hai động tác, không phải một đáp án hoàn hảo', 'Luôn có một đáp án đúng và một gần đúng', 'Có thể chọn 1 nếu chắc', 'Hai đáp án tương đương nhau'],
+        a: 0, why: 'Con số là thông tin: loại dần tới đúng số lượng.' },
+      { q: 'Điểm 720 trên thang 100-1.000 nghĩa là gì?',
+        o: ['72% câu đúng', '43/60 câu', 'Điểm quy đổi, không suy ra được số câu', 'Điểm trung bình của thí sinh'],
+        a: 2, why: 'Điểm quy đổi để cân bằng độ khó giữa các đề.' }
+    ]
+  },
+  {
+    id: 2, title: '02 · Prompting', anchor: 'm02',
+    recap: 'Briefing gồm bối cảnh, yêu cầu, người đọc, thế nào là tốt. Chia bước, duyệt kế hoạch trước.',
+    qs: [
+      { q: 'Prompt 15 dòng toàn "đừng" cho ra báo cáo nhạt. Nguyên nhân?',
+        o: ['Prompt quá dài', 'Thiếu bối cảnh, người đọc, tiêu chí tốt; toàn phủ định', 'Model yếu', 'Cần thêm ví dụ về giọng'],
+        a: 1, why: 'Độ dài không phải vấn đề; dài sai chỗ và im lặng đúng chỗ.' },
+      { q: 'Việc phức tạp, deliverable lớn. Bước đầu đúng?',
+        o: ['Viết một prompt thật dài đủ mọi tiêu chí', 'Nhờ liệt kê kế hoạch và giả định, duyệt trước rồi làm', 'Tách 5 chat rồi tự gộp', 'Nhờ model tự chia bước và tự duyệt'],
+        a: 1, why: 'Duyệt kế hoạch bắt lỗi ở bước 1 thay vì trong bản hoàn chỉnh.' },
+      { q: 'Gom nhóm và decomposition khác nhau thế nào?',
+        o: ['Gom nhóm là nhiều câu nhỏ liên quan; decomposition là việc lớn chia bước duyệt được', 'Hai cách gọi của cùng một việc', 'Gom nhóm dùng cho code, decomposition cho văn bản', 'Decomposition chỉ dùng khi hết context'],
+        a: 0, why: 'Nhỏ và liên quan thì gom; lớn và phức tạp thì chia.' },
+      { q: 'Bản nháp đúng cấu trúc nhưng giọng quá cứng. Làm gì?',
+        o: ['Mở chat mới với prompt dài hơn', 'Bấm regenerate', 'Phản hồi trong cùng hội thoại: giữ cấu trúc, đổi giọng, kèm mẫu', 'Đổi model'],
+        a: 2, why: 'Phản hồi có mục tiêu giữ lại ngữ cảnh; chat mới làm mất hết.' },
+      { q: 'Brainstorming nên viết prompt thế nào?',
+        o: ['Khóa chặt định dạng', 'Nêu mục tiêu và biên, đòi nhiều phương án khác nhau', 'Đưa một ví dụ duy nhất', 'Chia thành 10 bước tuần tự'],
+        a: 1, why: 'Brainstorming là chỗ duy nhất nới tay.' }
+    ]
+  },
+  {
+    id: 3, title: '03 · Bắt lời nói dối tự tin', anchor: 'm03',
+    recap: 'Trích dẫn chỉ được xác minh sau khi mở. Completeness kiểm với danh sách gốc.',
+    qs: [
+      { q: 'Vì sao Claude tạo ra trích dẫn không tồn tại?',
+        o: ['Nó tra cơ sở dữ liệu lỗi', 'Nó dự đoán chữ tiếp theo, hoàn thành hình dạng trích dẫn', 'Nó cố tình đánh lừa', 'Dữ liệu huấn luyện chứa báo cáo giả'],
+        a: 1, why: 'Nó hoàn thành hình dạng, không truy xuất nguồn.' },
+      { q: 'Cách giảm bịa đặt hiệu quả nhất theo tài liệu Anthropic?',
+        o: ['Yêu cầu trả lời trang trọng', 'Cho phép nói "tôi không biết đủ thông tin"', 'Hỏi lại lần hai', 'Dùng model mạnh hơn'],
+        a: 1, why: 'Cho phép thừa nhận không chắc làm giảm mạnh thông tin sai.' },
+      { q: 'Bản tóm tắt 6 thị trường thành 5 insight, có thể đã bỏ 2 thị trường. Kiểm bằng gì?',
+        o: ['Đọc lại bản tóm tắt', 'So với danh sách yêu cầu ban đầu', 'Hỏi Claude còn thiếu gì', 'Đếm số từ'],
+        a: 1, why: 'Completeness chỉ bắt được khi so với nguồn hoặc danh sách gốc.' },
+      { q: 'Hỏi cùng câu hai lần, ra hai đáp án khác nhau. Kết luận?',
+        o: ['Lần hai đúng hơn', 'Chọn đáp án hợp trực giác', 'Cả hai chưa xác minh, phải kiểm nguồn', 'Dữ liệu bị hỏng'],
+        a: 2, why: 'Bất đồng giữa các lần là dấu hiệu có thể bịa.' },
+      { q: 'Câu "bạn có chắc không?" có giá trị gì?',
+        o: ['Xác minh được claim', 'Là văn bản sinh từ cùng cơ chế, không phải bằng chứng', 'Giảm hallucination 50%', 'Buộc model tra nguồn'],
+        a: 1, why: 'Sự trấn an là text sinh ra, không phải kiểm chứng.' }
+    ]
+  },
+  {
+    id: 4, title: '04 · Quy trình kiểm chứng', anchor: 'm04',
+    recap: 'Đính nguồn, cho phép nói không biết, mỗi claim một trích dẫn, tự mở nguồn.',
+    qs: [
+      { q: 'Bước đầu tiên của quy trình một trang?',
+        o: ['Đọc lại bản nháp', 'Đính tài liệu nguồn và yêu cầu chỉ dùng tài liệu đó', 'Nhờ Claude tự chấm', 'Chia thành nhiều đoạn'],
+        a: 1, why: 'Biến bài luận mở thành bài thi đóng sách.' },
+      { q: 'Hợp đồng 100 trang, cần đánh giá điều khoản phạt. Cách đúng?',
+        o: ['Dặn "hãy cẩn thận"', 'Chia 20 đoạn ngắn', 'Trích nguyên văn điều khoản trước, phân tích chỉ dựa trên trích', 'Nhờ model tự chấm confidence'],
+        a: 2, why: 'Quotes first, analysis second.' },
+      { q: 'Email tư vấn tài chính cá nhân hóa cho khách. Điều kiện bắt buộc?',
+        o: ['Có disclaimer cuối email', 'Người có chuyên môn duyệt trước khi gửi, khách được biết AI tham gia', 'Chỉ gửi cho khách VIP', 'Dùng model mạnh nhất'],
+        a: 1, why: 'Rủi ro cao: review trước, không phải disclaimer sau.' },
+      { q: 'Một claim không tìm được trích nguyên văn hỗ trợ. Làm gì?',
+        o: ['Giữ vì nghe hợp lý', 'Rút claim', 'Hỏi Claude có chắc không', 'Đổi cách diễn đạt'],
+        a: 1, why: 'Không có trích thì không có claim.' },
+      { q: 'Hai người đọc cần cùng một tin. Việc cần làm?',
+        o: ['Gửi cùng một bản', 'Nêu rõ người đọc và việc họ phải làm với output', 'Rút ngắn một nửa', 'Đổi giọng cho thân thiện'],
+        a: 1, why: 'Audience và purpose nói ra thành lời.' }
+    ]
+  },
+  {
+    id: 5, title: '05 · Chọn sản phẩm và model', anchor: 'm05',
+    recap: 'Chọn feature theo điểm yếu cần sửa; chọn tier theo quality, speed, volume.',
+    qs: [
+      { q: '100 email trả lời ngắn mỗi ngày, cần nhanh và rẻ.',
+        o: ['Model mạnh nhất cho mọi email', 'Tier nhanh rẻ cho việc đơn giản khối lượng lớn', 'Tắt bớt feature', 'Đổi nền tảng khác'],
+        a: 1, why: 'Năng lực không dùng tới là tiền thuần.' },
+      { q: 'Cùng một đoạn brand voice dán lại mỗi sáng. Feature nào?',
+        o: ['Chat thường', 'Project', 'Research', 'Artifact'],
+        a: 1, why: 'Context lặp lại thuộc project.' },
+      { q: 'Mẫu báo cáo sẽ được sửa nhiều lần và chia sẻ ra ngoài chat.',
+        o: ['Chat thường', 'Project', 'Research', 'Artifact'],
+        a: 3, why: 'Deliverable sống riêng, có phiên bản, chia sẻ được.' },
+      { q: 'Cần tổng hợp 6 nguồn và trích dẫn cho người đọc khó tính.',
+        o: ['Search', 'Thinking', 'Research', 'Chat thường'],
+        a: 2, why: 'Search để tìm, thinking để lập luận, research để gom và trích.' },
+      { q: 'Chat 6 tuần đã trôi sang nhiều chủ đề, bắt đầu nhớ nhầm.',
+        o: ['Tiếp tục và sửa dần', 'Restart với bản tóm tắt ngắn', 'Tăng context window', 'Đổi model'],
+        a: 1, why: 'Restart khi chat đã trôi chủ đề.' }
+    ]
+  },
+  {
+    id: 6, title: '06 · Thiết kế workflow', anchor: 'm06',
+    recap: 'Vẽ tuần thật, tìm bước ngốn thời gian, phân tích trước khi tự động hóa, pilot có tiêu chí.',
+    qs: [
+      { q: 'Trước khi tự động hóa một quy trình, việc đầu tiên?',
+        o: ['Chọn công cụ', 'Vẽ tuần làm việc thật và tìm chỗ thời gian chảy mất', 'Viết prompt', 'Chuyển prompt cho cả team'],
+        a: 1, why: 'Phân tích trước khi tự động hóa.' },
+      { q: 'Bước nào nên tự động hóa trước?',
+        o: ['Bước demo đẹp nhất', 'Bước ngốn nhiều thời gian nhất', 'Bước dễ nhất', 'Bước sếp nhìn thấy'],
+        a: 1, why: 'Leverage, không phải khả năng khoe.' },
+      { q: 'Tiêu chí đạt của pilot nên viết khi nào?',
+        o: ['Sau khi thấy kết quả', 'Trước khi pilot bắt đầu', 'Sau một tuần', 'Khi sếp hỏi'],
+        a: 1, why: 'Tiêu chí viết sau luôn cong theo kết quả.' },
+      { q: 'Cần viết requirements cho việc tự động hóa hóa đơn, đã có tài liệu quy trình và log ngoại lệ.',
+        o: ['Nhờ Claude viết luôn', 'Chạy research xem công ty khác làm sao', 'Xây skill trước', 'Tải tài liệu và log, chia bước, phân loại, tìm khoảng trống, rồi viết'],
+        a: 3, why: 'Ràng buộc thật nằm trong tài liệu nội bộ.' },
+      { q: 'Pilot đúng cách?',
+        o: ['Cả team dùng ngay', 'Một người, một bước, một tuần', 'Chạy song song toàn bộ', 'Chỉ chạy trên dữ liệu giả'],
+        a: 1, why: 'Nhỏ, đo được, rồi mới mở rộng.' }
+    ]
+  },
+  {
+    id: 7, title: '07 · Cấu hình và knowledge', anchor: 'm07',
+    recap: 'Instructions là cách hành xử, knowledge là sự thật. Tên project không được đọc.',
+    qs: [
+      { q: 'Brand voice và luật đứng thuộc đâu?',
+        o: ['Knowledge', 'Instructions', 'Tên project', 'Description'],
+        a: 1, why: 'Cách hành xử thuộc instructions.' },
+      { q: 'Bảng giá và tài liệu sản phẩm thuộc đâu?',
+        o: ['Knowledge', 'Instructions', 'Prompt mỗi lần', 'Tên file'],
+        a: 0, why: 'Sự thật thuộc knowledge.' },
+      { q: 'Đổi tên project thành "luôn trang trọng" có tác dụng?',
+        o: ['Có, Claude đọc tên', 'Không, tên và description chỉ cho người', 'Có, nếu viết hoa', 'Có, nếu lặp lại trong mô tả'],
+        a: 1, why: 'Claude chỉ đọc instructions và knowledge bên trong.' },
+      { q: 'Nhóm cần checklist dùng chung cho mọi phiên review, không ảnh hưởng việc khác.',
+        o: ['Dán đầu mỗi phiên', 'Instructions cá nhân', 'Instructions của project + checklist trong knowledge', 'Đổi tên project'],
+        a: 2, why: 'Đúng phạm vi: project, không phải toàn tài khoản.' },
+      { q: 'Instruction cá nhân mâu thuẫn instruction tổ chức.',
+        o: ['Cá nhân thắng', 'Tổ chức thắng', 'Hỏi lại mỗi lần', 'Cái nào mới hơn thắng'],
+        a: 1, why: 'Chính sách công ty nằm trên sở thích cá nhân.' }
+    ]
+  },
+  {
+    id: 8, title: '08 · Governance', anchor: 'm08',
+    recap: 'Rủi ro cao cần người có chuyên môn duyệt và nói rõ AI tham gia. Nội bộ không phải ngoại lệ.',
+    qs: [
+      { q: 'Khách bảo "giữ kín để legal khỏi chậm". Trả lời đúng?',
+        o: ['Đồng ý, làm nhanh', 'Từ chối và im lặng', 'Nêu người sở hữu policy; không ai nói không thì chưa phải có', 'Hỏi Claude có hợp pháp không'],
+        a: 2, why: 'Im lặng không phải chấp thuận.' },
+      { q: 'Dữ liệu khách có tên, email, chi tiêu; "chỉ nội bộ".',
+        o: ['Dùng được vì nội bộ', 'Ẩn danh trước khi phân tích', 'Dùng nếu không chia sẻ ra ngoài', 'Dùng nếu xóa sau khi xong'],
+        a: 1, why: 'Trigger là loại dữ liệu, không phải người xem.' },
+      { q: 'Năm testimonial bịa cho landing page.',
+        o: ['Được nếu ghi "minh họa"', 'Không; dùng phản hồi khảo sát thật, kiểm từng trích', 'Được nếu khách đồng ý sau', 'Được nếu ẩn tên'],
+        a: 1, why: 'Lời khen bịa gắn mặt khách thật là lừa dối.' },
+      { q: 'Bật incognito để "cho đúng quy định".',
+        o: ['Đủ, vì không lưu lịch sử', 'Không đổi thỏa thuận dữ liệu hay quyền được chia sẻ', 'Đủ nếu kèm disclaimer', 'Đủ nếu xóa sau'],
+        a: 1, why: 'Incognito thay đổi mục đích dùng, không thay đổi hợp đồng.' },
+      { q: 'Việc nào thuộc nhóm rủi ro cao?',
+        o: ['Tóm tắt biên bản họp nội bộ', 'Quyết định bảo hiểm cho một người', 'Viết caption mạng xã hội', 'Dịch tài liệu sản phẩm'],
+        a: 1, why: 'Bảo hiểm nằm trong danh sách rủi ro cao.' }
+    ]
+  },
+  {
+    id: 9, title: '09 · Troubleshooting', anchor: 'm09',
+    recap: 'Đừng regenerate, đừng đổi model, đừng hét to hơn. Đơn giản hóa và thêm context.',
+    qs: [
+      { q: 'Output nhạt đi so với hôm trước, cùng prompt. Phản xạ sai?',
+        o: ['Bấm regenerate', 'Chạy thang bốn bước', 'Hỏi model giải thích lập luận', 'Kiểm context cũ'],
+        a: 0, why: 'Regenerate không thêm thông tin nào.' },
+      { q: 'Thứ tự thang bốn bước?',
+        o: ['Đổi model, thêm context, chia bước, phản hồi', 'Nói lại yêu cầu, thêm context, chia bước, phản hồi cụ thể', 'Chia bước, phản hồi, đổi model, thử lại', 'Hỏi lại, regenerate, chia bước, đổi model'],
+        a: 1, why: 'Đơn giản hóa trước, rồi bổ sung.' },
+      { q: 'Output chung chung, đúng chủ đề nhưng nhạt.',
+        o: ['Thiếu đặc tả', 'Sai định dạng', 'Lạc đề', 'Model yếu'],
+        a: 0, why: 'Generic nghĩa là thiếu specificity và ví dụ.' },
+      { q: 'Hai lần chạy cùng câu ra hai kết luận.',
+        o: ['Chọn cái hợp lý hơn', 'Coi là dấu hiệu bịa, đòi trích từ dữ liệu', 'Chạy lần ba', 'Đổi model'],
+        a: 1, why: 'Bất đồng chứng minh phải kiểm trước khi dùng.' },
+      { q: 'Đổi sang model mạnh hơn khi output kém.',
+        o: ['Luôn hiệu quả', 'Không bù được context chưa từng được cấp', 'Chỉ hiệu quả với code', 'Hiệu quả nếu tăng context'],
+        a: 1, why: 'Nguyên nhân phổ biến nhất là context thiếu hoặc lẫn.' }
+    ]
+  },
+  {
+    id: 10, title: '10 · Question lab', anchor: 'm10',
+    recap: 'Tám thẻ, bảy domain trộn. Đáp án đúng luôn là động tác nhàm chán.',
+    qs: [
+      { q: 'Mẫu báo cáo tuần sẽ được dùng lại, sửa, chia sẻ.',
+        o: ['Regenerate mỗi tuần', 'Artifact', 'Research', 'Project mới mỗi tuần'],
+        a: 1, why: 'Reusable, standalone, iterated là mô tả của artifact.' },
+      { q: 'Bản tóm tắt báo cáo năm có con số kiện tụng rất cụ thể.',
+        o: ['Chấp nhận vì số cụ thể', 'Regenerate chọn bản nghe hợp lý hơn', 'Đòi trích nguyên văn và vị trí, bỏ claim không có', 'Hỏi Claude có chắc không'],
+        a: 2, why: 'No quote, no claim.' },
+      { q: 'Tự động hóa quyết định bảo hiểm cho claim nhỏ vì "giá trị thấp".',
+        o: ['Tự động sau ngưỡng confidence', 'Tự động hết và thêm disclaimer', 'Tự động nếu audit tháng trước tốt', 'Chuyên gia duyệt từng ca, khách được biết AI tham gia'],
+        a: 3, why: 'Không có ngoại lệ theo giá trị claim.' },
+      { q: 'Email ra mắt đúng ngữ pháp nhưng sai brand.',
+        o: ['Regenerate tới khi tốt hơn', 'Đổi model', 'Bổ sung người đọc, ưu đãi, giới hạn độ dài và một email mẫu', 'Dặn "sáng tạo hơn"'],
+        a: 2, why: 'Generic là thiếu specific, không phải thiếu sáng tạo.' },
+      { q: 'Luật của team chỉ chạy trên máy người tạo.',
+        o: ['Cài lại', 'Chuyển sang scope project và commit', 'Copy file user cho người mới', 'Viết lại rule ngắn hơn'],
+        a: 1, why: 'Rule dùng chung phải ở project scope.' }
+    ]
+  },
+  {
+    id: 11, title: '11 · Exam day', anchor: 'm11',
+    recap: 'Hai lượt, loại theo số đáp án, không đấu với một câu.',
+    qs: [
+      { q: 'Câu multiple response ghi "chọn 2" và bạn còn 3 đáp án khả dĩ.',
+        o: ['Chọn cả 3', 'Loại thêm một tới đúng 2', 'Chọn 1 vì chắc hơn', 'Bỏ qua'],
+        a: 1, why: 'Loại dần tới đúng số lượng đề nêu.' },
+      { q: 'Chiến lược thời gian đúng?',
+        o: ['Làm tuần tự, dừng ở câu khó', 'Lượt 1 trả lời câu nhận ra và đánh dấu, lượt 2 quay lại', 'Làm từ câu cuối lên', 'Chia đều 2 phút mỗi câu'],
+        a: 1, why: 'Giữ điểm đã có trước, rồi mới đấu với câu khó.' },
+      { q: 'Bài thi chấm theo tiêu chí cố định nghĩa là?',
+        o: ['Theo đường cong', 'So với người cùng phòng', 'Theo chuẩn đặt trước, không phụ thuộc người khác', 'Theo tỉ lệ phần trăm từng domain'],
+        a: 2, why: 'Criterion-referenced: không có đường cong.' },
+      { q: 'Phần trăm từng domain trong báo cáo điểm dùng để làm gì?',
+        o: ['Quyết định đạt hay trượt', 'Chẩn đoán để học lại', 'Tính điểm tổng', 'So với thí sinh khác'],
+        a: 1, why: 'Chỉ tổng điểm quy đổi quyết định đạt.' },
+      { q: 'Một câu đã dùng 4 phút.',
+        o: ['Tiếp tục tới khi ra', 'Loại tới đúng số đáp án, chọn cái mạnh nhất, đi tiếp', 'Đổi đáp án ngẫu nhiên', 'Quay lại sau khi xong hết'],
+        a: 1, why: 'Không câu nào đáng mất ba câu chưa đọc.' }
+    ]
+  },
+  {
+    id: 12, title: '12 · Capstone', anchor: 'm12',
+    recap: 'Một ngày làm việc, bảy domain đi qua tự nhiên.',
+    qs: [
+      { q: 'Hộp review của người có tên trong quy trình thuộc domain nào?',
+        o: ['Prompting', 'Output evaluation', 'Workflow integration', 'Governance'],
+        a: 2, why: 'Review là một bước trong workflow, là verify được thể chế hóa.' },
+      { q: 'Không ai còn dán brand voice mỗi sáng. Đó là dấu hiệu của?',
+        o: ['Prompt tốt hơn', 'Cấu hình đúng, biểu hiện bằng sự vắng mặt', 'Model mạnh hơn', 'Ít việc hơn'],
+        a: 1, why: 'Configuration tốt hiện ra như một khoảng lặng.' },
+      { q: 'Dan đưa danh sách khách có tên và email, "chỉ nội bộ".',
+        o: ['Phân tích luôn', 'Ẩn danh trước', 'Từ chối hẳn', 'Hỏi Claude có được phép không'],
+        a: 1, why: 'Gate trước, rồi làm.' },
+      { q: 'Cuối ngày một output nhạt. Việc đúng?',
+        o: ['Regenerate', 'Chạy thang bốn bước', 'Đổi model', 'Viết prompt dài hơn'],
+        a: 1, why: 'Chẩn đoán trước, sửa đúng bước hỏng.' },
+      { q: 'Điểm chính của capstone?',
+        o: ['Bảy domain là bảy môn riêng', 'Các domain trộn trong cùng một ngày, cùng bốn động tác', 'Chỉ domain nặng mới quan trọng', 'Học thuộc từng định nghĩa'],
+        a: 1, why: 'Đề trộn domain trong một scenario.' }
+    ]
+  }
+];
+
+const store = {
+  read() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
+  write(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+};
+
+let progress = store.read();
+const root = document.getElementById('stages');
+
+function unlocked(id) {
+  return id === 1 || !!(progress[id - 1] && progress[id - 1].passed);
+}
+
+function render() {
+  root.innerHTML = '';
+  let done = 0;
+  stages.forEach(st => {
+    const state = progress[st.id];
+    const open = unlocked(st.id);
+    if (state && state.passed) done++;
+
+    const card = document.createElement('section');
+    card.className = 'stage' + (open ? '' : ' locked') + (state && state.passed ? ' done' : '');
+    card.innerHTML = `
+      <div class="stage-head">
+        <h3>${st.title}</h3>
+        <span class="badge">${state && state.passed ? 'đã qua · ' + state.score + '/5' : open ? 'đang mở' : 'khóa'}</span>
+      </div>
+      <p class="score">${st.recap} <a href="ccao-f.html#${st.anchor}">Đọc bài</a></p>
+      <div class="quiz"></div>`;
+
+    if (open) card.querySelector('.quiz').appendChild(buildQuiz(st));
+    else card.querySelector('.quiz').innerHTML = '<p class="score">Hoàn thành chặng ' + (st.id - 1) + ' để mở.</p>';
+    root.appendChild(card);
+  });
+
+  updateTop();
+}
+
+function updateTop() {
+  let done = 0;
+  stages.forEach(st => { const s = progress[st.id]; if (s && s.passed) done++; });
+  document.getElementById('progressText').textContent = done + ' / 12 chặng';
+  document.getElementById('bar').style.width = Math.round(done / 12 * 100) + '%';
+  document.getElementById('hint').textContent = done === 12
+    ? 'Xong cả 12 chặng. Làm đề 60 câu tiếp theo.'
+    : 'Đang ở chặng ' + Math.min(done + 1, 12) + '.';
+}
+
+function buildQuiz(st) {
+  const wrap = document.createElement('div');
+  const saved = progress[st.id];
+
+  st.qs.forEach((item, qi) => {
+    const q = document.createElement('div');
+    q.className = 'q';
+    q.textContent = (qi + 1) + '. ' + item.q;
+    wrap.appendChild(q);
+
+    const opts = document.createElement('div');
+    opts.className = 'opts';
+    item.o.forEach((text, oi) => {
+      const label = document.createElement('label');
+      label.className = 'opt';
+      label.innerHTML = `<input type="radio" name="s${st.id}q${qi}" value="${oi}"><span>${text}</span>`;
+      opts.appendChild(label);
+    });
+    wrap.appendChild(opts);
+
+    const why = document.createElement('p');
+    why.className = 'why';
+    why.textContent = item.why;
+    wrap.appendChild(why);
+  });
+
+  const bar = document.createElement('div');
+  bar.className = 'actions';
+  const submit = document.createElement('button');
+  submit.textContent = saved && saved.passed ? 'Làm lại' : 'Nộp bài';
+  const score = document.createElement('span');
+  score.className = 'score';
+  bar.appendChild(submit);
+  bar.appendChild(score);
+  wrap.appendChild(bar);
+
+  function grade(record) {
+    let correct = 0;
+    st.qs.forEach((item, qi) => {
+      const picked = wrap.querySelector(`input[name="s${st.id}q${qi}"]:checked`);
+      const chosen = picked ? Number(picked.value) : -1;
+      const optEls = wrap.querySelectorAll('.opts')[qi].querySelectorAll('.opt');
+      optEls[item.a].classList.add('right');
+      if (chosen !== item.a) {
+        if (chosen >= 0) optEls[chosen].classList.add('wrong');
+      } else correct++;
+      wrap.querySelectorAll('.why')[qi].classList.add('show');
+      optEls.forEach(o => o.querySelector('input').disabled = true);
+    });
+    score.textContent = correct + '/5' + (correct >= PASS ? ' · qua chặng' : ' · cần 4/5');
+    if (correct >= PASS) {
+      submit.textContent = 'Sang chặng sau';
+      submit.onclick = () => { render(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    } else {
+      submit.textContent = 'Làm lại';
+      submit.onclick = () => location.reload();
+    }
+    if (record) {
+      progress[st.id] = { passed: correct >= PASS, score: correct };
+      store.write(progress);
+      updateTop();
+    }
+  }
+
+  if (saved && saved.passed) {
+    // đã qua: hiện đáp án đúng để ôn, không cho ghi đè điểm
+    st.qs.forEach((item, qi) => {
+      const optEls = wrap.querySelectorAll('.opts')[qi].querySelectorAll('.opt');
+      optEls[item.a].classList.add('right');
+      optEls.forEach(o => o.querySelector('input').disabled = true);
+      wrap.querySelectorAll('.why')[qi].classList.add('show');
+    });
+    score.textContent = saved.score + '/5 · đã qua';
+    submit.textContent = 'Làm lại chặng này';
+    submit.onclick = () => {
+      delete progress[st.id];
+      store.write(progress);
+      render();
+    };
+    return wrap;
+  }
+
+  submit.onclick = () => {
+    const any = st.qs.some((item, qi) =>
+      wrap.querySelector(`input[name="s${st.id}q${qi}"]:checked`));
+    if (!any) { score.textContent = 'Chọn đáp án trước khi nộp.'; return; }
+    grade(true);
+  };
+  return wrap;
+}
+
+document.getElementById('reset').onclick = () => {
+  if (!confirm('Xóa toàn bộ tiến độ 12 chặng?')) return;
+  progress = {};
+  store.write(progress);
+  render();
+};
+
+render();
+</script>
+
+<script src="../assets/site-nav.js?v=2"></script>
+</body>
+</html>

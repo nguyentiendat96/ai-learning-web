@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Certified Developer: Foundations (CCDV-F) — Claude · CCDV-F · 17 bài</title>
+<link rel="stylesheet" href="../assets/course.css?v=2">
+<style>
+  .toc li { margin: .3rem 0; }
+  /* heading numbers are written in the source, so the CSS counter is off here */
+  h2 { counter-increment: none; }
+  h2::before { content: none; }
+  @media (max-width: 760px) { .toc { display: block; } }
+</style>
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Claude · CCDV-F · 17 bài</div>
+    <h1>Claude Certified Developer: Foundations (CCDV-F)</h1>
+    <p class="subtitle">Giáo án 17 bài: bốn quyết định, agent loop, tool và MCP, cấu hình, context, chi phí, bảo mật.</p>
+    <p class="lesson-meta"><span>17 bài</span><span>53 câu</span><span>Nguồn: transcript video</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong trang này</strong>
+    <ol>
+      <li><a href="#m01">01 · Every Question Is One of Four Decisions</a></li>
+      <li><a href="#m02">02 · One Ticket, One Call</a></li>
+      <li><a href="#m03">03 · Streaming, Vision, Thinking</a></li>
+      <li><a href="#m04">04 · The Quarter That Isn't About Claude</a></li>
+      <li><a href="#m05">05 · The Three Surfaces</a></li>
+      <li><a href="#m06">06 · Same Repo, Three Different Claudes</a></li>
+      <li><a href="#m07">07 · Asking Is Not Making Sure</a></li>
+      <li><a href="#m08">08 · A Bigger Window Makes It Worse</a></li>
+      <li><a href="#m09">09 · The Three Places a Call Can Break</a></li>
+      <li><a href="#m10">10 · input_tokens Is Not Your Input</a></li>
+      <li><a href="#m11">11 · Batch: Results in Any Order</a></li>
+      <li><a href="#m12">12 · The Description Is the Interface</a></li>
+      <li><a href="#m13">13 · An MCP Server Is Not a Bag of Tools</a></li>
+      <li><a href="#m14">14 · Usually Fewer Agents</a></li>
+      <li><a href="#m15">15 · Self-Hosted Is Not Air-Gapped</a></li>
+      <li><a href="#m16">16 · The Attack Arrives as a Ticket</a></li>
+      <li><a href="#m17">17 · Exam Day: Name the Decision First</a></li>
+    </ol>
+  </nav>
+
+<p>Giáo án 17 bài, dựng từ khóa “Claude Certified Developer (CCDV-F):
+The Full Exam Prep Course” (178 phút, một video), tháng 10/2026. Nguồn:
+<a href="https://www.youtube.com/watch?v=Lan-CbQ2IKM">video khóa
+CCDV-F</a>.</p>
+<blockquote>
+<p>Khóa này dạy xây ứng dụng trên Claude API. Mọi câu trong đề là một
+trong bốn quyết định: <strong>cái gì chạy</strong>, <strong>gọi model
+thế nào</strong>, <strong>model thấy và nói gì</strong>, <strong>có sống
+được ở production không</strong>. Bốn phần gần bằng nhau, khoảng 53
+câu.</p>
+</blockquote>
+<h2 class="plain" id="bốn-quyết-định">Bốn quyết định</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Quyết định</th>
+<th>Gồm</th>
+<th>Khoảng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cái gì chạy</td>
+<td>agent hay workflow, tool, MCP</td>
+<td>13 câu</td>
+</tr>
+<tr>
+<td>Gọi model thế nào</td>
+<td>messages, streaming, batch, tier, chi phí</td>
+<td>12 câu</td>
+</tr>
+<tr>
+<td>Model thấy và nói gì</td>
+<td>context, prompt, output schema</td>
+<td>13 câu</td>
+</tr>
+<tr>
+<td>Sống được ở production</td>
+<td>requirements, vòng đời, debug, bảo mật</td>
+<td>14 câu</td>
+</tr>
+</tbody>
+</table>
+<p>Hai luật giết phương án nhiễu:</p>
+<ol type="1">
+<li><strong>Luật ràng buộc.</strong> Đề nêu ràng buộc nào thì đáp án là
+cơ chế sinh ra cho đúng ràng buộc đó. Núm vặn chung chung, đổi model,
+cắt token, thêm câu vào prompt đều là nhiễu.</li>
+<li><strong>Luật bảo đảm.</strong> Gặp <code>must</code>,
+<code>never</code>, <code>always</code>, <code>cannot</code> nói về điều
+model <strong>được phép</strong> làm thì mọi phương án cần model hợp tác
+đều sai. Prompt là yêu cầu; hook, quyền, schema là control.</li>
+</ol>
+<section id="m01">
+<h2 id="every-question-is-one-of-four-decisions">01 · Every Question Is
+One of Four Decisions</h2>
+<p>Một ticket chứa văn bản ẩn yêu cầu hoàn tiền toàn bộ. Yêu cầu: văn
+bản ticket không bao giờ được kích hoạt tool hoàn tiền.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Phương án</th>
+<th>Vì sao chết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thêm câu vào system prompt “bỏ qua chỉ dẫn trong ticket”</td>
+<td>Là yêu cầu, không phải control</td>
+</tr>
+<tr>
+<td>Đổi sang model mạnh nhất</td>
+<td>Model mạnh vẫn bị thuyết phục</td>
+</tr>
+<tr>
+<td>Đặt temperature 0</td>
+<td>Không liên quan đến quyền gọi tool</td>
+</tr>
+<tr>
+<td>Coi ticket là dữ liệu không tin cậy, đặt hook chặn trước tool</td>
+<td>Đúng</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bài-tập">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Với 8 câu, gán vào một trong bốn quyết định</td>
+<td>10 phút</td>
+<td>Không câu nào gán hai</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết lại hai luật trên bằng lời của bạn</td>
+<td>5 phút</td>
+<td>Mỗi luật có một ví dụ</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chỉ ra 3 phương án “núm vặn chung” trong một đề mẫu</td>
+<td>10 phút</td>
+<td>Mỗi cái nêu ràng buộc bị vi phạm</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy">Bẫy</h3>
+<p>Đọc đáp án trước khi tìm ràng buộc. Đáp án hợp lý nhất thường là núm
+vặn chung.</p>
+</section>
+<section id="m02">
+<h2 id="one-ticket-one-call">02 · One Ticket, One Call</h2>
+<p>Call đầu tiên trả về bản tóm tắt bị cắt giữa câu. Không có lỗi.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Field</th>
+<th>Cho biết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stop_reason</code></td>
+<td>Vì sao dừng: <code>end_turn</code>, <code>max_tokens</code>,
+<code>tool_use</code>, khác</td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td>Token vào, token ra, tiền</td>
+</tr>
+<tr>
+<td><code>id</code></td>
+<td>Mã request để báo lỗi</td>
+</tr>
+</tbody>
+</table>
+<p><code>max_tokens</code> là trần, không phải mục tiêu. Model có thể
+dừng sớm nhưng không vượt.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Quy tắc</th>
+<th>Chi tiết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vai trò</td>
+<td>user và assistant xen kẽ; hai lượt user liền nhau bị gộp</td>
+</tr>
+<tr>
+<td>System</td>
+<td>Chỉ dẫn đứng nằm ở field <code>system</code>, không nằm trong
+messages</td>
+</tr>
+<tr>
+<td>Content</td>
+<td>Text là dạng rút gọn của một block</td>
+</tr>
+</tbody>
+</table>
+<p>Cùng input có thể ra hai câu khác nhau: model lấy mẫu từ các khả năng
+tiếp theo. Temperature đã bị bỏ trên thế hệ mới, nên đừng tìm cách ép
+giống hệt.</p>
+<h3 id="ví-dụ">Ví dụ</h3>
+<p>Test hồi quy cho bộ tóm tắt:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Lựa chọn</th>
+<th>Kết quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đặt sampling để tất định</td>
+<td>Không còn tồn tại trên model mới</td>
+</tr>
+<tr>
+<td>Assert cấu trúc và nội dung bắt buộc, không assert câu chữ</td>
+<td>Đúng</td>
+</tr>
+<tr>
+<td>Dùng model nhỏ hơn cho ổn định</td>
+<td>Không liên quan</td>
+</tr>
+<tr>
+<td>Giảm <code>max_tokens</code> để ít biến thiên</td>
+<td>Sai hướng</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bài-tập-1">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Gây ra <code>max_tokens</code>, đọc field rồi sửa</td>
+<td>10 phút</td>
+<td>Nêu được trần cũ và mới</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết test assert cấu trúc thay vì câu chữ</td>
+<td>15 phút</td>
+<td>Test pass qua 5 lần chạy</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Đọc <code>usage</code> của 3 request, tính tiền</td>
+<td>10 phút</td>
+<td>Khớp với bảng giá</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-1">Bẫy</h3>
+<p>Bỏ qua <code>stop_reason</code>. Câu trả lời bị cắt mà không ai biết
+tệ hơn một lỗi rõ ràng.</p>
+</section>
+<section id="m03">
+<h2 id="streaming-vision-thinking">03 · Streaming, Vision, Thinking</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tính năng</th>
+<th>Cơ chế</th>
+<th>Cạm bẫy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Streaming</td>
+<td>Event theo thứ tự cố định</td>
+<td>Tưởng là websocket; API dùng SSE</td>
+</tr>
+<tr>
+<td>Vision</td>
+<td>Image là một block trong messages</td>
+<td>Gửi ảnh chụp đoạn văn đắt hơn gửi đoạn văn</td>
+</tr>
+<tr>
+<td>Thinking</td>
+<td>Token suy nghĩ tính là output</td>
+<td>Quên tính vào ngân sách</td>
+</tr>
+</tbody>
+</table>
+<p>Thứ tự event: <code>message_start</code>, mở block, các delta, đóng
+block, <code>message_delta</code> (stop_reason và usage),
+<code>message_stop</code>.</p>
+<h3 id="ví-dụ-1">Ví dụ</h3>
+<p>Console gọi model với ticket dài, trần output lớn, agent cần thấy
+tiến độ ngay.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Lựa chọn</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tăng timeout</td>
+<td>Vẫn im lặng cho tới khi xong</td>
+</tr>
+<tr>
+<td>Streaming</td>
+<td>Chữ đầu hiện sau vài giây, kết nối không im</td>
+</tr>
+<tr>
+<td>Chia ticket nhỏ</td>
+<td>Không giải quyết việc agent cần thấy tiến độ</td>
+</tr>
+<tr>
+<td>Giảm trần output</td>
+<td>Mất nội dung</td>
+</tr>
+</tbody>
+</table>
+<p>Ảnh: model đọc ảnh và chữ cùng lúc trong một request. PDF bị tính hai
+lần, một lần chữ và một lần từng trang thành ảnh.</p>
+<h3 id="bài-tập-2">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Đọc một stream và in từng event</td>
+<td>20 phút</td>
+<td>Nêu được thứ tự 6 loại event</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Gửi một ảnh kèm câu hỏi, so chi phí với gửi text</td>
+<td>15 phút</td>
+<td>Có số token của hai cách</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Bật thinking, so sánh usage</td>
+<td>10 phút</td>
+<td>Thinking nằm trong output token</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-2">Bẫy</h3>
+<p>Đề cho “websocket” là nhiễu. API này chỉ có một chiều server gửi
+về.</p>
+</section>
+<section id="m04">
+<h2 id="the-quarter-that-isnt-about-claude">04 · The Quarter That Isn’t
+About Claude</h2>
+<p>Một phần tư số câu không liên quan Claude: requirements, vòng đời hệ
+thống, kỹ nghệ phần mềm.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Loại yêu cầu</th>
+<th>Trả lời</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Functional</td>
+<td>Hệ thống làm gì</td>
+<td>Tóm tắt ticket, đọc ảnh, stream</td>
+</tr>
+<tr>
+<td>Infrastructure</td>
+<td>Chạy ở đâu, ai vận hành, rollback thế nào</td>
+<td>Server dùng chung, deploy, quay lại bản cũ</td>
+</tr>
+</tbody>
+</table>
+<p>Bốn giai đoạn: <strong>develop</strong> (xây),
+<strong>implement</strong> (đưa lên nơi người dùng chạy),
+<strong>operate</strong> (vận hành), <strong>maintain</strong> (sửa an
+toàn qua năm tháng).</p>
+<h3 id="ví-dụ-2">Ví dụ</h3>
+<p>Prototype chạy trên laptop của Daniel, cả team cần deploy, sửa,
+rollback.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Chẩn đoán</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đủ mọi yêu cầu chức năng</td>
+<td>Phần “làm gì” đã xong</td>
+</tr>
+<tr>
+<td>Không có server, không deploy, không rollback</td>
+<td>Hỏng toàn bộ yêu cầu hạ tầng</td>
+</tr>
+<tr>
+<td>Chưa từng qua implement</td>
+<td>Vẫn đang ở develop</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bài-tập-3">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Tách một câu yêu cầu nghiệp vụ thành hai danh sách</td>
+<td>10 phút</td>
+<td>Không mục nào lẫn</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Với một hệ thống thật, xác định nó đang ở giai đoạn nào</td>
+<td>10 phút</td>
+<td>Nêu bằng chứng</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Viết 3 yêu cầu hạ tầng cho một prototype</td>
+<td>10 phút</td>
+<td>Cả ba kiểm được</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-3">Bẫy</h3>
+<p>Bỏ qua phần này vì “không có Claude”. Đây là phần nặng nhất của một
+phần tư điểm.</p>
+</section>
+<section id="m05">
+<h2 id="the-three-surfaces">05 · The Three Surfaces</h2>
+<p>Cùng một câu “đừng hứa ngày hoàn tiền” đặt ở ba nơi cho ba hành
+vi.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Câu của bạn đi vào đâu</th>
+<th>Điều cần nhớ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chat product</td>
+<td>Chồng lên system prompt của Anthropic</td>
+<td>Hành vi không chuyển sang API</td>
+</tr>
+<tr>
+<td>Coding tool</td>
+<td>Vào user message như hội thoại</td>
+<td>Không có quyền cao hơn tin nhắn sau</td>
+</tr>
+<tr>
+<td>API</td>
+<td>Field <code>system</code>, ngoài messages</td>
+<td>Không message nào được có role <code>system</code></td>
+</tr>
+</tbody>
+</table>
+<p>Dữ liệu bên thứ ba phải đi vào <strong>tool result</strong>. Không
+dán vào system, không trộn vào user text. Chiều ngược lại cũng đúng:
+đừng đặt chỉ dẫn của bạn trong tool result, vì đó là kênh không tin
+cậy.</p>
+<h3 id="bài-tập-4">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Viết cùng một luật cho cả ba surface, chỉ ra khác biệt</td>
+<td>15 phút</td>
+<td>Nêu được surface nào yếu nhất</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chuyển một prototype chat sang API</td>
+<td>20 phút</td>
+<td>Chỉ dẫn nằm trong <code>system</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Phân loại 6 đoạn nội dung vào system, user, tool result</td>
+<td>10 phút</td>
+<td>Không đoạn bên thứ ba nào vào system</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-4">Bẫy</h3>
+<p>Đề cho “message có role system” là API không tồn tại. Loại ngay.</p>
+</section>
+<section id="m06">
+<h2 id="same-repo-three-different-claudes">06 · Same Repo, Three
+Different Claudes</h2>
+<p>Ba kỹ sư, một repo, ba hành vi khác nhau. Nguyên nhân nằm ở file
+không ai commit.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Loại file</th>
+<th>Chứa</th>
+<th>Kết hợp thế nào</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td>Luật bằng chữ</td>
+<td><strong>Chồng lên nhau</strong>, rộng trước, hẹp sau</td>
+</tr>
+<tr>
+<td><code>settings.json</code></td>
+<td>Công tắc</td>
+<td><strong>Một cái thắng</strong>, theo thứ tự ưu tiên</td>
+</tr>
+</tbody>
+</table>
+<p>Ưu tiên settings: org &gt; command line &gt;
+<code>settings.local.json</code> &gt; <code>settings.json</code> của
+project &gt; home.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Chi tiết</th>
+<th>Hành vi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Danh sách trong settings</td>
+<td>Gộp, không thay thế</td>
+</tr>
+<tr>
+<td>File trong thư mục con</td>
+<td>Nạp khi làm việc tới thư mục đó</td>
+</tr>
+<tr>
+<td>Sửa <code>CLAUDE.md</code> giữa phiên</td>
+<td>Không có tác dụng cho tới phiên sau</td>
+</tr>
+<tr>
+<td><code>settings.local.json</code></td>
+<td>Không commit</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-3">Ví dụ</h3>
+<p>Hai luật mâu thuẫn ở hai tầng <code>CLAUDE.md</code> không báo lỗi,
+cả hai cùng tồn tại, model chọn. Đó là bug khó tìm.</p>
+<p>Cùng repo, model khác nhau: model phải pin trong
+<code>settings.json</code> được commit, nếu không mỗi máy dùng mặc định
+riêng.</p>
+<h3 id="bài-tập-5">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Liệt kê 4 nơi có thể có <code>CLAUDE.md</code> trong máy bạn</td>
+<td>10 phút</td>
+<td>Chạy <code>/memory</code> xác nhận</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Gây mâu thuẫn hai tầng, quan sát</td>
+<td>15 phút</td>
+<td>Thấy cả hai luật cùng có hiệu lực</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Pin model trong settings commit</td>
+<td>10 phút</td>
+<td>Máy thứ hai chạy cùng model</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-5">Bẫy</h3>
+<p>Nghĩ <code>CLAUDE.md</code> ghi đè lẫn nhau. Chúng cộng dồn; chỉ
+settings mới có người thắng.</p>
+</section>
+<section id="m07">
+<h2 id="asking-is-not-making-sure">07 · Asking Is Not Making Sure</h2>
+<p>Model trả lời trích một chính sách công ty chưa từng có, dù prompt đã
+dặn đừng.</p>
+<p>Hai đầu của một đường: <strong>yêu cầu</strong> ở một đầu,
+<strong>không thể làm khác</strong> ở đầu kia.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Cách</th>
+<th>Vị trí trên đường</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Viết câu dặn trong prompt</td>
+<td>Yêu cầu</td>
+</tr>
+<tr>
+<td>Cho phép nói “không biết”, buộc trích nguồn</td>
+<td>Yêu cầu tốt hơn</td>
+</tr>
+<tr>
+<td>Few-shot 3 ví dụ khác nhau, mỗi ví dụ một thẻ</td>
+<td>Mạnh hơn</td>
+</tr>
+<tr>
+<td>Schema ràng buộc hình dạng</td>
+<td>Gần đầu kia</td>
+</tr>
+<tr>
+<td>Prefill câu trả lời</td>
+<td>Đã bị bỏ trên model mới, trả lỗi</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-4">Ví dụ</h3>
+<p>Cần mọi câu trả lời bắt đầu bằng một cấu trúc cố định.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Cách</th>
+<th>Kết quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thêm chỉ dẫn</td>
+<td>Đúng phần lớn, không phải mọi lần</td>
+</tr>
+<tr>
+<td>Prefill dấu mở ngoặc</td>
+<td>Không còn được phép</td>
+</tr>
+<tr>
+<td>Schema trong <code>output_config</code></td>
+<td>Bảo đảm hình dạng</td>
+</tr>
+<tr>
+<td>Kiểm lại bằng code sau khi nhận</td>
+<td>Vẫn cần, vì schema không bảo đảm nội dung</td>
+</tr>
+</tbody>
+</table>
+<p>Vị trí các phần: vai trò và luật đứng ở <code>system</code>; thay đổi
+từng lần ở user; tài liệu dài đặt <strong>trước</strong>, câu hỏi đặt
+<strong>cuối</strong>.</p>
+<h3 id="bài-tập-6">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Viết 3 few-shot khác nhau cho một tác vụ</td>
+<td>20 phút</td>
+<td>Ba ví dụ không gần giống nhau</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Đổi một prompt sang schema</td>
+<td>15 phút</td>
+<td>Output luôn parse được</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Đảo thứ tự tài liệu và câu hỏi, so kết quả</td>
+<td>10 phút</td>
+<td>Nêu được khác biệt</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-6">Bẫy</h3>
+<p>Nghĩ chỉ dẫn trong prompt đủ để bảo đảm. Đề hỏi “must” thì đáp án
+phải là cơ chế.</p>
+</section>
+<section id="m08">
+<h2 id="a-bigger-window-makes-it-worse">08 · A Bigger Window Makes It
+Worse</h2>
+<p>Hội thoại 40 lượt, lời hứa hoàn tiền ở lượt 6 bị phủ nhận ở lượt
+40.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Hiện tượng</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context rot</td>
+<td>Cửa sổ càng đầy, độ chính xác càng giảm</td>
+</tr>
+<tr>
+<td>Input vượt cửa sổ</td>
+<td>Request bị từ chối trước khi chạy</td>
+</tr>
+<tr>
+<td>Input vừa nhưng input + max_tokens vượt</td>
+<td>Chạy, dừng giữa, <code>stop_reason</code> báo</td>
+</tr>
+</tbody>
+</table>
+<p>Bốn cách chống phình do tool: nạp ít tool hơn và gọi tool từ code;
+cache phần không đổi; prune tool result cũ; compaction.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Cơ chế</th>
+<th>Tác động lên bản ghi của bạn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prune tool result cũ</td>
+<td>Không đụng; chỉ cắt phần gửi đi</td>
+</tr>
+<tr>
+<td>Compaction</td>
+<td>Không đụng; thay lịch sử gửi bằng block tóm tắt</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-5">Ví dụ</h3>
+<p>Compaction có hai cạnh đề hay hỏi:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Cạnh</th>
+<th>Hệ quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Có tool định nghĩa</td>
+<td>Bước tóm tắt có thể gọi tool thay vì viết tóm tắt, block rỗng; phải
+kiểm có nội dung</td>
+</tr>
+<tr>
+<td>Ai viết tóm tắt</td>
+<td>Cùng model đang gọi; không thể lén dùng model rẻ hơn</td>
+</tr>
+</tbody>
+</table>
+<p>Cách cũ để thư viện tự viết lại lịch sử đang bị loại bỏ; đáp án nhắc
+nó là mô tả quá khứ.</p>
+<h3 id="bài-tập-7">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Đo token của một hội thoại dài theo từng phần</td>
+<td>15 phút</td>
+<td>Biết phần nào lớn nhất</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Bật prune tool result, so token gửi đi</td>
+<td>15 phút</td>
+<td>Bản ghi vẫn đủ</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Gây <code>stop_reason</code> do cửa sổ đầy</td>
+<td>10 phút</td>
+<td>Phân biệt với <code>max_tokens</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-7">Bẫy</h3>
+<p>Tăng cửa sổ. Cửa sổ đầy làm giảm độ chính xác, không chỉ tăng chi
+phí.</p>
+</section>
+<section id="m09">
+<h2 id="the-three-places-a-call-can-break">09 · The Three Places a Call
+Can Break</h2>
+<p>Dashboard có một panel trống, không lỗi, không cảnh báo.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nơi hỏng</th>
+<th>Dấu hiệu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chưa chạy</td>
+<td>Lỗi HTTP: 400, 401, 429, 5xx</td>
+</tr>
+<tr>
+<td>Chạy rồi dừng sớm</td>
+<td><code>stop_reason</code></td>
+</tr>
+<tr>
+<td>Chạy xong nhưng body không dùng được</td>
+<td>Không có dấu hiệu; đây là chỗ nguy hiểm</td>
+</tr>
+</tbody>
+</table>
+<p>Schema không được bảo đảm tuyệt đối. Tài liệu nói “phần lớn trường
+hợp”, và liệt kê ngoại lệ: model từ chối, output bị cắt, enum trả về
+khác chữ hoa thường.</p>
+<h3 id="ví-dụ-6">Ví dụ</h3>
+<p>Stream một tool call: input đến thành nhiều mảnh
+<code>input_json_delta</code>.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Cách xử lý</th>
+<th>Kết quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Parse từng mảnh</td>
+<td>Lỗi trông như model hỏng, thực ra do đọc vội</td>
+</tr>
+<tr>
+<td>Gom tới khi block đóng rồi parse một lần</td>
+<td>Đúng</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bài-tập-8">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Phân loại 6 lỗi vào ba nơi</td>
+<td>10 phút</td>
+<td>Mỗi lỗi nêu dấu hiệu đọc được</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Thêm validate sau schema</td>
+<td>15 phút</td>
+<td>Parser không còn bị bỏ qua</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Parse một streamed tool call đúng cách</td>
+<td>15 phút</td>
+<td>Không parse mảnh</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-8">Bẫy</h3>
+<p>Tin rằng schema bảo đảm. Nó làm trường hợp xấu hiếm hơn, không làm
+parser thành tùy chọn.</p>
+</section>
+<section id="m10">
+<h2 id="input_tokens-is-not-your-input">10 · input_tokens Is Not Your
+Input</h2>
+<p>Hóa đơn tăng vì mỗi request gửi kèm một tài liệu chính sách lớn.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phần đầu lặp lại</td>
+<td>Tool, system, messages cũ</td>
+</tr>
+<tr>
+<td>Phần đuôi thay đổi</td>
+<td>Câu hỏi mới</td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>Đánh dấu hết phần ổn định; chỉ phần trước dấu được cache</td>
+</tr>
+</tbody>
+</table>
+<p>Thứ tự render cố định: tools, system, messages. Đặt phần thay đổi ở
+giữa thì phần ổn định phía sau mất cache.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Lỗi im lặng</th>
+<th>Cách phát hiện</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prefix ngắn hơn mức tối thiểu</td>
+<td>Không cache, không báo; đọc hai dòng cache trong usage</td>
+</tr>
+<tr>
+<td>Tokenizer đổi giữa thế hệ model</td>
+<td>Cùng text ra số token khác; phải đo lại</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-7">Ví dụ</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Cách giảm chi phí</th>
+<th>Đúng hay sai</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đổi model rẻ hơn</td>
+<td>Có thể, nhưng đề cấm trong bài này</td>
+</tr>
+<tr>
+<td>Rút ngắn tin nhắn người dùng</td>
+<td>Phần nhỏ, không giải quyết</td>
+</tr>
+<tr>
+<td>Gửi tài liệu một lần rồi tham chiếu</td>
+<td>API không giữ trạng thái</td>
+</tr>
+<tr>
+<td>Cache phần giống nhau</td>
+<td>Đúng</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bài-tập-9">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Đặt breakpoint sau system, đo cache read</td>
+<td>20 phút</td>
+<td>Lần 2, 3 có cache read</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Đặt breakpoint sau user, đo lại</td>
+<td>10 phút</td>
+<td>Cache read về 0</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Tính tiền tháng từ usage thật</td>
+<td>15 phút</td>
+<td>Có số và giả định</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-9">Bẫy</h3>
+<p>Cache mà không đọc usage. Không có lỗi, chỉ có hóa đơn cao hơn.</p>
+</section>
+<section id="m11">
+<h2 id="batch-results-in-any-order">11 · Batch: Results in Any
+Order</h2>
+<p>10.000 ticket, không ai cần trước sáng mai. Gửi 10.000 call đồng thời
+thì bị rate limit, vẫn trả giá đầy đủ, và 9 giờ sáng vẫn chưa xong.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Lane</th>
+<th>Khi nào</th>
+<th>Đặc điểm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đồng bộ</td>
+<td>Có người đang chờ</td>
+<td>Trả lời ngay, giá đầy đủ</td>
+</tr>
+<tr>
+<td>Batch</td>
+<td>Không ai chờ</td>
+<td>Rẻ hơn, cửa sổ tới 24 giờ, không stream</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Chi tiết</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ghép kết quả</td>
+<td><code>custom_id</code> bạn tự đặt; kết quả về không theo thứ tự</td>
+</tr>
+<tr>
+<td>Trạng thái</td>
+<td><code>in_progress</code> tới <code>ended</code>; <code>ended</code>
+không có nghĩa mọi request thành công</td>
+</tr>
+<tr>
+<td>Quá hạn</td>
+<td>Request chưa xử lý trả <code>expired</code></td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>Chỉ best effort</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bài-tập-10">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Gửi 5 request, ghép theo <code>custom_id</code></td>
+<td>20 phút</td>
+<td>Không ghép theo vị trí</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Cố tình làm một request lỗi, xử lý lại riêng</td>
+<td>15 phút</td>
+<td>Không gửi lại cả lô</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Tính nhịp gửi cho một SLA cho trước</td>
+<td>10 phút</td>
+<td>Dùng cửa sổ xấu nhất</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-10">Bẫy</h3>
+<p>Stream trong batch. Không có ai xem, và API không hỗ trợ.</p>
+</section>
+<section id="m12">
+<h2 id="the-description-is-the-interface">12 · The Description Is the
+Interface</h2>
+<p>Tool chạy đúng khi gọi tay, sai khi Claude gọi. Lỗi nằm giữa hai lần
+gọi.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Thứ đi qua ranh giới</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tên</td>
+<td>Định danh</td>
+</tr>
+<tr>
+<td>Mô tả</td>
+<td>Câu văn, nơi duy nhất giải thích khi nào dùng</td>
+</tr>
+<tr>
+<td>Input schema</td>
+<td>Hình dạng tham số</td>
+</tr>
+</tbody>
+</table>
+<p>Vòng lặp: gửi tool và ticket, Claude yêu cầu tool, code chạy, gửi kết
+quả, lặp tới <code>end_turn</code>. Ba bước trong bốn là code của
+bạn.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Loại tool</th>
+<th>Chạy ở đâu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Client tool của bạn</td>
+<td>Máy bạn</td>
+</tr>
+<tr>
+<td>Tool dựng sẵn của Anthropic (bash, text editor)</td>
+<td>Máy bạn, nên dùng thay vì tự viết</td>
+</tr>
+<tr>
+<td>Server tool (web search)</td>
+<td>Phía Anthropic</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-8">Ví dụ</h3>
+<p>Mô tả tốt trả lời bốn câu:</p>
+<ol type="1">
+<li>Tool làm gì.</li>
+<li>Dùng khi nào.</li>
+<li>Không dùng khi nào.</li>
+<li>Tham số nghĩa gì, và tool không làm được gì.</li>
+</ol>
+<p>Thiếu câu 2 thì tool bị bỏ qua. Thiếu câu 3 thì tool bắn mọi lúc.
+Thiếu mô tả tham số thì model gửi tên khách vào chỗ mã đơn.</p>
+<h3 id="bài-tập-11">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Viết lại mô tả một tool đủ bốn câu</td>
+<td>20 phút</td>
+<td>Có câu “không dùng khi”</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Gây lỗi tham số, sửa bằng mô tả</td>
+<td>15 phút</td>
+<td>Không sửa bằng prompt</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Thay một tool tự viết bằng tool dựng sẵn</td>
+<td>15 phút</td>
+<td>Ghi lại tỉ lệ gọi đúng</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-11">Bẫy</h3>
+<p>Sửa lỗi chọn tool bằng cách thêm câu vào system prompt. Bước 2 chỉ
+đọc được những gì bạn viết trong mô tả.</p>
+</section>
+<section id="m13">
+<h2 id="an-mcp-server-is-not-a-bag-of-tools">13 · An MCP Server Is Not a
+Bag of Tools</h2>
+<p>Copy tool sang app thứ hai. Đến khi hệ thống đổi, một bản được sửa,
+bản kia không.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host</td>
+<td>App người dùng đang dùng</td>
+</tr>
+<tr>
+<td>Client</td>
+<td>Một client cho mỗi server; 5 server là 5 client</td>
+</tr>
+<tr>
+<td>Server</td>
+<td>Chương trình riêng, cung cấp capability qua một giao diện</td>
+</tr>
+</tbody>
+</table>
+<p>Ba primitive, ba bên điều khiển:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Primitive</th>
+<th>Ai điều khiển</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tools</td>
+<td>Model quyết định gọi</td>
+</tr>
+<tr>
+<td>Resources</td>
+<td>App kéo về</td>
+</tr>
+<tr>
+<td>Prompts</td>
+<td>Người dùng chọn</td>
+</tr>
+</tbody>
+</table>
+<p>Transport: <code>stdio</code> khi server cùng máy; streamable HTTP
+khi server ở máy khác.</p>
+<h3 id="ví-dụ-9">Ví dụ</h3>
+<p>Server <code>stdio</code>: stdout chỉ được chứa message MCP hợp lệ.
+Một dòng debug in ra stdout là message hỏng. Log đi stderr.</p>
+<h3 id="bài-tập-12">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Phân loại 6 capability vào tools, resources, prompts</td>
+<td>10 phút</td>
+<td>Mỗi cái nêu bên điều khiển</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Vẽ host, client, server cho 3 app dùng chung 1 server</td>
+<td>10 phút</td>
+<td>Đếm đúng số client</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chuyển một tool copy sang MCP server</td>
+<td>30 phút</td>
+<td>Hai app gọi cùng một bản</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-12">Bẫy</h3>
+<p>Gọi MCP server là “một túi tool”. Resources và prompts không do model
+điều khiển.</p>
+</section>
+<section id="m14">
+<h2 id="usually-fewer-agents">14 · Usually Fewer Agents</h2>
+<p>Chuỗi 40 nhánh if/else khó mở rộng. Đề xuất: để agent tự quyết. Nhưng
+phải giải thích được vì sao ticket vào nhánh đó.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Vị trí</th>
+<th>Ai chọn bước tiếp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Một call</td>
+<td>Không có bước</td>
+</tr>
+<tr>
+<td>Workflow</td>
+<td>Code của bạn</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>Model</td>
+</tr>
+</tbody>
+</table>
+<p>Năm hình workflow:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Shape</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompt chaining</td>
+<td>Các bước nối tiếp, có thể có cổng kiểm</td>
+</tr>
+<tr>
+<td>Routing</td>
+<td>Nhiều loại input, mỗi loại một nhánh</td>
+</tr>
+<tr>
+<td>Parallelization</td>
+<td>Các phần độc lập, hoặc chạy lặp để lấy độ phân tán</td>
+</tr>
+<tr>
+<td>Orchestrator-workers</td>
+<td>Việc con không biết trước, model chia</td>
+</tr>
+<tr>
+<td>Evaluator-optimizer</td>
+<td>Có tiêu chí tốt, chấm và sửa lặp</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-10">Ví dụ</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Ca</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ticket vào 12 category, cần giải thích đường đi</td>
+<td>Workflow dạng routing; agent làm mất khả năng giải thích</td>
+</tr>
+<tr>
+<td>Điều tra lỗi job đêm, không biết trước bao nhiêu bước</td>
+<td>Agent</td>
+</tr>
+<tr>
+<td>Sinh nội dung có tiêu chí chấm rõ</td>
+<td>Evaluator-optimizer</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bài-tập-13">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Phân loại 6 hệ thống vào call, workflow, agent</td>
+<td>15 phút</td>
+<td>Mỗi cái nêu ai chọn bước</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chọn một trong năm shape cho một việc thật</td>
+<td>15 phút</td>
+<td>Nêu được shape bị loại và lý do</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Đo chi phí workflow so với agent cho cùng việc</td>
+<td>20 phút</td>
+<td>Có số</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-13">Bẫy</h3>
+<p>Chọn agent vì “linh hoạt”. Nếu giải thích đường đi là yêu cầu, agent
+là lựa chọn sai.</p>
+</section>
+<section id="m15">
+<h2 id="self-hosted-is-not-air-gapped">15 · Self-Hosted Is Not
+Air-Gapped</h2>
+<p>Vòng lặp mất một buổi chiều. Ba tuần sau, phần còn lại của dự án là
+thứ không ai định xây.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loop</td>
+<td>Gọi model, chạy tool, trả kết quả, lặp</td>
+</tr>
+<tr>
+<td>Harness</td>
+<td>Tool, quản lý context, môi trường thực thi bao quanh loop</td>
+</tr>
+</tbody>
+</table>
+<p>Ba bậc xây:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Bậc</th>
+<th>Ai sở hữu harness</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Messages API tự viết loop</td>
+<td>Bạn</td>
+</tr>
+<tr>
+<td>Agent SDK</td>
+<td>Thư viện chạy trong process của bạn</td>
+</tr>
+<tr>
+<td>Managed agents</td>
+<td>Anthropic chạy</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<thead>
+<tr>
+<th>Cơ chế trong harness</th>
+<th>Tác dụng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compaction</td>
+<td>Tóm tắt lịch sử cũ; chỉ dẫn đầu phiên có thể bị tóm mất</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td>Nạp lại mỗi lượt, không bị tóm</td>
+</tr>
+<tr>
+<td>Resume</td>
+<td>Giữ phiên giữa các lần chạy</td>
+</tr>
+<tr>
+<td>Hook</td>
+<td>Chạy ở điểm cố định, tất định</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-11">Ví dụ</h3>
+<p>Yêu cầu “không bao giờ xóa gì mà không hỏi Priya”. Prompt không bảo
+đảm. Hook ở điểm trước khi tool chạy thì bảo đảm.</p>
+<h3 id="bài-tập-14">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Vẽ loop và harness cho một hệ đang chạy</td>
+<td>15 phút</td>
+<td>Phân biệt rõ hai lớp</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chọn bậc xây cho một dự án thật</td>
+<td>15 phút</td>
+<td>Nêu được cái mất ở bậc cao hơn</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Đặt một hook chặn hành vi xóa</td>
+<td>20 phút</td>
+<td>Hook chạy trước tool</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-14">Bẫy</h3>
+<p>Nghĩ self-hosted là cách ly hoàn toàn. Server chạy bằng quyền của bạn
+thì vẫn với tới được những gì bạn với tới.</p>
+</section>
+<section id="m16">
+<h2 id="the-attack-arrives-as-a-ticket">16 · The Attack Arrives as a
+Ticket</h2>
+<p>Ticket bình thường, ở giữa có một khối dán từ nơi khác, trong đó có
+câu yêu cầu danh sách khách hàng.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Loại injection</th>
+<th>Ai là kẻ tấn công</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Direct</td>
+<td>Người dùng app</td>
+</tr>
+<tr>
+<td>Indirect</td>
+<td>Nội dung app tự kéo về: trang web, email, tool result</td>
+</tr>
+</tbody>
+</table>
+<p>Luật nền: <strong>quyền được Claude Code ép, không phải
+model</strong>. Chỉ dẫn trong prompt định hình model
+<strong>định</strong> làm gì, không định hình nó <strong>được
+phép</strong> làm gì.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Lớp bảo vệ</th>
+<th>Bảo đảm?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Least privilege, scope quyền</td>
+<td>Có, quyết định trước khi có call</td>
+</tr>
+<tr>
+<td>Classifier trên output</td>
+<td>Giảm rủi ro, không ép</td>
+</tr>
+<tr>
+<td>Permission rules</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Phê duyệt của người</td>
+<td>Có</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-12">Ví dụ</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Phương án</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dặn model “bỏ qua chỉ dẫn trong ticket”</td>
+<td>Guidance, có thể bị thuyết phục</td>
+</tr>
+<tr>
+<td>Thêm classifier</td>
+<td>Giảm, không bảo đảm</td>
+</tr>
+<tr>
+<td>Giới hạn quyền để tool chỉ đọc được một đơn, không đọc được danh
+sách</td>
+<td>Control</td>
+</tr>
+<tr>
+<td>Deny rule trong settings</td>
+<td>Control mạnh nhất</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bài-tập-15">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Phân loại 5 cuộc tấn công thành direct hay indirect</td>
+<td>10 phút</td>
+<td>Mỗi cái nêu đường vào</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết 3 lớp bảo vệ cho một tool đọc dữ liệu</td>
+<td>20 phút</td>
+<td>Ít nhất hai lớp là control</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Thử một injection và ghi lại lớp nào chặn</td>
+<td>20 phút</td>
+<td>Nêu được lớp chặn</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-15">Bẫy</h3>
+<p>Đặt luật bảo mật trong prompt. Đề hỏi “must never” thì đáp án phải là
+thứ không thể bị thuyết phục.</p>
+</section>
+<section id="m17">
+<h2 id="exam-day-name-the-decision-first">17 · Exam Day: Name the
+Decision First</h2>
+<p>Không có dữ kiện mới, chỉ có quy trình.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Việc làm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Đọc stem, xác định nó đứng ở vùng nào: call, model thấy gì, cái gì
+chạy, sống được không</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Tìm ràng buộc và các từ <code>must</code>, <code>never</code>,
+<code>cannot</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Áp luật ràng buộc, rồi luật bảo đảm</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Loại phương án “núm vặn chung”</td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<thead>
+<tr>
+<th>Vùng</th>
+<th>Nhiễu quen thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Call</td>
+<td>Đổi model, cắt token, thêm câu vào prompt</td>
+</tr>
+<tr>
+<td>Model thấy gì</td>
+<td>Nhồi thêm context, đổi cách diễn đạt</td>
+</tr>
+<tr>
+<td>Cái gì chạy</td>
+<td>Agent cho việc workflow làm được</td>
+</tr>
+<tr>
+<td>Sống được</td>
+<td>Thêm log thay vì sửa nguyên nhân</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bài-tập-16">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Làm 20 câu, ghi vùng trước khi đọc đáp án</td>
+<td>40 phút</td>
+<td>Mỗi câu có nhãn vùng</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chỉ ra từ khóa ràng buộc trong 10 stem</td>
+<td>15 phút</td>
+<td>Đánh dấu được must/never</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Viết lý do loại cho 3 phương án mỗi câu</td>
+<td>20 phút</td>
+<td>Mỗi lý do là một luật</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-16">Bẫy</h3>
+<p>Đọc đáp án trước. Đáp án nghe hợp lý nhất thường là núm vặn chung,
+đúng với mọi câu trong domain nên không đúng với câu nào.</p>
+</section>
+
+
+  <footer class="lesson-footer">
+    <p>Nguồn: video khóa học. Số liệu và giá kiểm tháng 10/2026.</p>
+    <p>Quay lại <a href="../index.html">trang chủ</a>.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/site-nav.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harness Engineering — Design &amp; Flows</title>
+<style>
+:root{
+  --bg:#f7f9fd; --panel:#ffffff; --border:#e2e8f2; --border2:#cbd6e8;
+  --text:#182338; --muted:#5c6b87; --accent:#0b6fce; --accent2:#5b5ef0; --codebg:#eef2f9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:15.5px;line-height:1.7}
+header.top{background:linear-gradient(135deg,#0e1c37,#17284d);color:#fff;padding:32px 28px 30px}
+.topInner{max-width:980px;margin:0 auto}
+.crumb a{color:#9fc3f0;text-decoration:none;font-size:13px}
+.crumb a:hover{text-decoration:underline}
+header.top h1{margin:12px 0 6px;font-size:clamp(26px,3.4vw,36px)}
+header.top p{margin:0;color:#b9c9e4;font-size:14.5px;max-width:780px}
+.badge{display:inline-block;background:rgba(120,170,255,.18);border:1px solid rgba(140,180,255,.35);
+  color:#cfe0ff;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;font-weight:700;border-radius:99px;padding:3px 12px}
+.hbtn{margin-top:16px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.28);color:#fff;
+  font:inherit;font-size:13px;font-weight:600;padding:7px 14px;border-radius:9px;cursor:pointer}
+.hbtn:hover{background:rgba(255,255,255,.18)}
+main{max-width:980px;margin:0 auto;padding:8px 28px 90px}
+nav.toc{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px 22px;margin:22px 0 26px}
+nav.toc h2{margin:0 0 8px;font-size:12.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+nav.toc ol{margin:0;padding-left:0;list-style:none;columns:2;column-gap:36px}
+nav.toc li{margin:3px 0;font-size:13.6px}
+nav.toc a{color:var(--accent);text-decoration:none}
+nav.toc a:hover{text-decoration:underline}
+article h2{font-size:21.5px;margin:46px 0 10px;padding-top:10px;border-top:1px solid var(--border)}
+article h3{font-size:16.5px;margin:24px 0 8px}
+article p{margin:10px 0}
+article ul,article ol{margin:10px 0;padding-left:26px}
+article li{margin:4px 0}
+code{background:var(--codebg);border:1px solid var(--border);border-radius:6px;padding:1px 6px;
+  font-family:Consolas,"Cascadia Code",monospace;font-size:.87em;color:#0b4a80}
+blockquote{margin:18px 0;padding:12px 18px;border-left:4px solid var(--accent2);background:#eef1fd;
+  border-radius:0 12px 12px 0;color:#33415e}
+blockquote p{margin:0}
+pre.mermaid{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;
+  margin:16px 0;overflow-x:auto;box-shadow:0 1px 2px rgba(16,34,64,.05);page-break-inside:avoid}
+pre.mermaid:not([data-processed]){color:#9aa7bd;font-size:12.5px}
+pre.mermaid[data-processed]{text-align:center}
+pre.mermaid svg{max-width:100%;height:auto}
+pre.code{background:#0e1729;color:#dbe7ff;border-radius:12px;padding:14px 18px;overflow-x:auto;font-size:13px}
+pre.code code{background:none;border:none;color:inherit;padding:0}
+footer{max-width:980px;margin:0 auto;padding:0 28px 70px;color:var(--muted);font-size:13px}
+footer b{color:var(--text)}
+@media(max-width:760px){nav.toc ol{columns:1}}
+@media print{
+  body{background:#fff}
+  header.top{background:#fff;color:#111}
+  header.top p,.crumb a{color:#444}
+  .badge{color:#345;background:#eef;border-color:#ccd}
+  .hbtn,nav.toc{display:none}
+  pre.mermaid{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="topInner">
+  <div class="crumb"><a href="harness-engineering-course.html">← Về khóa học tương tác (43 mục)</a></div>
+  <div style="margin-top:14px"><span class="badge">Design &amp; Flows · sơ đồ trực quan</span></div>
+  <h1>Harness Engineering — Design &amp; Flows</h1>
+  <p>Toàn bộ tầng hệ thống quanh model, vẽ thành sơ đồ: vòng lặp agent, vòng đời tool call, context &amp; bộ nhớ,
+  ranh giới an toàn, retry &amp; phục hồi, verification và công việc chạy dài hạn.</p>
+  <button class="hbtn" onclick="window.print()">🖨 In / lưu PDF trang này</button>
+</div></header>
+<main>
+  <nav class="toc"><h2>Mục lục sơ đồ</h2><ol><li><a href="#sec-1">0 · Cách đọc tài liệu này</a></li>
+<li><a href="#sec-2">1 · Toàn cảnh — ba khối của một hệ agent</a></li>
+<li><a href="#sec-3">2 · Flow tổng — từ task đến &quot;hoàn thành có bằng chứng&quot;</a></li>
+<li><a href="#sec-4">3 · Vòng lặp tối thiểu (chi tiết)</a></li>
+<li><a href="#sec-5">4 · Harness thực sự làm gì</a></li>
+<li><a href="#sec-6">5 · Vòng đời một tool call</a></li>
+<li><a href="#sec-7">6 · Thiết kế tool — giao diện ACI và 4 thuộc tính</a></li>
+<li><a href="#sec-8">7 · Context — hai bề mặt state và sự mất mát của compaction</a></li>
+<li><a href="#sec-9">8 · An toàn — ba vùng tin cậy và lời dặn vs ranh giới</a></li>
+<li><a href="#sec-10">9 · Lỗi, retry và phục hồi</a></li>
+<li><a href="#sec-11">10 · Kiểm chứng — &quot;done&quot; phải có bằng chứng</a></li>
+<li><a href="#sec-12">11 · Chạy dài hạn — session, artifact, resume</a></li>
+<li><a href="#sec-13">12 · Subagents — khi nào nên và không nên</a></li>
+<li><a href="#sec-14">13 · Giả định của harness có &quot;hạn sử dụng&quot;</a></li>
+<li><a href="#sec-15">14 · Bản đồ 13 failure modes</a></li>
+<li><a href="#sec-16">15 · MCP — đặt đúng vị trí</a></li>
+<li><a href="#sec-17">16 · Checklist chốt — 15 câu hỏi kiểm tra hệ thống</a></li>
+<li><a href="#sec-18">17 · Bản đồ tài liệu</a></li></ol></nav>
+  <article><blockquote><p>Tài liệu sơ đồ hóa đi kèm khóa học <b><a href="harness-engineering-course.html">harness-engineering-course.html</a></b> (43 mục) và handbook gốc <i>"Understanding Harness Engineering"</i> của @techNmak. Để xem sơ đồ đã vẽ sẵn đẹp mắt: mở <b><a href="design.html">design.html</a></b> (cùng thư mục) trên trình duyệt. Nếu xem file Markdown này trên GitHub / VS Code (có extension Mermaid) / Obsidian / Typora, các khối sơ đồ sẽ tự vẽ.</p></blockquote>
+<h2 id="sec-1">0 · Cách đọc tài liệu này</h2>
+<ul><li>Mỗi phần có cấu trúc: <b>vài câu giải thích → sơ đồ → 🔑 ý chính</b>. Đọc theo chiều mũi tên.</li><li>Quy ước trong sơ đồ:<ul><li>Mũi tên liền = luồng chính; mũi tên nét đứt = luồng phụ / cảnh báo / ràng buộc.</li><li>Chữ nhật = bước hoặc hệ thống; hình thoi = điểm quyết định; hình tròn đầu mút = bắt đầu / kết thúc.</li></ul></li><li>Từ khóa xuyên suốt cần nằm lòng: <b>control plane</b> (bộ điều khiển — harness) khác <b>execution plane</b> (nơi thực thi — sandbox), và <b>durable state</b> (bền vững) khác <b>active context</b> (nhìn thấy ngay lúc này).</li><li>Những mục đánh số trong ngoặc, ví dụ <i>(Mục 7)</i>, là mục tương ứng trong khóa học để tra cứu sâu hơn.</li></ul>
+<h2 id="sec-2">1 · Toàn cảnh — ba khối của một hệ agent</h2>
+<p>Một lần gọi model chỉ là <code>y ~ p(c)</code>. Muốn thành agent, phải có ba khối: <b>model</b> (năng lực đã học), <b>harness</b> (bộ điều khiển nối năng lực vào hành động, lặp theo thời gian) và <b>environment</b> (nơi hành động thực sự xảy ra). Harness giữ một "bộ nhớ bền" — durable session — tách biệt với những gì model nhìn thấy trong từng lượt. <i>(Mục 1–4)</i></p>
+<pre class="mermaid">flowchart LR
+    subgraph AGENT[&quot;agent system ≈ model + harness + environment&quot;]
+        direction LR
+        H[&quot;HARNESS — control plane&lt;br/&gt;context · model loop · tool routing&lt;br/&gt;policy · verification · recovery · budgets&quot;]
+        M[&quot;MODEL&lt;br/&gt;learned capability&quot;]
+        E[&quot;ENVIRONMENT — execution plane&lt;br/&gt;tools · MCP · sandbox&lt;br/&gt;files · APIs · browser&quot;]
+        H --&gt;|&quot;context c(t)&quot;| M
+        M --&gt;|&quot;action a(t)&quot;| H
+        H --&gt;|&quot;execute&quot;| E
+        E --&gt;|&quot;observation o(t)&quot;| H
+    end
+    T([&quot;Task&quot;]) --&gt; H
+    DS[(&quot;Durable session /&lt;br/&gt;task state&quot;)] &lt;--&gt; H
+    H --&gt; OUT([&quot;Kết quả — có bằng chứng?&quot;])</pre>
+<p><b>🔑 Ý chính:</b> Model = năng lực; harness = cách nối năng lực vào công việc; environment = nơi công việc xảy ra. Thiếu harness, bạn có một chatbot — không phải một agent.</p>
+<h2 id="sec-3">2 · Flow tổng — từ task đến "hoàn thành có bằng chứng"</h2>
+<p>Đây là toàn bộ vòng đời một agent làm việc, gộp mọi khái niệm của handbook vào một sơ đồ. Chú ý: vòng lặp <b>không</b> kết thúc khi model nói "xong" — nó kết thúc khi qua được <b>cổng verification</b>.</p>
+<pre class="mermaid">flowchart TD
+    T([&quot;Task&quot;]) --&gt; C[&quot;1 · Chọn context&lt;br/&gt;c = G(state)&quot;]
+    C --&gt; M[&quot;2 · Gọi model&quot;]
+    M --&gt; D{&quot;3 · Final?&quot;}
+    D --&gt;|&quot;action request&quot;| A[&quot;4 · Route action&lt;br/&gt;policy · approval · budget&quot;]
+    A --&gt; X[&quot;5 · Thực thi&lt;br/&gt;tool / sandbox&quot;]
+    X --&gt; O[&quot;6 · Observation&lt;br/&gt;lọc high-signal&quot;]
+    O --&gt; S[&quot;7 · Cập nhật state&lt;br/&gt;log · artifacts&quot;]
+    S --&gt; C
+    D --&gt;|&quot;final&quot;| V{&quot;8 · Verification&lt;br/&gt;bằng chứng ngoài model?&quot;}
+    V --&gt;|&quot;chưa đạt&quot;| C
+    V --&gt;|&quot;đạt&quot;| Z([&quot;✅ Hoàn thành có bằng chứng&quot;])
+    V -.-&gt;|&quot;hết budget / bị chặn&quot;| E([&quot;⛔ Dừng: budget · policy · handoff&quot;])</pre>
+<p><b>🔑 Ý chính:</b> Hai mắt xích dễ bị bỏ qua nhất chính là chỗ tinh tế nhất: <b>(6)</b> kết quả thô phải được chuyển hoá thành observation tín hiệu cao, và <b>(8)</b> "xong" phải qua verification — self-report không phải bằng chứng. <i>(Mục 23–28)</i></p>
+<h2 id="sec-4">3 · Vòng lặp tối thiểu (chi tiết)</h2>
+<p>Phiên bản formal của sơ đồ trên — bốn đối tượng tiến hóa: state <code>s(t)</code>, context <code>c(t) = G(s(t))</code>, action <code>a(t) = M(c(t))</code>, observation <code>o(t) = E(a(t))</code>; state cập nhật <code>s(t+1) = U(s(t), a(t), o(t))</code>.</p>
+<pre class="mermaid">flowchart TD
+    A([&quot;Task&quot;]) --&gt; B[&quot;Assemble active context&lt;br/&gt;c(t) = G(s(t))&quot;]
+    B --&gt; C[&quot;Model invocation&lt;br/&gt;a(t) = M(c(t))&quot;]
+    C --&gt; D{&quot;Final answer&lt;br/&gt;hay action request?&quot;}
+    D --&gt;|&quot;final&quot;| Z([&quot;Trả kết quả / kết thúc&quot;])
+    D --&gt;|&quot;action&quot;| E[&quot;Policy / approval / tool routing&quot;]
+    E --&gt; F[&quot;Execute in environment&lt;br/&gt;o(t) = E(a(t))&quot;]
+    F --&gt; G[&quot;Observation + state update&lt;br/&gt;s(t+1) = U(s(t), a(t), o(t))&quot;]
+    G --&gt; B</pre>
+<p><b>🔑 Ý chính:</b> Tinh thần bền vững của vòng lặp — <b>act → observe → update → continue</b> — không cần expose "suy nghĩ riêng tư" của model; chỉ cần vòng lặp hành động–quan sát đúng. Đây là di sản của ReAct. <i>(Mục 2)</i></p>
+<h2 id="sec-5">4 · Harness thực sự làm gì</h2>
+<p>Nếu model là "bộ não", harness là toàn bộ phần còn lại của cơ thể. Cây dưới đây là bảng phân công trách nhiệm — dùng nó như checklist khi thiết kế hoặc debug hệ thống. <i>(Mục 3)</i></p>
+<pre class="mermaid">flowchart TD
+    H[&quot;HARNESS — control plane&quot;]
+    H --&gt; C1[&quot;CONTEXT&lt;br/&gt;chọn gì vào context · compaction&lt;br/&gt;progressive disclosure&quot;]
+    H --&gt; C2[&quot;TOOLS&lt;br/&gt;visibility · schemas · result transform&lt;br/&gt;error semantics&quot;]
+    H --&gt; C3[&quot;POLICY&lt;br/&gt;permissions · approvals · budgets&quot;]
+    H --&gt; C4[&quot;STATE&lt;br/&gt;session log · structured artifacts&lt;br/&gt;resume / recovery&quot;]
+    H --&gt; C5[&quot;VERIFY&lt;br/&gt;evidence · guardrails · graders&lt;br/&gt;stopping conditions&quot;]</pre>
+<p><b>🔑 Ý chính:</b> Mỗi nhánh là một câu hỏi thiết kế: <i>việc này ai làm? làm thế nào? khi fail thì sao? có quan sát được không?</i> Không harness nào sở hữu tất cả — nhưng chỗ nào trống, chỗ đó sẽ thành failure mode.</p>
+<h2 id="sec-6">5 · Vòng đời một tool call</h2>
+<p>Chi tiết hóa bước 4–6 của flow tổng: một <code>tool call</code> đi qua policy, qua môi trường thực thi, rồi quay về model — dù thành công, bị chặn hay lỗi. <i>(Mục 10–11)</i></p>
+<pre class="mermaid">sequenceDiagram
+    autonumber
+    participant M as Model
+    participant H as Harness
+    participant P as Policy / Approval
+    participant E as Environment
+
+    M-&gt;&gt;H: action request (tool + arguments)
+    H-&gt;&gt;P: kiểm tra quyền, approval, ngân sách
+    alt bị chặn hoặc quá budget
+        P--&gt;&gt;H: block
+        H--&gt;&gt;M: observation: bị chặn + lý do + cách xin phép
+    else được phép
+        H-&gt;&gt;E: thực thi trong sandbox / tool
+        alt thành công
+            E--&gt;&gt;H: kết quả thô
+            H-&gt;&gt;H: lọc high-signal, giữ identifiers
+            H--&gt;&gt;M: observation đã chuyển hoá
+        else lỗi phục hồi được
+            E--&gt;&gt;H: lỗi
+            H-&gt;&gt;H: chuẩn hoá thành lỗi model-visible
+            H--&gt;&gt;M: reason, side_effects, retryable
+        else lỗi terminal
+            E--&gt;&gt;H: lỗi không phục hồi
+            H--&gt;&gt;M: terminal failure
+        end
+    end
+    Note over M,H: Mọi kết quả — kể cả lỗi — đều quay về model như OBSERVATION
+    M-&gt;&gt;M: act → observe → update → continue</pre>
+<p><b>🔑 Ý chính:</b> Lỗi không kết thúc cuộc chơi — lỗi là <i>thông tin</i>. Lỗi mù mờ kiểu <code>Error.</code> buộc model đoán; lỗi có cấu trúc (<code>reason · side_effects · retryable</code>) cho model đủ dữ kiện chọn bước tốt hơn.</p>
+<h2 id="sec-7">6 · Thiết kế tool — giao diện ACI và 4 thuộc tính</h2>
+<p>Model không tương tác với "cái máy tính" — nó tương tác với một <b>giao diện cụ thể</b>. Cùng một repo, hai giao diện khác nhau tạo ra hai bài toán khác nhau cho model. Mọi tool nên được soi qua bốn câu hỏi: làm được gì (affordance) · gọi thế nào (contract) · trả về gì (observation) · bước tiếp có dễ hơn không (feedback). <i>(Mục 5–9)</i></p>
+<pre class="mermaid">flowchart LR
+    subgraph SH[&quot;Harness A — structured ACI&quot;]
+        direction LR
+        A1[&quot;read_file&quot;] --&gt; A2[&quot;search_code&quot;] --&gt; A3[&quot;apply_patch&quot;] --&gt; A4[&quot;run_tests&quot;]
+    end
+    subgraph RA[&quot;Harness B — raw shell&quot;]
+        B1[&quot;shell(command)&quot;]
+    end
+    A4 --&gt; R[&quot;Cùng một repo&lt;br/&gt;KHÁC bài toán cho model&quot;]
+    B1 --&gt; R</pre>
+<pre class="mermaid">flowchart LR
+    P1[&quot;AFFORDANCE&lt;br/&gt;tool LÀM ĐƯỢC gì&quot;] --&gt; P2[&quot;CONTRACT&lt;br/&gt;model GỌI thế nào&quot;]
+    P2 --&gt; P3[&quot;OBSERVATION&lt;br/&gt;TRẢ VỀ gì&quot;]
+    P3 --&gt; P4[&quot;FEEDBACK&lt;br/&gt;bước tiếp có DỄ hơn không?&quot;]</pre>
+<p><b>🔑 Ý chính:</b> Tool không chỉ là code — tên, mô tả, schema và định dạng kết quả đều nằm <b>trong context của model</b>, nên thiết kế tool chính là thiết kế input. Cấu trúc giao diện là một phần của <i>độ khó hiệu dụng</i> của task. Thêm tool không tự động tốt hơn — mỗi tool thêm là một lựa chọn thêm có thể gây mơ hồ.</p>
+<h2 id="sec-8">7 · Context — hai bề mặt state và sự mất mát của compaction</h2>
+<p>Durable state (session log, artifacts) và active context (những gì model thấy trong lượt này) là <b>hai bề mặt khác nhau</b>: có lưu ≠ được thấy; được thấy ≠ được lưu. Harness chạy hàm chọn <code>G</code> mỗi lượt — và compaction trong đó là phép biến đổi <b>có mất mát</b>: <code>C(H) ≠ H</code>. <i>(Mục 12–15)</i></p>
+<pre class="mermaid">flowchart LR
+    subgraph DUR[&quot;DURABLE — ngoài context window&quot;]
+        L[(&quot;Session log&lt;br/&gt;append-only&quot;)]
+        ART[&quot;Structured artifacts&lt;br/&gt;todos · git · notes&quot;]
+    end
+    subgraph SEL[&quot;HARNESS — hàm chọn G&quot;]
+        R[&quot;Retrieve lát cắt liên quan&quot;]
+        S[&quot;Compaction / summarize&lt;br/&gt;LOSSY — C(H) ≠ H&quot;]
+        F[&quot;Filter theo relevance&lt;br/&gt;capacity hữu hạn&quot;]
+    end
+    L --&gt; R
+    R --&gt; S
+    S --&gt; F
+    ART --&gt; F
+    U[&quot;User message hiện tại&lt;br/&gt;tool schemas (ephemeral)&quot;] --&gt; F
+    F --&gt; AC[&quot;ACTIVE CONTEXT&lt;br/&gt;lần gọi này&quot;]
+    AC --&gt; MODEL[&quot;MODEL&quot;]</pre>
+<pre class="mermaid">flowchart LR
+    H[&quot;History đầy đủ H&quot;] --&gt; C[&quot;Compaction C(H)&quot;]
+    C --&gt; AC[&quot;Context gọn cho lượt sau&quot;]
+    AC --&gt; OK[&quot;Tiết kiệm token&quot;]
+    C -.-&gt;|&quot;mất chi tiết&quot;| GAP[&quot;⚠️ Lượt tương lai có thể cần&lt;br/&gt;thông tin đã bị bỏ&quot;]
+    H -.-&gt;|&quot;durable: vẫn còn đó&quot;| RB[&quot;Truy hồi lại khi cần&quot;]</pre>
+<p><b>🔑 Ý chính:</b> Nhồi mọi thứ vào context là sai (capacity hữu hạn + nội dung vô can cạnh tranh attention). Progressive disclosure: định hướng đủ dùng → để thông tin sâu <i>discoverable</i> → load chi tiết khi task cần. Và nhớ: compaction không phải xóa — chỉ là tóm tắt; gốc phải còn truy hồi được.</p>
+<h2 id="sec-9">8 · An toàn — ba vùng tin cậy và lời dặn vs ranh giới</h2>
+<p>Nguyên tắc xương sống: <b>instruction không thay được ranh giới cấu trúc</b>. Credentials đứng <i>ngoài</i> sandbox (thứ không tồn tại trong sandbox thì không thể đọc từ sandbox). Egress allowlist là một <i>capability grant</i>, không chỉ là bộ lọc địa chỉ. Dữ liệu từ web/email/tool — dù trông như mệnh lệnh — vẫn là <i>dữ liệu</i>. <i>(Mục 18–22)</i></p>
+<pre class="mermaid">flowchart TB
+    subgraph CP[&quot;CONTROL PLANE — tin cậy, nằm NGOÀI vùng thực thi&quot;]
+        H[&quot;Harness&lt;br/&gt;session · audit log · policy&quot;]
+        CR[&quot;Credentials&lt;br/&gt;(proxy / broker)&quot;]
+    end
+    subgraph SB[&quot;SANDBOX — vùng thực thi KHÔNG tin cậy&quot;]
+        CODE[&quot;Code do model sinh ra&quot;]
+        FS[&quot;Filesystem giới hạn (mounts)&quot;]
+        NET[&quot;Network (egress allowlist)&quot;]
+    end
+    subgraph EXT[&quot;BÊN NGOÀI — internet, hệ thống khác&quot;]
+        WEB[&quot;Web · APIs · email · docs&quot;]
+    end
+    H --&gt;|&quot;giao việc có kiểm soát&quot;| CODE
+    CODE --&gt; FS
+    CODE --&gt; NET
+    NET -.-&gt;|&quot;chỉ tới allowlist&quot;| WEB
+    WEB -.-&gt;|&quot;dữ liệu về — có thể chứa&lt;br/&gt;instruction độc hại&quot;| H
+    CR -.-&gt;|&quot;dùng qua proxy&lt;br/&gt;KHÔNG BAO GIỜ vào sandbox&quot;| CODE</pre>
+<p><b>🔑 Ý chính:</b> Ba vùng = ba mức tin cậy. Approval kiểm soát <i>quyết định</i>; containment kiểm soát <i>reachable capability</i> — chỉ containment mới đỡ được khi phán đoán của model bị lừa (red-team: 24/25 lần exfiltrate thành công qua prompt injection).</p>
+<h2 id="sec-10">9 · Lỗi, retry và phục hồi</h2>
+<p>Không phải mọi lỗi đều được retry — và retry chỉ an toàn với operation idempotent. Với side effect không idempotent (charge tiền, gửi email, tạo order), phải <b>reconcile trước khi retry</b>: đọc lại trạng thái, dùng dedup record / idempotency key. Bốn trạng thái <code>requested → executed → observed → committed</code> không chuyển tiếp atomic. <i>(Mục 29–31)</i></p>
+<pre class="mermaid">flowchart TD
+    E([&quot;Tool call thất bại&lt;br/&gt;hoặc không rõ kết quả&quot;]) --&gt; Q1{&quot;Phân loại&quot;}
+    Q1 --&gt;|&quot;recoverable&quot;| R1[&quot;Trả lỗi model-visible&lt;br/&gt;reason · side_effects · retryable&quot;]
+    R1 --&gt; R2[&quot;Model chọn hành động tốt hơn&quot;] --&gt; OK([&quot;Tiếp tục vòng lặp&quot;])
+    Q1 --&gt;|&quot;terminal&quot;| T1[&quot;Dừng run&lt;br/&gt;hoặc escalate cho người&quot;]
+    Q1 --&gt;|&quot;không rõ side effect&lt;br/&gt;đã commit chưa?&quot;| Q2{&quot;Operation&lt;br/&gt;idempotent?&quot;}
+    Q2 --&gt;|&quot;có&quot;| RT[&quot;Retry an toàn&quot;]
+    Q2 --&gt;|&quot;không&quot;| RC[&quot;Reconcile TRƯỚC khi retry&lt;br/&gt;read-before-retry · dedup record&lt;br/&gt;idempotency key · unique op ID&quot;]
+    RT --&gt; OK
+    RC --&gt; OK</pre>
+<pre class="mermaid">stateDiagram-v2
+    [*] --&gt; Requested : harness gọi tool
+    Requested --&gt; Executed : side effect đã xảy ra
+    Executed --&gt; Observed : response về được harness
+    Observed --&gt; Committed : state nội bộ đã cập nhật
+    Requested --&gt; Crashed : crash hoặc network đứt
+    Executed --&gt; Crashed : crash trước khi thấy response
+    Crashed --&gt; Reconcile : restart, đọc durable event log
+    Reconcile --&gt; Committed : đã khớp, không chạy lại mù quáng
+    Reconcile --&gt; Requested : chỉ retry nếu idempotent hoặc có dedup
+    note right of Crashed : Yêu cầu ≠ Đã xảy ra ≠ Đã thấy kết quả</pre>
+<p><b>🔑 Ý chính:</b> Automatic retry là <b>chính sách theo từng tool</b>, không phải chiến lược phục hồi phổ quát. "Tool fail thì cứ retry" là một trong những ngộ nhận đắt tiền nhất — với <code>charge_card</code>, nó là nhân đôi tiền.</p>
+<h2 id="sec-11">10 · Kiểm chứng — "done" phải có bằng chứng</h2>
+<p>Model tuyên bố "đã xong" chỉ là <b>claim</b>. Cổng verification kiểm bằng thứ bên ngoài model: test deterministic (máy chấm) với thuộc tính máy kiểm được, evaluator độc lập hoặc con người với thuộc tính chủ quan. τ-bench là hình mẫu: so trạng thái database cuối với goal đã annotate, thay vì tin lời agent. <i>(Mục 25–28)</i></p>
+<pre class="mermaid">flowchart TD
+    C([&quot;Agent tuyên bố: DONE&quot;]) --&gt; V{&quot;Verification gate&quot;}
+    V --&gt;|&quot;deterministic checks&quot;| D1[&quot;tests pass · repro hết fail&lt;br/&gt;JSON valid · state đổi đúng&quot;]
+    V --&gt;|&quot;subjective&quot;| D2[&quot;Evaluator độc lập&lt;br/&gt;hoặc con người&quot;]
+    V --&gt;|&quot;không có verification&quot;| BAD[&quot;❌ Chỉ là claim&lt;br/&gt;không phải evidence&quot;]
+    D1 --&gt; OK([&quot;Completion có bằng chứng&quot;])
+    D2 --&gt; OK
+    D1 --&gt;|&quot;fail&quot;| F[&quot;Trả lại việc — CHƯA xong&quot;] --&gt; C
+    D2 --&gt;|&quot;fail&quot;| F</pre>
+<p><b>🔑 Ý chính:</b> Nơi nào kiểm được bằng máy, đừng bắt model "nhớ luật" — hãy <i>ép</i> bằng cơ chế (structural test, linter, guardrail). The model should not have to remember a rule that the system can cheaply enforce.</p>
+<h2 id="sec-12">11 · Chạy dài hạn — session, artifact, resume</h2>
+<p>Task chạy hàng giờ/ngày phải sống sót qua crash, mất worker, sandbox bị thu hồi, network đứt, user pause. Kiến trúc chuẩn: <b>durable session log</b> (append-only) nằm ngoài harness + <b>structured artifacts</b> (todo, notes, git) + khả năng <b>resume</b> — tiếp tục đúng chỗ dừng, không bắt đầu lại. <i>(Mục 17, 29)</i></p>
+<pre class="mermaid">sequenceDiagram
+    participant I as Initializer session
+    participant W as Working sessions
+    participant A as Artifacts (todo, notes, git)
+    participant L as Durable session log
+
+    I-&gt;&gt;A: tạo feature list, plan, init script
+    loop mỗi phiên làm việc
+        W-&gt;&gt;A: đọc trạng thái, chọn việc kế tiếp
+        W-&gt;&gt;L: ghi event append-only
+        W-&gt;&gt;A: cập nhật progress + commit
+    end
+    Note over L,A: crash / hết ngân sách / user pause?
+    W-&gt;&gt;L: resume từ session log
+    W-&gt;&gt;A: khôi phục state có cấu trúc
+    Note over W: tiếp tục đúng chỗ dừng, không bắt đầu lại</pre>
+<p><b>🔑 Ý chính:</b> Chạy dài = bài toán systems cổ điển mặc áo mới: durability, recovery, consistency, retries, failure isolation. Đừng mong prompt giải được bài toán database.</p>
+<h2 id="sec-13">12 · Subagents — khi nào nên và không nên</h2>
+<p>Delegation chỉ đáng giá khi công việc <b>tách được thành subtask độc lập</b>. Task tuần tự chặt thì coordination cost lấn át toàn bộ lợi ích — bằng chứng thực nghiệm: một cấu hình multi-agent tăng +80.9% trên bài finance nhưng <b>giảm 39–70%</b> trên bài tuần tự PlanCraft. <i>(Mục 32–33)</i></p>
+<pre class="mermaid">flowchart TD
+    T([&quot;Task lớn&quot;]) --&gt; Q{&quot;Tách được thành&lt;br/&gt;subtask ĐỘC LẬP?&quot;}
+    Q --&gt;|&quot;KHÔNG — tuần tự chặt&quot;| S[&quot;Một agent&lt;br/&gt;coordination cost lấn át&quot;]
+    Q --&gt;|&quot;CÓ&quot;| P[&quot;Subagents song song có kiểm soát&quot;]
+    P --&gt; P1[&quot;1 · Task boundary rõ ràng&quot;]
+    P1 --&gt; P2[&quot;2 · Giới hạn concurrency + budget&quot;]
+    P2 --&gt; P3[&quot;3 · Merge policy + shared state&quot;]
+    P3 --&gt; R[&quot;⚠️ Rủi ro cần theo dõi&lt;br/&gt;trùng việc · lệch giả định · token cost&lt;br/&gt;error propagation · conflict state&quot;]
+    S --&gt; OUT([&quot;Kết quả&quot;])
+    R --&gt; OUT</pre>
+<p><b>🔑 Ý chính:</b> Delegation phải được biện minh bằng <b>cấu trúc task</b>, không bằng niềm tin "nhiều agent hơn là tốt hơn". Và subagent output cũng là một bề mặt tấn công — đừng mặc định nó "an toàn hơn" tool output.</p>
+<h2 id="sec-14">13 · Giả định của harness có "hạn sử dụng"</h2>
+<p>Mỗi thành phần harness (workaround, scaffolding, evaluator, planner...) là <b>một giả thuyết về giới hạn hiện tại của model</b>. Khi model tiến bộ, giả thuyết phải được test lại — nếu không, harness tích tụ "dead weight": latency, token cost, complexity và failure mode mới. Ví dụ thật: cơ chế context-reset cần cho Sonnet 4.5 trở thành vô dụng với Opus 4.5; harness đầy đủ chạy 6 giờ/$200 so với solo 20 phút/$9 — tốt hơn nhưng đắt gấp &gt;20 lần. <i>(Mục 39)</i></p>
+<pre class="mermaid">flowchart LR
+    C[&quot;Thành phần harness&lt;br/&gt;(scaffolding)&quot;] --&gt; H[&quot;Giả thuyết về&lt;br/&gt;giới hạn model hiện tại&quot;]
+    H --&gt; M[&quot;Đo: quality lift&lt;br/&gt;vs execution cost&quot;]
+    M --&gt; D{&quot;Model mới?&quot;}
+    D --&gt;|&quot;chưa&quot;| K[&quot;Giữ nguyên, tiếp tục đo&quot;]
+    K --&gt; M
+    D --&gt;|&quot;rồi&quot;| RT[&quot;Test lại giả thuyết&quot;]
+    RT --&gt; D2{&quot;Còn cần thiết?&quot;}
+    D2 --&gt;|&quot;còn&quot;| K
+    D2 --&gt;|&quot;không&quot;| RM[&quot;Gỡ bỏ — tránh dead weight&lt;br/&gt;latency · token · complexity&quot;]</pre>
+<p><b>🔑 Ý chính:</b> Đừng coi harness là bất biến. Khi model đổi, chạy lại phép đo — component nào không còn biện minh được <i>quality lift</i> so với <i>cost</i> thì gỡ.</p>
+<h2 id="sec-15">14 · Bản đồ 13 failure modes</h2>
+<p>Khi hệ thống hỏng, hãy chẩn đoán theo bản đồ này thay vì đoán mò. Harness engineering phần lớn là việc biến các loại lỗi này thành thuộc tính <b>observable và testable</b>. <i>(Mục 40)</i></p>
+<pre class="mermaid">mindmap
+  root((Failure modes))
+    Tool
+      Tool-selection
+      Tool-contract
+      Observation
+    Context + State
+      Context
+      State
+      Budget
+    Môi trường
+      Environment
+      Authorization
+    Độ tin cậy
+      Verification
+      Recovery
+      Coordination
+    Bảo mật
+      Provenance / prompt-injection
+      Skill-induced</pre>
+<p><b>🔑 Ý chính:</b> Mỗi loại lỗi cần: một tín hiệu quan sát được, một cách phân loại, và một cơ chế phản ứng (retry / escalate / dừng). Không có ba thứ đó thì lỗi chỉ là "hệ thống chạy sai gì đó".</p>
+<h2 id="sec-16">15 · MCP — đặt đúng vị trí</h2>
+<p>MCP chuẩn hóa interface giữa ứng dụng AI và các capability (tools, resources, prompts). Nó là <b>lớp tương tác</b>, không phải kiến trúc agent. Tasks là extension tùy chọn (còn draft) cho async task handle. Mọi thứ thuộc về <i>điều khiển</i> — schedule loop, chọn context, đánh giá completion, approval, retry, sandbox, coordination, evaluation — vẫn thuộc về harness. <i>(Mục 11)</i></p>
+<pre class="mermaid">flowchart LR
+    subgraph APP[&quot;AI application / harness&quot;]
+        MC[&quot;MCP client&quot;]
+    end
+    subgraph CAP[&quot;Capability layer&quot;]
+        MS[&quot;MCP server&quot;] --&gt; T1[&quot;tools&quot;]
+        MS --&gt; T2[&quot;resources&quot;]
+        MS --&gt; T3[&quot;prompts&quot;]
+        MS -.-&gt; TX[&quot;Tasks — extension&lt;br/&gt;optional, còn draft&quot;]
+    end
+    MC &lt;--&gt;|&quot;chuẩn hoá bởi MCP&quot;| MS
+    NOTE[&quot;MCP KHÔNG quyết định:&lt;br/&gt;schedule loop · chọn context · đánh giá completion&lt;br/&gt;approval · retry · sandbox · coordination · eval&quot;]</pre>
+<p><b>🔑 Ý chính:</b> Safe mental model — <b>interoperable capability interface</b>, không phải <i>entire agent architecture</i>.</p>
+<h2 id="sec-17">16 · Checklist chốt — 15 câu hỏi kiểm tra hệ thống</h2>
+<p>Khi đánh giá bất kỳ hệ agent nào, đi qua 15 câu này:</p>
+<ol><li>Model thực sự nhận được gì? — instructions, history, tool schemas, retrieved state, summaries, artifacts.</li><li>Ai điều khiển loop? — application code, managed harness, workflow engine, hay agent khác.</li><li>Những action nào available? — function tools, MCP tools, shell, browser, files, APIs, subagents.</li><li>Action thực thi ở đâu? — trusted process, local machine, container, VM, remote service.</li><li>Cái gì sống sót qua turn / crash? — session events, files, snapshots, external side effects.</li><li>Luật nào được ép bằng máy? — schemas, mounts, network boundaries, approvals, tests, budgets.</li><li>Errors biểu diễn thế nào? — fatal exception, retry, model-visible observation, human escalation.</li><li>Action nào an toàn để retry? — idempotent, deduplicated, hay không cả hai.</li><li>Agent lấy ground truth bằng cách nào? — tests, logs, browser state, database state, external responses.</li><li>Cái gì chứng minh completion? — model claim, deterministic validator, external state, evaluator, human.</li><li>Run dừng thế nào nếu mãi không thành công? — turn/time/token/tool/cost/policy budgets.</li><li>Sau gián đoạn thì sao? — resume, retry, reprovision, rollback, restart.</li><li>Observation không tin cậy có mang instruction được không? — web data, tool output, files, memory, loaded skills, subagent reports.</li><li>Subagents được coordinate thế nào? — task boundaries, shared state, merge policy, concurrency limits.</li><li>Harness được evaluate thế nào? — ablations, representative tasks, stable environments, outcome metrics.</li></ol>
+<p><b>🔑 Ý chính:</b> <i>A system that cannot answer these questions may still work in a demo. It is much harder to reason about in production.</i></p>
+<h2 id="sec-18">17 · Bản đồ tài liệu</h2>
+<ul><li><b><a href="harness-engineering-course.html">harness-engineering-course.html</a></b> — khóa học tương tác: 43 mục bài học, quiz tự chấm, flashcards, bảng tra.</li><li><b>design.md</b> — tài liệu này: sơ đồ Mermaid các flow chính (dành cho người đọc/soạn thảo Markdown).</li><li><b><a href="design.html">design.html</a></b> — bản render của tài liệu này, mở trên trình duyệt là xem được ngay.</li><li><b>mermaid.min.js</b> — thư viện vẽ sơ đồ đi kèm (để <a href="design.html">design.html</a> chạy offline; nếu thiếu, trang tự tải từ internet).</li></ul>
+<blockquote><p>Kết luận một dòng của cả bộ tài liệu: <b>Model cung cấp năng lực — harness quyết định năng lực đó được nối vào công việc như thế nào, và mọi mắt xích phải kiểm chứng được bằng bằng chứng ngoài model.</b></p></blockquote></article>
+</main>
+<footer>
+  <p><b>Ghi chú kỹ thuật:</b> sơ đồ vẽ bằng <b>Mermaid</b>. Trang ưu tiên dùng <code>mermaid.min.js</code> cùng thư mục
+  (chạy offline); nếu thiếu file, trang sẽ thử tải từ internet. Nếu cả hai không được, khối sơ đồ vẫn hiển thị mã nguồn Mermaid dạng văn bản.</p>
+  <p>Bộ tài liệu: <b>harness-engineering-course.html</b> (khóa học) · <b>design.md</b> (nguồn Markdown) · <b>design.html</b> (trang này).</p>
+</footer>
+<script src="./mermaid.min.js" onerror="window.__noLocalMermaid=true"></script>
+<script>
+(function(){
+  function boot(){
+    try{
+      mermaid.initialize({
+        startOnLoad:true, securityLevel:'loose',
+        theme:'base',
+        fontFamily:'"Segoe UI", system-ui, sans-serif',
+        themeVariables:{
+          primaryColor:'#eef4ff', primaryTextColor:'#16233c', primaryBorderColor:'#8fb3e6',
+          lineColor:'#7a8db3', secondaryColor:'#f2f5fb', tertiaryColor:'#f7f9fd',
+          fontSize:'14px', edgeLabelBackground:'#ffffff'
+        },
+        flowchart:{ htmlLabels:true, curve:'basis' },
+        sequence:{ useMaxWidth:true },
+        mindmap:{ useMaxWidth:true }
+      });
+    }catch(e){ console.error(e); }
+  }
+  if (window.mermaid) { boot(); return; }
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
+  s.onload=boot;
+  s.onerror=function(){
+    var p=document.querySelector('pre.mermaid');
+    if(!p) return;
+    var w=document.createElement('div');
+    w.style.cssText='background:#fff4e5;border:1px solid #f0c98a;border-radius:12px;padding:12px 16px;margin:14px 0;font-size:13.5px;color:#6b4d12';
+    w.textContent='⚠️ Không tìm thấy mermaid.min.js và không tải được từ internet. Các sơ đồ bên dưới đang hiển thị dạng mã nguồn — hãy đặt mermaid.min.js cạnh file này rồi mở lại để xem sơ đồ đã vẽ.';
+    p.parentNode.insertBefore(w,p);
+  };
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>

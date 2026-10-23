@@ -401,6 +401,31 @@ html[data-lang="en"] .lang-vi { display: none; }
 }
 .lesson-footer p { margin: .4rem 0; }
 
+/* ---------- Site navigation ---------- */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255,255,255,.96);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--sans);
+}
+.site-nav .inner {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: .6rem 1.2rem;
+  display: flex;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-size: .9rem;
+}
+.site-nav a { text-decoration: none; color: var(--ink); border-bottom: 1px solid transparent; }
+.site-nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+.site-nav .brand { font-weight: 700; letter-spacing: .01em; }
+.site-nav .sep { color: var(--muted); }
+
 /* ---------- Print ---------- */
 @media print {
   html { font-size: 11.5pt; }

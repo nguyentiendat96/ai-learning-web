@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Học viện AI Agents — 11-768 (CMU)</title>
 <meta name="description" content="Học liệu tự học AI Agents theo bài giảng CMU 11-768: 9 bài giảng, 9 exam, 3 đề thi thử — song ngữ Việt/Anh, chạy offline.">
-<link rel="stylesheet" href="assets/course.css">
+<link rel="stylesheet" href="assets/course.css?v=2">
 </head>
 <body>
 
@@ -81,6 +81,23 @@
     </ul>
   </section>
 
+  <section id="lo-trinh">
+    <h2><span class="lang-vi">Lộ trình Claude, từ dễ đến khó</span><span class="lang-en">Claude path, easiest to hardest</span></h2>
+    <p><span class="lang-vi">Học đúng thứ tự này. Mỗi khóa xong trước khi sang khóa sau, vì khóa sau dùng lại khái niệm của khóa trước.</span><span class="lang-en">Follow this order. Finish each course before the next, since each builds on the previous one.</span></p>
+    <table class="mapping">
+      <thead>
+        <tr><th>Bậc</th><th>Khóa</th><th>Dành cho</th><th>Bài</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1 · Dễ</td><td><a href="lessons/ccao-f.html">CCAO-F Associate</a></td><td>Người dùng Claude trong công việc</td><td>12</td></tr>
+        <tr><td>2 · Trung bình</td><td><a href="lessons/ccdv-f.html">CCDV-F Developer</a></td><td>Lập trình viên gọi API</td><td>17</td></tr>
+        <tr><td>3 · Khó</td><td><a href="lessons/ccaf-architect.html">CCAR-F Architect</a></td><td>Thiết kế hệ thống nhiều agent</td><td>37 module</td></tr>
+        <tr><td>4 · Chuyên sâu</td><td>CCAR-P Professional (chưa dựng)</td><td>Kiến trúc production, bảo mật, chi phí</td><td>16 bài nguồn</td></tr>
+      </tbody>
+    </table>
+    <p><span class="lang-vi">Luyện theo từng chặng: <a href="lessons/path-ccao.html">đường leo thang CCAO-F</a>.</span><span class="lang-en">Stage-by-stage practice: <a href="lessons/path-ccao.html">CCAO-F ladder</a>.</span></p>
+  </section>
+
   <section id="claude">
     <h2><span class="lang-vi">Track Claude — chứng chỉ Anthropic (6 bài)</span><span class="lang-en">Claude track — Anthropic certificates (6 lessons)</span></h2>
     <p><span class="lang-vi">Track riêng cho lộ trình chứng chỉ Claude (CCDV-F / CCAR-F) — nội dung dựng từ docs chính thức Anthropic, mỗi bài có mục luyện thêm với GitHub chính thức.</span><span class="lang-en">A separate track for the Claude certificates (CCDV-F / CCAR-F) — built from official Anthropic docs, each lesson with practice on official GitHub repos.</span></p>
@@ -95,12 +112,43 @@
     <p><span class="lang-vi">Lộ trình + độ phủ chứng chỉ: <a href="reference/cert-roadmap.html">cert roadmap</a>.</span><span class="lang-en">Roadmap + certificate coverage: <a href="reference/cert-roadmap.html">cert roadmap</a>.</span></p>
   </section>
 
+  <section id="ccaf">
+    <h2><span class="lang-vi">CCAF Foundations — chứng chỉ Claude Associate</span><span class="lang-en">CCAF Foundations — Claude Associate certificate</span></h2>
+    <p><span class="lang-vi">9 module bám playlist Foundations: prompt anatomy, đánh giá output, chọn model, thiết kế workflow, project và knowledge, governance, troubleshooting, capstone. Mỗi module có ví dụ và bài tập tự chấm.</span><span class="lang-en">Nine modules following the Foundations playlist: prompt anatomy, output validation, model choice, workflow design, projects and knowledge, governance, troubleshooting, capstone. Each module has worked examples and self-graded exercises.</span></p>
+    <ol>
+      <li><a href="lessons/path-ccao.html"><span class="lang-vi">Đường leo thang: 12 chặng, qua từng chặng mới mở tiếp</span><span class="lang-en">Ladder: 12 stages, pass one to unlock the next</span></a></li>
+      <li><a href="lessons/ccao-f.html"><span class="lang-vi">Giáo án 12 bài theo khóa đầy đủ (mới)</span><span class="lang-en">12-lesson curriculum from the full course (new)</span></a></li>
+      <li><a href="lessons/ccaf-foundations.html"><span class="lang-vi">Bộ 9 module cũ</span><span class="lang-en">Older 9-module set</span></a></li>
+      <li><a href="lessons/ccaf-foundations/ccaf-foundations.md"><span class="lang-vi">Bản tóm tắt ôn thi</span><span class="lang-en">Exam summary</span></a></li>
+    </ol>
+  </section>
+
+  <section id="ccdv">
+    <h2><span class="lang-vi">CCDV-F Developer — chứng chỉ Claude Developer</span><span class="lang-en">CCDV-F Developer — Claude Developer certificate</span></h2>
+    <p><span class="lang-vi">13 module bám khóa Developer Foundations: Messages API, thiết kế ứng dụng, tool use, MCP, agent, streaming, chọn model, caching, prompt, bảo mật, eval, Claude Code, capstone.</span><span class="lang-en">Thirteen modules following Developer Foundations: Messages API, application design, tool use, MCP, agents, streaming, model choice, caching, prompting, security, evals, Claude Code, capstone.</span></p>
+    <ol>
+      <li><a href="lessons/ccdv-f.html"><span class="lang-vi">Giáo án 17 bài theo khóa đầy đủ (mới)</span><span class="lang-en">17-lesson curriculum from the full course (new)</span></a></li>
+      <li><a href="lessons/ccaf-developer.html"><span class="lang-vi">Bộ 13 module cũ</span><span class="lang-en">Older 13-module set</span></a></li>
+      <li><a href="lessons/ccaf-developer/ccaf-developer.md"><span class="lang-vi">Bản Markdown</span><span class="lang-en">Markdown source</span></a></li>
+    </ol>
+  </section>
+
+  <section id="ccar">
+    <h2><span class="lang-vi">CCAR-F Architect — chứng chỉ Claude Architect</span><span class="lang-en">CCAR-F Architect — Claude Architect certificate</span></h2>
+    <p><span class="lang-vi">37 module bám khóa Architect Foundations: chọn agent hay workflow, decomposition, topology nhiều agent, cấu hình Claude Code, thiết kế tool, quản lý context, đánh giá, provenance, sáu scenario thi.</span><span class="lang-en">Thirty-seven modules following Architect Foundations: agent vs workflow, decomposition, multi-agent topologies, Claude Code configuration, tool design, context management, evaluation, provenance, and the six exam scenarios.</span></p>
+    <ol>
+      <li><a href="lessons/ccaf-architect.html"><span class="lang-vi">Toàn bộ 37 module</span><span class="lang-en">All thirty-seven modules</span></a></li>
+      <li><a href="lessons/ccaf-architect/ccaf-architect.md"><span class="lang-vi">Bản Markdown</span><span class="lang-en">Markdown source</span></a></li>
+      <li><a href="lessons/ccaf-architect/practice-exam.md"><span class="lang-vi">Đề luyện 20 câu</span><span class="lang-en">20-question practice exam</span></a></li>
+    </ol>
+  </section>
+
   <footer class="lesson-footer">
     <p><span class="lang-vi">Học liệu tự học theo bài giảng <strong>11-768: AI Agents</strong> (CMU, Fall 2026). Slide gốc: <a href="https://www.cmu-agents.com">cmu-agents.com</a>. Nội dung biên soạn cho mục đích học tập.</span><span class="lang-en">Self-study material following the <strong>11-768: AI Agents</strong> lectures (CMU, Fall 2026). Original slides: <a href="https://www.cmu-agents.com">cmu-agents.com</a>. Compiled for study purposes.</span></p>
   </footer>
 
 </main>
 
-<script src="assets/lang.js"></script>
+<script src="assets/lang.js?v=2"></script>
 </body>
 </html>

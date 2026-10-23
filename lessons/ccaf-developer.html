@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Certified Developer: bộ 13 module — Claude · CCDV-F · bản cũ</title>
+<link rel="stylesheet" href="../assets/course.css?v=2">
+<style>
+  .toc li { margin: .3rem 0; }
+  /* heading numbers are written in the source, so the CSS counter is off here */
+  h2 { counter-increment: none; }
+  h2::before { content: none; }
+  @media (max-width: 760px) { .toc { display: block; } }
+</style>
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Claude · CCDV-F · bản cũ</div>
+    <h1>Claude Certified Developer: bộ 13 module</h1>
+    <p class="subtitle">Bộ 13 module theo playlist cũ. Bản mới 17 bài nằm ở giáo trình CCDV-F.</p>
+    <p class="lesson-meta"><span>13 module</span><span>bản cũ</span><span>Nguồn: transcript video</span></p>
+  </div>
+</header>
+
+<main>
+
+  <nav class="toc">
+    <strong>Trong trang này</strong>
+    <ol>
+      <li><a href="#m01">01 · Messages API Mechanics</a></li>
+      <li><a href="#m02">02 · Claude Application Design</a></li>
+      <li><a href="#m03">03 · Tool Use End to End</a></li>
+      <li><a href="#m04">04 · MCP Server Development</a></li>
+      <li><a href="#m05">05 · Agents and Workflows</a></li>
+      <li><a href="#m06">06 · Streaming, Vision and Batch</a></li>
+      <li><a href="#m07">07 · Model Selection and Cost</a></li>
+      <li><a href="#m08">08 · Prompt Caching and Optimisation Order</a></li>
+      <li><a href="#m09">09 · Prompt and Context Engineering</a></li>
+      <li><a href="#m10">10 · Security and Safety</a></li>
+      <li><a href="#m11">11 · Eval, Testing and Debugging</a></li>
+      <li><a href="#m12">12 · Claude Code Operation</a></li>
+      <li><a href="#m13">13 · Capstone: ship một ứng dụng production</a></li>
+    </ol>
+  </nav>
+
+<p>Ghi chú 13 module, dựng từ playlist YouTube “Claude Certified
+Developer - Foundations - Free Course” (14 video), tháng 10/2026. Nguồn:
+<a href="https://www.youtube.com/playlist?list=PLRLPF8qJ3oIw">playlist
+Developer</a>.</p>
+<blockquote>
+<p>Khóa này dạy <strong>xây ứng dụng</strong> trên Claude API: gọi API,
+thiết kế lớp, tool use, MCP, agent, streaming, chọn model, caching,
+prompt, bảo mật, eval, Claude Code, capstone.</p>
+</blockquote>
+<h2 class="plain" id="trọng-số-thi-theo-transcript">Trọng số thi (theo
+transcript)</h2>
+<table class="mapping">
+<thead>
+<tr>
+<th>Domain</th>
+<th>Nội dung</th>
+<th>Trọng số</th>
+<th>Module</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D2</td>
+<td>Applications and integration</td>
+<td>33,1%</td>
+<td>01, 02</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Model selection and cost</td>
+<td>16,8%</td>
+<td>07, 08</td>
+</tr>
+<tr>
+<td>D1</td>
+<td>Agents and workflows</td>
+<td>14,7%</td>
+<td>05</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>Tools and MCPs</td>
+<td>10,6%</td>
+<td>03, 04</td>
+</tr>
+<tr>
+<td>khác</td>
+<td>Không nêu trong 10 video</td>
+<td>not shown</td>
+<td>06, 09, 10, 11, 12</td>
+</tr>
+</tbody>
+</table>
+<h2 class="plain" id="danh-sách-module">Danh sách module</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Module</th>
+<th>Chủ đề chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>Messages API Mechanics</td>
+<td>response shape, stateless, stop_reason, system</td>
+</tr>
+<tr>
+<td>02</td>
+<td>Claude Application Design</td>
+<td>tách lớp, config, decomposition, version prompt</td>
+</tr>
+<tr>
+<td>03</td>
+<td>Tool Use End to End</td>
+<td>schema, tool loop, parallel, error</td>
+</tr>
+<tr>
+<td>04</td>
+<td>MCP Server Development</td>
+<td>in-process, stdio, lọc tool</td>
+</tr>
+<tr>
+<td>05</td>
+<td>Agents and Workflows</td>
+<td>khi nào dùng agent, pattern, bound loop</td>
+</tr>
+<tr>
+<td>06</td>
+<td>Streaming, Vision and Batch</td>
+<td>event stream, ảnh, batch, chọn chế độ</td>
+</tr>
+<tr>
+<td>07</td>
+<td>Model Selection and Cost</td>
+<td>đo 3 tier, count tokens, projection</td>
+</tr>
+<tr>
+<td>08</td>
+<td>Prompt Caching and Optimisation Order</td>
+<td>breakpoint, đo, thứ tự tối ưu</td>
+</tr>
+<tr>
+<td>09</td>
+<td>Prompt and Context Engineering</td>
+<td>5 khối, context rot, structured output</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Security and Safety</td>
+<td>injection, fail closed, secrets, hook</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Eval, Testing and Debugging</td>
+<td>4 loại case, four-cell, retry</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Claude Code Operation</td>
+<td>headless, allow list, exit code</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Capstone</td>
+<td>requirement → design → hardening</td>
+</tr>
+</tbody>
+</table>
+<section id="m01">
+<h2 id="messages-api-mechanics">01 · Messages API Mechanics</h2>
+<p>Response không phải một chuỗi. Nó là object có cấu trúc, và mọi thứ
+bạn cần nằm ở các field ngoài <code>content</code>.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Field</th>
+<th>Cho biết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>content[]</code></td>
+<td>Nhiều block. Khi bật thinking, block 0 là <code>thinking</code>,
+block 1 mới là <code>text</code></td>
+</tr>
+<tr>
+<td><code>stop_reason</code></td>
+<td>Vì sao dừng</td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td>input, output, cache creation, cache read</td>
+</tr>
+<tr>
+<td><code>id</code></td>
+<td>Định danh request, dùng để debug</td>
+</tr>
+</tbody>
+</table>
+<p>Ba lỗi nền tảng:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Lỗi</th>
+<th>Hậu quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Giả định <code>content[0]</code> là text</td>
+<td>Bỏ qua câu trả lời khi có thinking</td>
+</tr>
+<tr>
+<td>Chỉ kiểm HTTP 200</td>
+<td><code>max_tokens</code> và <code>refusal</code> đều trả 200, output
+bị cắt hoặc rỗng mà không ai biết</td>
+</tr>
+<tr>
+<td>Nhồi system vào user message</td>
+<td>Model trộn luật với yêu cầu</td>
+</tr>
+</tbody>
+</table>
+<p><code>stop_reason</code> phải được kiểm <strong>trước khi</strong>
+đọc content:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Giá trị</th>
+<th>Xử lý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>end_turn</code></td>
+<td>Xong</td>
+</tr>
+<tr>
+<td><code>max_tokens</code></td>
+<td>Cắt giữa câu, tăng giới hạn rồi chạy lại</td>
+</tr>
+<tr>
+<td><code>tool_use</code></td>
+<td>Chạy tool rồi gửi kết quả</td>
+</tr>
+<tr>
+<td><code>refusal</code></td>
+<td>HTTP 200, nhưng là từ chối; báo cho người dùng</td>
+</tr>
+</tbody>
+</table>
+<p>API <strong>stateless</strong>. Server không nhớ gì giữa các lần gọi.
+Muốn hội thoại nhiều lượt thì client phải gửi lại toàn bộ lịch sử, và
+input token tăng dần theo từng lượt. Quên history thì Claude quên
+sạch.</p>
+<p><code>system</code> là tham số riêng, nằm ngoài các lượt hội thoại.
+System message gửi giữa hội thoại bị giới hạn theo model, model không hỗ
+trợ trả 400.</p>
+</section>
+<section id="m02">
+<h2 id="claude-application-design">02 · Claude Application Design</h2>
+<p>Ba lớp, mỗi lớp một lý do để đổi:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Lớp</th>
+<th>Chứa</th>
+<th>Dấu hiệu tách sai</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Transport</td>
+<td>Nơi duy nhất import SDK và gọi API</td>
+<td>Test cần API key mới chạy</td>
+</tr>
+<tr>
+<td>Prompt</td>
+<td>Chuỗi prompt, có phiên bản</td>
+<td>Đổi một câu phải sửa code</td>
+</tr>
+<tr>
+<td>Policy</td>
+<td>Luật nghiệp vụ, hàm thuần</td>
+<td>Không test offline được</td>
+</tr>
+</tbody>
+</table>
+<p>Phép thử: thay transport bằng bản ghi lại (recording) và chạy test.
+Pass hết mà không gọi API nghĩa là tách đúng.</p>
+<p>Config phải được <strong>validate khi load</strong>. Config đọc mà
+không kiểm thì lỗi chính tả thành giá trị mặc định im lặng, và hành vi
+sai được ship như đúng. Reject unknown key ngay, thông báo gợi ý key gần
+đúng.</p>
+<p>Từ yêu cầu nghiệp vụ sang thiết kế, tách thành 7 mục:</p>
+<ol type="1">
+<li>Kết quả đo được.</li>
+<li>Trong scope.</li>
+<li>Ngoài scope (chống phình).</li>
+<li>Input có thật.</li>
+<li>Cách biết output đúng (verifiability, mục hay bị bỏ).</li>
+<li>Failure mode.</li>
+<li>Điểm con người kiểm.</li>
+</ol>
+<p>Kiến trúc rơi ra từ bảng này. Một input, một quyết định thì một lần
+gọi API, không cần agent.</p>
+<p>Prompt là artifact phần mềm: registry có tag phiên bản, config pin
+một phiên bản, lock file giữ hash nội dung. Rollback là đổi một dòng
+config, và eval chứng minh điểm cũ đã trở lại.</p>
+</section>
+<section id="m03">
+<h2 id="tool-use-end-to-end">03 · Tool Use End to End</h2>
+<p>Schema là hợp đồng. Mô tả là tài liệu duy nhất model có.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Việc</th>
+<th>Cách làm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chặn tham số bịa</td>
+<td><code>strict: true</code>, <code>additionalProperties: false</code>,
+<code>required</code></td>
+</tr>
+<tr>
+<td>Chặn sai định dạng</td>
+<td>Mô tả ghi rõ format, ví dụ <code>ANNNNN</code></td>
+</tr>
+<tr>
+<td>Chặn gọi nhầm tool</td>
+<td>Chỉ expose tool cần cho task</td>
+</tr>
+</tbody>
+</table>
+<p>Vòng lặp: gọi API, nếu <code>stop_reason == tool_use</code> thì chạy
+tool, gửi <code>tool_result</code> kèm đúng <code>tool_use_id</code>,
+lặp. <code>end_turn</code> thì thoát.</p>
+<p>Gọi song song: model trả nhiều <code>tool_use</code> trong một
+message. Kết quả phải nằm trong <strong>một</strong> user message. Tách
+mỗi kết quả một message thì API vẫn nhận, nhưng model học rằng batch
+không được hoan nghênh và các lượt sau ngừng gọi song song. Thiệt hại
+hiện ra ở lượt khác, cách xa chỗ gây lỗi.</p>
+<p>Lỗi tool: trả <code>tool_result</code> với
+<code>is_error: true</code> và thông điệp model hành động được. Raise
+exception hoặc bỏ block kết quả đều giết vòng lặp. Trả lỗi có cấu trúc
+thì model tự sửa được.</p>
+</section>
+<section id="m04">
+<h2 id="mcp-server-development">04 · MCP Server Development</h2>
+<p>Hai kiểu server:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Kiểu</th>
+<th>Cách chạy</th>
+<th>Điểm cần nhớ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>In-process (SDK)</td>
+<td>Trong chính ứng dụng</td>
+<td>Phải khai báo server <strong>và</strong> toolset khớp; thiếu toolset
+là lỗi validation, không phải bỏ qua im lặng</td>
+</tr>
+<tr>
+<td>External (stdio)</td>
+<td>Process riêng</td>
+<td>Chạy bằng quyền của bạn; thư mục root là hàng rào thật</td>
+</tr>
+</tbody>
+</table>
+<p>Với server external, prompt không phải control. Nếu root là thư mục
+home, model đọc được mọi thứ bạn đọc được. Chỉ root lúc khởi động giới
+hạn được blast radius.</p>
+<p>Agentic customization: expose càng ít tool càng tốt. Mỗi tool là một
+rủi ro và một khoản token trên mọi request. Ghi lại lý do bỏ từng tool:
+không dùng cho task, hoặc không đảo ngược được.</p>
+</section>
+<section id="m05">
+<h2 id="agents-and-workflows">05 · Agents and Workflows</h2>
+<p>Agent không phải workflow xịn hơn. Workflow có các bước liệt kê được
+trước; agent có đường đi chỉ hiện ra khi khám phá.</p>
+<p>Bốn câu hỏi chọn:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Nghiêng workflow</th>
+<th>Nghiêng agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Complexity</td>
+<td>Bước biết trước</td>
+<td>Đường đi chưa biết</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>Việc lặp, rẻ</td>
+<td>Việc cần khám phá</td>
+</tr>
+<tr>
+<td>Viability</td>
+<td>Model đủ tốt cho từng bước</td>
+<td>Cần lập luận nhiều bước</td>
+</tr>
+<tr>
+<td>Cost of error</td>
+<td>Sai thì tốn kém</td>
+<td>Sai thì kiểm lại được</td>
+</tr>
+</tbody>
+</table>
+<p>Chọn sai không fail ồn ào: agent tốn gấp nhiều lần thời gian và tiền
+để ra cùng câu trả lời. Không có gì trong output nói rằng bạn chọn
+sai.</p>
+<p>Agent SDK cho sẵn tool đọc/ghi file, bash, glob, grep, cộng tool
+nghiệp vụ của bạn. System prompt định nghĩa vai trò.</p>
+<p>Năm pattern có tên, dùng thay vì tự ghép:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompt chaining</td>
+<td>Các bước nối tiếp, mỗi bước một nhiệm vụ</td>
+</tr>
+<tr>
+<td>Routing</td>
+<td>Nhiều loại input, mỗi loại một đường</td>
+</tr>
+<tr>
+<td>Parallelization</td>
+<td>Các bước độc lập</td>
+</tr>
+<tr>
+<td>Orchestrator-workers</td>
+<td>Có việc con để chia</td>
+</tr>
+<tr>
+<td>Evaluator-optimizer</td>
+<td>Có cổng chất lượng, có thể từ chối và làm lại</td>
+</tr>
+</tbody>
+</table>
+<p>Luôn đặt giới hạn vòng lặp. Hết lượt thì trả <strong>partial
+result</strong> kèm trạng thái và việc bị chặn, không raise.</p>
+</section>
+<section id="m06">
+<h2 id="streaming-vision-and-batch">06 · Streaming, Vision and
+Batch</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Chế độ</th>
+<th>Cách dùng</th>
+<th>Cạm bẫy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Streaming</td>
+<td>Event theo thứ tự start, delta, stop</td>
+<td>Tự nối delta làm mất block và usage; dùng hàm ghép của SDK</td>
+</tr>
+<tr>
+<td>Vision</td>
+<td>Image block đặt <strong>trước</strong> text</td>
+<td>Ảnh chiếm phần lớn input token; dùng Files API khi lặp lại</td>
+</tr>
+<tr>
+<td>Batch</td>
+<td>Gửi file request, poll tới <code>ended</code></td>
+<td>Kết quả <strong>không</strong> theo thứ tự gửi; khớp bằng
+<code>custom_id</code></td>
+</tr>
+</tbody>
+</table>
+<p>Batch rẻ khoảng một nửa và không bảo đảm thời điểm xong. Câu quyết
+định giữa batch và realtime: <strong>có ai đang chờ kết quả
+không</strong>.</p>
+</section>
+<section id="m07">
+<h2 id="model-selection-and-cost">07 · Model Selection and Cost</h2>
+<p>Chạy cùng một task trên các tier, đo ba thứ: giá, latency, độ đồng ý
+với nhãn người. Kết luận không phải “model mạnh nhất thắng” mà
+<strong>model rẻ hơn mất ở đâu</strong>.</p>
+<p>Đo token bằng endpoint count tokens, không dùng thư viện tokenizer
+của hãng khác. Lệch thực tế khoảng 12%, đủ để sai ngân sách.</p>
+<p>Output token đắt khoảng 5 lần input trên mọi model hiện tại. Vì vậy,
+output thường chiếm phần lớn hóa đơn dù tỉ lệ nhỏ hơn. Khi dự phóng
+tháng, lấy median của mẫu thật rồi nhân volume; một request mẫu đơn lẻ
+sẽ báo thấp.</p>
+<p>Khi không model nào thỏa cả ba ràng buộc latency, giá, chất lượng,
+đừng chọn model fail ít nhất. Đổi kiến trúc: model rẻ xử lý phần lớn,
+chỉ ca không chắc chắn chuyển lên tier trên.</p>
+</section>
+<section id="m08">
+<h2 id="prompt-caching-and-optimisation-order">08 · Prompt Caching and
+Optimisation Order</h2>
+<p>Thứ tự render cố định: tools, system, messages. Breakpoint đặt sau
+block cuối cùng còn ổn định. Đặt sau user message thì cache không bao
+giờ hit.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Sự thật</th>
+<th>Hệ quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cache write đắt khoảng 1,25 lần input</td>
+<td>Prefix dùng một lần là lỗ</td>
+</tr>
+<tr>
+<td>Điểm hòa vốn khoảng request thứ hai</td>
+<td>Chỉ cache prefix lặp lại</td>
+</tr>
+<tr>
+<td>Dưới ngưỡng token tối thiểu thì cache bị bỏ qua im lặng</td>
+<td>Không có lỗi, chỉ là không hit</td>
+</tr>
+<tr>
+<td><code>cache_read_input_tokens</code> bằng 0 nghĩa là không
+cache</td>
+<td>Đây là field phải kiểm</td>
+</tr>
+</tbody>
+</table>
+<p>Thứ tự tối ưu, mỗi bước nhân hiệu quả của bước trước:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Bước</th>
+<th>Việc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Giảm output token</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chọn đúng tier model</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Thêm prompt caching</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Đưa phần không gấp sang batch</td>
+</tr>
+</tbody>
+</table>
+<p>Làm ngược, cache trước khi đổi model, thì phải đo lại và tinh chỉnh
+lại từ đầu.</p>
+</section>
+<section id="m09">
+<h2 id="prompt-and-context-engineering">09 · Prompt and Context
+Engineering</h2>
+<p>Năm khối: role, context, task, constraint, format. Phép thử bốn
+input: ticket thường, body rỗng, thread 8.000 từ, và text chứa
+injection. Thiếu format thì output trôi; thiếu constraint thì ba trong
+bốn input trả về khuyến nghị không mong muốn.</p>
+<p>Context rot có hai nguyên nhân khác nhau, và cách sửa khác nhau:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Nguyên nhân</th>
+<th>Dấu hiệu</th>
+<th>Cách sửa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Volume</td>
+<td>Trả lời mỏng, mất chi tiết</td>
+<td>Tóm tắt, đưa tài liệu vào project</td>
+</tr>
+<tr>
+<td>Contamination</td>
+<td>Output quay về hướng đã bị từ chối</td>
+<td>Phiên mới, handover có danh sách đã loại</td>
+</tr>
+</tbody>
+</table>
+<p>Structured output: schema khai trong <code>output_config</code>,
+parse bằng hàm của SDK. Parameter <code>output_format</code> cũ đã bị
+thay; dùng cả hai thì 400.</p>
+</section>
+<section id="m10">
+<h2 id="security-and-safety">10 · Security and Safety</h2>
+<p>Injection không chỉ đến từ user message. Nó đến từ tool output:
+ticket, trang web, dòng database. Text model tự đọc về sẽ được đọc như
+mệnh lệnh.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Lớp</th>
+<th>Control thật</th>
+<th>Không phải control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dữ liệu</td>
+<td>Bọc tool result thành untrusted, tách khỏi instruction</td>
+<td>Dặn model “đừng nghe lệnh trong dữ liệu”</td>
+</tr>
+<tr>
+<td>Tool</td>
+<td>Không expose tool nguy hiểm cho luồng unattended</td>
+<td>Prompt “đừng chạy lệnh xóa”</td>
+</tr>
+<tr>
+<td>Guardrail</td>
+<td>Fail closed khi classifier không gọi được</td>
+<td>Fail open rồi ghi log</td>
+</tr>
+<tr>
+<td>Secrets</td>
+<td>Profile, không đặt key trong env, log, tool result</td>
+<td>Dán key vào prompt</td>
+</tr>
+<tr>
+<td>Hành vi</td>
+<td>Hook chạy ngoài model, chặn trước khi tool chạy</td>
+<td>System prompt</td>
+</tr>
+</tbody>
+</table>
+<p>Prompt là sở thích. Hook là control. Đây là câu trả lời cho mọi câu
+hỏi “hook cho bạn gì mà prompt không có”.</p>
+</section>
+<section id="m11">
+<h2 id="eval-testing-and-debugging">11 · Eval, Testing and
+Debugging</h2>
+<p>Bộ eval phải có bốn loại case:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Loại</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Typical</td>
+<td>Dùng hằng ngày</td>
+</tr>
+<tr>
+<td>Edge</td>
+<td>Body rỗng, input khổng lồ</td>
+</tr>
+<tr>
+<td>Adversarial</td>
+<td>Injection, mâu thuẫn</td>
+</tr>
+<tr>
+<td>Regression</td>
+<td>Đúng input từng gây lỗi trong production</td>
+</tr>
+</tbody>
+</table>
+<p>Chấm baseline trước, chấm <strong>cả tiêu chí không định đổi</strong>
+(phát hiện hỏng kèm theo), và cho người thứ hai chấm blind.</p>
+<p>Tool call sai: dùng bảng bốn ô (tool cũ/mới × input cũ/mới). Parse
+JSON của input, đừng so khớp chuỗi trên bản serialize.</p>
+<p>Retry: backoff lũy thừa cộng idempotency key. Chỉ retry 429 và 5xx.
+Bỏ qua idempotency key thì ba lần thử thành ba đơn hàng.</p>
+</section>
+<section id="m12">
+<h2 id="claude-code-operation">12 · Claude Code Operation</h2>
+<p>Chạy trong CI, không có TUI:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Yếu tố</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompt qua tham số <code>-p</code></td>
+<td>Chế độ headless</td>
+</tr>
+<tr>
+<td><code>--output-format stream-json</code></td>
+<td>Một object JSON mỗi dòng, parse được</td>
+</tr>
+<tr>
+<td><code>--allowedTools</code></td>
+<td>Giới hạn tool, ví dụ chỉ read, grep, glob</td>
+</tr>
+<tr>
+<td>Exit code</td>
+<td>0 là không có phát hiện; khác 0 thì fail build</td>
+</tr>
+</tbody>
+</table>
+<p>Đừng parse prose bằng regex. Câu chữ đổi giữa các phiên bản, pipeline
+vỡ im lặng.</p>
+</section>
+<section id="m13">
+<h2 id="capstone-ship-một-ứng-dụng-production">13 · Capstone: ship một
+ứng dụng production</h2>
+<p>Requirement thành design, đủ 7 mục ở module 02, cộng kill
+criterion.</p>
+<p>Nguyên tắc tool: expose bề mặt nhỏ nhất còn giải được task. Tool gây
+hậu quả không đảo ngược (page người, refund) không đưa vào vòng lặp.</p>
+<p>Chi phí giảm theo thứ tự, ví dụ trong khóa:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Bước</th>
+<th>Chi phí tháng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ban đầu</td>
+<td>13.590</td>
+</tr>
+<tr>
+<td>Giảm output token</td>
+<td>9.824</td>
+</tr>
+<tr>
+<td>Đúng tier model</td>
+<td>6.102</td>
+</tr>
+<tr>
+<td>Caching</td>
+<td>4.510</td>
+</tr>
+<tr>
+<td>Batch 60% traffic</td>
+<td>3.140</td>
+</tr>
+</tbody>
+</table>
+<p>Giảm 77%, và eval 24 case xác nhận không hỏng hành vi.</p>
+<p>Hardening trước khi ship:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Control</th>
+<th>Yêu cầu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Guardrail</td>
+<td>Fail closed khi classifier chết</td>
+</tr>
+<tr>
+<td>Tool result</td>
+<td>Gắn nhãn untrusted</td>
+</tr>
+<tr>
+<td>Tool nguy hiểm</td>
+<td>Không expose</td>
+</tr>
+<tr>
+<td>Secrets</td>
+<td>Zero-argument client, profile</td>
+</tr>
+<tr>
+<td>Retry</td>
+<td>Chỉ 429/5xx, kèm idempotency key</td>
+</tr>
+<tr>
+<td>Hook</td>
+<td>Allow list cho bash</td>
+</tr>
+</tbody>
+</table>
+<p>Sau đó chạy 12 lần injection và <strong>ghi lại rủi ro còn
+lại</strong>. Capstone tuyên bố không còn rủi ro là capstone chưa được
+kiểm.</p>
+<h2 id="câu-hỏi-tự-kiểm">Câu hỏi tự kiểm</h2>
+<table class="mapping">
+<thead>
+<tr>
+<th>Module</th>
+<th>Câu hỏi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>Bạn kiểm <code>stop_reason</code> trước hay đọc content trước?</td>
+</tr>
+<tr>
+<td>02</td>
+<td>Test của bạn chạy được khi không có API key chưa?</td>
+</tr>
+<tr>
+<td>03</td>
+<td>Kết quả của nhiều tool call nằm trong mấy message?</td>
+</tr>
+<tr>
+<td>04</td>
+<td>Hàng rào blast radius của MCP server là gì?</td>
+</tr>
+<tr>
+<td>05</td>
+<td>Vòng lặp agent dừng bằng cách nào, và trả về gì khi hết lượt?</td>
+</tr>
+<tr>
+<td>06</td>
+<td>Kết quả batch khớp với input bằng field nào?</td>
+</tr>
+<tr>
+<td>07</td>
+<td>Output token chiếm bao nhiêu phần trăm hóa đơn của bạn?</td>
+</tr>
+<tr>
+<td>08</td>
+<td><code>cache_read_input_tokens</code> của lần gọi gần nhất là bao
+nhiêu?</td>
+</tr>
+<tr>
+<td>09</td>
+<td>Output đang mỏng hay đang quay về hướng đã loại?</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Control nào còn hiệu lực khi model bị thuyết phục?</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Bộ eval của bạn có case regression nào?</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Pipeline đọc kết quả bằng gì, exit code hay nội dung?</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Tool nào không nên có mặt trong vòng lặp unattended?</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+  <footer class="lesson-footer">
+    <p>Nguồn: video khóa học. Số liệu và giá kiểm tháng 10/2026.</p>
+    <p>Quay lại <a href="../index.html">trang chủ</a>.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/site-nav.js?v=2"></script>
+</body>
+</html>
