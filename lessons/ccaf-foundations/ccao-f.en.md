@@ -541,6 +541,24 @@ Curating knowledge:
 
 Connectors inherit your permissions: Claude sees what you can see. Actions wait for a human; drafts do not send themselves.
 
+### Two kinds of knowledge and connector scope
+
+| Kind | Nature | Example |
+|---|---|---|
+| Uploaded file | Static, fixed at upload | PDF, spreadsheet, code |
+| Sync source via connector | Live, always current | Google Drive, Gmail, Slack |
+
+Connectors inherit the user's permissions: a file you cannot open in Drive is not readable by Claude either.
+
+| Task | Correct |
+|---|---|
+| Scope | Narrow to the folders or labels actually needed |
+| Connect the whole drive and tell it to ignore the rest | Unreliable: noise enters the search target and accuracy drops |
+| Unused connectors | Disconnect them early |
+| Contradictory documents in one project | The model cannot decide what to ground in; output wobbles |
+
+On paid plans, RAG enables automatically as knowledge nears the context limit, expanding capacity roughly tenfold. On Team and Enterprise, an owner must enable connectors at the organisation level, and sync connectors work only in private projects, not shared ones.
+
 ### Example
 
 Legal wants every contract review chat to use the firm checklist and a formal tone, without affecting other work.

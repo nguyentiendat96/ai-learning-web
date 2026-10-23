@@ -1482,6 +1482,70 @@ prompt. Khi cá nhân mâu thuẫn tổ chức, tổ chức thắng.</p>
 </table>
 <p>Connector thừa hưởng quyền của bạn: Claude thấy những gì bạn thấy
 được. Hành động cần người duyệt; thư nháp không tự gửi.</p>
+<h3 id="hai-loại-knowledge-và-phạm-vi-connector">Hai loại knowledge và
+phạm vi connector</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Bản chất</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>File tải lên</td>
+<td>Tĩnh, cố định tại lúc tải</td>
+<td>PDF, bảng tính, code</td>
+</tr>
+<tr>
+<td>Sync source qua connector</td>
+<td>Sống, luôn phản ánh mới nhất</td>
+<td>Google Drive, Gmail, Slack</td>
+</tr>
+</tbody>
+</table>
+<p>Connector thừa hưởng quyền của người dùng: file bạn không xem được
+trong Drive thì Claude cũng không đọc được.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Việc</th>
+<th>Đúng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phạm vi</td>
+<td>Thu hẹp vào đúng thư mục hoặc nhãn cần</td>
+</tr>
+<tr>
+<td>Kết nối cả ổ chung rồi dặn bỏ qua</td>
+<td>Không đáng tin: file nhiễu lẫn vào, độ chính xác giảm</td>
+</tr>
+<tr>
+<td>Connector không dùng</td>
+<td>Ngắt sớm</td>
+</tr>
+<tr>
+<td>Tài liệu mâu thuẫn trong một project</td>
+<td>Model không biết bám vào đâu, output chập chờn</td>
+</tr>
+</tbody>
+</table>
+<p>Trên gói trả phí, RAG tự bật khi knowledge gần đầy context, mở rộng
+dung lượng khoảng 10 lần. Trên Team/Enterprise, owner phải bật connector
+ở cấp tổ chức; connector đồng bộ chỉ dùng được trong project riêng,
+không dùng trong project chia sẻ.</p>
 <h3 id="ví-dụ-6">Ví dụ</h3>
 <p>Nhóm pháp lý muốn mọi phiên review hợp đồng dùng checklist và giọng
 trang trọng, không ảnh hưởng việc khác.</p>

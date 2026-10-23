@@ -1507,6 +1507,70 @@ wins.</p>
 </table>
 <p>Connectors inherit your permissions: Claude sees what you can see.
 Actions wait for a human; drafts do not send themselves.</p>
+<h3 id="two-kinds-of-knowledge-and-connector-scope">Two kinds of
+knowledge and connector scope</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Nature</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Uploaded file</td>
+<td>Static, fixed at upload</td>
+<td>PDF, spreadsheet, code</td>
+</tr>
+<tr>
+<td>Sync source via connector</td>
+<td>Live, always current</td>
+<td>Google Drive, Gmail, Slack</td>
+</tr>
+</tbody>
+</table>
+<p>Connectors inherit the user’s permissions: a file you cannot open in
+Drive is not readable by Claude either.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Task</th>
+<th>Correct</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scope</td>
+<td>Narrow to the folders or labels actually needed</td>
+</tr>
+<tr>
+<td>Connect the whole drive and tell it to ignore the rest</td>
+<td>Unreliable: noise enters the search target and accuracy drops</td>
+</tr>
+<tr>
+<td>Unused connectors</td>
+<td>Disconnect them early</td>
+</tr>
+<tr>
+<td>Contradictory documents in one project</td>
+<td>The model cannot decide what to ground in; output wobbles</td>
+</tr>
+</tbody>
+</table>
+<p>On paid plans, RAG enables automatically as knowledge nears the
+context limit, expanding capacity roughly tenfold. On Team and
+Enterprise, an owner must enable connectors at the organisation level,
+and sync connectors work only in private projects, not shared ones.</p>
 <h3 id="example-6">Example</h3>
 <p>Legal wants every contract review chat to use the firm checklist and
 a formal tone, without affecting other work.</p>

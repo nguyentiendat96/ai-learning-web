@@ -540,6 +540,24 @@ Kho knowledge cần được sắp:
 
 Connector thừa hưởng quyền của bạn: Claude thấy những gì bạn thấy được. Hành động cần người duyệt; thư nháp không tự gửi.
 
+### Hai loại knowledge và phạm vi connector
+
+| Loại | Bản chất | Ví dụ |
+|---|---|---|
+| File tải lên | Tĩnh, cố định tại lúc tải | PDF, bảng tính, code |
+| Sync source qua connector | Sống, luôn phản ánh mới nhất | Google Drive, Gmail, Slack |
+
+Connector thừa hưởng quyền của người dùng: file bạn không xem được trong Drive thì Claude cũng không đọc được.
+
+| Việc | Đúng |
+|---|---|
+| Phạm vi | Thu hẹp vào đúng thư mục hoặc nhãn cần |
+| Kết nối cả ổ chung rồi dặn bỏ qua | Không đáng tin: file nhiễu lẫn vào, độ chính xác giảm |
+| Connector không dùng | Ngắt sớm |
+| Tài liệu mâu thuẫn trong một project | Model không biết bám vào đâu, output chập chờn |
+
+Trên gói trả phí, RAG tự bật khi knowledge gần đầy context, mở rộng dung lượng khoảng 10 lần. Trên Team/Enterprise, owner phải bật connector ở cấp tổ chức; connector đồng bộ chỉ dùng được trong project riêng, không dùng trong project chia sẻ.
+
 ### Ví dụ
 
 Nhóm pháp lý muốn mọi phiên review hợp đồng dùng checklist và giọng trang trọng, không ảnh hưởng việc khác.
