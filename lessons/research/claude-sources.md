@@ -44,6 +44,23 @@ Ghi chép vòng nghiên cứu ngày 24/10/2026. Mọi mục đều là nguồn k
 
 Lưu ý: mô tả "tested against the live exam" là lời tác giả, chưa kiểm chứng. Không dùng câu hỏi nguyên văn của bất kỳ nguồn nào.
 
+## Vòng 3: đọc cheat sheet Domain 1 và bộ câu mẫu
+
+Nguồn: `hamzafarooq/claude-certified-architect`, tệp `cheat-sheet/domain1.md` và `cheat-sheet/sample-questions.md`.
+
+Xác nhận thêm ba luật toàn cục mà bộ CCA-F đã có: tất định thắng xác suất khi hậu quả thật; truy lỗi về nguồn; sửa vừa đủ.
+
+Bổ sung đáng đưa vào giáo trình:
+
+| Chủ đề | Chi tiết mới | Đưa vào |
+|---|---|---|
+| Chống mẫu nhiễu vòng lặp | Kiểm `content[0].type == "text"` cũng là phản mẫu, vì response `tool_use` có thể mở đầu bằng text | Bài 08 |
+| Trách nhiệm coordinator | 7 việc: decompose, select, partition, pass context, aggregate, refine, route for observability | Bài 02 |
+| Bảng truy lỗi | Thiếu chủ đề = decompose hẹp; trùng lặp = partition ẩu; nông đều = prompt/tool budget; mất nguồn = context passing làm rơi metadata | Bài 02 |
+| Input tổng hợp quá dài | Khi 75K token, model bỏ giữa; cách sửa là tái cấu trúc đầu vào, không tăng cửa sổ | Bài 07 |
+| Uỷ quyền kiểm chứng | Synthesis tự kiểm 85% ca đơn giản hay vẫn quay về coordinator: đánh đổi latency với kiểm soát | Bài 02 |
+| Lỗi một phần | Ba kết cục: thành công, rỗng hợp lệ, lỗi có cấu trúc; phải khác nhau trong biểu diễn | Bài 09 |
+
 ## Nguyên tắc khi dùng
 
 1. Không chép nguyên văn câu hỏi của người khác vào bộ của mình.
