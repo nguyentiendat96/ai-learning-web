@@ -2689,6 +2689,105 @@ not what it <strong>may</strong> do.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="sort-controls-by-where-they-sit-not-by-name">Sort controls by
+where they sit, not by name</h3>
+<p>One question sorts them: can the attacker text reach the place the
+control lives.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Control</th>
+<th>Can be argued with</th>
+<th>What it buys</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A sentence telling the model to ignore embedded instructions</td>
+<td>Yes</td>
+<td>Fewer landings, no floor</td>
+</tr>
+<tr>
+<td>Untrusted content delimited and declared as data</td>
+<td>Partly</td>
+<td>A boundary that must be broken, not ignored</td>
+</tr>
+<tr>
+<td>A classifier before anything enters context</td>
+<td>No</td>
+<td>A verdict the content cannot appeal</td>
+</tr>
+<tr>
+<td>A tool accepting only catalogue identifiers</td>
+<td>No</td>
+<td>The bad action becomes impossible, not unwanted</td>
+</tr>
+<tr>
+<td>Server-side authorisation against the caller</td>
+<td>No</td>
+<td>Same outcome on a steered model</td>
+</tr>
+<tr>
+<td>Data never sent, reach never granted</td>
+<td>No</td>
+<td>Nothing left to argue with</td>
+</tr>
+</tbody>
+</table>
+<p>Two questions for any control: does it need the model to cooperate,
+and does it run before the effect lands.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Control</th>
+<th>Needs cooperation</th>
+<th>Runs before the effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A rule in the prompt or context file</td>
+<td>Yes</td>
+<td>Not applicable</td>
+</tr>
+<tr>
+<td>A pre-tool hook</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>A deny rule in settings</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>The identity scope of the agent</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>OS-level sandboxing</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>A post-tool hook or audit log</td>
+<td>No</td>
+<td>No, it is evidence</td>
+</tr>
+</tbody>
+</table>
+<p>Jailbreak and injection differ in who is hostile: in a jailbreak the
+user is the attacker; in an injection the content author is, and the
+user is the victim. A jailbreak can be throttled by account; an
+injection has nobody to throttle.</p>
+<p>Layer test: name one failure that removes two layers at once. If you
+can, the count was wrong.</p>
 <h3 id="example-15">Example</h3>
 <p>A ticket carries a pasted block asking for the customer list.</p>
 <table class="mapping">

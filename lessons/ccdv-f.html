@@ -2622,6 +2622,105 @@ hình nó <strong>được phép</strong> làm gì.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="sắp-control-theo-chỗ-đứng-không-theo-tên">Sắp control theo chỗ
+đứng, không theo tên</h3>
+<p>Một câu hỏi phân loại: văn bản của kẻ tấn công có với tới được chỗ
+control nằm không.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Control</th>
+<th>Bị thuyết phục?</th>
+<th>Được gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Câu dặn model bỏ qua chỉ dẫn nhúng</td>
+<td>Có</td>
+<td>Giảm tỉ lệ, không có sàn</td>
+</tr>
+<tr>
+<td>Bọc nội dung không tin cậy và khai báo là dữ liệu</td>
+<td>Một phần</td>
+<td>Phải phá ranh giới, không chỉ lờ đi</td>
+</tr>
+<tr>
+<td>Classifier chạy trước khi vào context</td>
+<td>Không</td>
+<td>Phán quyết không bị kháng</td>
+</tr>
+<tr>
+<td>Tool chỉ nhận mã trong danh mục</td>
+<td>Không</td>
+<td>Hành vi sai thành không thể, không phải không muốn</td>
+</tr>
+<tr>
+<td>Phân quyền phía server theo người gọi</td>
+<td>Không</td>
+<td>Cùng kết quả dù model bị dẫn dắt</td>
+</tr>
+<tr>
+<td>Dữ liệu không gửi đi, quyền không cấp</td>
+<td>Không</td>
+<td>Không còn gì để tranh luận</td>
+</tr>
+</tbody>
+</table>
+<p>Hai câu hỏi cho mọi control: có cần model hợp tác không, và có chạy
+trước khi hậu quả xảy ra không.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Control</th>
+<th>Cần hợp tác</th>
+<th>Chạy trước hậu quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Luật trong prompt hoặc context file</td>
+<td>Có</td>
+<td>Không áp dụng</td>
+</tr>
+<tr>
+<td>Hook trước tool</td>
+<td>Không</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Deny rule trong settings</td>
+<td>Không</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Phạm vi danh tính của agent</td>
+<td>Không</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Sandbox tầng hệ điều hành</td>
+<td>Không</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Hook sau tool hoặc audit log</td>
+<td>Không</td>
+<td>Không, chỉ là bằng chứng</td>
+</tr>
+</tbody>
+</table>
+<p>Jailbreak và injection khác nhau ở ai là kẻ tấn công: jailbreak thì
+người dùng, injection thì người viết nội dung và người dùng là nạn nhân.
+Chống jailbreak có thể chặn tài khoản; chống injection thì không ai để
+chặn.</p>
+<p>Kiểm tra lớp: kể một lỗi làm mất hai lớp cùng lúc. Nếu kể được thì số
+lớp đếm sai.</p>
 <h3 id="ví-dụ-15">Ví dụ</h3>
 <p>Ticket có khối dán từ nơi khác, trong đó yêu cầu danh sách khách
 hàng.</p>

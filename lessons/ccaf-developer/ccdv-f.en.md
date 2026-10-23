@@ -1259,6 +1259,34 @@ The base rule: permissions are enforced by the tool, not by the model. A prompt 
 | Permission rules | Yes | Deny outranks allow |
 | Human approval | Yes | Only if the human can actually say no |
 
+### Sort controls by where they sit, not by name
+
+One question sorts them: can the attacker text reach the place the control lives.
+
+| Control | Can be argued with | What it buys |
+|---|---|---|
+| A sentence telling the model to ignore embedded instructions | Yes | Fewer landings, no floor |
+| Untrusted content delimited and declared as data | Partly | A boundary that must be broken, not ignored |
+| A classifier before anything enters context | No | A verdict the content cannot appeal |
+| A tool accepting only catalogue identifiers | No | The bad action becomes impossible, not unwanted |
+| Server-side authorisation against the caller | No | Same outcome on a steered model |
+| Data never sent, reach never granted | No | Nothing left to argue with |
+
+Two questions for any control: does it need the model to cooperate, and does it run before the effect lands.
+
+| Control | Needs cooperation | Runs before the effect |
+|---|---|---|
+| A rule in the prompt or context file | Yes | Not applicable |
+| A pre-tool hook | No | Yes |
+| A deny rule in settings | No | Yes |
+| The identity scope of the agent | No | Yes |
+| OS-level sandboxing | No | Yes |
+| A post-tool hook or audit log | No | No, it is evidence |
+
+Jailbreak and injection differ in who is hostile: in a jailbreak the user is the attacker; in an injection the content author is, and the user is the victim. A jailbreak can be throttled by account; an injection has nobody to throttle.
+
+Layer test: name one failure that removes two layers at once. If you can, the count was wrong.
+
 ### Example
 
 A ticket carries a pasted block asking for the customer list.

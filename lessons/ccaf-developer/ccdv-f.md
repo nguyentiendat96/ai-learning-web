@@ -1283,6 +1283,34 @@ Luật nền: quyền được ép bởi Claude Code, không bởi model. Chỉ 
 | Permission rules | Có | Deny mạnh hơn allow |
 | Phê duyệt của người | Có | Chỉ khi người thật có quyền nói không |
 
+### Sắp control theo chỗ đứng, không theo tên
+
+Một câu hỏi phân loại: văn bản của kẻ tấn công có với tới được chỗ control nằm không.
+
+| Control | Bị thuyết phục? | Được gì |
+|---|---|---|
+| Câu dặn model bỏ qua chỉ dẫn nhúng | Có | Giảm tỉ lệ, không có sàn |
+| Bọc nội dung không tin cậy và khai báo là dữ liệu | Một phần | Phải phá ranh giới, không chỉ lờ đi |
+| Classifier chạy trước khi vào context | Không | Phán quyết không bị kháng |
+| Tool chỉ nhận mã trong danh mục | Không | Hành vi sai thành không thể, không phải không muốn |
+| Phân quyền phía server theo người gọi | Không | Cùng kết quả dù model bị dẫn dắt |
+| Dữ liệu không gửi đi, quyền không cấp | Không | Không còn gì để tranh luận |
+
+Hai câu hỏi cho mọi control: có cần model hợp tác không, và có chạy trước khi hậu quả xảy ra không.
+
+| Control | Cần hợp tác | Chạy trước hậu quả |
+|---|---|---|
+| Luật trong prompt hoặc context file | Có | Không áp dụng |
+| Hook trước tool | Không | Có |
+| Deny rule trong settings | Không | Có |
+| Phạm vi danh tính của agent | Không | Có |
+| Sandbox tầng hệ điều hành | Không | Có |
+| Hook sau tool hoặc audit log | Không | Không, chỉ là bằng chứng |
+
+Jailbreak và injection khác nhau ở ai là kẻ tấn công: jailbreak thì người dùng, injection thì người viết nội dung và người dùng là nạn nhân. Chống jailbreak có thể chặn tài khoản; chống injection thì không ai để chặn.
+
+Kiểm tra lớp: kể một lỗi làm mất hai lớp cùng lúc. Nếu kể được thì số lớp đếm sai.
+
 ### Ví dụ
 
 Ticket có khối dán từ nơi khác, trong đó yêu cầu danh sách khách hàng.
