@@ -381,6 +381,21 @@ Hội thoại dài:
 | Summarize | Cần giữ mạch nhưng bớt chi tiết |
 | Persist | Sự thật nền không đổi, cần giữ lâu |
 
+### Sáu feature, chọn theo động từ mục đích
+
+| Feature | Làm gì | Dùng khi |
+|---|---|---|
+| Projects | Workspace có instructions và knowledge | Việc lặp lại trên cùng tiền đề |
+| Artifacts | Deliverable sửa và dùng lại trong panel riêng | Tài liệu, code, biểu đồ sẽ dùng tiếp |
+| Agent Skills | Chuyên môn đóng gói, nạp theo nhu cầu | Quy trình lặp lại nhiều lần |
+| Code Execution | Chạy Python, bash trong sandbox | Tính toán, phân tích dữ liệu |
+| Research mode | Tìm và tổng hợp nhiều nguồn | Thu thập thông tin mở |
+| Memory | Giữ sự kiện qua các phiên | Sở thích, tiền đề, quyết định đã chốt |
+
+Cách chọn: diễn đạt mục đích bằng một động từ. "Thu thập" là Research, "tính" là Code Execution, "lặp lại" là Projects, "giữ lại" là Artifacts, "quy trình chuyên môn" là Skills, "nhớ qua phiên" là Memory. Không khớp động từ nào thì trả lời inline.
+
+Bốn tier model, từ dưới lên: Haiku, Sonnet, Opus, Fable. Càng lên càng chậm và đắt; đây là đánh đổi thiết kế, không phải khuyết điểm. Trước khi đổi tier, thử chỉnh effort, vì tinh chỉnh effort thường thắng đổi model.
+
 ### Ví dụ
 
 100 email trả lời khách hằng ngày, cần nhanh và rẻ.

@@ -381,6 +381,21 @@ Long conversations:
 | Summarise | You need the thread but less detail |
 | Persist | The underlying facts do not change and must survive |
 
+### Six features, chosen by the purpose verb
+
+| Feature | What it does | Use when |
+|---|---|---|
+| Projects | A workspace with instructions and knowledge | Recurring work on the same premises |
+| Artifacts | Editable, reusable deliverables in their own panel | Documents, code, charts used later |
+| Agent Skills | Packaged expertise, loaded on demand | A procedure you repeat often |
+| Code Execution | Python and bash in a sandbox | Computation, data analysis |
+| Research mode | Searches and synthesises many sources | Open-ended information gathering |
+| Memory | Holds facts across sessions | Preferences, premises, settled decisions |
+
+How to choose: state the purpose as one verb. Gather is Research, compute is Code Execution, repeat is Projects, reuse is Artifacts, procedure is Skills, remember is Memory. If no verb fits, an inline reply is enough.
+
+Four model tiers, bottom up: Haiku, Sonnet, Opus, Fable. Higher means slower and more expensive; that is a design trade, not a defect. Before switching tiers, try tuning effort, because effort tuning usually beats switching models.
+
 ### Example
 
 100 short customer replies a day, speed and cost matter.
