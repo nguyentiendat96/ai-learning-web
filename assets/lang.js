@@ -59,6 +59,9 @@
     switchEl.addEventListener("click", function (e) {
       var b = e.target.closest("button[data-lang-set]");
       if (!b) return;
+      // Trang chưa có bản dịch thì không đổi, tránh trang trắng.
+      if (b.getAttribute("data-lang-set") === "en" &&
+          !document.querySelector(".lang-en")) return;
       apply(b.getAttribute("data-lang-set"), true);
     });
     document.body.appendChild(switchEl);
@@ -66,6 +69,8 @@
 
   var saved = null;
   try { saved = localStorage.getItem(KEY); } catch (e) { /* ignore */ }
+  // Ngôn ngữ đã lưu chỉ áp dụng nếu trang thật sự có bản dịch.
+  if (saved === "en" && !document.querySelector(".lang-en")) saved = "vi";
   apply(saved === "en" ? "en" : "vi", false);
   buildSwitch();
   updateButtons();

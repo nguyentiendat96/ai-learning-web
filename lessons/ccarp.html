@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Certified Architect: Professional (CCAR-P) — Claude · CCAR-P · 12 bài</title>
+<link rel="stylesheet" href="../assets/course.css?v=3">
+<style>
+  .toc li { margin: .3rem 0; }
+  /* heading numbers are written in the source, so the CSS counter is off here */
+  h2 { counter-increment: none; }
+  h2::before { content: none; }
+  @media (max-width: 760px) { .toc { display: block; } }
+</style>
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Claude · CCAR-P · 12 bài</div>
+    <h1>Claude Certified Architect: Professional (CCAR-P)</h1>
+    <p class="subtitle">Giáo trình 12 bài: quyết định kiến trúc, chi phí, đánh giá, guardrail, compliance.</p>
+    <p class="lesson-meta"><span>12 bài</span><span>63 câu</span><span>Nguồn: transcript video</span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="layout">
+    <aside class="side">
+      <nav class="toc">
+        <strong>Trong trang này</strong>
+        <ol>
+      <li><a href="#m01">01 · Bản đồ đề và ba bậc pattern</a></li>
+      <li><a href="#m02">02 · Khi nào agent thứ hai là gánh nặng</a></li>
+      <li><a href="#m03">03 · Chọn model, viết prompt, cache</a></li>
+      <li><a href="#m04">04 · Integration và least privilege</a></li>
+      <li><a href="#m05">05 · RAG: chunk và truy xuất</a></li>
+      <li><a href="#m06">06 · Monitoring: bảng xanh, câu trả lời rác</a></li>
+      <li><a href="#m07">07 · Eval: biết là tốt hơn hay chỉ khác đi</a></li>
+      <li><a href="#m08">08 · A/B test và tối ưu chi phí</a></li>
+      <li><a href="#m09">09 · Guardrail: prompt xin, code chặn</a></li>
+      <li><a href="#m10">10 · Compliance: dữ liệu đi đâu</a></li>
+      <li><a href="#m11">11 · Bảo vệ thiết kế và triển khai cho team</a></li>
+      <li><a href="#m12">12 · Bốn ca mổ, cách đọc đề, ngày thi</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <div class="content">
+
+<p>Giáo trình 12 bài, dựng từ khóa “CCAR-P Full Course: All 16 Episodes”
+(169 phút), tháng 10/2026. Nguồn: <a
+href="https://www.youtube.com/watch?v=YjjeATv2Edc">video khóa
+CCAR-P</a>.</p>
+<blockquote>
+<p>Khác CCA-F ở chỗ: Foundations hỏi bạn có xây được không. Professional
+hỏi bạn <strong>có nên xây</strong> và có bảo vệ được quyết định đó
+không. Cùng công nghệ, khác công việc.</p>
+</blockquote>
+<p>Mỗi bài có: mục tiêu, lý thuyết, ví dụ, mã, thực hành, bài tập,
+bẫy.</p>
+<h2 class="plain" id="kỳ-thi">Kỳ thi</h2>
+<table class="mapping">
+<thead>
+<tr>
+<th>Hạng mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Số câu</td>
+<td>63</td>
+</tr>
+<tr>
+<td>Thời gian</td>
+<td>120 phút, dưới 2 phút mỗi câu</td>
+</tr>
+<tr>
+<td>Điểm đạt</td>
+<td>720 trên thang 100 đến 1.000</td>
+</tr>
+<tr>
+<td>Dạng</td>
+<td>chọn một, và multiple response có ghi rõ chọn mấy</td>
+</tr>
+<tr>
+<td>Giám sát</td>
+<td>trực tuyến qua camera hoặc tại trung tâm</td>
+</tr>
+<tr>
+<td>Hiệu lực</td>
+<td>12 tháng, sau đó gia hạn miễn phí nếu không để hết hạn</td>
+</tr>
+<tr>
+<td>Thi lại</td>
+<td>giãn cách tăng dần, tối đa số lần mỗi năm</td>
+</tr>
+</tbody>
+</table>
+<p>Không có đề luyện chính thức cho kỳ này. Đăng ký qua mạng đối tác của
+Anthropic.</p>
+<p>Bảy domain, trong đó integration là phần lớn nhất, gần một phần
+năm.</p>
+<section id="m01">
+<h2 id="bản-đồ-đề-và-ba-bậc-pattern">01 · Bản đồ đề và ba bậc
+pattern</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Nhớ ba con số: 63 câu, 120 phút, 720 điểm.</li>
+<li>Đặt một bài toán vào đúng bậc: model tăng cường, workflow,
+agent.</li>
+<li>Áp luật “đơn giản nhất còn đủ”.</li>
+</ul>
+<h3 id="lý-thuyết">Lý thuyết</h3>
+<p>Ba bậc, mỗi bậc đổi độ linh hoạt lấy độ dự đoán được.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Bậc</th>
+<th>Ai chọn bước</th>
+<th>Đặc điểm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model tăng cường</td>
+<td>Không có bước</td>
+<td>Một call cộng tool, memory</td>
+</tr>
+<tr>
+<td>Workflow</td>
+<td>Code của bạn</td>
+<td>Đường đi cố định, biết trước</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>Model</td>
+<td>Đường đi vẽ lúc chạy, có thể khác mỗi lần</td>
+</tr>
+</tbody>
+</table>
+<p>Luật trên cùng: dùng pattern đơn giản nhất còn đủ yêu cầu, không lên
+một bậc cao hơn. Agentic đổi latency và chi phí lấy hiệu năng, chỉ đáng
+khi việc thật sự mở và khó.</p>
+<p>Hai lỗi kiến trúc hay gặp:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Lỗi</th>
+<th>Hình dạng</th>
+<th>Hậu quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Over-orchestration</td>
+<td>Cả đội agent cho một đường thẳng</td>
+<td>Coordination chiếm phần lớn công việc</td>
+</tr>
+<tr>
+<td>Gold plating</td>
+<td>Gắn mọi tool và safeguard</td>
+<td>Hóa đơn và bề mặt rủi ro tăng</td>
+</tr>
+</tbody>
+</table>
+<p>Câu trả lời thắng thường là bậc thấp nhất vẫn thỏa mọi ràng buộc
+trong stem.</p>
+<h3 id="ví-dụ">Ví dụ</h3>
+<p>Một team dạy hóa đơn tự xử lý bằng agent. Việc cố định: đọc field,
+đối chiếu đơn mua, gửi đi.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Dấu hiệu</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cùng field, cùng kiểm tra mỗi lần</td>
+<td>Workflow</td>
+</tr>
+<tr>
+<td>Demo chạy được, production mỗi ngày một đường</td>
+<td>Pattern sai, không phải cần tune</td>
+</tr>
+<tr>
+<td>Chuyên gia sửa</td>
+<td>Xóa agent, thay bằng một chuỗi bước</td>
+</tr>
+</tbody>
+</table>
+<p>Bài học: bước điều trị đúng là xóa code, không phải tinh chỉnh.</p>
+<h3 id="mã">Mã</h3>
+<p>Không có code đặc thù. Khi làm đề, vẽ ba bậc rồi khoanh bậc thấp nhất
+thỏa stem.</p>
+<h3 id="thực-hành">Thực hành</h3>
+<ol type="1">
+<li>Lấy ba việc đang dùng AI.</li>
+<li>Với mỗi việc, xác định ai chọn bước tiếp theo.</li>
+<li>Ghi cái mất nếu leo lên một bậc.</li>
+<li>Chọn lại bậc thấp nhất còn đủ.</li>
+</ol>
+<h3 id="bài-tập">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Phân loại 6 hệ thống theo ba bậc</td>
+<td>15 phút</td>
+<td>Mỗi cái nêu ai chọn bước</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chỉ ra một ca over-orchestration</td>
+<td>10 phút</td>
+<td>Nêu được chi phí coordination</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Viết lý lẽ bảo vệ bậc thấp hơn</td>
+<td>15 phút</td>
+<td>Nêu được ràng buộc nào bị vi phạm nếu leo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy">Bẫy</h3>
+<p>Chọn agent vì roadmap cần chữ “autonomous”. Đề thưởng cho bậc thấp
+nhất thỏa yêu cầu.</p>
+</section>
+<section id="m02">
+<h2 id="khi-nào-agent-thứ-hai-là-gánh-nặng">02 · Khi nào agent thứ hai
+là gánh nặng</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Nêu hai lý do chính đáng để tách agent.</li>
+<li>Định lượng chi phí multi-agent.</li>
+<li>Gắn thiết kế với một giá trị kinh doanh và nêu giá phải trả.</li>
+</ul>
+<h3 id="lý-thuyết-1">Lý thuyết</h3>
+<p>Hai lý do chính đáng:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Lý do</th>
+<th>Cơ chế</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cô lập context</td>
+<td>Subagent chỉ thấy phần nó cần</td>
+</tr>
+<tr>
+<td>Bề rộng</td>
+<td>Nhiều hướng độc lập chạy song song</td>
+</tr>
+</tbody>
+</table>
+<p>Ngoài hai lý do đó, tách agent thường là coordination độn thêm. Mỗi
+agent thêm một handoff, mỗi handoff là chỗ rơi context.</p>
+<p>Dữ liệu từ Anthropic: hệ multi-agent đốt khoảng 15 lần token so với
+chat thường. Đó là quyết định ngân sách, không phải chi tiết kỹ
+thuật.</p>
+<p>Điều kiện loại: nếu mọi agent cần cùng context, hoặc mỗi bước phụ
+thuộc bước trước, multi-agent là sai hình dạng.</p>
+<p>Năm giá trị kinh doanh: hiệu quả, chuyển đổi, năng suất, chi phí, đạt
+mục tiêu hiệu năng đã hứa. Kiến trúc phải phục vụ một trong số đó.</p>
+<h3 id="ví-dụ-1">Ví dụ</h3>
+<p>Hệ nghiên cứu 5 agent: planner, searcher, summarizer, checker,
+writer. Production chậm, đắt, nửa số bug là agent chờ nhau.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Phân tích</th>
+<th>Kết quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Truy xem việc thật nằm ở đâu</td>
+<td>Hai agent làm việc thật</td>
+</tr>
+<tr>
+<td>Ba agent còn lại</td>
+<td>Chuyển lời</td>
+</tr>
+<tr>
+<td>Sửa</td>
+<td>Bỏ ba, giữ hai</td>
+</tr>
+</tbody>
+</table>
+<p>Team được giao “chuyển đổi tổ chức” nên chọn bản hoành tráng; ràng
+buộc thật là chi phí và độ tin cậy, cả hai đều tệ hơn.</p>
+<h3 id="mã-1">Mã</h3>
+<p>Không có code đặc thù. Khung trả lời: “thiết kế này phục vụ [giá
+trị], và nó làm [giá trị khác] xấu đi [bao nhiêu]”.</p>
+<h3 id="thực-hành-1">Thực hành</h3>
+<ol type="1">
+<li>Với một hệ nhiều agent, đếm số handoff.</li>
+<li>Xác định agent nào chỉ chuyển lời.</li>
+<li>Tính token tiêu thụ so với một agent đơn.</li>
+<li>Viết một câu nêu giá trị và giá phải trả.</li>
+</ol>
+<h3 id="bài-tập-1">Bài tập</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Đếm handoff và chi phí</td>
+<td>15 phút</td>
+<td>Có số</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chỉ ra agent thừa</td>
+<td>10 phút</td>
+<td>Nêu được việc nó làm</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Viết câu bảo vệ hai bước</td>
+<td>10 phút</td>
+<td>Có giá trị và giá</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-1">Bẫy</h3>
+<p>Trả lời theo giá trị người ta nói to nhất, không theo ràng buộc thật
+trong stem.</p>
+</section>
+<section id="m03">
+<h2 id="chọn-model-viết-prompt-cache">03 · Chọn model, viết prompt,
+cache</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Chọn model theo ba trục và bằng eval set.</li>
+<li>Dùng system prompt như template có slot.</li>
+<li>Đặt cache đúng thứ tự.</li>
+</ul>
+<h3 id="lý-thuyết-2">Lý thuyết</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Trục</th>
+<th>Câu hỏi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Capability</td>
+<td>Có vượt ngưỡng chất lượng không</td>
+</tr>
+<tr>
+<td>Speed</td>
+<td>Có ai đang chờ không</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>Nhân với khối lượng ra bao nhiêu</td>
+</tr>
+</tbody>
+</table>
+<p>Hai điểm bắt đầu hợp lý: model rẻ trước, nâng nếu không đạt; hoặc
+model mạnh nhất, đo rồi tối ưu xuống. Cái quyết định là eval set, không
+phải cảm giác.</p>
+<p>Một đòn ít người dùng: một số model có tham số effort đổi trí tuệ lấy
+tốc độ và chi phí. Tinh chỉnh effort thường tốt hơn đổi model.</p>
+<p>Prompt: system prompt là lệnh đứng, viết như template có slot, không
+viết lại mỗi lần. Zero shot là mặc định; few-shot khi cần ví dụ; chain
+of thought chỉ khi thật sự cần suy luận nhiều bước, vì nó thêm
+latency.</p>
+<p>Cache: đặt nội dung tĩnh trước, nội dung đổi sau.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Sai</th>
+<th>Đúng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hướng dẫn ở đầu, tin nhắn người dùng ở giữa, chính sách ở cuối</td>
+<td>Chính sách và tool ở đầu, tin nhắn người dùng ở cuối</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-2">Ví dụ</h3>
+<p>Pipeline trích xuất chạy model đắt, độ chính xác vượt mục tiêu, chi
+phí đau.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Phương án</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Giữ model, giảm max_tokens và temperature</td>
+<td>Vặn núm</td>
+</tr>
+<tr>
+<td>Xuống một tier, chạy lại eval set</td>
+<td>Đúng</td>
+</tr>
+<tr>
+<td>Thêm routing layer</td>
+<td>Xây thứ chưa cần</td>
+</tr>
+<tr>
+<td>Thêm ví dụ cho tự tin hơn</td>
+<td>Đổ token vào chỗ không phải vấn đề</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-2">Mã</h3>
+<pre class="python"><code>resp = client.messages.create(
+    model=&quot;claude-sonnet-5-5&quot;,          # xuống tier sau khi eval đạt
+    max_tokens=1024,
+    system=[
+        {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: POLICY},                  # tĩnh
+        {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: TOOL_GUIDE,
+         &quot;cache_control&quot;: {&quot;type&quot;: &quot;ephemeral&quot;}},
+    ],
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question}],      # đổi
+)
+print(resp.usage.cache_read_input_tokens)</code></pre>
+<h3 id="thực-hành-2">Thực hành</h3>
+<ol type="1">
+<li>Chạy cùng một task trên hai tier.</li>
+<li>Ghi chất lượng, latency, giá.</li>
+<li>Tách prompt thành phần tĩnh và phần đổi.</li>
+<li>Đặt cache, đo lần hai.</li>
+</ol>
+<h3 id="bài-tập-2">Bài tập</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>So hai tier trên eval set</td>
+<td>25 phút</td>
+<td>Có số ba trục</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết system prompt dạng template</td>
+<td>15 phút</td>
+<td>Có slot rõ ràng</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Đo cache read</td>
+<td>15 phút</td>
+<td>Lần hai lớn hơn 0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-2">Bẫy</h3>
+<p>Nhảy lên model to nhất. Tài liệu nói tinh chỉnh effort thường thắng
+đổi model.</p>
+</section>
+<section id="m04">
+<h2 id="integration-và-least-privilege">04 · Integration và least
+privilege</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Đọc danh sách tool như danh sách quyền.</li>
+<li>Bỏ capability thay vì log quanh nó.</li>
+<li>Phát hiện lỗi danh tính.</li>
+</ul>
+<h3 id="lý-thuyết-3">Lý thuyết</h3>
+<p>Ở tầng kiến trúc, tool không phải “năng lực”, mà là
+<strong>quyền</strong>. Câu hỏi đổi từ “agent làm được gì cho ta” sang
+“agent làm được gì với ta nếu người khác viết chỉ dẫn”.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Vấn đề</th>
+<th>Sửa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tool không ai dùng vẫn tồn tại</td>
+<td>Xóa khỏi cấu hình</td>
+</tr>
+<tr>
+<td>Tool nguy hiểm</td>
+<td>Xóa capability, không log quanh nó</td>
+</tr>
+<tr>
+<td>Agent dùng tài khoản chung thấy mọi bản ghi</td>
+<td>Cấp quyền theo người dùng</td>
+</tr>
+</tbody>
+</table>
+<p>Log chỉ cho biết cửa chuồng đã mở sau khi ngựa đi mất. Tool không tồn
+tại là tool kẻ tấn công không với tới.</p>
+<p>Chi phí thứ hai của danh sách tool dài: mỗi tool được mô tả đầy đủ
+trên <strong>mọi</strong> request, tốn token trước khi người dùng nói
+câu nào, và cho model thêm tool để chọn nhầm.</p>
+<h3 id="ví-dụ-3">Ví dụ</h3>
+<p>Agent support có bốn tool: đọc tài khoản, soạn trả lời, hoàn tiền,
+xóa bản ghi. Không ai nhớ lần cuối dùng hoàn tiền hay xóa.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Phương án</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thêm log cho hai tool nguy hiểm</td>
+<td>Không ngăn được</td>
+</tr>
+<tr>
+<td>Thêm bước xác nhận trước khi hoàn tiền</td>
+<td>Giảm, không bỏ</td>
+</tr>
+<tr>
+<td>Xóa hai tool khỏi cấu hình</td>
+<td>Đúng</td>
+</tr>
+<tr>
+<td>Đổi sang model mạnh hơn</td>
+<td>Sai hướng</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-3">Mã</h3>
+<pre class="json"><code>{
+  &quot;tools&quot;: [&quot;read_account&quot;, &quot;draft_reply&quot;]
+}</code></pre>
+<p>Danh sách tool là bản kê quyền. Nếu một tool không có trong danh
+sách, không có đường nào gọi nó.</p>
+<h3 id="thực-hành-3">Thực hành</h3>
+<ol type="1">
+<li>Liệt kê tool của một agent đang chạy.</li>
+<li>Đánh dấu tool không dùng trong 30 ngày.</li>
+<li>Xóa chúng khỏi cấu hình, chạy lại.</li>
+<li>Kiểm quyền danh tính: agent có thấy bản ghi người khác không.</li>
+</ol>
+<h3 id="bài-tập-3">Bài tập</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Rà danh sách tool</td>
+<td>15 phút</td>
+<td>Có tool bị xóa</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết lý do xóa</td>
+<td>10 phút</td>
+<td>Nêu capability, không nêu log</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Kiểm lỗi danh tính</td>
+<td>15 phút</td>
+<td>Nêu được ai chạy quyền ai</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-3">Bẫy</h3>
+<p>Thêm log và bước xác nhận rồi coi là đã xử lý. Capability vẫn
+còn.</p>
+</section>
+<section id="m05">
+<h2 id="rag-chunk-và-truy-xuất">05 · RAG: chunk và truy xuất</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Chunk theo ranh giới ngữ nghĩa.</li>
+<li>Nhận ra index cũ gây trả lời tự tin sai.</li>
+<li>Đo chất lượng truy xuất.</li>
+</ul>
+<h3 id="lý-thuyết-4">Lý thuyết</h3>
+<p>Model không biết tài liệu riêng của công ty. Mỗi câu hỏi, hệ thống
+tìm đoạn liên quan rồi dán vào prompt. Câu trả lời chỉ tốt bằng thứ được
+lấy ra.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Bước</th>
+<th>Lỗi thường gặp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chunk</td>
+<td>Cắt theo số ký tự, cắt giữa điều khoản</td>
+</tr>
+<tr>
+<td>Index</td>
+<td>Không dựng lại sau khi tài liệu đổi</td>
+</tr>
+<tr>
+<td>Truy xuất</td>
+<td>Đo độ trễ, không đo độ liên quan</td>
+</tr>
+</tbody>
+</table>
+<p>Nguyên tắc chunk: cắt theo ranh giới của tài liệu (điều, mục, hàm),
+để mỗi mảnh tự nó có nghĩa. Kích thước là đánh đổi có chủ đích, không
+phải con số tròn.</p>
+<h3 id="ví-dụ-4">Ví dụ</h3>
+<p>Tài liệu sản phẩm cập nhật thứ Sáu. Cuối tuần trợ lý vẫn trả lời
+nhanh, tự tin, và sai toàn bộ về chính sách mới.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Chẩn đoán</th>
+<th>Kết quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model</td>
+<td>Không đổi</td>
+</tr>
+<tr>
+<td>Prompt</td>
+<td>Không đổi</td>
+</tr>
+<tr>
+<td>Index</td>
+<td>Bản sao từ trước thứ Sáu</td>
+</tr>
+<tr>
+<td>Kết luận</td>
+<td>Lỗi truy xuất, không phải hallucination</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-4">Mã</h3>
+<pre class="python"><code>chunks = []
+for section in doc.sections:          # điều, mục, hàm
+    for para in section.paragraphs:
+        chunks.append({&quot;text&quot;: para.text, &quot;section&quot;: section.title})</code></pre>
+<h3 id="thực-hành-4">Thực hành</h3>
+<ol type="1">
+<li>Lấy một tài liệu dài, chunk theo số ký tự.</li>
+<li>Kiểm xem có điều khoản nào bị cắt đôi.</li>
+<li>Chunk lại theo cấu trúc.</li>
+<li>So chất lượng trả lời ở hai cách.</li>
+</ol>
+<h3 id="bài-tập-4">Bài tập</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Tìm chunk bị cắt đôi</td>
+<td>15 phút</td>
+<td>Có ít nhất một ca</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chunk lại theo cấu trúc</td>
+<td>20 phút</td>
+<td>Không điều khoản nào bị cắt</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Đo độ liên quan của top-3</td>
+<td>15 phút</td>
+<td>Có điểm số</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-4">Bẫy</h3>
+<p>Tăng context window để chứa nhiều chunk hơn. Đó là tăng sức chứa,
+không sửa chỗ cắt.</p>
+</section>
+<section id="m06">
+<h2 id="monitoring-bảng-xanh-câu-trả-lời-rác">06 · Monitoring: bảng
+xanh, câu trả lời rác</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Giải thích vì sao hệ LLM hỏng mà dashboard vẫn xanh.</li>
+<li>Kể tên bốn lớp quan sát.</li>
+<li>Phân biệt log và watch.</li>
+</ul>
+<h3 id="lý-thuyết-5">Lý thuyết</h3>
+<p>Phần mềm thường hỏng ồn ào. Hệ LLM có thể trả 200, nội dung hợp lệ,
+và sai.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Lớp</th>
+<th>Ghi gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trace</td>
+<td>Toàn bộ đường đi một request, từng chặng, có thời gian</td>
+</tr>
+<tr>
+<td>Per-stage</td>
+<td>Mỗi chặng: độ trễ và chất lượng đầu ra</td>
+</tr>
+<tr>
+<td>Sampling + judge</td>
+<td>Lấy mẫu, chấm theo rubric</td>
+</tr>
+<tr>
+<td>Cost meter</td>
+<td>Token vào ra mỗi request từ <code>usage</code></td>
+</tr>
+</tbody>
+</table>
+<p>Một request được log không phải request được theo dõi.</p>
+<h3 id="ví-dụ-5">Ví dụ</h3>
+<p>Hệ retrieval trả lời kém dần một tuần, không alarm nào kêu: latency
+bình thường, error rate phẳng.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Thiếu gì</th>
+<th>Hậu quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Điểm liên quan của retrieval</td>
+<td>Không biết chặng nào hỏng</td>
+</tr>
+<tr>
+<td>Thời gian từng chặng</td>
+<td>Không biết chậm ở đâu</td>
+</tr>
+<tr>
+<td>Mẫu chấm định kỳ</td>
+<td>Chỉ biết khi khách phàn nàn</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-5">Mã</h3>
+<pre class="python"><code>u = resp.usage
+log.info(&quot;request&quot;, input=u.input_tokens, output=u.output_tokens,
+         cache_read=u.cache_read_input_tokens,
+         latency_ms=elapsed, stage=&quot;answer&quot;)</code></pre>
+<h3 id="thực-hành-5">Thực hành</h3>
+<ol type="1">
+<li>Thêm trace cho một pipeline ba chặng.</li>
+<li>Ghi độ trễ và một điểm chất lượng mỗi chặng.</li>
+<li>Lấy mẫu 20 câu, chấm theo rubric.</li>
+<li>Dựng biểu đồ chi phí theo ngày từ usage.</li>
+</ol>
+<h3 id="bài-tập-5">Bài tập</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Vẽ 4 lớp cho hệ của bạn</td>
+<td>15 phút</td>
+<td>Đủ bốn lớp</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Thêm một điểm chất lượng mỗi chặng</td>
+<td>20 phút</td>
+<td>Có biểu đồ</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chấm 20 mẫu</td>
+<td>20 phút</td>
+<td>Có điểm trung bình và độ lệch</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-5">Bẫy</h3>
+<p>Theo dõi latency và error rate rồi coi là đủ. Hai thứ đó không nói
+nội dung đúng hay sai.</p>
+</section>
+<section id="m07">
+<h2 id="eval-biết-là-tốt-hơn-hay-chỉ-khác-đi">07 · Eval: biết là tốt hơn
+hay chỉ khác đi</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Dựng golden set từ lỗi thật.</li>
+<li>Đo năm thứ, không chỉ accuracy.</li>
+<li>Dùng ba cách chấm và kiểm chéo.</li>
+</ul>
+<h3 id="lý-thuyết-6">Lý thuyết</h3>
+<p>“Tốt hơn” chỉ có nghĩa khi đo được bằng cùng một thước. Thước đó là
+<strong>golden set</strong>: đầu vào thật ghép với đầu ra đúng.</p>
+<p>Năm thứ cần đo:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Chỉ số</th>
+<th>Câu hỏi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Accuracy</td>
+<td>Trả lời đúng chưa</td>
+</tr>
+<tr>
+<td>Latency</td>
+<td>Có kịp cho người dùng không</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>Ở quy mô thật tốn bao nhiêu</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>Có lộ dữ liệu hay hứa điều không làm được không</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Có bị đầu vào độc hại đẩy khỏi đường ray không</td>
+</tr>
+</tbody>
+</table>
+<p>Ba cách chấm:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Cách</th>
+<th>Dùng cho</th>
+<th>Cạm bẫy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Code check</td>
+<td>Đúng/sai rõ ràng</td>
+<td>Không bắt được sắc thái</td>
+</tr>
+<tr>
+<td>Model judge</td>
+<td>Giọng điệu, tiêu chí mềm</td>
+<td>Cần hiệu chỉnh với người</td>
+</tr>
+<tr>
+<td>Người đọc</td>
+<td>Xác nhận hai cách trên đo đúng thứ cần đo</td>
+<td>Đắt</td>
+</tr>
+</tbody>
+</table>
+<p>Set chỉ có ca happy path là demo, không phải eval. Phải có ca thất
+bại và ca đối kháng: mỉa mai, nhiều lỗi chính tả, câu cố tình bảo bỏ qua
+chỉ dẫn.</p>
+<p>Điểm tinh tế: kiểm cả nơi hành vi <strong>không</strong> được xảy ra,
+không chỉ nơi nó phải xảy ra.</p>
+<h3 id="ví-dụ-6">Ví dụ</h3>
+<p>Một prompt được viết lại “gọn hơn”, trả lời mượt hơn. Thứ Sáu ship.
+Tuần sau compliance phát hiện một nhóm câu trả lời hoàn tiền mất
+disclaimer bắt buộc.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Thiếu gì</th>
+<th>Hậu quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ca safety trong eval</td>
+<td>Không ai thấy disclaimer biến mất</td>
+</tr>
+<tr>
+<td>Chấm cả tiêu chí không định đổi</td>
+<td>Không phát hiện hỏng kèm</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-6">Mã</h3>
+<pre class="python"><code>cases = [
+    {&quot;id&quot;: &quot;refund-01&quot;, &quot;input&quot;: ticket, &quot;must_contain&quot;: [&quot;disclaimer&quot;],
+     &quot;must_not_contain&quot;: [&quot;cam kết hoàn trong 24h&quot;]},
+]
+score = sum(check(c) for c in cases) / len(cases)</code></pre>
+<h3 id="thực-hành-6">Thực hành</h3>
+<ol type="1">
+<li>Lấy 25 ticket thật, ghi đầu ra đúng.</li>
+<li>Viết một code check cho yêu cầu cứng.</li>
+<li>Viết rubric cho model judge, chấm thử 20 ca.</li>
+<li>So với người chấm, chỉnh rubric.</li>
+</ol>
+<h3 id="bài-tập-6">Bài tập</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Dựng golden set 25 ca</td>
+<td>45 phút</td>
+<td>Có ca thất bại và đối kháng</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết code check</td>
+<td>20 phút</td>
+<td>Chạy được, không phụ thuộc model</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Hiệu chỉnh judge</td>
+<td>25 phút</td>
+<td>Judge khớp người ở 20 ca</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-6">Bẫy</h3>
+<p>Chỉ chấm accuracy. Safety và security là chỉ số hạng nhất, mỗi cái có
+ca riêng và ngưỡng riêng.</p>
+</section>
+<section id="m08">
+<h2 id="ab-test-và-tối-ưu-chi-phí">08 · A/B test và tối ưu chi phí</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Chạy A/B có baseline.</li>
+<li>Đổi một thứ mỗi lần.</li>
+<li>Truy vấn đề về đúng tầng.</li>
+</ul>
+<h3 id="lý-thuyết-7">Lý thuyết</h3>
+<p>Mọi thay đổi trên hệ đang chạy là một cá cược rằng nó tốt hơn và
+không phá gì.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Bước</th>
+<th>Việc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Chạy hệ hiện tại trên golden set, ghi điểm baseline</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Đổi <strong>một</strong> thứ</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chạy lại trên cùng bộ</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Giữ nếu thắng có ý nghĩa, hoàn nếu không</td>
+</tr>
+</tbody>
+</table>
+<p>Đổi ba thứ cùng lúc thì điểm có nhảy cũng không biết cái nào làm.</p>
+<p>Demo không phải đo. Cảm giác “trả lời hay hơn” có tên: eval
+blindness.</p>
+<h3 id="ví-dụ-7">Ví dụ</h3>
+<p>Đổi sang model rẻ hơn vì demo nhanh và trông ổn. Một tuần sau khách
+phàn nàn.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Kiểm tra</th>
+<th>Kết quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Golden set trước đổi</td>
+<td>Không chạy</td>
+</tr>
+<tr>
+<td>Golden set sau đổi</td>
+<td>Điểm thấp hơn bản cũ</td>
+</tr>
+<tr>
+<td>Kết luận</td>
+<td>Tối ưu mù</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-7">Mã</h3>
+<pre class="python"><code>baseline = run_eval(system_v1)
+candidate = run_eval(system_v2)
+assert candidate.total &gt;= baseline.total, &quot;hoàn bản mới&quot;
+assert candidate.safety &gt;= baseline.safety, &quot;không được giảm safety&quot;</code></pre>
+<h3 id="thực-hành-7">Thực hành</h3>
+<ol type="1">
+<li>Ghi baseline trước khi sửa bất cứ gì.</li>
+<li>Đổi một thứ, chạy lại.</li>
+<li>Ghi chênh lệch từng chỉ số, kể cả chỉ số không định đổi.</li>
+<li>Hoặc giữ, hoặc hoàn, có lý do.</li>
+</ol>
+<h3 id="bài-tập-7">Bài tập</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Ghi baseline</td>
+<td>20 phút</td>
+<td>Có số cho 5 chỉ số</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chạy một thay đổi đơn</td>
+<td>20 phút</td>
+<td>Không đổi gì khác</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Viết kết luận giữ hoàn</td>
+<td>10 phút</td>
+<td>Dựa trên số, không cảm giác</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-7">Bẫy</h3>
+<p>Gộp nhiều thay đổi trong một lần release. Điểm có lên cũng không học
+được gì.</p>
+</section>
+<section id="m09">
+<h2 id="guardrail-prompt-xin-code-chặn">09 · Guardrail: prompt xin, code
+chặn</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Phân biệt guidance và control.</li>
+<li>Kể năm failure mode.</li>
+<li>Đặt guardrail đúng tầng.</li>
+</ul>
+<h3 id="lý-thuyết-8">Lý thuyết</h3>
+<p>Trong system prompt, câu “đừng bao giờ hoàn tiền lớn mà không duyệt”
+là <strong>guidance</strong>. Nó định hình điều model thường làm, không
+định hình điều nó không thể làm.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Từ trong yêu cầu</th>
+<th>Đặt ở đâu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>must, never, cannot</td>
+<td>Code: check, gate, permission</td>
+</tr>
+<tr>
+<td>should, prefer</td>
+<td>Prompt</td>
+</tr>
+</tbody>
+</table>
+<p>Năm failure mode:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Mode</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hallucination</td>
+<td>Khẳng định sai với vẻ chắc chắn</td>
+</tr>
+<tr>
+<td>Prompt injection</td>
+<td>Văn bản đọc vào chứa chỉ dẫn chiếm quyền</td>
+</tr>
+<tr>
+<td>Tool misuse</td>
+<td>Gọi tool thật với tham số sai hoặc sai lúc</td>
+</tr>
+<tr>
+<td>Context poisoning</td>
+<td>Thông tin xấu vào cửa sổ rồi được coi là thật</td>
+</tr>
+<tr>
+<td>Drift</td>
+<td>Hệ tốt lúc đầu, kém dần khi thế giới đổi</td>
+</tr>
+</tbody>
+</table>
+<p>Chỉ hallucination là model tự sai. Bốn cái còn lại là hệ thống cho nó
+đọc hoặc làm gì.</p>
+<h3 id="ví-dụ-8">Ví dụ</h3>
+<p>Agent hoàn tiền nhỏ tự động, trên ngưỡng chờ người duyệt. Một chiều
+đọc sai field tiền tệ, tạo lệnh hoàn nhiều số 0. Người duyệt bắt được
+trong vài giây.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Phương án</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Viết mạnh hơn trong prompt</td>
+<td>Guidance</td>
+</tr>
+<tr>
+<td>Thêm log</td>
+<td>Không chặn</td>
+</tr>
+<tr>
+<td>Gate trong code</td>
+<td>Control</td>
+</tr>
+<tr>
+<td>Đổi model</td>
+<td>Không liên quan</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-8">Mã</h3>
+<pre class="python"><code>def issue_refund(amount, session):
+    if amount &gt; session.limit and not session.human_approved:
+        raise PermissionError(&quot;Vượt hạn mức, cần người duyệt.&quot;)
+    return payments.refund(amount)</code></pre>
+<h3 id="thực-hành-8">Thực hành</h3>
+<ol type="1">
+<li>Liệt kê 5 rule bất biến của hệ bạn.</li>
+<li>Kiểm rule nào đang nằm trong prompt.</li>
+<li>Chuyển sang code, kiểm nó chặn thật.</li>
+<li>Với mỗi failure mode, nêu một lớp bắt.</li>
+</ol>
+<h3 id="bài-tập-8">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Phân loại 8 rule thành prompt hay code</td>
+<td>10 phút</td>
+<td>Rule bất biến vào code</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết một gate</td>
+<td>20 phút</td>
+<td>Chặn được ca xấu</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Gắn lớp cho 5 failure mode</td>
+<td>15 phút</td>
+<td>Mỗi mode có lớp</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-8">Bẫy</h3>
+<p>Thêm disclaimer hoặc log rồi coi là guardrail. Control phải chạy
+trước khi hành động xảy ra.</p>
+</section>
+<section id="m10">
+<h2 id="compliance-dữ-liệu-đi-đâu">10 · Compliance: dữ liệu đi đâu</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Vẽ bản đồ luồng dữ liệu trước khi nói tên luật.</li>
+<li>Phân biệt GDPR, HIPAA, FedRAMP.</li>
+<li>Chọn control theo “must”.</li>
+</ul>
+<h3 id="lý-thuyết-9">Lý thuyết</h3>
+<p>Trước mọi quy định, vẽ luồng dữ liệu: tạo ở đâu, đi qua đâu, nằm đâu,
+ai chạm được. Mỗi mũi tên là một chỗ dữ liệu sống và là chỗ cơ quan quản
+lý chỉ vào.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Luật</th>
+<th>Hỏi gì</th>
+<th>Control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GDPR</td>
+<td>Dữ liệu cá nhân nằm đâu, xóa được không, gửi thừa không</td>
+<td>Ghim nơi inference và nơi lưu; xóa và tối thiểu hóa là việc của
+bạn</td>
+</tr>
+<tr>
+<td>HIPAA</td>
+<td>Thông tin sức khỏe được bảo vệ</td>
+<td>API có hỗ trợ, kèm hợp đồng BAA đã ký; mã hóa, kiểm soát truy cập,
+audit log</td>
+</tr>
+<tr>
+<td>FedRAMP</td>
+<td>Môi trường chạy có được ủy quyền không</td>
+<td>Ủy quyền môi trường, không ủy quyền model</td>
+</tr>
+</tbody>
+</table>
+<p>Câu chốt: FedRAMP không chứng nhận model; nó ủy quyền môi trường
+model chạy trong. Cùng một model, môi trường khác thì tuân thủ khác.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Control</th>
+<th>Chặn được gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zero data retention</td>
+<td>Không lưu prompt và trả lời</td>
+</tr>
+<tr>
+<td>Ghim vùng</td>
+<td>Dữ liệu không ra ngoài vùng</td>
+</tr>
+<tr>
+<td>Xóa trường nhạy cảm khỏi log</td>
+<td>Log không thành nguồn rò rỉ</td>
+</tr>
+<tr>
+<td>Người duyệt trước quyết định</td>
+<td>Sai sót không tới người nhận</td>
+</tr>
+</tbody>
+</table>
+<p>Log ghi lại chuyện đã xảy ra; nó không ngăn chuyện xảy ra.</p>
+<h3 id="ví-dụ-9">Ví dụ</h3>
+<p>Dự án y tế hoàn thành, demo đẹp, không launch được vì legal hỏi “dữ
+liệu bệnh nhân đi đâu” và không ai vẽ được.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Thiếu</th>
+<th>Hệ quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bản đồ luồng</td>
+<td>Không trả lời được câu hỏi cơ bản</td>
+</tr>
+<tr>
+<td>BAA</td>
+<td>Không được xử lý dữ liệu y tế</td>
+</tr>
+<tr>
+<td>Vùng lưu</td>
+<td>Không chứng minh được residency</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-9">Mã</h3>
+<p>Không có code đặc thù. Sản phẩm là bản đồ: hộp và mũi tên, mỗi mũi
+tên ghi dữ liệu gì và ai đọc được.</p>
+<h3 id="thực-hành-9">Thực hành</h3>
+<ol type="1">
+<li>Vẽ luồng dữ liệu của một hệ thật.</li>
+<li>Đánh dấu chỗ dữ liệu nhạy cảm xuất hiện.</li>
+<li>Với mỗi nhãn luật, ghi câu hỏi và control.</li>
+<li>Kiểm control nào là “must” mà đang nằm trong prompt.</li>
+</ol>
+<h3 id="bài-tập-9">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Vẽ bản đồ luồng</td>
+<td>20 phút</td>
+<td>Mọi mũi tên có nhãn dữ liệu</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Gắn 3 luật vào bản đồ</td>
+<td>15 phút</td>
+<td>Mỗi luật một câu hỏi rõ</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chọn control cho 2 rủi ro</td>
+<td>10 phút</td>
+<td>Cả hai là control, không phải log</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-9">Bẫy</h3>
+<p>Bật zero data retention rồi coi là tuân thủ đủ. Nó chỉ là một control
+trong nhiều.</p>
+</section>
+<section id="m11">
+<h2 id="bảo-vệ-thiết-kế-và-triển-khai-cho-team">11 · Bảo vệ thiết kế và
+triển khai cho team</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Tìm ràng buộc quyết định trong buổi discovery.</li>
+<li>Trình bày quyết định, không trình bày sơ đồ.</li>
+<li>Đặt cấu hình đúng tầng cho cả team.</li>
+</ul>
+<h3 id="lý-thuyết-10">Lý thuyết</h3>
+<p>Discovery: hỏi tới khi tìm ra <strong>một ràng buộc quyết
+định</strong>. Thường là chi phí, hoặc compliance, hoặc điều không bao
+giờ được xảy ra.</p>
+<p>Một thiết kế bảo vệ được có ba phần:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Phần</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mua gì</td>
+<td>Lợi ích nói bằng ngôn ngữ kinh doanh</td>
+</tr>
+<tr>
+<td>Giá gì</td>
+<td>Mặt trái, nói thật</td>
+</tr>
+<tr>
+<td>Phục vụ trụ cột nào</td>
+<td>Giá trị đã thống nhất ở discovery</td>
+</tr>
+</tbody>
+</table>
+<p>Sơ đồ cho biết xây gì, không cho biết vì sao chọn nó thay vì phương
+án rẻ hơn. Người ký duyệt chỉ đánh giá được phần “vì sao”.</p>
+<p>Với Claude Code cho team, ba tầng cấu hình:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Ai kiểm soát</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Personal</td>
+<td>Từng người</td>
+</tr>
+<tr>
+<td>Team</td>
+<td>Repo, ai clone cũng có</td>
+</tr>
+<tr>
+<td>Managed</td>
+<td>Tổ chức đẩy, cá nhân không tắt được</td>
+</tr>
+</tbody>
+</table>
+<p>Hai loại file, hai chức năng khác hẳn nhau:</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Loại</th>
+<th>Bản chất</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>File hướng dẫn cho model</td>
+<td>Ghi chú; model thường theo, đôi khi không</td>
+</tr>
+<tr>
+<td>Settings, permission</td>
+<td>Tường; tool ép bất kể model quyết gì</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ví-dụ-10">Ví dụ</h3>
+<p>Trợ lý phân loại claim bị dừng một tháng. Thiết kế đúng; câu trả lời
+sai.</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Câu hỏi của giám đốc</th>
+<th>Câu trả lời đã đưa</th>
+<th>Câu trả lời đúng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“Có khi nào gửi claim sai chỗ không”</td>
+<td>“Độ chính xác rất cao”</td>
+<td>“Có, một tỉ lệ nhỏ; số đó được chuyển người kiểm trước khi gửi”</td>
+</tr>
+</tbody>
+</table>
+<p>Thiết kế không đổi; chỉ câu nói đổi, và dự án được duyệt.</p>
+<p>Team 40 người mở rộng quyền trong settings dùng chung để bớt hỏi. Một
+tuần sau, agent chạy script dọn dẹp lên production thay vì staging.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Lỗi</th>
+<th>Tầng đúng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mở quyền chạy lệnh cho mọi người</td>
+<td>Managed hoặc gate theo môi trường</td>
+</tr>
+<tr>
+<td>Ghi “đừng chạm production” vào file hướng dẫn</td>
+<td>Permission rule</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mã-10">Mã</h3>
+<pre class="json"><code>{
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [&quot;Bash(*production*)&quot;, &quot;Bash(rm -rf *)&quot;]
+  }
+}</code></pre>
+<h3 id="thực-hành-10">Thực hành</h3>
+<ol type="1">
+<li>Chạy discovery cho một dự án: hỏi “điều gì tuyệt đối không được xảy
+ra”.</li>
+<li>Viết một câu ba phần để bảo vệ thiết kế.</li>
+<li>Liệt kê quyết định nào thuộc tầng team, tầng managed.</li>
+<li>Chuyển một “ghi chú” thành “tường”.</li>
+</ol>
+<h3 id="bài-tập-10">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Tìm ràng buộc quyết định</td>
+<td>15 phút</td>
+<td>Một câu, loại bỏ được phương án</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết câu ba phần</td>
+<td>15 phút</td>
+<td>Có lợi ích, giá, trụ cột</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Đặt 5 cấu hình vào 3 tầng</td>
+<td>15 phút</td>
+<td>Rule bất biến ở managed hoặc permission</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-10">Bẫy</h3>
+<p>Trình bày sơ đồ kiến trúc. Nó không cho người ký duyệt thấy vì
+sao.</p>
+</section>
+<section id="m12">
+<h2 id="bốn-ca-mổ-cách-đọc-đề-ngày-thi">12 · Bốn ca mổ, cách đọc đề,
+ngày thi</h2>
+<p><strong>Mục tiêu</strong></p>
+<ul>
+<li>Nhận diện bốn chữ ký lỗi production.</li>
+<li>Đọc đề theo ràng buộc, không theo chủ đề.</li>
+<li>Làm bài hai lượt.</li>
+</ul>
+<h3 id="lý-thuyết-11">Lý thuyết</h3>
+<p>Bốn ca mổ, bốn chữ ký:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Chữ ký</th>
+<th>Triệu chứng</th>
+<th>Nguyên nhân thật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Context rot</td>
+<td>Càng dài càng kém, quên ràng buộc cũ</td>
+<td>Cửa sổ đầy, chi tiết ở giữa bị chôn</td>
+</tr>
+<tr>
+<td>Index cũ</td>
+<td>Tự tin, trôi chảy, sai đều</td>
+<td>Re-ingest hoặc đổi embedding model</td>
+</tr>
+<tr>
+<td>Tool nhiễu</td>
+<td>Gọi sai tool, tốn token</td>
+<td>Danh sách tool dài, mô tả mờ</td>
+</tr>
+<tr>
+<td>Không đo</td>
+<td>Dashboard xanh, khách phàn nàn</td>
+<td>Không có điểm chất lượng</td>
+</tr>
+</tbody>
+</table>
+<p>Ba câu hỏi chạy trên mọi hệ hỏng: cái gì đổi, ở tầng nào, có đo được
+không.</p>
+<p>Cách đọc đề, ba bước:</p>
+<ol type="1">
+<li>Đọc tìm <strong>ràng buộc</strong>, không tìm chủ đề.
+<code>must</code>, <code>never</code>, giới hạn, cơ quan quản lý, trần
+chi phí.</li>
+<li>Loại theo <strong>nguyên tắc</strong>: đề đang kiểm nguyên tắc nào,
+phương án nào vi phạm.</li>
+<li>Multiple response: chấm từng phương án đúng/sai độc lập với
+stem.</li>
+</ol>
+<p>Ngày thi: hai lượt. Lượt một trả lời câu chắc, câu nào bắt đầu giằng
+co thì đặt đáp án tốt nhất, đánh dấu, đi tiếp. Không bao giờ để
+trống.</p>
+<h3 id="ví-dụ-11">Ví dụ</h3>
+<p>Câu mẫu chính thức: agent có 4 tool, nhân viên chỉ cần đọc ticket và
+soạn trả lời, lo ngại bị dụ dùng tool nguy hiểm.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Phương án</th>
+<th>Loại vì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thêm log cho refund và delete</td>
+<td>Không chặn</td>
+</tr>
+<tr>
+<td>Xóa hai tool khỏi cấu hình</td>
+<td>Đúng</td>
+</tr>
+<tr>
+<td>Giữ tool, thêm xác nhận</td>
+<td>Giảm, không bỏ</td>
+</tr>
+<tr>
+<td>Đổi model lớn hơn</td>
+<td>Sai hướng</td>
+</tr>
+</tbody>
+</table>
+<p>Ràng buộc nằm ở câu “chỉ cần đọc và soạn”: capability thừa phải bị
+xóa.</p>
+<h3 id="mã-11">Mã</h3>
+<p>Không có code. Đây là bài về đọc và chọn.</p>
+<h3 id="thực-hành-11">Thực hành</h3>
+<ol type="1">
+<li>Lấy 5 câu, gạch chân ràng buộc trước khi đọc đáp án.</li>
+<li>Viết nguyên tắc mỗi câu đang kiểm.</li>
+<li>Loại phương án theo nguyên tắc.</li>
+<li>Làm 20 câu trong 40 phút, hai lượt.</li>
+</ol>
+<h3 id="bài-tập-11">Bài tập</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Việc làm</th>
+<th>Thời gian</th>
+<th>Tiêu chí đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Gạch ràng buộc 10 stem</td>
+<td>15 phút</td>
+<td>Mỗi câu một ràng buộc</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Viết nguyên tắc cho 10 câu</td>
+<td>15 phút</td>
+<td>Không câu nào ghi “chủ đề”</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Làm 20 câu hai lượt</td>
+<td>40 phút</td>
+<td>Không câu nào bỏ trống</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bẫy-11">Bẫy</h3>
+<p>Đọc lướt ba câu đầu rồi chọn. Mệnh đề quyết định thường nằm ở câu thứ
+ba hoặc thứ tư.</p>
+</section>
+
+
+    </div>
+  </div>
+
+  <footer class="lesson-footer">
+    <p>Nguồn: video khóa học. Số liệu và giá kiểm tháng 10/2026.</p>
+    <p>Quay lại <a href="../index.html">trang chủ</a>.</p>
+  </footer>
+
+</main>
+
+<script src="../assets/lang.js?v=3"></script>
+<script src="../assets/site-nav.js?v=3"></script>
+</body>
+</html>

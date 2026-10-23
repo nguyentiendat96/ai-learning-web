@@ -1,0 +1,314 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Đề luyện 20 câu · CCA-F</title><link rel="stylesheet" href="../assets/course.css?v=3"></head><body><header class="lesson-header"><div class="inner"><div class="course-tag">Claude · CCA-F · Đề luyện</div><h1>Đề luyện 20 câu</h1><p class="subtitle">Dạng scenario, 40 phút. Đáp án và giải thích ở cuối trang.</p><p class="lesson-meta"><span>20 câu</span><span>6 nhóm</span></p></div></header><main><h1 id="đề-luyện-claude-certified-architect-foundations">Đề luyện:
+Claude Certified Architect, Foundations</h1>
+<p>20 câu theo dạng scenario, dựng từ nội dung 37 module của khóa. Đây
+là <strong>đề tự soạn để luyện</strong>, không phải đề thi chính
+thức.</p>
+<p>Cách làm: 40 phút, không mở tài liệu. Ghi đáp án ra giấy, rồi chấm ở
+phần <a href="#đáp-án">Đáp án</a> cuối file.</p>
+<table class="mapping">
+<thead>
+<tr>
+<th>Phần</th>
+<th>Câu</th>
+<th>Chủ đề</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>1-5</td>
+<td>Customer support agent dưới ràng buộc</td>
+</tr>
+<tr>
+<td>B</td>
+<td>6-10</td>
+<td>Hệ nghiên cứu nhiều agent</td>
+</tr>
+<tr>
+<td>C</td>
+<td>11-14</td>
+<td>Pipeline review code</td>
+</tr>
+<tr>
+<td>D</td>
+<td>15-17</td>
+<td>Batch và SLA</td>
+</tr>
+<tr>
+<td>E</td>
+<td>18-19</td>
+<td>Cấu hình và phạm vi</td>
+</tr>
+<tr>
+<td>F</td>
+<td>20</td>
+<td>Vòng lặp agent</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="phần-a-customer-support-agent">Phần A: Customer support
+agent</h2>
+<p><strong>Câu 1.</strong> Agent support có tool tra khách, tra đơn,
+hoàn tiền, escalate. Yêu cầu: đạt 80% xử lý ngay lần đầu. Cách nào đúng
+nhất?</p>
+<p>A. Cho agent tự xử lý mọi ca, escalate chỉ khi gặp lỗi hệ thống. B.
+Escalate mọi ca có điểm tự tin dưới 0,7. C. Tự xử lý ca policy rõ,
+escalate khi policy trống hoặc khách yêu cầu gặp người. D. Thêm một
+classifier định tuyến trước agent để chia ca dễ và khó.</p>
+<p><strong>Câu 2.</strong> Khách hoàn tiền một đơn mua 45 ngày trước,
+policy chỉ cho 30 ngày. Agent nên làm gì?</p>
+<p>A. Tự quyết hoàn tiền vì số tiền nhỏ. B. Escalate vì policy không phủ
+trường hợp này. C. Hỏi lại khách xem có muốn gặp người không. D. Từ chối
+và kết thúc hội thoại.</p>
+<p><strong>Câu 3.</strong> Khách đang rất bực nhưng vấn đề là đổi hàng
+hỏng có ảnh, policy rõ ràng. Agent nên làm gì?</p>
+<p>A. Escalate vì cảm xúc tiêu cực. B. Tự xử lý theo policy. C. Escalate
+vì ca phức tạp. D. Chuyển cho người vì điểm tự tin thấp.</p>
+<p><strong>Câu 4.</strong> Agent hoàn tiền cho tài khoản không khớp tên
+vì chọn kết quả gần giống nhất. Sửa gốc là gì?</p>
+<p>A. Thêm câu vào system prompt “hãy chắc chắn về danh tính”. B. Khi
+thiếu thông tin định danh, hỏi thêm thay vì đoán. C. Thêm bước xác nhận
+của con người cho mọi khoản hoàn tiền. D. Giảm số tool agent được
+dùng.</p>
+<p><strong>Câu 5.</strong> Người phản biện hỏi vì sao không dùng
+confidence threshold để quyết định escalate. Lý lẽ đúng nhất?</p>
+<p>A. Confidence chưa hiệu chỉnh, và model tự tin sai đúng ở các ca khó.
+B. Confidence luôn thấp với ca phức tạp. C. Confidence chỉ dùng được cho
+phân loại văn bản. D. Confidence tốn thêm token mỗi lượt.</p>
+<hr />
+<h2 id="phần-b-hệ-nghiên-cứu-nhiều-agent">Phần B: Hệ nghiên cứu nhiều
+agent</h2>
+<p><strong>Câu 6.</strong> Bốn agent: searcher, analyst, synthesizer,
+reporter. Câu hỏi đơn giản “thủ đô của Pháp”. Coordinator nên chạy
+gì?</p>
+<p>A. Cả bốn, để đảm bảo chất lượng. B. Searcher và reporter. C. Analyst
+và synthesizer. D. Chỉ reporter, dùng kiến thức sẵn có.</p>
+<p><strong>Câu 7.</strong> Báo cáo cuối có trích dẫn nhưng ba trích dẫn
+không tồn tại. Nguyên nhân gốc?</p>
+<p>A. Model yếu. B. Searcher trả kết quả bằng văn xuôi, mất URL trước
+khi tới synthesizer. C. Prompt của reporter thiếu yêu cầu trích dẫn. D.
+Nhiệt độ sinh quá cao.</p>
+<p><strong>Câu 8.</strong> Cả bốn agent đều báo thành công, nhưng báo
+cáo chỉ phủ một phần ba chủ đề. Lỗi ở đâu?</p>
+<p>A. Các agent con yếu. B. Synthesizer viết quá ngắn. C. Coordinator
+chia phạm vi sai và không kiểm độ phủ. D. Model cần context window lớn
+hơn.</p>
+<p><strong>Câu 9.</strong> Hai nguồn nói quy mô thị trường là 4,2 tỷ và
+7,1 tỷ. Xử lý đúng?</p>
+<p>A. Lấy trung bình 5,65 tỷ cho gọn. B. Chọn con số mới hơn. C. Trả cả
+hai kèm nguồn, phương pháp và ngày. D. Bỏ cả hai vì không đáng tin.</p>
+<p><strong>Câu 10.</strong> Agent search timeout giữa chủ đề, đã retry
+ba lần. Nó nên trả gì cho coordinator?</p>
+<p>A. <code>"search unavailable"</code>. B. Kết quả rỗng, đánh dấu thành
+công. C. Loại lỗi, query đã thử, kết quả một phần, cách thay thế. D.
+Raise exception để dừng toàn bộ workflow.</p>
+<hr />
+<h2 id="phần-c-pipeline-review-code">Phần C: Pipeline review code</h2>
+<p><strong>Câu 11.</strong> PR 14 file, review một lượt cho kết quả:
+file đầu kỹ, file cuối sơ sài, cùng một mẫu code bị chê ở file 3 và
+duyệt ở file 11. Nguyên nhân?</p>
+<p>A. Model không đủ thông minh. B. Context window quá nhỏ. C. Pha loãng
+chú ý khi một lượt phải nhìn quá nhiều file. D. Prompt thiếu tiêu
+chí.</p>
+<p><strong>Câu 12.</strong> Cách sửa đúng cho câu 11?</p>
+<p>A. Dùng model mạnh hơn. B. Tăng context window. C. Tách lượt theo
+từng file, thêm một lượt tích hợp xuyên file. D. Chia PR thành nhiều PR
+nhỏ hơn.</p>
+<p><strong>Câu 13.</strong> Chạy lại review sau 3 commit mới, bot đăng
+lại 14 comment cũ. Sửa?</p>
+<p>A. Xóa comment cũ sau khi đăng. B. Đưa output lần trước vào prompt,
+chỉ báo cái mới hoặc còn hỏng. C. Tăng ngưỡng severity để ít comment
+hơn. D. Chạy review trên phiên khác.</p>
+<p><strong>Câu 14.</strong> Vì sao không dùng phiên đã viết code để
+review chính code đó?</p>
+<p>A. Tốn token hơn. B. Phiên đó vẫn giữ lý lẽ đã tạo ra code nên khó tự
+phát hiện lỗi. C. Model không đọc lại được file đã sửa. D. Không hỗ trợ
+trong công cụ.</p>
+<hr />
+<h2 id="phần-d-batch-và-sla">Phần D: Batch và SLA</h2>
+<p><strong>Câu 15.</strong> Việc nào phù hợp với batch API?</p>
+<p>A. Check trước khi merge mà developer đang chờ. B. Báo cáo nợ kỹ
+thuật chạy qua đêm. C. Agent gọi tool nhiều lượt. D. Chat trả lời khách
+theo thời gian thực.</p>
+<p><strong>Câu 16.</strong> Kết quả phải có trong 30 giờ, batch có thể
+mất tới 24 giờ. Nhịp gửi tối thiểu?</p>
+<p>A. Mỗi 30 giờ. B. Mỗi 24 giờ. C. Mỗi 6 giờ. D. Mỗi 1 giờ.</p>
+<p><strong>Câu 17.</strong> Lô 100 tài liệu, 9 tài liệu lỗi vì vượt
+context. Xử lý đúng?</p>
+<p>A. Gửi lại cả 100. B. Gửi lại 9 tài liệu nguyên bản. C. Chia nhỏ 9
+tài liệu, gửi lại theo <code>custom_id</code>, giữ 91 cái đã xong. D. Bỏ
+9 tài liệu đó.</p>
+<hr />
+<h2 id="phần-e-cấu-hình-và-phạm-vi">Phần E: Cấu hình và phạm vi</h2>
+<p><strong>Câu 18.</strong> Một rule chạy đúng trên máy bạn, sai trên
+máy đồng nghiệp mới clone repo. Nguyên nhân và cách sửa?</p>
+<p>A. Claude bị lỗi; cài lại. B. Rule nằm ở scope user; chuyển sang
+scope project và commit. C. Đồng nghiệp dùng phiên bản Claude Code cũ;
+nâng cấp. D. Rule quá dài; rút gọn.</p>
+<p><strong>Câu 19.</strong> Enterprise quy định parameterized query,
+user thích raw SQL, project chọn SQLAlchemy ORM. Agent dùng gì?</p>
+<p>A. Enterprise, vì cấp cao nhất. B. User, vì là sở thích cá nhân của
+người dùng hiện tại. C. Project, vì cụ thể nhất, và vẫn thỏa enterprise.
+D. Hỏi lại người dùng mỗi lần.</p>
+<hr />
+<h2 id="phần-f-vòng-lặp-agent">Phần F: Vòng lặp agent</h2>
+<p><strong>Câu 20.</strong> Vòng lặp agent đang dùng bộ đếm 5 vòng làm
+điều kiện dừng chính. Vấn đề?</p>
+<p>A. Không có vấn đề, miễn là đủ lớn. B. Task cần 10 tool call sẽ bị
+cắt; điều kiện dừng đúng là <code>stop_reason</code>. C. Nên dùng 10
+vòng. D. Nên parse câu “tôi đã xong” trong text.</p>
+<hr />
+<h2 id="đáp-án">Đáp án</h2>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Câu</th>
+<th>Đáp án</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>C</td>
+<td>Ràng buộc là tỉ lệ tự xử lý; escalate theo policy gap hoặc yêu cầu
+khách, không theo confidence hay độ khó</td>
+</tr>
+<tr>
+<td>2</td>
+<td>B</td>
+<td>Policy không phủ là policy gap, phải escalate dù ca đơn giản</td>
+</tr>
+<tr>
+<td>3</td>
+<td>B</td>
+<td>Cảm xúc không phải ranh giới thẩm quyền; policy rõ thì tự xử lý</td>
+</tr>
+<tr>
+<td>4</td>
+<td>B</td>
+<td>Thiếu thông tin định danh thì hỏi thêm, không đoán theo tên gần
+giống</td>
+</tr>
+<tr>
+<td>5</td>
+<td>A</td>
+<td>Điểm tự tin chưa hiệu chỉnh là tín hiệu cần hiệu chỉnh, không phải
+bộ lọc</td>
+</tr>
+<tr>
+<td>6</td>
+<td>B</td>
+<td>Chạy cả pipeline cho câu hỏi đơn giản thêm chi phí và nhiễu, không
+thêm giá trị</td>
+</tr>
+<tr>
+<td>7</td>
+<td>B</td>
+<td>Provenance mất ở bước chuyển văn xuôi; synthesizer tạo trích dẫn từ
+ký ức</td>
+</tr>
+<tr>
+<td>8</td>
+<td>C</td>
+<td>Coordinator quyết định trần của hệ; phải kiểm độ phủ chủ đề</td>
+</tr>
+<tr>
+<td>9</td>
+<td>C</td>
+<td>Không lấy trung bình; trả cả hai kèm nguồn, phương pháp, ngày</td>
+</tr>
+<tr>
+<td>10</td>
+<td>C</td>
+<td>Lỗi phải có cấu trúc để coordinator hành động được</td>
+</tr>
+<tr>
+<td>11</td>
+<td>C</td>
+<td>Vấn đề là chất lượng chú ý, không phải sức chứa</td>
+</tr>
+<tr>
+<td>12</td>
+<td>C</td>
+<td>Lượt theo file cộng lượt tích hợp; model lớn hơn không sửa được cấu
+trúc</td>
+</tr>
+<tr>
+<td>13</td>
+<td>B</td>
+<td>Review tăng dần: chỉ báo delta so với lần trước</td>
+</tr>
+<tr>
+<td>14</td>
+<td>B</td>
+<td>Reviewer độc lập, không mang lý lẽ của người viết</td>
+</tr>
+<tr>
+<td>15</td>
+<td>B</td>
+<td>Batch chỉ cho việc chịu được chờ, không ai đang đợi</td>
+</tr>
+<tr>
+<td>16</td>
+<td>C</td>
+<td>30 − 24 = 6 giờ, dùng cửa sổ xấu nhất</td>
+</tr>
+<tr>
+<td>17</td>
+<td>C</td>
+<td><code>custom_id</code> cho phép gửi lại đúng phần lỗi</td>
+</tr>
+<tr>
+<td>18</td>
+<td>B</td>
+<td>Rule dùng chung phải ở scope project, commit</td>
+</tr>
+<tr>
+<td>19</td>
+<td>C</td>
+<td>Tầng cụ thể nhất thắng, và vẫn thỏa ràng buộc bảo mật</td>
+</tr>
+<tr>
+<td>20</td>
+<td>B</td>
+<td>Chỉ <code>stop_reason</code> là tín hiệu dừng đáng tin; giới hạn
+vòng là lưới an toàn</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tự-chấm">Tự chấm</h2>
+<table class="mapping">
+<thead>
+<tr>
+<th>Số câu đúng</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>18-20</td>
+<td>Sẵn sàng làm đề dài</td>
+</tr>
+<tr>
+<td>15-17</td>
+<td>Đọc lại module ứng với câu sai</td>
+</tr>
+<tr>
+<td>12-14</td>
+<td>Còn yếu phần loại trừ theo ràng buộc</td>
+</tr>
+<tr>
+<td>dưới 12</td>
+<td>Đọc lại module 02, 13, 36 trước khi làm tiếp</td>
+</tr>
+</tbody>
+</table>
+<footer class="lesson-footer"><p>Quay lại <a href="exam.html">mục Thi</a> hoặc <a href="../index.html">trang chủ</a>.</p></footer></main><script src="../assets/lang.js?v=3"></script>
+<script src="../assets/site-nav.js?v=3"></script></body></html>
