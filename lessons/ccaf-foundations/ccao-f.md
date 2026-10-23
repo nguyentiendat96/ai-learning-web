@@ -567,6 +567,23 @@ Các lớp dữ liệu cần xử lý riêng: định danh chính phủ, số t�
 | Tổng hợp | Doanh thu theo vùng |
 | Từ chối | Việc bị cấm rõ ràng |
 
+### Ba lý do chuyển người, và hai lý do không
+
+| Lý do hợp lệ | Hành động |
+|---|---|
+| Khách nói rõ muốn gặp người | Chuyển ngay, không thử giải quyết trước |
+| Ngoài policy hoặc cần ngoại lệ | Chuyển |
+| Đã thử các đường hợp lệ mà không tiến triển | Chuyển |
+
+| Lý do không hợp lệ | Vì sao |
+|---|---|
+| Khách đang bực | Cảm xúc không đo độ phức tạp |
+| Điểm tự tin thấp | Model tự tin sai ở ca khó |
+
+Phân biệt: khách bực nhưng vấn đề đơn giản thì ghi nhận cảm xúc và đề xuất cách giải quyết, chưa chuyển. Khách nhắc lại yêu cầu gặp người sau khi được đề nghị giúp thì chuyển.
+
+Trùng tên: luôn hỏi thêm một định danh (email, số điện thoại, mã đơn). Không chọn theo tài khoản mới nhất, hoạt động nhiều nhất hay gần nhất.
+
 ### Ví dụ
 
 | Tình huống | Kết luận |
