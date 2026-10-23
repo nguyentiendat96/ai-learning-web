@@ -252,7 +252,7 @@ const stages = [
     ]
   },
   {
-    id: 10, title: '10 · Question lab', anchor: 'm10',
+    id: 10, title: '10 · Question lab', href: 'exam.html#lab',
     recap: 'Tám thẻ, bảy domain trộn. Đáp án đúng luôn là động tác nhàm chán.',
     qs: [
       { q: 'Mẫu báo cáo tuần sẽ được dùng lại, sửa, chia sẻ.',
@@ -273,7 +273,7 @@ const stages = [
     ]
   },
   {
-    id: 11, title: '11 · Exam day', anchor: 'm11',
+    id: 11, title: '11 · Exam day', href: 'exam.html#day',
     recap: 'Hai lượt, loại theo số đáp án, không đấu với một câu.',
     qs: [
       { q: 'Câu multiple response ghi "chọn 2" và bạn còn 3 đáp án khả dĩ.',
@@ -294,7 +294,7 @@ const stages = [
     ]
   },
   {
-    id: 12, title: '12 · Capstone', anchor: 'm12',
+    id: 12, title: '12 · Capstone', anchor: 'm10',
     recap: 'Một ngày làm việc, bảy domain đi qua tự nhiên.',
     qs: [
       { q: 'Hộp review của người có tên trong quy trình thuộc domain nào?',
@@ -343,7 +343,7 @@ function render() {
         <h3>${st.title}</h3>
         <span class="badge">${state && state.passed ? 'đã qua · ' + state.score + '/5' : open ? 'đang mở' : 'khóa'}</span>
       </div>
-      <p class="score">${st.recap} <a href="ccao-f.html#${st.anchor}">Đọc bài</a></p>
+      <p class="score">${st.recap} <a href="${st.href || 'ccao-f.html#' + st.anchor}">Đọc bài</a></p>
       <div class="quiz"></div>`;
 
     if (open) card.querySelector('.quiz').appendChild(buildQuiz(st));

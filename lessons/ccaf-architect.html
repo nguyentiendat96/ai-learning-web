@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claude Certified Architect: Foundations (CCA-F) — Claude · CCA-F · Architect</title>
+<title>Claude Certified Architect: Foundations (CCA-F) — Claude · CCA-F · giáo trình</title>
 <link rel="stylesheet" href="../assets/course.css?v=3">
 <style>
   .toc li { margin: .3rem 0; }
@@ -17,10 +17,10 @@
 
 <header class="lesson-header">
   <div class="inner">
-    <div class="course-tag">Claude · CCA-F · Architect</div>
+    <div class="course-tag">Claude · CCA-F · giáo trình</div>
     <h1>Claude Certified Architect: Foundations (CCA-F)</h1>
-    <p class="subtitle">37 module: bảng quyết định, ví dụ, bài tập, bẫy. Kèm cấu trúc đề và đề luyện.</p>
-    <p class="lesson-meta"><span>37 module</span><span>20 câu luyện</span><span>Nguồn: transcript video</span></p>
+    <p class="subtitle">35 module: bảng quyết định, ví dụ, bài tập, bẫy. Phần thi tách riêng.</p>
+    <p class="lesson-meta"><span>35 module</span><span>5 domain</span><span>Nguồn: transcript video</span></p>
   </div>
 </header>
 
@@ -66,8 +66,6 @@
       <li><a href="#m33">33 · Large Codebase Exploration and Crash Recovery</a></li>
       <li><a href="#m34">34 · Human Review and Confidence Calibration</a></li>
       <li><a href="#m35">35 · Provenance and Conflicting Sources</a></li>
-      <li><a href="#m36">36 · The Six Exam Scenarios</a></li>
-      <li><a href="#m37">37 · The Four Preparation Exercises</a></li>
         </ol>
       </nav>
     </aside>
@@ -4022,256 +4020,6 @@ với nguồn, vì mapping đã mất ở bước nén.</p>
 <h3 id="bẫy-34">Bẫy</h3>
 <p>Thêm mục “nguồn tham khảo” cuối báo cáo. Nó liệt kê nguồn nhưng không
 nối từng claim với nguồn tương ứng.</p>
-</section>
-<section id="m36">
-<h2 id="the-six-exam-scenarios">36 · The Six Exam Scenarios</h2>
-<p>Mọi scenario làm theo bốn bước: nêu ràng buộc ràng buộc, nói nó loại
-bỏ gì, chọn sửa tối thiểu đúng nguyên nhân, và nêu giá phải trả.</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>Triệu chứng</th>
-<th>Ràng buộc</th>
-<th>Sửa đúng</th>
-<th>Bẫy</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Hoàn tiền vượt hạn mức</td>
-<td>Phải ép bằng chương trình</td>
-<td>Hook chặn</td>
-<td>Thêm câu vào prompt</td>
-</tr>
-<tr>
-<td>Rule chạy trên máy bạn, không chạy máy người mới</td>
-<td>Phải có cho mọi bản clone</td>
-<td>Đưa vào project scope, commit</td>
-<td>Dùng <code>/memory</code> thêm vào user scope</td>
-</tr>
-<tr>
-<td>Tool bị chọn nhầm</td>
-<td>Mô tả chưa phân biệt được</td>
-<td>Viết lại mô tả kèm câu ranh giới</td>
-<td>Thêm classifier</td>
-</tr>
-<tr>
-<td>Báo cáo thiếu mảng chủ đề</td>
-<td>Coordinator phải kiểm độ phủ</td>
-<td>Chia lại phạm vi, kiểm coverage</td>
-<td>Đổ lỗi cho subagent</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-35">Ví dụ</h3>
-<p>Đề: “Agent hoàn tiền 10.000 đô mà không cần duyệt. Sửa thế nào?”</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Bước</th>
-<th>Nội dung</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Ràng buộc</td>
-<td>Tiền di chuyển, không đảo ngược, phải ép được 100%</td>
-</tr>
-<tr>
-<td>Loại bỏ</td>
-<td>Prompt, few-shot, classifier định tuyến</td>
-</tr>
-<tr>
-<td>Sửa</td>
-<td>Interception hook chặn trên ngưỡng, trả lỗi <code>permission</code>
-kèm tool escalate</td>
-</tr>
-<tr>
-<td>Giá</td>
-<td>Mất linh hoạt xử lý ngoại lệ mà không sửa code</td>
-</tr>
-</tbody>
-</table>
-<p>Câu hỏi luôn là triệu chứng, scenario chỉ là bối cảnh. Viết ràng buộc
-trước khi đọc các lựa chọn.</p>
-<h3 id="bài-tập-35">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Làm 6 triệu chứng theo 4 bước</td>
-<td>30 phút</td>
-<td>Mỗi cái nêu được giá phải trả</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Viết ràng buộc trước khi đọc đáp án</td>
-<td>10 phút</td>
-<td>Không bị đáp án hợp lý kéo đi</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Chỉ ra đáp án “nghe hợp lý nhưng sai” trong một đề mẫu</td>
-<td>10 phút</td>
-<td>Nêu được nó vi phạm ràng buộc nào</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-35">Bẫy</h3>
-<p>Đọc đáp án trước rồi mới tìm ràng buộc. Khi đó đáp án hợp lý nhất sẽ
-hút bạn, dù nó vi phạm một ràng buộc đã bỏ qua.</p>
-</section>
-<section id="m37">
-<h2 id="the-four-preparation-exercises">37 · The Four Preparation
-Exercises</h2>
-<p>Bốn hệ thống đề bài yêu cầu tự dựng:</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Bài</th>
-<th>Trọng tâm</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Customer support agent</td>
-<td>Gate trong code, lỗi có cấu trúc, escalation đúng</td>
-<td>Mọi luật tiền bạc không phụ thuộc prompt</td>
-</tr>
-<tr>
-<td>Multi-agent research</td>
-<td>Coordinator chia phạm vi, provenance xuyên handoff</td>
-<td>Mọi claim truy được về nguồn</td>
-</tr>
-<tr>
-<td>Code review pipeline</td>
-<td>Nhiều lượt theo file cộng lượt tích hợp, review độc lập</td>
-<td>Không comment trùng khi chạy lại</td>
-</tr>
-<tr>
-<td>Batch workflow</td>
-<td><code>custom_id</code>, chịu được không SLA</td>
-<td>Xử lý lại chỉ phần lỗi</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ví-dụ-36">Ví dụ</h3>
-<p>Bài 1, kiểm tiêu chí nghiệm thu:</p>
-<table class="mapping">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Tiêu chí</th>
-<th>Cách kiểm</th>
-<th>Kết quả đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Hoàn tiền trên ngưỡng bị chặn</td>
-<td>Chạy với số tiền 10.000</td>
-<td>Hook trả <code>permission</code>, agent gọi escalate</td>
-</tr>
-<tr>
-<td>Lỗi transient được retry</td>
-<td>Tool trả 429</td>
-<td>Agent thử lại có backoff</td>
-</tr>
-<tr>
-<td>Hết vòng lặp trả partial</td>
-<td>Ép 3 tool call</td>
-<td>Trả kết quả một phần, nêu việc bị chặn</td>
-</tr>
-<tr>
-<td>Tool không lẫn</td>
-<td>Chạy câu hỏi về đơn</td>
-<td>Gọi đúng tool, không gọi tool tài khoản</td>
-</tr>
-</tbody>
-</table>
-<p>Kiểm cấu hình bằng <strong>kích hoạt</strong>, không bằng sự tồn tại
-của file: chạy <code>/memory</code> với file khớp glob và với file không
-khớp.</p>
-<h3 id="bài-tập-36">Bài tập</h3>
-<table class="mapping">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Việc làm</th>
-<th>Thời gian</th>
-<th>Tiêu chí đạt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Dựng bài 1 với 4 tiêu chí nghiệm thu trên</td>
-<td>45 phút</td>
-<td>Cả 4 tiêu chí fail trước khi sửa, pass sau</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Dựng bài 2, kiểm mọi claim có nguồn</td>
-<td>45 phút</td>
-<td>Không claim nào thiếu URL và ngày</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Chạy lại review hai lần trên cùng PR</td>
-<td>20 phút</td>
-<td>Lần hai không comment trùng</td>
-</tr>
-<tr>
-<td>4</td>
-<td>Làm lô batch có 3 tài liệu cố tình lỗi</td>
-<td>30 phút</td>
-<td>Chỉ 3 request được gửi lại</td>
-</tr>
-</tbody>
-</table>
-<h3 id="bẫy-36">Bẫy</h3>
-<p>Kiểm happy path. Mọi tiêu chí nghiệm thu ở đây là <strong>failure
-mode</strong>, vì đề thi viết từ chính các ca hỏng đó.</p>
 </section>
 
 

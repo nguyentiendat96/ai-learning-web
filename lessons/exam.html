@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mục Thi · Bốn chứng chỉ Claude</title>
+<link rel="stylesheet" href="../assets/course.css?v=3">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Claude · Mục Thi</div>
+    <h1>Thi: cấu trúc đề, chiến thuật, luyện</h1>
+    <p class="subtitle">Phần này tách khỏi giáo trình. Giáo trình dạy kiến thức và cách làm; mục Thi chỉ nói về đề, cách làm bài và chấm điểm.</p>
+    <p class="lesson-meta"><span>4 chứng chỉ</span><span>Cập nhật 10/2026</span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="layout">
+    <aside class="side">
+      <nav class="toc">
+        <strong>Trong trang này</strong>
+        <ol>
+          <li><a href="#format">Cấu trúc bốn kỳ thi</a></li>
+          <li><a href="#weights">Trọng số domain</a></li>
+          <li><a href="#lab">Question lab: 8 thẻ</a></li>
+          <li><a href="#day">Ngày thi</a></li>
+          <li><a href="#practice">Đề luyện có sẵn</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <div class="content">
+
+      <div class="callout">
+        <div class="callout-title">Nguyên tắc tách mục</div>
+        <p>Bài học trong giáo trình dạy kỹ năng. Mục Thi chỉ chứa thứ chỉ có giá trị khi đi thi: thể lệ, phân bổ thời gian, mẹo làm bài, đề luyện. Người học để làm việc không cần đọc mục này.</p>
+      </div>
+
+      <h2 id="format">1 · Cấu trúc bốn kỳ thi</h2>
+      <table class="mapping">
+        <thead><tr><th>Khóa</th><th>Số câu</th><th>Thời gian</th><th>Điểm đạt</th><th>Ghi chú</th></tr></thead>
+        <tbody>
+          <tr><td>CCAO-F Associate</td><td>60</td><td>120 phút</td><td>720 / 1.000</td><td>Có multiple response; đề ghi rõ chọn mấy</td></tr>
+          <tr><td>CCDV-F Developer</td><td>53</td><td>not shown</td><td>not shown</td><td>Chia bốn quyết định, mỗi phần khoảng 13 câu</td></tr>
+          <tr><td>CCA-F Architect</td><td>60</td><td>120 phút</td><td>720 / 1.000</td><td>4 trong 6 scenario, mỗi scenario 15 câu; phí 49 USD; thi lại sau 6 tháng; có giám sát</td></tr>
+          <tr><td>CCAR-P Professional</td><td>63</td><td>not shown</td><td>not shown</td><td>7 domain, không có đề luyện chính thức</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="weights">2 · Trọng số domain</h2>
+      <table class="mapping">
+        <thead><tr><th>Khóa</th><th>Domain và trọng số</th></tr></thead>
+        <tbody>
+          <tr><td>CCAO-F</td><td>Output evaluation 21%, Workflow 16%, Governance 15%, Prompting 14%, Product/model 12%, Configuration 12%, Troubleshooting 10%</td></tr>
+          <tr><td>CCDV-F</td><td>Bốn phần gần bằng nhau: cái gì chạy 13 câu, gọi model 12, model thấy gì 13, sống được 14</td></tr>
+          <tr><td>CCA-F</td><td>Agentic architecture 27%, Claude Code config 20%, Prompt/structured output 20%, Tool và MCP 18%, Context/reliability 15%</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="lab">3 · Question lab: 8 thẻ</h2>
+      <p>Tám tình huống trộn bảy domain. Mục đích: bốn động tác phải thành phản xạ, không phải ghi chú.</p>
+      <table class="mapping">
+        <thead><tr><th>Thẻ</th><th>Tình huống</th><th>Động tác</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Mẫu báo cáo tuần dùng lại, sửa, chia sẻ</td><td>Match: artifact</td></tr>
+          <tr><td>2</td><td>Bản tóm tắt báo cáo năm có con số kiện tụng lạ</td><td>Verify: trích nguyên văn, bỏ claim không nguồn</td></tr>
+          <tr><td>3</td><td>Tự động hóa quyết định bảo hiểm cho claim nhỏ</td><td>Escalate: chuyên gia duyệt từng ca</td></tr>
+          <tr><td>4</td><td>Email ra mắt đúng ngữ pháp nhưng sai brand</td><td>Match: briefing đủ 4 phần + mẫu</td></tr>
+          <tr><td>5</td><td>Nhóm cần luật chung cho mọi phiên</td><td>Match: project instructions</td></tr>
+          <tr><td>6</td><td>Dữ liệu khách có tên, "chỉ nội bộ"</td><td>Gate: ẩn danh trước</td></tr>
+          <tr><td>7</td><td>Hai lần chạy ra hai kết luận</td><td>Verify: dấu hiệu bịa, đòi trích</td></tr>
+          <tr><td>8</td><td>Rule của team chỉ chạy trên máy một người</td><td>Match: scope project, commit</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="day">4 · Ngày thi</h2>
+      <table class="mapping">
+        <thead><tr><th>Việc</th><th>Cách làm</th></tr></thead>
+        <tbody>
+          <tr><td>Multiple response</td><td>Đề ghi rõ chọn mấy; loại dần tới đúng số đó</td></tr>
+          <tr><td>Lượt 1</td><td>Trả lời ngay câu nhận ra, đánh dấu câu lưỡng lự, đi tiếp</td></tr>
+          <tr><td>Lượt 2</td><td>Quay lại câu đánh dấu, hỏi "scenario này đòi động tác nào"</td></tr>
+          <tr><td>Câu bí</td><td>Loại tới đúng số đáp án, chọn cái mạnh nhất, bỏ qua</td></tr>
+          <tr><td>Chấm điểm</td><td>Theo chuẩn cố định, không đường cong; không so với người cùng phòng</td></tr>
+          <tr><td>Báo cáo</td><td>Phần trăm từng domain là chẩn đoán, không phải điều kiện đạt</td></tr>
+        </tbody>
+      </table>
+      <p>Bài thi thưởng cho người làm đúng động tác chuẩn mọi lần, không phải người thỉnh thoảng xuất sắc.</p>
+
+      <h2 id="practice">5 · Đề luyện có sẵn</h2>
+      <table class="mapping">
+        <thead><tr><th>Dạng</th><th>Ở đâu</th><th>Dùng để</th></tr></thead>
+        <tbody>
+          <tr><td>20 câu scenario, có đáp án và giải thích</td><td><a href="ccaf-architect/practice-exam.md">practice-exam.md</a></td><td>Luyện dạng đề Architect</td></tr>
+          <tr><td>12 chặng, 60 câu, mỗi chặng 5 câu</td><td><a href="path-ccao.html">Đường leo thang</a></td><td>Luyện theo bài, qua chặng mới mở tiếp</td></tr>
+          <tr><td>Đề chính thức</td><td><a href="https://anthropic.skilljar.com/">SkillJar</a></td><td>Cần tài khoản</td></tr>
+        </tbody>
+      </table>
+
+      <footer class="lesson-footer">
+        <p>Quay lại <a href="../index.html">trang chủ</a>.</p>
+      </footer>
+
+    </div>
+  </div>
+
+</main>
+
+<script src="../assets/site-nav.js?v=3"></script>
+</body>
+</html>

@@ -6,6 +6,8 @@
     ['ccao-f.html', 'CCAO-F'],
     ['ccdv-f.html', 'CCDV-F'],
     ['ccaf-architect.html', 'CCAR-F'],
+    ['exam.html', 'Thi'],
+    ['code-examples.html', 'Mã'],
     ['resources.html', 'Nguồn'],
   ];
   var current = location.pathname.split('/').pop();

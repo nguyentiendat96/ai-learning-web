@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mã nguồn mẫu · Claude API</title>
+<link rel="stylesheet" href="../assets/course.css?v=3">
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="inner">
+    <div class="course-tag">Claude · Mã nguồn mẫu</div>
+    <h1>Mã nguồn mẫu, đối chiếu tài liệu hiện hành</h1>
+    <p class="subtitle">Sáu mẫu Python còn đúng với API hiện tại. Chỗ nào cookbook đã cũ thì ghi rõ và trỏ về tài liệu thay vì chép lại.</p>
+    <p class="lesson-meta"><span>Cập nhật 10/2026</span><span>Model ID: claude-opus-5-5</span></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="layout">
+    <aside class="side">
+      <nav class="toc">
+        <strong>Trong trang này</strong>
+        <ol>
+          <li><a href="#call">Gọi API và đọc stop_reason</a></li>
+          <li><a href="#stream">Streaming</a></li>
+          <li><a href="#tools">Vòng lặp tool</a></li>
+          <li><a href="#cache">Prompt caching</a></li>
+          <li><a href="#batch">Batch</a></li>
+          <li><a href="#vision">Vision</a></li>
+          <li><a href="#agent">Agent SDK</a></li>
+          <li><a href="#outdated">Mẫu đã lỗi thời</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <div class="content">
+
+      <div class="callout">
+        <div class="callout-title">Cách đọc</div>
+        <p>Mỗi mục: việc cần làm, đoạn mã tối thiểu, và nguồn để chạy bản đầy đủ. Model ID trong ví dụ là <code>claude-opus-5-5</code>; giá và tên đổi theo thời gian, đối chiếu <a href="https://platform.claude.com/docs/en/models/overview">Models overview</a>.</p>
+      </div>
+
+      <h2 id="call">1 · Gọi API và đọc stop_reason</h2>
+      <p>Luôn đọc <code>stop_reason</code> trước khi dùng <code>content</code>. Câu trả lời bị cắt vẫn trả HTTP 200.</p>
+      <pre><code>import anthropic
+
+client = anthropic.Anthropic()
+
+msg = client.messages.create(
+    model="claude-opus-5-5",
+    max_tokens=1024,
+    system="Bạn là trợ lý hỗ trợ khách hàng.",
+    messages=[{"role": "user", "content": ticket}],
+)
+
+print(msg.stop_reason)   # end_turn | max_tokens | tool_use | refusal
+print(msg.usage)         # input_tokens, output_tokens
+
+if msg.stop_reason == "max_tokens":
+    # câu trả lời bị cắt, không phải lỗi: tăng trần rồi chạy lại
+    pass
+elif msg.stop_reason == "refusal":
+    # HTTP 200 nhưng model từ chối
+    pass</code></pre>
+      <p><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices">Docs: prompting best practices</a></p>
+
+      <h2 id="stream">2 · Streaming</h2>
+      <p>Chữ hiện ngay khi được sinh. SDK ghép sẵn thành message hoàn chỉnh, không tự nối delta.</p>
+      <pre><code>with client.messages.stream(
+    model="claude-opus-5-5",
+    max_tokens=2048,
+    messages=[{"role": "user", "content": "Giải thích context window."}],
+) as stream:
+    for event in stream:
+        if event.type == "content_block_delta":
+            print(event.delta.text, end="", flush=True)
+    final = stream.get_final_message()
+
+print(final.stop_reason, final.usage)</code></pre>
+      <p><a href="https://platform.claude.com/docs/en/build-with-claude/context-windows">Docs: context windows</a></p>
+
+      <h2 id="tools">3 · Vòng lặp tool</h2>
+      <p>Model không chạy hàm của bạn. Nó trả <code>tool_use</code>, code chạy, gửi <code>tool_result</code> kèm đúng <code>tool_use_id</code>.</p>
+      <pre><code>tools = [{
+    "name": "get_order",
+    "description": "Tra cứu trạng thái đơn. Dùng khi khách hỏi về đơn hàng, "
+                   "không dùng cho thông tin tài khoản.",
+    "input_schema": {
+        "type": "object",
+        "properties": {"order_id": {"type": "string", "description": "Dạng ANNNNN"}},
+        "required": ["order_id"],
+        "additionalProperties": False,
+    },
+    "strict": True,
+}]
+
+messages = [{"role": "user", "content": "Đơn A10493 tới đâu rồi?"}]
+
+while True:
+    resp = client.messages.create(
+        model="claude-opus-5-5", max_tokens=1024,
+        messages=messages, tools=tools,
+    )
+    if resp.stop_reason != "tool_use":
+        break
+    results = []
+    for block in resp.content:
+        if block.type == "tool_use":
+            try:
+                out = run_tool(block.name, block.input)
+                results.append({"type": "tool_result",
+                                "tool_use_id": block.id, "content": out})
+            except Exception as e:
+                results.append({"type": "tool_result", "tool_use_id": block.id,
+                                "is_error": True, "content": str(e)})
+    messages.append({"role": "assistant", "content": resp.content})
+    messages.append({"role": "user", "content": results})</code></pre>
+      <p><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview">Docs: tool use</a></p>
+
+      <h2 id="cache">4 · Prompt caching</h2>
+      <p>Đặt breakpoint ở cuối phần ổn định. Thứ tự render: tools, system, messages. Cache ngắn hơn mức tối thiểu thì bị bỏ qua im lặng.</p>
+      <pre><code>resp = client.messages.create(
+    model="claude-opus-5-5",
+    max_tokens=1024,
+    system=[
+        {"type": "text", "text": "Bạn là trợ lý hỗ trợ."},
+        {"type": "text", "text": policy_document,          # phần lặp lại
+         "cache_control": {"type": "ephemeral"}},
+    ],
+    messages=[{"role": "user", "content": question}],
+)
+
+u = resp.usage
+print(u.cache_creation_input_tokens, u.cache_read_input_tokens)
+# cache_read = 0 nghĩa là không cache được: prefix quá ngắn hoặc có gì đổi</code></pre>
+      <p><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Docs: prompt caching</a> · <a href="https://github.com/anthropics/anthropic-cookbook/blob/main/misc/prompt_caching.ipynb">Notebook</a></p>
+
+      <h2 id="batch">5 · Batch</h2>
+      <p>Rẻ hơn, không stream, kết quả về không theo thứ tự. Ghép bằng <code>custom_id</code>.</p>
+      <pre><code>requests = [{
+    "custom_id": f"ticket-{i}",          # bắt buộc, do bạn đặt
+    "params": {
+        "model": "claude-opus-5-5",
+        "max_tokens": 512,
+        "messages": [{"role": "user", "content": t}],
+    },
+} for i, t in enumerate(tickets)]
+
+job = client.beta.messages.batches.create(requests=requests)
+
+while client.beta.messages.batches.retrieve(job.id).processing_status != "ended":
+    time.sleep(30)
+
+for row in client.beta.messages.batches.results(job.id):
+    print(row.custom_id, row.result.type)   # rồi ghép theo custom_id</code></pre>
+      <p><a href="https://github.com/anthropics/anthropic-cookbook/blob/main/misc/batch_processing.ipynb">Notebook: batch processing</a></p>
+
+      <h2 id="vision">6 · Vision</h2>
+      <p>Ảnh là một block trong <code>content</code>, đặt trước câu hỏi. Ảnh tốn nhiều token hơn chữ; nếu đã có chữ thì gửi chữ.</p>
+      <pre><code>import base64
+
+with open("receipt.jpg", "rb") as f:
+    img = base64.b64encode(f.read()).decode()
+
+resp = client.messages.create(
+    model="claude-opus-5-5",
+    max_tokens=1024,
+    messages=[{
+        "role": "user",
+        "content": [
+            {"type": "image",
+             "source": {"type": "base64", "media_type": "image/jpeg", "data": img}},
+            {"type": "text", "text": "Trích tổng tiền và ngày, trả JSON."},
+        ],
+    }],
+)</code></pre>
+      <p><a href="https://github.com/anthropics/anthropic-cookbook/blob/main/multimodal/getting_started_with_vision.ipynb">Notebook: vision</a></p>
+
+      <h2 id="agent">7 · Agent SDK</h2>
+      <p>SDK chạy cả vòng lặp trong process của bạn. Khác API thuần ở chỗ bạn không tự viết loop.</p>
+      <pre><code>from claude_agent_sdk import ClaudeAgentOptions, query
+
+async for msg in query(
+    prompt="Đọc repo này và liệt kê các endpoint chưa có test.",
+    options=ClaudeAgentOptions(
+        allowed_tools=["Read", "Glob", "Grep"],
+        system_prompt="Bạn là kỹ sư review. Chỉ đọc, không sửa file.",
+    ),
+):
+    print(msg)</code></pre>
+      <p><a href="https://code.claude.com/docs/en/agent-sdk/overview">Docs: Agent SDK</a> · <a href="https://github.com/anthropics/claude-agent-sdk-demos">Agent mẫu</a></p>
+
+      <h2 id="outdated">8 · Mẫu trong cookbook đã lỗi thời</h2>
+      <p>Đừng chép nguyên ba mẫu này. Chúng dạy đúng kỹ thuật nhưng dùng API đã bị bỏ.</p>
+      <table class="mapping">
+        <thead><tr><th>Notebook</th><th>Vấn đề</th><th>Dùng thay bằng</th></tr></thead>
+        <tbody>
+          <tr><td><code>misc/how_to_enable_json_mode.ipynb</code></td><td>Dùng assistant prefill để ép JSON; prefill đã bị từ chối trên model hiện tại</td><td>Structured output qua <code>output_config.format</code>, xem docs <em>structured outputs</em></td></tr>
+          <tr><td><code>misc/prompt_caching.ipynb</code></td><td>Model ID cũ, không sai về cơ chế</td><td>Giữ cách đặt breakpoint, đổi model ID</td></tr>
+          <tr><td><code>multimodal/getting_started_with_vision.ipynb</code></td><td>Model ID cũ</td><td>Giữ nguyên cấu trúc block, đổi model ID</td></tr>
+        </tbody>
+      </table>
+
+      <footer class="lesson-footer">
+        <p>Mã lấy cảm hứng từ <a href="https://github.com/anthropics/anthropic-cookbook">anthropic-cookbook</a> (MIT) và tài liệu Anthropic. Đã viết lại theo API hiện hành.</p>
+        <p>Quay lại <a href="../index.html">trang chủ</a>.</p>
+      </footer>
+
+    </div>
+  </div>
+
+</main>
+
+<script src="../assets/site-nav.js?v=3"></script>
+</body>
+</html>
