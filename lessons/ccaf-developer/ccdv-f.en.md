@@ -20,6 +20,21 @@ Two rules used throughout:
 
 ---
 
+## The eight official domains
+
+| Domain | Weight | Lessons |
+|---|---|---|
+| Applications and Integration | 33.1% | 02, 04, 06, 09 |
+| Model Selection and Optimization | 16.8% | 02, 03, 10, 11 |
+| Agents and Workflows | 14.7% | 14, 15 |
+| Prompt and Context Engineering | 11.0% | 07, 08, 09 |
+| Tools and MCPs | 10.6% | 12, 13 |
+| Security and Safety | 8.1% | 16 |
+| Claude Code | 3.1% | 04, 06 |
+| Eval, Testing, Debugging | 2.6% | 09 |
+
+Domain 2 is the largest and the most under-read, because half of it is ordinary software engineering: REST, versioning, review, idempotent retries, and the fact that editing a prompt in production is a deployment.
+
 ## 01 · Every Question Is One of Four Decisions
 
 **Objectives**
