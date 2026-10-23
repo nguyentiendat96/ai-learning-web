@@ -454,6 +454,17 @@ Dan wants Maya's prompt forwarded to the whole team by Friday. That is how most 
 
 Maya assumes the time sink is social copy. Mapping the week shows it is assembling the Friday review.
 
+### Choosing a use case and presenting value
+
+| Task | Method |
+|---|---|
+| Find a use case | Review departmental processes, pick recurring and measurable work |
+| Prioritise | Score by impact and feasibility, not by appeal |
+| Start | The simplest approach with confirmed effect, then add |
+| Compose | Connect Claude to existing tools rather than replacing the workflow |
+
+Presenting to a decision maker: give quantified outcomes, frame it as augmentation rather than replacement, and state cost and limits. Routing example: easy work to a cheap model, hard work to a stronger one.
+
 ### Example
 
 Requirements for automating invoice processing; the process doc and three months of exception logs already exist.

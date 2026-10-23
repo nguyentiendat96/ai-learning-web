@@ -454,6 +454,17 @@ Dan muốn chuyển prompt của Maya cho cả team ngay thứ Sáu. Đó là c�
 
 Maya tưởng bước tốn thời gian là viết social copy; sau khi vẽ tuần, bước ngốn thời gian là ghép bảng review thứ Sáu.
 
+### Chọn use case và trình bày giá trị
+
+| Việc | Cách làm |
+|---|---|
+| Tìm use case | Rà quy trình theo phòng ban, chọn chỗ có việc lặp và đo được |
+| Ưu tiên | Chấm theo tác động và khả thi, không theo mức hấp dẫn |
+| Bắt đầu | Cách đơn giản nhất đã xác nhận tác dụng, rồi mới thêm |
+| Ghép | Nối Claude vào công cụ sẵn có thay vì thay cả quy trình |
+
+Trình bày cho người quyết định: nêu kết quả định lượng, khung là tăng cường chứ không thay người, nói rõ chi phí và giới hạn. Ví dụ routing: việc dễ chuyển model rẻ, việc khó mới lên model mạnh.
+
 ### Ví dụ
 
 Cần requirements cho việc tự động hóa hóa đơn, đã có tài liệu quy trình và 3 tháng log ngoại lệ.
