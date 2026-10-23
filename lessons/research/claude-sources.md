@@ -32,6 +32,18 @@ Ghi chép vòng nghiên cứu ngày 24/10/2026. Mọi mục đều là nguồn k
 | Tìm nguồn cho CCAO-F và CCAR-P | Hai khóa còn trống |
 | Kiểm giấy phép từng repo trước khi trích | Tránh dùng nội dung không được phép |
 
+## Vòng 2, 24/10/2026: nguồn cho CCAO-F và CCDV-F
+
+| Nguồn | Có gì | Dùng cho |
+|---|---|---|
+| [Amey-Thakur/CLAUDE-CERTIFICATIONS](https://github.com/Amey-Thakur/CLAUDE-CERTIFICATIONS) | Cả bốn chứng chỉ, blueprints, 320 câu luyện, mock exam, 110 flashcard | Đối chiếu toàn bộ |
+| [evggzzz/ccao-f-guide](https://github.com/evggzzz/ccao-f-guide) | CCAO-F, chỉ dùng nguồn Anthropic, 7 domain, CC BY 4.0 | Đối chiếu CCAO-F, giấy phép rõ |
+| [raybeecham/claude-certified-associate-foundations](https://github.com/raybeecham/claude-certified-associate-foundations) | Study guide theo scenario, có lab | Bài tập CCAO-F |
+| [vkorost/claude-certified-developer-guide](https://github.com/vkorost/claude-certified-developer-guide) | CCDV-F, 23 chương, tác giả ghi "tested against the live exam" | Đối chiếu CCDV-F |
+| [mattvall1/claude_exams](https://github.com/mattvall1/claude_exams) | Đề luyện CCAO-F và CCA-F | Ngân hàng câu |
+
+Lưu ý: mô tả "tested against the live exam" là lời tác giả, chưa kiểm chứng. Không dùng câu hỏi nguyên văn của bất kỳ nguồn nào.
+
 ## Nguyên tắc khi dùng
 
 1. Không chép nguyên văn câu hỏi của người khác vào bộ của mình.
