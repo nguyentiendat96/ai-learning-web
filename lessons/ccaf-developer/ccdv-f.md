@@ -326,6 +326,30 @@ Bốn giai đoạn:
 
 Production credit nằm ở operate và maintain, không nằm ở develop.
 
+### Phần kỹ nghệ thường trong đề
+
+Bảy chủ đề: REST, JSON, lập trình bất đồng bộ, version control, tích hợp vòng đời, code review, refactoring. Không chủ đề nào về Claude, nhưng chúng là kỹ năng nặng thứ ba của đề.
+
+Năm tính chất của một dependency kiểu model, và mỗi cái đổi gì:
+
+| Tính chất | Đổi gì trong thực hành thường |
+|---|---|
+| Output thay đổi giữa các lần chạy | Test so sánh tuyệt đối báo nhiễu, không báo regression |
+| Mỗi call tốn tiền theo kích thước | Token thành một loại regression, ngang với latency |
+| Version bị ngừng theo lịch nhà cung cấp | Migration là việc có kế hoạch, không phải bảo trì |
+| Lỗi có thể đến dưới dạng câu trả lời hợp lệ | Xử lý lỗi chỉ đọc status code sẽ bỏ sót |
+| Hành vi định nghĩa bằng văn xuôi | Prompt là code và phải nằm cùng chỗ với code |
+
+Hợp đồng: lỗi trả JSON có type, message, request id, và tập giá trị có thể mở rộng. Vì vậy rẽ nhánh theo giá trị đã biết và luôn có nhánh mặc định; không dùng switch liệt kê đủ, không so khớp nội dung message.
+
+JSON: đọc theo tên trường, bỏ qua trường lạ, phân biệt trường vắng mặt với trường null.
+
+Bất đồng bộ: đồng thời là chồng lấn thời gian chờ, không phải tính toán song song. Giới hạn do bạn đặt, không để fan-out vô hạn. Kết quả không về theo thứ tự gửi, nên mỗi việc mang một khóa và ghép theo khóa. Retry phải an toàn khi lặp, nên thao tác ghi cần idempotency key.
+
+Version: header phiên bản bắt buộc; ghim phiên bản không đóng băng dịch vụ, nó biến thay đổi thành lựa chọn của ai đó.
+
+Version control: prompt, model id, schema, bộ eval và ngưỡng đều thuộc repo vì chúng quyết định hành vi production. Sửa prompt trên production là một lần deploy không có commit.
+
 ### Ví dụ
 
 Prototype chạy trên laptop của Daniel. Cả team cần deploy, sửa, rollback.

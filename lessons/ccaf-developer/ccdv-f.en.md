@@ -316,6 +316,30 @@ Four stages:
 
 Production credit is earned in operate and maintain, never in develop.
 
+### The ordinary engineering inside the exam
+
+Seven topics: REST, JSON, asynchronous programming, version control, lifecycle integration, code review, refactoring. None is about Claude, yet together they are the third-heaviest skill on the paper.
+
+Five properties of a model-shaped dependency, and what each changes:
+
+| Property | What it changes in ordinary practice |
+|---|---|
+| Output varies between runs on identical input | Exact-equality tests report noise, not regressions |
+| Every call costs money in proportion to its size | Token spend becomes a regression class beside latency |
+| Versions retire on the publisher schedule | Migration is scheduled engineering, not maintenance |
+| A failure can arrive as a well-formed answer | Error handling that reads only the status code misses a seam |
+| Behaviour is defined in prose | Prompt text is code and must live where code lives |
+
+Contract: errors are JSON with a type, a message and a request id, and the set of values may grow. Branch on known values and always keep a default arm; never write an exhaustive switch, never match on message text.
+
+JSON: read fields by name, ignore unknown fields, and treat absence and null as different statements.
+
+Asynchronous: concurrency is overlapping waiting, not parallel computation. You set the bound; never fan out without one. Completion order is not submission order, so every unit carries a key and you join on the key. A retried write must be safe to repeat, which means an idempotency key.
+
+Versioning: the version header is required; pinning does not freeze the service, it makes a change somebody's choice.
+
+Version control: prompt text, model ids, schemas, eval sets and thresholds belong in the repository because they decide production behaviour. Editing a prompt in production is a deployment with no commit behind it.
+
 ### Example
 
 A prototype runs on Daniel's laptop; the team needs to deploy, fix and roll back.
