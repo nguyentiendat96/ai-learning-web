@@ -17,7 +17,7 @@
   --bad-soft: #fdecea;
   --code-bg: #f2efe9;
   --radius: 10px;
-  --measure: 43rem;
+  --measure: 74rem;
   --sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: Consolas, "Cascadia Mono", "SF Mono", Menlo, monospace;
 }
@@ -425,6 +425,26 @@ html[data-lang="en"] .lang-vi { display: none; }
 .site-nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 .site-nav .brand { font-weight: 700; letter-spacing: .01em; }
 .site-nav .sep { color: var(--muted); }
+
+/* ---------- Two-column lesson layout ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  gap: 2.4rem;
+  align-items: start;
+}
+.layout > .side { position: sticky; top: 3.4rem; max-height: calc(100vh - 4.4rem); overflow-y: auto; }
+.layout .toc {
+  margin: 0;
+  padding: .9rem 1rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; gap: 1rem; }
+  .layout > .side { position: static; max-height: none; overflow: visible; }
+}
 
 /* ---------- Print ---------- */
 @media print {
