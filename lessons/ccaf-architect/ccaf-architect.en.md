@@ -158,6 +158,29 @@ Token chunking plus concatenation. The exam always adds a symptom of contradicti
 
 ---
 
+### Coordinator responsibilities
+
+| Task | Content |
+|---|---|
+| Decompose | Split the work |
+| Select | Choose subagents by question |
+| Partition | Divide scope without overlap |
+| Pass context | Send everything needed, never rely on inheritance |
+| Aggregate | Merge results |
+| Refine | Iterate on gaps |
+| Route | Keep one place to observe |
+
+Failure tracing:
+
+| Symptom | Root cause |
+|---|---|
+| A whole topic area missing | Decomposition too narrow |
+| Duplicated sources, tokens doubled | Sloppy partitioning, two agents on one job |
+| Uniformly shallow | Subagent prompt or tool budget |
+| Citations lost | Context passing dropped metadata |
+
+Verification delegation: when most verification calls are simple lookups, giving the synthesis agent a narrow lookup tool costs less latency than returning to the coordinator; complex cases still route back. The trade is one more path to observe.
+
 ## 03 · Configuring Claude Code
 
 **Objectives**
@@ -533,6 +556,10 @@ Weighing pros and cons between options. If you are weighing, you missed an elimi
 
 ---
 
+### Oversized synthesis input
+
+When the synthesis input reaches about 75K tokens, the model cites the first 15K and the last 10K and drops the middle. Fix it by restructuring the input: put key conclusions at the start of each block, split synthesis into several passes by topic, or summarise each source before merging. A larger window does not fix it.
+
 ## 08 · The Agentic Loop and Spawning Subagents
 
 **Objectives**
@@ -616,6 +643,8 @@ Parsing "I am done" in the text, or using the iteration count as the main stop c
 
 ---
 
+One more anti-pattern: checking `content[0].type == "text"` to decide the loop is done. A `tool_use` response can open with a text block, so that check ends the loop early.
+
 ## 09 · Gates, Handoffs and SDK Hooks
 
 **Objectives**
@@ -693,6 +722,10 @@ def post_tool_use(name, result):
 Strengthening the system prompt for a rule that must hold 100% of the time. Prompts are probabilistic.
 
 ---
+
+### Three distinct outcomes
+
+Success, a legitimate empty result (the source ran, nothing matched), and a structured error must be distinguished. Collapsing them into one value makes the report say "nothing found" when the source was unreachable.
 
 ## 10 · Sessions, Built-in Tools, Configuration Memory
 

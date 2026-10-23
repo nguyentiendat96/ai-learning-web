@@ -117,6 +117,29 @@ Trong Agent SDK, parallel nghĩa là coordinator phát nhiều task call trong *
 
 Hai luật subagent: mỗi subagent chỉ có tool của vai trò; coordinator chọn subagent theo câu hỏi, không chạy cả pipeline.
 
+### Trách nhiệm của coordinator
+
+| Việc | Nội dung |
+|---|---|
+| Decompose | Chia việc |
+| Select | Chọn subagent theo câu hỏi |
+| Partition | Chia phạm vi, không chồng lấn |
+| Pass context | Gửi đủ dữ liệu, không dựa vào kế thừa |
+| Aggregate | Ghép kết quả |
+| Refine | Lặp lại chỗ còn thiếu |
+| Route | Giữ một chỗ quan sát được |
+
+Bảng truy lỗi:
+
+| Triệu chứng | Nguyên nhân gốc |
+|---|---|
+| Thiếu hẳn một mảng chủ đề | Decompose quá hẹp |
+| Trùng lặp nguồn, token tăng gấp đôi | Partition ẩu, hai agent cùng một việc |
+| Nông đều mọi chủ đề | Prompt hoặc ngân sách tool của subagent |
+| Mất trích dẫn nguồn | Context passing làm rơi metadata |
+
+Uỷ quyền kiểm chứng: nếu phần lớn ca cần kiểm là tra cứu đơn giản, cho agent tổng hợp một tool tra cứu hẹp rẻ hơn về latency so với quay về coordinator; ca phức tạp vẫn qua coordinator. Đánh đổi là thêm một đường quan sát.
+
 ### Ví dụ
 
 PR 14 file cần review bảo mật.
@@ -499,6 +522,10 @@ Scenario lab dạy một kỹ năng: tìm ràng buộc ràng buộc, rồi dùng
 | Không có hành động không đảo ngược | Enforcement gate |
 | Báo cáo có trích dẫn | Handoff bằng văn xuôi |
 
+### Đầu vào tổng hợp quá dài
+
+Khi đầu vào cho bước tổng hợp khoảng 75K token, model trích được 15K đầu và 10K cuối, bỏ giữa. Sửa bằng cách tái cấu trúc đầu vào: đưa kết luận quan trọng lên đầu mỗi khối, chia thành nhiều lượt tổng hợp theo chủ đề, hoặc tóm tắt từng nguồn trước khi ghép. Tăng cửa sổ không sửa được vấn đề.
+
 ### Ví dụ
 
 Scenario A: agent support, mục tiêu 80% xử lý ngay lần đầu.
@@ -568,6 +595,8 @@ Spawn bằng task tool. Coordinator phải có `task` trong allowed tools; thi�
 | Tuần tự | Một task mỗi lượt |
 | Giới hạn quyền | Mỗi subagent chỉ tool của vai trò |
 | Truyền context | Ghi tường minh, không có kế thừa |
+
+Một phản mẫu nữa: kiểm `content[0].type == "text"` để biết đã xong. Response `tool_use` có thể mở đầu bằng block text, nên cách kiểm này cắt vòng lặp sớm.
 
 ### Ví dụ
 
@@ -660,6 +689,10 @@ Hai họ hook:
 |---|---|---|
 | Post tool use | Sau tool, trước khi model thấy | Chuẩn hóa, cắt bớt |
 | Interception | Trước khi tool chạy | Chặn vi phạm |
+
+### Ba kết cục phải khác nhau
+
+Thành công, rỗng hợp lệ (nguồn chạy được, không có kết quả), và lỗi có cấu trúc phải khác nhau trong biểu diễn. Gộp ba thành một giá trị làm báo cáo nói "không phát hiện vấn đề" khi thực ra nguồn không truy cập được.
 
 ### Ví dụ
 

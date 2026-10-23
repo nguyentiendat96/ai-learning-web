@@ -417,6 +417,80 @@ and noisier.</p>
 <p>Token chunking plus concatenation. The exam always adds a symptom of
 contradiction between chunks, and the answer adds a recombination
 step.</p>
+<h3 id="coordinator-responsibilities">Coordinator responsibilities</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Task</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decompose</td>
+<td>Split the work</td>
+</tr>
+<tr>
+<td>Select</td>
+<td>Choose subagents by question</td>
+</tr>
+<tr>
+<td>Partition</td>
+<td>Divide scope without overlap</td>
+</tr>
+<tr>
+<td>Pass context</td>
+<td>Send everything needed, never rely on inheritance</td>
+</tr>
+<tr>
+<td>Aggregate</td>
+<td>Merge results</td>
+</tr>
+<tr>
+<td>Refine</td>
+<td>Iterate on gaps</td>
+</tr>
+<tr>
+<td>Route</td>
+<td>Keep one place to observe</td>
+</tr>
+</tbody>
+</table>
+<p>Failure tracing:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Root cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A whole topic area missing</td>
+<td>Decomposition too narrow</td>
+</tr>
+<tr>
+<td>Duplicated sources, tokens doubled</td>
+<td>Sloppy partitioning, two agents on one job</td>
+</tr>
+<tr>
+<td>Uniformly shallow</td>
+<td>Subagent prompt or tool budget</td>
+</tr>
+<tr>
+<td>Citations lost</td>
+<td>Context passing dropped metadata</td>
+</tr>
+</tbody>
+</table>
+<p>Verification delegation: when most verification calls are simple
+lookups, giving the synthesis agent a narrow lookup tool costs less
+latency than returning to the coordinator; complex cases still route
+back. The trade is one more path to observe.</p>
 </section>
 <section id="m03">
 <h2 id="configuring-claude-code">03 · Configuring Claude Code</h2>
@@ -1227,6 +1301,12 @@ Promise: refund within 5 business days&quot;&quot;&quot;</code></pre>
 <h3 id="pitfall-6">Pitfall</h3>
 <p>Weighing pros and cons between options. If you are weighing, you
 missed an elimination.</p>
+<h3 id="oversized-synthesis-input">Oversized synthesis input</h3>
+<p>When the synthesis input reaches about 75K tokens, the model cites
+the first 15K and the last 10K and drops the middle. Fix it by
+restructuring the input: put key conclusions at the start of each block,
+split synthesis into several passes by topic, or summarise each source
+before merging. A larger window does not fix it.</p>
 </section>
 <section id="m08">
 <h2 id="the-agentic-loop-and-spawning-subagents">08 · The Agentic Loop
@@ -1408,6 +1488,10 @@ itself and says nothing.</p>
 <h3 id="pitfall-7">Pitfall</h3>
 <p>Parsing “I am done” in the text, or using the iteration count as the
 main stop condition.</p>
+<p>One more anti-pattern: checking
+<code>content[0].type == "text"</code> to decide the loop is done. A
+<code>tool_use</code> response can open with a text block, so that check
+ends the loop early.</p>
 </section>
 <section id="m09">
 <h2 id="gates-handoffs-and-sdk-hooks">09 · Gates, Handoffs and SDK
@@ -1576,6 +1660,11 @@ status code.</p>
 <h3 id="pitfall-8">Pitfall</h3>
 <p>Strengthening the system prompt for a rule that must hold 100% of the
 time. Prompts are probabilistic.</p>
+<h3 id="three-distinct-outcomes">Three distinct outcomes</h3>
+<p>Success, a legitimate empty result (the source ran, nothing matched),
+and a structured error must be distinguished. Collapsing them into one
+value makes the report say “nothing found” when the source was
+unreachable.</p>
 </section>
 <section id="m10">
 <h2 id="sessions-built-in-tools-configuration-memory">10 · Sessions,

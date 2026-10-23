@@ -322,6 +322,80 @@ dù sơ đồ vẽ song song.</p>
 </table>
 <p>Hai luật subagent: mỗi subagent chỉ có tool của vai trò; coordinator
 chọn subagent theo câu hỏi, không chạy cả pipeline.</p>
+<h3 id="trách-nhiệm-của-coordinator">Trách nhiệm của coordinator</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Việc</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decompose</td>
+<td>Chia việc</td>
+</tr>
+<tr>
+<td>Select</td>
+<td>Chọn subagent theo câu hỏi</td>
+</tr>
+<tr>
+<td>Partition</td>
+<td>Chia phạm vi, không chồng lấn</td>
+</tr>
+<tr>
+<td>Pass context</td>
+<td>Gửi đủ dữ liệu, không dựa vào kế thừa</td>
+</tr>
+<tr>
+<td>Aggregate</td>
+<td>Ghép kết quả</td>
+</tr>
+<tr>
+<td>Refine</td>
+<td>Lặp lại chỗ còn thiếu</td>
+</tr>
+<tr>
+<td>Route</td>
+<td>Giữ một chỗ quan sát được</td>
+</tr>
+</tbody>
+</table>
+<p>Bảng truy lỗi:</p>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Triệu chứng</th>
+<th>Nguyên nhân gốc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thiếu hẳn một mảng chủ đề</td>
+<td>Decompose quá hẹp</td>
+</tr>
+<tr>
+<td>Trùng lặp nguồn, token tăng gấp đôi</td>
+<td>Partition ẩu, hai agent cùng một việc</td>
+</tr>
+<tr>
+<td>Nông đều mọi chủ đề</td>
+<td>Prompt hoặc ngân sách tool của subagent</td>
+</tr>
+<tr>
+<td>Mất trích dẫn nguồn</td>
+<td>Context passing làm rơi metadata</td>
+</tr>
+</tbody>
+</table>
+<p>Uỷ quyền kiểm chứng: nếu phần lớn ca cần kiểm là tra cứu đơn giản,
+cho agent tổng hợp một tool tra cứu hẹp rẻ hơn về latency so với quay về
+coordinator; ca phức tạp vẫn qua coordinator. Đánh đổi là thêm một đường
+quan sát.</p>
 <h3 id="ví-dụ-1">Ví dụ</h3>
 <p>PR 14 file cần review bảo mật.</p>
 <table class="mapping">
@@ -1109,6 +1183,12 @@ làm bộ lọc loại trừ.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="đầu-vào-tổng-hợp-quá-dài">Đầu vào tổng hợp quá dài</h3>
+<p>Khi đầu vào cho bước tổng hợp khoảng 75K token, model trích được 15K
+đầu và 10K cuối, bỏ giữa. Sửa bằng cách tái cấu trúc đầu vào: đưa kết
+luận quan trọng lên đầu mỗi khối, chia thành nhiều lượt tổng hợp theo
+chủ đề, hoặc tóm tắt từng nguồn trước khi ghép. Tăng cửa sổ không sửa
+được vấn đề.</p>
 <h3 id="ví-dụ-6">Ví dụ</h3>
 <p>Scenario A: agent support, mục tiêu 80% xử lý ngay lần đầu.</p>
 <table class="mapping">
@@ -1255,6 +1335,9 @@ allowed tools; thiếu thì nó tự làm hết, không báo lỗi.</p>
 </tr>
 </tbody>
 </table>
+<p>Một phản mẫu nữa: kiểm <code>content[0].type == "text"</code> để biết
+đã xong. Response <code>tool_use</code> có thể mở đầu bằng block text,
+nên cách kiểm này cắt vòng lặp sớm.</p>
 <h3 id="ví-dụ-7">Ví dụ</h3>
 <p>Model trả 3 tool call trong một lượt.</p>
 <table class="mapping">
@@ -1460,6 +1543,11 @@ SDK</h2>
 </tr>
 </tbody>
 </table>
+<h3 id="ba-kết-cục-phải-khác-nhau">Ba kết cục phải khác nhau</h3>
+<p>Thành công, rỗng hợp lệ (nguồn chạy được, không có kết quả), và lỗi
+có cấu trúc phải khác nhau trong biểu diễn. Gộp ba thành một giá trị làm
+báo cáo nói “không phát hiện vấn đề” khi thực ra nguồn không truy cập
+được.</p>
 <h3 id="ví-dụ-8">Ví dụ</h3>
 <p>Ba tool trả ba định dạng thời gian: epoch, ISO, mã số 3.</p>
 <table class="mapping">
