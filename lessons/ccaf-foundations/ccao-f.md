@@ -212,6 +212,25 @@ Ba thói quen giảm mạnh lỗi:
 
 Dấu hiệu: hỏi cùng một câu hai lần, ra hai đáp án khác nhau. Bất đồng giữa các lần nghĩa là cả hai đều chưa xác minh.
 
+### Ba trục HHH và tiêu chí đo được
+
+| Trục | Câu hỏi | Lưu ý |
+|---|---|---|
+| Helpful | Có giúp được việc không | |
+| Honest | Có trung thực không | Trục dễ bị bỏ qua nhất; "biết nói không biết" nằm ở đây |
+| Harmless | Có gây hại không | |
+
+| Chiều đánh giá | Ví dụ đo |
+|---|---|
+| Faithfulness | Tỉ lệ trích dẫn đúng |
+| Consistency | Tỉ lệ đồng thuận giữa các lần chạy |
+| Relevance | Có thông tin lạc đề không |
+| Tone | Chấm theo rubric |
+| Privacy | Tỉ lệ phát hiện PII |
+| Safety | Tỉ lệ gắn cờ độc hại trên 10.000 lần |
+
+Thứ tự phương pháp chấm: code nhanh và đáng tin nhất, dùng cho bất cứ gì quyết được bằng code; người linh hoạt nhất nhưng chậm; LLM nhanh nhưng cần rubric tốt. Nhiều điểm tự động thô thường hữu ích hơn vài điểm người thật kỹ.
+
 ### Ví dụ
 
 Bản phân tích thị phần có trích dẫn, sẽ lên webinar công khai.

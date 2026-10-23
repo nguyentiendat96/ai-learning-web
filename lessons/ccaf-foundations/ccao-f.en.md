@@ -212,6 +212,25 @@ Three habits that cut fabrication sharply:
 
 A tell: ask the same factual question twice and get two different answers. Disagreement between runs means neither is verified.
 
+### The HHH axes and measurable criteria
+
+| Axis | Question | Note |
+|---|---|---|
+| Helpful | Does it help with the job | |
+| Honest | Is it truthful | The most skipped axis; "able to say I do not know" lives here |
+| Harmless | Does it cause harm | |
+
+| Dimension | Example measurement |
+|---|---|
+| Faithfulness | Citation precision |
+| Consistency | Agreement across runs |
+| Relevance | Off-topic content present |
+| Tone | Rubric score |
+| Privacy | PII detection rate |
+| Safety | Toxicity flags per 10,000 runs |
+
+Scoring method order: code is fastest and most reliable, use it wherever the answer is decidable in code; humans are most flexible but slow; LLM judges are fast but need a good rubric. Many coarse automated scores usually beat a few careful human ones.
+
 ### Example
 
 A market-share analysis with citations, destined for a public webinar.

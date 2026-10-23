@@ -599,6 +599,77 @@ mục làm đổi kết luận. Một bản tóm tắt 6 thị trường thành 
 thể bỏ hẳn 2 thị trường mà không câu nào báo.</p>
 <p>Dấu hiệu: hỏi cùng một câu hai lần, ra hai đáp án khác nhau. Bất đồng
 giữa các lần nghĩa là cả hai đều chưa xác minh.</p>
+<h3 id="ba-trục-hhh-và-tiêu-chí-đo-được">Ba trục HHH và tiêu chí đo
+được</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Trục</th>
+<th>Câu hỏi</th>
+<th>Lưu ý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Helpful</td>
+<td>Có giúp được việc không</td>
+<td></td>
+</tr>
+<tr>
+<td>Honest</td>
+<td>Có trung thực không</td>
+<td>Trục dễ bị bỏ qua nhất; “biết nói không biết” nằm ở đây</td>
+</tr>
+<tr>
+<td>Harmless</td>
+<td>Có gây hại không</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<thead>
+<tr>
+<th>Chiều đánh giá</th>
+<th>Ví dụ đo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Faithfulness</td>
+<td>Tỉ lệ trích dẫn đúng</td>
+</tr>
+<tr>
+<td>Consistency</td>
+<td>Tỉ lệ đồng thuận giữa các lần chạy</td>
+</tr>
+<tr>
+<td>Relevance</td>
+<td>Có thông tin lạc đề không</td>
+</tr>
+<tr>
+<td>Tone</td>
+<td>Chấm theo rubric</td>
+</tr>
+<tr>
+<td>Privacy</td>
+<td>Tỉ lệ phát hiện PII</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>Tỉ lệ gắn cờ độc hại trên 10.000 lần</td>
+</tr>
+</tbody>
+</table>
+<p>Thứ tự phương pháp chấm: code nhanh và đáng tin nhất, dùng cho bất cứ
+gì quyết được bằng code; người linh hoạt nhất nhưng chậm; LLM nhanh
+nhưng cần rubric tốt. Nhiều điểm tự động thô thường hữu ích hơn vài điểm
+người thật kỹ.</p>
 <h3 id="ví-dụ-2">Ví dụ</h3>
 <p>Bản phân tích thị phần có trích dẫn, sẽ lên webinar công khai.</p>
 <table class="mapping">

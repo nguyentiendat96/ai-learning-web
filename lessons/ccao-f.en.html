@@ -615,6 +615,77 @@ summarised into five insights can drop two markets without a single
 wrong sentence.</p>
 <p>A tell: ask the same factual question twice and get two different
 answers. Disagreement between runs means neither is verified.</p>
+<h3 id="the-hhh-axes-and-measurable-criteria">The HHH axes and
+measurable criteria</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Axis</th>
+<th>Question</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Helpful</td>
+<td>Does it help with the job</td>
+<td></td>
+</tr>
+<tr>
+<td>Honest</td>
+<td>Is it truthful</td>
+<td>The most skipped axis; “able to say I do not know” lives here</td>
+</tr>
+<tr>
+<td>Harmless</td>
+<td>Does it cause harm</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table class="mapping">
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Example measurement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Faithfulness</td>
+<td>Citation precision</td>
+</tr>
+<tr>
+<td>Consistency</td>
+<td>Agreement across runs</td>
+</tr>
+<tr>
+<td>Relevance</td>
+<td>Off-topic content present</td>
+</tr>
+<tr>
+<td>Tone</td>
+<td>Rubric score</td>
+</tr>
+<tr>
+<td>Privacy</td>
+<td>PII detection rate</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>Toxicity flags per 10,000 runs</td>
+</tr>
+</tbody>
+</table>
+<p>Scoring method order: code is fastest and most reliable, use it
+wherever the answer is decidable in code; humans are most flexible but
+slow; LLM judges are fast but need a good rubric. Many coarse automated
+scores usually beat a few careful human ones.</p>
 <h3 id="example-2">Example</h3>
 <p>A market-share analysis with citations, destined for a public
 webinar.</p>
