@@ -375,6 +375,18 @@ Khi một nhóm sai nhiều: tắt hẳn nhóm đó, sửa tiêu chí và few-sh
 
 Mức nghiêm trọng phải neo bằng ví dụ code, không bằng tính từ.
 
+### System prompt qua nhiều lượt
+
+System prompt phải gửi trong mọi request; API không nhớ gì giữa các lần gọi. Bỏ nó ở lượt sau thì hành vi lệch ngay, không phải từ từ.
+
+Một hiệu ứng khác có thật: dù prompt không đổi, mức chú ý vào nó giảm khi hội thoại dài ra, vì output gần đây tranh chỗ. Sửa bằng cấu trúc: nhắc lại chỉ dẫn quan trọng ở mốc tự nhiên, đánh phiên bản prompt cho phiên dài, và đưa luật cứng vào code hoặc tool.
+
+Chia system prompt thành các khối: vai trò, phong cách, an toàn, ví dụ. Thẻ kiểu XML không phải phép thuật nhưng tăng độ rõ và cho phép tham chiếu lại về sau, ví dụ nhắc lại quy tắc trong khối an toàn.
+
+Khi trạng thái đổi giữa phiên, ví dụ đơn đã giao hoặc gói dịch vụ đổi, chỗ đúng để nêu là system prompt của lần gọi sau, không phải nhét trong tool result. Nhưng cân nhắc cache: system prompt nằm ở đầu prefix, sửa nó là mất cache của cả hội thoại. Với traffic cao, giữ system prompt ổn định và chèn khối trạng thái gần lượt người dùng.
+
+Nguyên tắc và điều kiện: dùng nguyên tắc cho việc cần phán đoán, dùng điều kiện rõ cho trigger an toàn. Biến mọi thứ thành điều kiện thì model chỉ còn khớp từ khóa và phân loại sai người nói khác thường. Luật phải đúng 100 phần trăm thì đưa ra khỏi prompt, vào code.
+
 ### Ví dụ
 
 Bản tóm tắt báo cáo năm có con số kiện tụng lạ.

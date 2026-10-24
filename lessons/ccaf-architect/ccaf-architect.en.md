@@ -360,6 +360,18 @@ Structured output constrains shape, not truth.
 | Include an `other` enum value with detail | Enums are open-ended |
 | Validate after receipt | The schema only makes the bad case rarer |
 
+### The system prompt across turns
+
+The system prompt must be sent on every request; the API remembers nothing between calls. Omitting it later makes behaviour diverge immediately, not gradually.
+
+A real separate effect: even when the prompt is unchanged, attention to it weakens as the conversation grows, because recent output competes for it. Fix it structurally: restate key instructions at natural breakpoints, version the prompt for long sessions, and move hard requirements into code or tools.
+
+Structure it in blocks: role, style, safety, examples. XML-style tags are not magic but improve salience and let you reference a block later, for example restating a rule from the safety block.
+
+When state changes mid-session, such as an order shipping or a plan changing, the right place to surface it is the next request system prompt, not buried in a tool result. Weigh caching: the system prompt sits at the front of the prefix, so rewriting it invalidates the whole conversation cache. At high traffic, keep the system prompt stable and inject a state block near the latest user turn.
+
+Principles and conditionals: use principles for judgment, explicit conditionals for safety triggers. Turning every nuance into a conditional pushes the model into keyword matching and misclassifies atypical users. A rule that must hold 100 percent belongs out of the prompt and in code.
+
 ### Example
 
 An annual report summary with a suspicious litigation figure.
