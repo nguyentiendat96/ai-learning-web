@@ -511,6 +511,18 @@ Retry đặt ở nơi có thông tin: lỗi tạm thời thì tool tự retry; l
 
 Ghi mà timeout sau khi đã gửi: không biết tác dụng phụ đã xảy ra chưa. Trả lỗi kèm câu "không rõ đã gửi chưa, đừng retry khi chưa kiểm", không đánh dấu an toàn để retry, và khuyến khích tra trạng thái trước.
 
+### Resource hay tool, và cảnh báo của MCP
+
+| Nội dung | Cách expose |
+|---|---|
+| Tài liệu tham chiếu ổn định: schema, danh mục, quy ước | Resource |
+| Dữ liệu động cần tính hoặc tra lúc dùng | Tool |
+| Quy trình tái dùng: checklist, mẫu báo cáo | Prompt |
+
+Resource và tool bổ sung nhau, không thay nhau: chỉ tool thì mỗi lần muốn biết gì cũng phải gọi; chỉ resource thì không hành động được. Khi agent bị rối vì quá nhiều tool giống nhau, sửa mô tả và dùng progressive availability, đừng gộp tất cả vào một tool định tuyến.
+
+MCP có annotation: readOnlyHint, destructiveHint, idempotentHint, openWorldHint. Chúng chỉ là gợi ý cho giao diện, không phải ranh giới bảo mật: server độc hại có thể khai readOnlyHint cho tool xóa dữ liệu. Quyết định quyền và xác nhận dựa trên mức tin cậy của server, policy và rủi ro thật của thao tác.
+
 ### Ví dụ
 
 | Lỗi | Nguyên nhân | Sửa |

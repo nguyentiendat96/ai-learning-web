@@ -481,6 +481,18 @@ Place retry where the information lives: transient failures retry inside the too
 
 A write that times out after submission has an unknown outcome. Return an error saying delivery is unknown, never mark it retry-safe, and ask for a status check first.
 
+### Resource or tool, and MCP annotations
+
+| Content | Expose as |
+|---|---|
+| Stable reference material: schemas, catalogues, conventions | Resource |
+| Dynamic data needing computation or lookup at use | Tool |
+| Reusable procedures: checklists, report templates | Prompt |
+
+Resources and tools complement each other: tools alone force a call to learn anything; resources alone prevent action. When an agent is overwhelmed by similar tools, improve descriptions and use progressive availability rather than collapsing everything behind one routing tool.
+
+MCP annotations include readOnlyHint, destructiveHint, idempotentHint and openWorldHint. They are UI hints, not a security boundary: a malicious server can advertise readOnlyHint on a deleting tool. Permission and confirmation decisions rest on the server trust level, policy and the real risk of the operation.
+
 ### Example
 
 | Failure | Cause | Fix |

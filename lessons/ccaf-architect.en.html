@@ -1149,6 +1149,44 @@ duplicate a side effect needs a human.</p>
 <p>A write that times out after submission has an unknown outcome.
 Return an error saying delivery is unknown, never mark it retry-safe,
 and ask for a status check first.</p>
+<h3 id="resource-or-tool-and-mcp-annotations">Resource or tool, and MCP
+annotations</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Content</th>
+<th>Expose as</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stable reference material: schemas, catalogues, conventions</td>
+<td>Resource</td>
+</tr>
+<tr>
+<td>Dynamic data needing computation or lookup at use</td>
+<td>Tool</td>
+</tr>
+<tr>
+<td>Reusable procedures: checklists, report templates</td>
+<td>Prompt</td>
+</tr>
+</tbody>
+</table>
+<p>Resources and tools complement each other: tools alone force a call
+to learn anything; resources alone prevent action. When an agent is
+overwhelmed by similar tools, improve descriptions and use progressive
+availability rather than collapsing everything behind one routing
+tool.</p>
+<p>MCP annotations include readOnlyHint, destructiveHint, idempotentHint
+and openWorldHint. They are UI hints, not a security boundary: a
+malicious server can advertise readOnlyHint on a deleting tool.
+Permission and confirmation decisions rest on the server trust level,
+policy and the real risk of the operation.</p>
 <h3 id="example-5">Example</h3>
 <table class="mapping">
 <colgroup>

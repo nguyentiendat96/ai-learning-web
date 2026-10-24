@@ -1191,6 +1191,39 @@ duyệt.</p>
 chưa. Trả lỗi kèm câu “không rõ đã gửi chưa, đừng retry khi chưa kiểm”,
 không đánh dấu an toàn để retry, và khuyến khích tra trạng thái
 trước.</p>
+<h3 id="resource-hay-tool-và-cảnh-báo-của-mcp">Resource hay tool, và
+cảnh báo của MCP</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Nội dung</th>
+<th>Cách expose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tài liệu tham chiếu ổn định: schema, danh mục, quy ước</td>
+<td>Resource</td>
+</tr>
+<tr>
+<td>Dữ liệu động cần tính hoặc tra lúc dùng</td>
+<td>Tool</td>
+</tr>
+<tr>
+<td>Quy trình tái dùng: checklist, mẫu báo cáo</td>
+<td>Prompt</td>
+</tr>
+</tbody>
+</table>
+<p>Resource và tool bổ sung nhau, không thay nhau: chỉ tool thì mỗi lần
+muốn biết gì cũng phải gọi; chỉ resource thì không hành động được. Khi
+agent bị rối vì quá nhiều tool giống nhau, sửa mô tả và dùng progressive
+availability, đừng gộp tất cả vào một tool định tuyến.</p>
+<p>MCP có annotation: readOnlyHint, destructiveHint, idempotentHint,
+openWorldHint. Chúng chỉ là gợi ý cho giao diện, không phải ranh giới
+bảo mật: server độc hại có thể khai readOnlyHint cho tool xóa dữ liệu.
+Quyết định quyền và xác nhận dựa trên mức tin cậy của server, policy và
+rủi ro thật của thao tác.</p>
 <h3 id="ví-dụ-5">Ví dụ</h3>
 <table class="mapping">
 <thead>
