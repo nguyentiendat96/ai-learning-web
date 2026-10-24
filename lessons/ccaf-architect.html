@@ -1126,6 +1126,52 @@ hành vi.</p>
 (<code>is_error: true</code>), chạy được nhưng rỗng
 (<code>is_error: false</code>, kết quả rỗng), và có dữ liệu. Gộp hai cái
 đầu làm hỏng mọi logic phục hồi.</p>
+<h3 id="tool-ở-quy-mô-lớn-và-luồng-xác-nhận">Tool ở quy mô lớn và luồng
+xác nhận</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Vấn đề</th>
+<th>Thiết kế đúng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API trả kết quả phân trang</td>
+<td>Trả trang đầu, tổng số, con trỏ; không tự lấy hết</td>
+</tr>
+<tr>
+<td>Quá nhiều tool, chọn sai</td>
+<td>Tool khám phá trả danh sách rút gọn, rồi nạp tool được chọn</td>
+</tr>
+<tr>
+<td>Một tool find_and_execute</td>
+<td>Sai: giấu quyết định, có thể hành động sai quá sớm</td>
+</tr>
+</tbody>
+</table>
+<p>Độ tin cậy: đừng trả điểm thô cho model tự diễn giải. Hiệu chỉnh
+ngưỡng trên tập nhãn, rồi trả kèm cờ và lý do.</p>
+<pre><code>{&quot;fields&quot;: {...}, &quot;requires_review&quot;: true,
+ &quot;review_reasons&quot;: [&quot;amount_below_confidence_threshold&quot;]}</code></pre>
+<p>Hành động phá hủy: không dùng tham số dry_run, vì model có thể gọi
+với giá trị sai. Dùng hai bước: tool xem trước trả tác động và token xác
+nhận một lần, tool thực thi bắt buộc token đó. Nội dung xác nhận phải
+nêu đối tượng, chi phí, tác động không đảo ngược.</p>
+<p>Lỗi MCP có hai tầng: lỗi giao thức (sai schema, tool không tồn tại)
+và lỗi thực thi (bản ghi không có, dịch vụ 503). Lỗi nghiệp vụ là lỗi
+thực thi, không phải lỗi giao thức.</p>
+<p>Retry đặt ở nơi có thông tin: lỗi tạm thời thì tool tự retry; lỗi cần
+đổi đầu vào thì để model sửa; có thể nhân đôi tác dụng phụ thì cần người
+duyệt.</p>
+<p>Ghi mà timeout sau khi đã gửi: không biết tác dụng phụ đã xảy ra
+chưa. Trả lỗi kèm câu “không rõ đã gửi chưa, đừng retry khi chưa kiểm”,
+không đánh dấu an toàn để retry, và khuyến khích tra trạng thái
+trước.</p>
 <h3 id="ví-dụ-5">Ví dụ</h3>
 <table class="mapping">
 <thead>

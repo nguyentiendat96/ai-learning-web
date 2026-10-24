@@ -1076,6 +1076,55 @@ what it cannot do.</p>
 </table>
 <p>Three primitives, three controllers: tools by the model, resources by
 the application, prompts by the user.</p>
+<h3 id="tools-at-scale-and-confirmation-flows">Tools at scale and
+confirmation flows</h3>
+<table class="mapping">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Correct design</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API returns paginated results</td>
+<td>Return the first page, a total count and a cursor; never auto-fetch
+all</td>
+</tr>
+<tr>
+<td>Too many tools, poor selection</td>
+<td>A discovery tool returns a ranked shortlist, then the chosen tools
+are loaded</td>
+</tr>
+<tr>
+<td>One find_and_execute tool</td>
+<td>Wrong: it hides the decision and can act too early</td>
+</tr>
+</tbody>
+</table>
+<p>Confidence: do not return raw scores for the model to interpret.
+Calibrate thresholds on a labelled set, then return a flag and
+reasons.</p>
+<pre><code>{&quot;fields&quot;: {...}, &quot;requires_review&quot;: true,
+ &quot;review_reasons&quot;: [&quot;amount_below_confidence_threshold&quot;]}</code></pre>
+<p>Destructive actions: do not use a dry_run parameter, because the
+model can call it with the wrong value. Use two steps: a preview tool
+returns the impact and a one-time confirmation token; the execute tool
+requires that token. The confirmation must name the target, the cost and
+the irreversible effects.</p>
+<p>MCP has two error tiers: protocol errors (bad schema, unknown tool)
+and execution errors (record missing, upstream 503). A business failure
+is an execution error, not a protocol error.</p>
+<p>Place retry where the information lives: transient failures retry
+inside the tool; input errors go back to the model; anything that may
+duplicate a side effect needs a human.</p>
+<p>A write that times out after submission has an unknown outcome.
+Return an error saying delivery is unknown, never mark it retry-safe,
+and ask for a status check first.</p>
 <h3 id="example-5">Example</h3>
 <table class="mapping">
 <colgroup>

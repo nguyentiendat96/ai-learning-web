@@ -446,6 +446,29 @@ MCP:
 
 Three primitives, three controllers: tools by the model, resources by the application, prompts by the user.
 
+### Tools at scale and confirmation flows
+
+| Problem | Correct design |
+|---|---|
+| API returns paginated results | Return the first page, a total count and a cursor; never auto-fetch all |
+| Too many tools, poor selection | A discovery tool returns a ranked shortlist, then the chosen tools are loaded |
+| One find_and_execute tool | Wrong: it hides the decision and can act too early |
+
+Confidence: do not return raw scores for the model to interpret. Calibrate thresholds on a labelled set, then return a flag and reasons.
+
+```
+{"fields": {...}, "requires_review": true,
+ "review_reasons": ["amount_below_confidence_threshold"]}
+```
+
+Destructive actions: do not use a dry_run parameter, because the model can call it with the wrong value. Use two steps: a preview tool returns the impact and a one-time confirmation token; the execute tool requires that token. The confirmation must name the target, the cost and the irreversible effects.
+
+MCP has two error tiers: protocol errors (bad schema, unknown tool) and execution errors (record missing, upstream 503). A business failure is an execution error, not a protocol error.
+
+Place retry where the information lives: transient failures retry inside the tool; input errors go back to the model; anything that may duplicate a side effect needs a human.
+
+A write that times out after submission has an unknown outcome. Return an error saying delivery is unknown, never mark it retry-safe, and ask for a status check first.
+
 ### Example
 
 | Failure | Cause | Fix |

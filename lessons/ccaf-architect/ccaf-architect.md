@@ -476,6 +476,29 @@ Dấu hiệu cần tách tool: mô tả có chữ "hoặc" hoặc "tùy theo" gi
 
 Ba kết cục của một lần gọi tool: lỗi truy cập (`is_error: true`), chạy được nhưng rỗng (`is_error: false`, kết quả rỗng), và có dữ liệu. Gộp hai cái đầu làm hỏng mọi logic phục hồi.
 
+### Tool ở quy mô lớn và luồng xác nhận
+
+| Vấn đề | Thiết kế đúng |
+|---|---|
+| API trả kết quả phân trang | Trả trang đầu, tổng số, con trỏ; không tự lấy hết |
+| Quá nhiều tool, chọn sai | Tool khám phá trả danh sách rút gọn, rồi nạp tool được chọn |
+| Một tool find_and_execute | Sai: giấu quyết định, có thể hành động sai quá sớm |
+
+Độ tin cậy: đừng trả điểm thô cho model tự diễn giải. Hiệu chỉnh ngưỡng trên tập nhãn, rồi trả kèm cờ và lý do.
+
+```
+{"fields": {...}, "requires_review": true,
+ "review_reasons": ["amount_below_confidence_threshold"]}
+```
+
+Hành động phá hủy: không dùng tham số dry_run, vì model có thể gọi với giá trị sai. Dùng hai bước: tool xem trước trả tác động và token xác nhận một lần, tool thực thi bắt buộc token đó. Nội dung xác nhận phải nêu đối tượng, chi phí, tác động không đảo ngược.
+
+Lỗi MCP có hai tầng: lỗi giao thức (sai schema, tool không tồn tại) và lỗi thực thi (bản ghi không có, dịch vụ 503). Lỗi nghiệp vụ là lỗi thực thi, không phải lỗi giao thức.
+
+Retry đặt ở nơi có thông tin: lỗi tạm thời thì tool tự retry; lỗi cần đổi đầu vào thì để model sửa; có thể nhân đôi tác dụng phụ thì cần người duyệt.
+
+Ghi mà timeout sau khi đã gửi: không biết tác dụng phụ đã xảy ra chưa. Trả lỗi kèm câu "không rõ đã gửi chưa, đừng retry khi chưa kiểm", không đánh dấu an toàn để retry, và khuyến khích tra trạng thái trước.
+
 ### Ví dụ
 
 | Lỗi | Nguyên nhân | Sửa |
