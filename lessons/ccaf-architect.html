@@ -1357,6 +1357,55 @@ chủ đề, hoặc tóm tắt từng nguồn trước khi ghép. Tăng cửa s�
 &lt;/case_facts&gt;</code></pre>
 <p>Tóm tắt làm mất trước hết số tiền, ngày, mã đơn, phần trăm, lời hứa.
 Khối này chèn nguyên văn mọi prompt và không đi qua bước tóm tắt.</p>
+<h3 id="chọn-chiến-lược-context-theo-thứ-cần-giữ">Chọn chiến lược
+context theo thứ cần giữ</h3>
+<table class="mapping">
+<thead>
+<tr>
+<th>Nhu cầu</th>
+<th>Cách</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mạch gần đây</td>
+<td>Giữ nguyên vài lượt gần nhất</td>
+</tr>
+<tr>
+<td>Mạch dài qua nhiều phiên</td>
+<td>Tóm tắt lũy tiến, có cấu trúc</td>
+</tr>
+<tr>
+<td>Sở thích hiện tại</td>
+<td>Object trạng thái</td>
+</tr>
+<tr>
+<td>Số liệu chính xác</td>
+<td>Truy xuất từ nguồn hoặc kho dữ kiện</td>
+</tr>
+<tr>
+<td>Canon sáng tác</td>
+<td>Khối tham chiếu cố định</td>
+</tr>
+<tr>
+<td>Tool nặng</td>
+<td>Trích field cần, bỏ payload dài</td>
+</tr>
+</tbody>
+</table>
+<p>Tóm tắt tốt có bốn mục: quyết định, sở thích hiện tại, câu hỏi mở, dữ
+kiện quan trọng. Tóm tắt kiểu kể chuyện làm mất đúng những con số người
+dùng hỏi lại.</p>
+<p>Cửa sổ trượt đúng khi log cho thấy phần lớn tin nhắn chỉ tham chiếu
+3-5 lượt gần nhất; giữ 8-10 lượt cộng system prompt. Với kết quả RAG, áp
+cửa sổ riêng, giữ 2-3 lần gần nhất, thay vì gộp tất cả vào một bản tóm
+tắt.</p>
+<p>Khối tham chiếu cố định giữ thứ phải nguyên vẹn suốt phiên: bible
+truyện, định nghĩa riêng của người dùng, thông tin an toàn như dị ứng.
+Tách khỏi phần hội thoại để bước tóm tắt không chạm vào.</p>
+<p>Object trạng thái là nguồn sự thật hiện tại: cập nhật mỗi lần người
+dùng đổi ý và chèn vào mọi request. Khi hai sở thích mâu thuẫn và quyết
+định quan trọng, nêu mâu thuẫn và hỏi; không tự chọn một bên.</p>
 <h3 id="ví-dụ-6">Ví dụ</h3>
 <p>Scenario A: agent support, mục tiêu 80% xử lý ngay lần đầu.</p>
 <table class="mapping">

@@ -580,6 +580,25 @@ Scenario labs teach one skill: find the binding constraint and use it as an elim
 | No irreversible action | Enforcement gates |
 | A cited report | Prose handoffs |
 
+### Choose the context strategy by what must survive
+
+| Need | Strategy |
+|---|---|
+| Recent flow | Keep recent turns verbatim |
+| Long-term continuity | Structured progressive summaries |
+| Current preferences | A state object |
+| Exact facts | Retrieval from source or a fact store |
+| Creative canon | A fixed reference section |
+| Tool-heavy work | Extract fields, discard verbose payloads |
+
+A useful summary has four parts: decisions, current preferences, open questions, important facts. Narrative summaries lose exactly the numbers users ask about later.
+
+A sliding window fits when logs show most messages reference only the last few turns; keep 8-10 turns plus the system prompt. For RAG results, apply a separate window keeping the last 2-3 retrievals instead of merging everything into one digest.
+
+A fixed reference section holds what must stay exact: story bibles, user-defined terms, safety details such as allergies. Keep it out of the conversation so summarisation cannot touch it.
+
+A state object is the current source of truth: update it whenever the user changes their mind and include it in every request. When two preferences conflict and the decision matters, surface the contradiction and ask; do not silently pick one.
+
 ### Example
 
 Scenario A: a support agent targeting 80% first-contact resolution.
